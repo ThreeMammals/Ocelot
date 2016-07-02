@@ -4,9 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Routing;
+using Ocelot.ApiGateway.Middleware;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.ApiGateway
-{
+{ 
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -26,19 +28,22 @@ namespace Ocelot.ApiGateway
         {
             services.AddRouting();
         }
-
+ 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            
+            app.UseRequestLogger();
+            app.UseProxy();
 
             loggerFactory.AddDebug();
-
-            var routeBuilder = new RouteBuilder(app);
-
-            routeBuilder.AddRouter(app);
-
-            app.UseRouter(routeBuilder.Build());
+ 
+             app.Run(async context => 
+            {
+                await context.Response.WriteAsync("Hello from Tom");
+            });
         }
     }
 }
+ 
