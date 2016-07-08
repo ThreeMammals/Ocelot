@@ -1,5 +1,5 @@
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.Router;
+using Ocelot.Library.Infrastructure.Router.UpstreamRouter;
 using Shouldly;
 using Xunit;
 
@@ -9,13 +9,13 @@ namespace Ocelot.UnitTests
     {
         private string _upstreamApiUrl;
         private string _apiKey;
-        private IRouterService _router;
+        private IUpstreamRouter _router;
         private Response _response;
         private Response<Route> _getRouteResponse;
 
-        public RouterTests()
+        public RouterTests() 
         {
-            _router = new InMemoryRouterService();
+            _router = new InMemoryUpstreamRouter();
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests
             WhenIRetrieveTheRouteByKey();
             ThenTheRouteIsReturned();
         }
-
+ 
         [Fact]
         public void should_return_error_response_when_key_already_used()
         {
@@ -77,8 +77,8 @@ namespace Ocelot.UnitTests
 
         private void ThenTheRouteIsReturned()
         {
-            _getRouteResponse.Data.ApiKey.ShouldBe(_apiKey);
-            _getRouteResponse.Data.UpstreamRoute.ShouldBe(_upstreamApiUrl);
+            _getRouteResponse.Data.DownstreamUrl.ShouldBe(_apiKey);
+            _getRouteResponse.Data.UpstreamUrl.ShouldBe(_upstreamApiUrl);
         }
 
         private void GivenIHaveSetUpAnApiKeyAndUpstreamUrl(string apiKey, string upstreamUrl)
