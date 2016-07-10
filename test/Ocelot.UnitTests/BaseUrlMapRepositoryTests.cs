@@ -1,28 +1,28 @@
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.Router.UpstreamRouter;
+using Ocelot.Library.Infrastructure.BaseUrlRepository;
 using Shouldly;
 using Xunit;
 
 namespace Ocelot.UnitTests
 {
-    public class RouterTests
+    public class BaseUrlMapRepositoryTests
     {
-        private string _upstreamApiUrl;
-        private string _apiKey;
-        private IUpstreamRouter _router;
+        private string _upstreamBaseUrl;
+        private string _downstreamBaseUrl;
+        private IBaseUrlMapRepository _repository;
         private Response _response;
-        private Response<Route> _getRouteResponse;
-
-        public RouterTests() 
+        private Response<BaseUrlMap> _getRouteResponse;
+ 
+        public BaseUrlMapRepositoryTests() 
         {
-            _router = new InMemoryUpstreamRouter();
+            _repository = new InMemoryBaseUrlMapRepository();
         }
 
         [Fact]
         public void can_add_route()
         {
-            GivenIHaveAnUpstreamApi("http://www.someapi.com/api1");
-            GivenIWantToRouteRequestsToMyUpstreamApi("api");
+            GivenIHaveAnUpstreamBaseUrl("www.someapi.com");
+            GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api");
             WhenIAddTheConfiguration();
             ThenTheResponseIsSuccesful();
         }
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_get_route_by_key()
         {
-            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "http://www.someapi.com/api2");
+            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com");
             WhenIRetrieveTheRouteByKey();
             ThenTheRouteIsReturned();
         }
@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_error_response_when_key_already_used()
         {
-            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "http://www.someapi.com/api2");
+            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com");
             WhenITryToUseTheSameKey();
             ThenTheKeyHasAlreadyBeenUsed();
         }
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_error_response_if_key_doesnt_exist()
         {
-            GivenIWantToRouteRequestsToMyUpstreamApi("api");
+            GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api");
             WhenIRetrieveTheRouteByKey();
             ThenTheKeyDoesNotExist();
         }
@@ -66,41 +66,41 @@ namespace Ocelot.UnitTests
         private void ThenTheKeyDoesNotExist()
         {
             _getRouteResponse.ShouldNotBeNull();
-            _getRouteResponse.ShouldBeOfType<ErrorResponse<Route>>();
+            _getRouteResponse.ShouldBeOfType<ErrorResponse<BaseUrlMap>>();
             _getRouteResponse.Errors[0].Message.ShouldBe("This key does not exist");
         }
 
         private void WhenIRetrieveTheRouteByKey()
         {
-            _getRouteResponse = _router.GetRoute(_apiKey);
+            _getRouteResponse = _repository.GetBaseUrlMap(_downstreamBaseUrl);
         }
 
         private void ThenTheRouteIsReturned()
         {
-            _getRouteResponse.Data.DownstreamUrl.ShouldBe(_apiKey);
-            _getRouteResponse.Data.UpstreamUrl.ShouldBe(_upstreamApiUrl);
+            _getRouteResponse.Data.DownstreamBaseUrl.ShouldBe(_downstreamBaseUrl);
+            _getRouteResponse.Data.UpstreamBaseUrl.ShouldBe(_upstreamBaseUrl);
         }
 
         private void GivenIHaveSetUpAnApiKeyAndUpstreamUrl(string apiKey, string upstreamUrl)
         {
-            GivenIHaveAnUpstreamApi(upstreamUrl);
-            GivenIWantToRouteRequestsToMyUpstreamApi(apiKey);
+            GivenIHaveAnUpstreamBaseUrl(upstreamUrl);
+            GivenIWantToRouteRequestsFromMyDownstreamBaseUrl(apiKey);
             WhenIAddTheConfiguration();
         }
 
-        private void GivenIHaveAnUpstreamApi(string upstreamApiUrl)
+        private void GivenIHaveAnUpstreamBaseUrl(string upstreamApiUrl)
         {
-            _upstreamApiUrl = upstreamApiUrl;
+            _upstreamBaseUrl = upstreamApiUrl;
         }
 
-        private void GivenIWantToRouteRequestsToMyUpstreamApi(string apiKey)
+        private void GivenIWantToRouteRequestsFromMyDownstreamBaseUrl(string downstreamBaseUrl)
         {
-            _apiKey = apiKey;
+            _downstreamBaseUrl = downstreamBaseUrl;
         }
 
         private void WhenIAddTheConfiguration()
         {
-            _response = _router.AddRoute(_apiKey, _upstreamApiUrl);
+            _response = _repository.AddBaseUrlMap(new BaseUrlMap(_downstreamBaseUrl, _upstreamBaseUrl));
         }
 
         private void ThenTheResponseIsSuccesful()

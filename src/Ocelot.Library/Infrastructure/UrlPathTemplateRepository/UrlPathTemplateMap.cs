@@ -1,8 +1,8 @@
-namespace Ocelot.Library.Infrastructure.Router.UrlPathRouter
+namespace Ocelot.Library.Infrastructure.UrlPathTemplateRepository
 {
-    public class UrlPath
+    public class UrlPathTemplateMap
     {
-        public UrlPath(string downstreamUrlPathTemplate, string upstreamUrlPathTemplate)
+        public UrlPathTemplateMap(string downstreamUrlPathTemplate, string upstreamUrlPathTemplate)
         {
             DownstreamUrlPathTemplate = downstreamUrlPathTemplate;
             UpstreamUrlPathTemplate = upstreamUrlPathTemplate;

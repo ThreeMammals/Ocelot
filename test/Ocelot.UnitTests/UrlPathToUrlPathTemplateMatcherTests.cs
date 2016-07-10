@@ -1,10 +1,7 @@
-using System;
-using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.Router.UpstreamRouter;
-using Ocelot.Library.Infrastructure.Router.UrlPathMatcher;
+using Ocelot.Library.Infrastructure.UrlPathMatcher;
 using Shouldly;
 using Xunit;
-
+ 
 namespace Ocelot.UnitTests
 {
     public class UrlPathToUrlPathTemplateMatcherTests 

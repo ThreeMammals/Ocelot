@@ -1,28 +1,28 @@
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.Router.UrlPathRouter;
+using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
 using Shouldly;
 using Xunit;
 
 namespace Ocelot.UnitTests
 {
-    public class UrlPathRouterTests
+    public class UrlPathTemplateMapRepositoryTests
     {
-        private string _upstreamUrlPath;
+        private string _upstreamUrlPath; 
         private string _downstreamUrlPath;
-        private IUrlPathRouter _router;
+        private IUrlPathTemplateMapRepository _repository;
         private Response _response;
-        private Response<UrlPath> _getResponse;
+        private Response<UrlPathTemplateMap> _getResponse;
 
-        public UrlPathRouterTests() 
+        public UrlPathTemplateMapRepositoryTests() 
         {
-            _router = new InMemoryUrlPathRouter();
+            _repository = new InMemoryUrlPathTemplateMapRepository();
         }
 
         [Fact]
         public void can_add_url_path()
         {
-            GivenIHaveAnUpstreamUrlPath("api/products/products/{productId}");
-            GivenIWantToRouteRequestsToMyUpstreamUrlPath("api/products/{productId}");
+            GivenIHaveAnUpstreamUrlPath("/api/products/products/{productId}");
+            GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api/products/{productId}");
             WhenIAddTheConfiguration();
             ThenTheResponseIsSuccesful();
         }
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_get_url_path()
         {
-            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("api2", "http://www.someapi.com/api2");
+            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
             WhenIRetrieveTheUrlPathByDownstreamUrl();
             ThenTheUrlPathIsReturned();
         }
@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_error_response_when_url_path_already_used()
         {
-            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("api2", "http://www.someapi.com/api2");
+            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
             WhenITryToUseTheSameDownstreamUrl();
             ThenTheDownstreamUrlAlreadyBeenUsed();
         }
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_error_response_if_key_doesnt_exist()
         {
-            GivenIWantToRouteRequestsToMyUpstreamUrlPath("api");
+            GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api");
             WhenIRetrieveTheUrlPathByDownstreamUrl();
             ThenTheKeyDoesNotExist();
         }
@@ -66,13 +66,13 @@ namespace Ocelot.UnitTests
         private void ThenTheKeyDoesNotExist()
         {
             _getResponse.ShouldNotBeNull();
-            _getResponse.ShouldBeOfType<ErrorResponse<UrlPath>>();
+            _getResponse.ShouldBeOfType<ErrorResponse<UrlPathTemplateMap>>();
             _getResponse.Errors[0].Message.ShouldBe("This key does not exist");
         }
 
         private void WhenIRetrieveTheUrlPathByDownstreamUrl()
         {
-            _getResponse = _router.GetRoute(_downstreamUrlPath);
+            _getResponse = _repository.GetUrlPathTemplateMap(_downstreamUrlPath);
         }
 
         private void ThenTheUrlPathIsReturned()
@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests
 
         private void WhenIAddTheConfiguration()
         {
-            _response = _router.AddRoute(_downstreamUrlPath, _upstreamUrlPath);
+            _response = _repository.AddUrlPathTemplateMap(new UrlPathTemplateMap(_downstreamUrlPath, _upstreamUrlPath));
         }
 
         private void ThenTheResponseIsSuccesful()

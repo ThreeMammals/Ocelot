@@ -1,6 +1,6 @@
 using Ocelot.Library.Infrastructure.Responses;
 
-namespace Ocelot.Library.Infrastructure.Router.UrlPathRouter
+namespace Ocelot.Library.Infrastructure.UrlPathTemplateRepository
 {
     public class DownstreamUrlPathTemplateAlreadyExists : Error
     {

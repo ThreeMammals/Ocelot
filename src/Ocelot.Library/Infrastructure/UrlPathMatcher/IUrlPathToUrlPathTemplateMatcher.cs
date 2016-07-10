@@ -1,4 +1,4 @@
-namespace Ocelot.Library.Infrastructure.Router.UrlPathMatcher
+namespace Ocelot.Library.Infrastructure.UrlPathMatcher
 {
      public interface IUrlPathToUrlPathTemplateMatcher
      {
