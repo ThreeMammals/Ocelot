@@ -1,9 +1,14 @@
+using System;
+using System.Collections.Generic;
+
 namespace Ocelot.Library.Infrastructure.UrlPathMatcher
 {
      public class UrlPathToUrlPathTemplateMatcher : IUrlPathToUrlPathTemplateMatcher
     {
-        public bool Match(string urlPath, string urlPathTemplate)
+        public UrlPathMatch Match(string urlPath, string urlPathTemplate)
         {
+            var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
+
             urlPath = urlPath.ToLower();
 
             urlPathTemplate = urlPathTemplate.ToLower();
@@ -16,20 +21,52 @@ namespace Ocelot.Library.Infrastructure.UrlPathMatcher
                 {
                     if (IsPlaceholder(urlPathTemplate[counterForTemplate]))
                     {
+                        var variableName = GetPlaceholderVariableName(urlPathTemplate, counterForTemplate);
+                        
+                        var variableValue = GetPlaceholderVariableValue(urlPath, counterForUrl);
+
+                        var templateVariableNameAndValue = new TemplateVariableNameAndValue(variableName, variableValue);
+
+                        templateKeysAndValues.Add(templateVariableNameAndValue);
+
                         counterForTemplate = GetNextCounterPosition(urlPathTemplate, counterForTemplate, '}');
+
                         counterForUrl = GetNextCounterPosition(urlPath, counterForUrl, '/');
+
                         continue;
                     } 
                     else
                     {
-                        return false;
+                        return new UrlPathMatch(false, templateKeysAndValues);
                     } 
                 }
                 counterForUrl++;
             }
-            return true;
+            return new UrlPathMatch(true, templateKeysAndValues);
         }
 
+        private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)
+        {
+            var positionOfNextSlash = urlPath.IndexOf('/', counterForUrl);
+
+            if(positionOfNextSlash == -1)
+            {
+                positionOfNextSlash = urlPath.Length;
+            }
+            
+            var variableValue = urlPath.Substring(counterForUrl, positionOfNextSlash - counterForUrl);
+
+            return variableValue;
+        }
+
+        private string GetPlaceholderVariableName(string urlPathTemplate, int counterForTemplate)
+        {
+            var postitionOfPlaceHolderClosingBracket = urlPathTemplate.IndexOf('}', counterForTemplate) + 1;
+
+            var variableName = urlPathTemplate.Substring(counterForTemplate, postitionOfPlaceHolderClosingBracket - counterForTemplate);
+
+            return variableName;
+        }
         private int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
         {                        
             var closingPlaceHolderPositionOnTemplate = urlTemplate.IndexOf(delimiter, counterForTemplate);
