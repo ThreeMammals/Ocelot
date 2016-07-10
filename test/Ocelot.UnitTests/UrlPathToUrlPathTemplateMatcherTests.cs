@@ -1,18 +1,19 @@
 using System;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.Router.UpstreamRouter;
+using Ocelot.Library.Infrastructure.Router.UrlPathMatcher;
 using Shouldly;
 using Xunit;
 
 namespace Ocelot.UnitTests
 {
-    public class UrlMapperTests
+    public class UrlPathToUrlPathTemplateMatcherTests 
     {
-        private UrlToUrlTemplateMatcher _urlMapper;
+        private IUrlPathToUrlPathTemplateMatcher _urlMapper;
 
-        public UrlMapperTests()
+        public UrlPathToUrlPathTemplateMatcherTests()
         {
-            _urlMapper = new UrlToUrlTemplateMatcher();
+            _urlMapper = new UrlPathToUrlPathTemplateMatcher();
         }
 
         [Fact]
@@ -76,58 +77,6 @@ namespace Ocelot.UnitTests
             var downstreamTemplate = "api/product/products/{productId}/categories/{categoryId}/variant/";
             var result = _urlMapper.Match(downstreamUrl, downstreamTemplate);
             result.ShouldBeTrue();
-        }
-    }
-
-    public class UrlToUrlTemplateMatcher
-    {
-        public bool Match(string url, string urlTemplate)
-        {
-            url = url.ToLower();
-
-            urlTemplate = urlTemplate.ToLower();
-
-            int counterForUrl = 0;
-
-            for (int counterForTemplate = 0; counterForTemplate < urlTemplate.Length; counterForTemplate++)
-            {
-                if (CharactersDontMatch(urlTemplate[counterForTemplate], url[counterForUrl]) && ContinueScanningUrl(counterForUrl,url.Length))
-                {
-                    if (IsPlaceholder(urlTemplate[counterForTemplate]))
-                    {
-                        counterForTemplate = GetNextCounterPosition(urlTemplate, counterForTemplate, '}');
-                        counterForUrl = GetNextCounterPosition(url, counterForUrl, '/');
-                        continue;
-                    }
-                    else
-                    {
-                        return false;
-                    } 
-                }
-                counterForUrl++;
-            }
-            return true;
-        }
-
-        private int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
-        {                        
-            var closingPlaceHolderPositionOnTemplate = urlTemplate.IndexOf(delimiter, counterForTemplate);
-            return closingPlaceHolderPositionOnTemplate + 1; 
-        }
-
-        private bool CharactersDontMatch(char characterOne, char characterTwo)
-        {
-            return characterOne != characterTwo;
-        }
-
-        private bool ContinueScanningUrl(int counterForUrl, int urlLength)
-        {
-            return counterForUrl < urlLength;
-        }
-
-        private bool IsPlaceholder(char character)
-        {
-            return character == '{';
         }
     }
 } 
