@@ -14,5 +14,6 @@ namespace Ocelot.Library.Infrastructure.Responses
         }
 
         public T Data { get; private set; }
+        
     }
 } 

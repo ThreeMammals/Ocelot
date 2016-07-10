@@ -1,21 +1,21 @@
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.BaseUrlRepository;
+using Ocelot.Library.Infrastructure.HostUrlRepository;
 using Shouldly;
 using Xunit;
 
 namespace Ocelot.UnitTests
 {
-    public class BaseUrlMapRepositoryTests
+    public class HostUrlMapRepositoryTests
     {
         private string _upstreamBaseUrl;
         private string _downstreamBaseUrl;
-        private IBaseUrlMapRepository _repository;
+        private IHostUrlMapRepository _repository;
         private Response _response;
-        private Response<BaseUrlMap> _getRouteResponse;
+        private Response<HostUrlMap> _getRouteResponse;
  
-        public BaseUrlMapRepositoryTests() 
+        public HostUrlMapRepositoryTests() 
         {
-            _repository = new InMemoryBaseUrlMapRepository();
+            _repository = new InMemoryHostUrlMapRepository();
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests
         private void ThenTheKeyDoesNotExist()
         {
             _getRouteResponse.ShouldNotBeNull();
-            _getRouteResponse.ShouldBeOfType<ErrorResponse<BaseUrlMap>>();
+            _getRouteResponse.ShouldBeOfType<ErrorResponse<HostUrlMap>>();
             _getRouteResponse.Errors[0].Message.ShouldBe("This key does not exist");
         }
 
@@ -77,8 +77,8 @@ namespace Ocelot.UnitTests
 
         private void ThenTheRouteIsReturned()
         {
-            _getRouteResponse.Data.DownstreamBaseUrl.ShouldBe(_downstreamBaseUrl);
-            _getRouteResponse.Data.UpstreamBaseUrl.ShouldBe(_upstreamBaseUrl);
+            _getRouteResponse.Data.DownstreamHostUrl.ShouldBe(_downstreamBaseUrl);
+            _getRouteResponse.Data.UpstreamHostUrl.ShouldBe(_upstreamBaseUrl);
         }
 
         private void GivenIHaveSetUpAnApiKeyAndUpstreamUrl(string apiKey, string upstreamUrl)
@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests
 
         private void WhenIAddTheConfiguration()
         {
-            _response = _repository.AddBaseUrlMap(new BaseUrlMap(_downstreamBaseUrl, _upstreamBaseUrl));
+            _response = _repository.AddBaseUrlMap(new HostUrlMap(_downstreamBaseUrl, _upstreamBaseUrl));
         }
 
         private void ThenTheResponseIsSuccesful()

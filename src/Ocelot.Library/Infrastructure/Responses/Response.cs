@@ -15,5 +15,13 @@ namespace Ocelot.Library.Infrastructure.Responses
         } 
 
         public List<Error> Errors { get; private set; }
+
+        public bool IsError
+        {
+            get
+            {
+                return Errors.Count > 0;
+            }
+        }
     }
 }
