@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
@@ -32,8 +33,10 @@ namespace Ocelot
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            
+
             loggerFactory.AddDebug();
+
+            app.UseProxy();
 
             app.Run(async context =>
             {
