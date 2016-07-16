@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
 
     "testRunner": "xunit",
@@ -20,10 +20,11 @@
         "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
         "Microsoft.AspNetCore.Http": "1.0.0",
         "Ocelot.Library": "1.0.0-*",
-        "Ocelot": "1.0.0-*",
         "xunit": "2.1.0",
         "dotnet-test-xunit": "2.2.0-preview2-build1029",
-        "Shouldly": "2.8.0"
+        "Shouldly": "2.8.0",
+        "Ocelot": "1.0.0-*",
+        "Microsoft.AspNetCore.TestHost": "1.0.0"
     },
 
     "frameworks": {
