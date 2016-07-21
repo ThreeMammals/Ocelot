@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.HostUrlRepository;
 using Ocelot.Library.Infrastructure.UrlPathMatcher;
+using Ocelot.Library.Infrastructure.UrlPathReplacer;
 using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
 
 namespace Ocelot.Library.Middleware
@@ -13,15 +14,18 @@ namespace Ocelot.Library.Middleware
         private readonly IUrlPathToUrlPathTemplateMatcher _urlMatcher;
         private readonly IUrlPathTemplateMapRepository _urlPathRepository;
         private readonly IHostUrlMapRepository _hostUrlRepository;
+        private readonly IUpstreamUrlPathTemplateVariableReplacer _urlReplacer;
         public ProxyMiddleware(RequestDelegate next, 
             IUrlPathToUrlPathTemplateMatcher urlMatcher,
             IUrlPathTemplateMapRepository urlPathRepository,
-            IHostUrlMapRepository hostUrlRepository)
+            IHostUrlMapRepository hostUrlRepository,
+            IUpstreamUrlPathTemplateVariableReplacer urlReplacer)
         {
             _next = next;
             _urlMatcher = urlMatcher;
             _urlPathRepository = urlPathRepository;
             _hostUrlRepository = hostUrlRepository;
+            _urlReplacer = urlReplacer;
         }
 
         public async Task Invoke(HttpContext context)
@@ -29,18 +33,18 @@ namespace Ocelot.Library.Middleware
             
             var path = context.Request.Path.ToString();
 
-            var templates = _urlPathRepository.All;
+            var urlPathTemplateMaps = _urlPathRepository.All;
 
             UrlPathMatch urlPathMatch = null;
-            string upstreamPathUrl = string.Empty;
+            string upstreamPathUrlTemplate = string.Empty;
 
-            foreach (var template in templates.Data)
+            foreach (var template in urlPathTemplateMaps.Data)
             {
                 urlPathMatch = _urlMatcher.Match(path, template.DownstreamUrlPathTemplate);
 
                 if (urlPathMatch.Match)
                 {
-                    upstreamPathUrl = template.UpstreamUrlPathTemplate;
+                    upstreamPathUrlTemplate = template.UpstreamUrlPathTemplate;
                     break;
                 }
             }
@@ -50,11 +54,11 @@ namespace Ocelot.Library.Middleware
                 throw new Exception("BOOOM TING! no match");
             }
             
-            var upstreamHostUrl = _hostUrlRepository.GetBaseUrlMap(urlPathMatch.UrlPathTemplate);
+            var upstreamHostUrl = _hostUrlRepository.GetBaseUrlMap(urlPathMatch.DownstreamUrlPathTemplate);
 
-            //now map the variables from the url path to the upstream url path
-            
+            var pathUrl = _urlReplacer.ReplaceTemplateVariable(upstreamPathUrlTemplate, urlPathMatch);
 
+            //make a http request to this endpoint...maybe bring in a library
 
             await _next.Invoke(context);
         }

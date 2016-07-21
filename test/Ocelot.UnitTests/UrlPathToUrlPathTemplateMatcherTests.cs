@@ -19,6 +19,50 @@ namespace Ocelot.UnitTests
         }
 
         [Fact]
+        public void can_match_down_stream_url()
+        {
+            GivenIHaveADownstreamPath("");
+            GivenIHaveAnDownstreamPathTemplate("");
+            WhenIMatchThePaths();
+            ThenTheResultIsTrue();
+            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
+            ThenTheUrlPathTemplateIs("");
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_no_slash()
+        {
+            GivenIHaveADownstreamPath("api");
+            GivenIHaveAnDownstreamPathTemplate("api");
+            WhenIMatchThePaths();
+            ThenTheResultIsTrue();
+            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
+            ThenTheUrlPathTemplateIs("api");
+        }
+
+         [Fact]
+        public void can_match_down_stream_url_with_one_slash()
+        {
+            GivenIHaveADownstreamPath("api/");
+            GivenIHaveAnDownstreamPathTemplate("api/");
+            WhenIMatchThePaths();
+            ThenTheResultIsTrue();
+            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
+            ThenTheUrlPathTemplateIs("api/");
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_downstream_template()
+        {
+            GivenIHaveADownstreamPath("api/product/products/");
+            GivenIHaveAnDownstreamPathTemplate("api/product/products/");
+            WhenIMatchThePaths();
+            ThenTheResultIsTrue();
+            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
+            ThenTheUrlPathTemplateIs("api/product/products/");
+        }
+
+        [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_one_query_string_parameter()
         {
             GivenIHaveADownstreamPath("api/product/products/?soldout=false");
@@ -34,7 +78,7 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1")
+                new TemplateVariableNameAndValue("{productId}", "1")
             };
            
             GivenIHaveADownstreamPath("api/product/products/1/variants/?soldout=false");
@@ -50,7 +94,7 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1")
+                new TemplateVariableNameAndValue("{productId}", "1")
             };
 
             GivenIHaveADownstreamPath("api/product/products/1");
@@ -67,8 +111,8 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1"),
-                new TemplateVariableNameAndValue("{categoryid}", "2")
+                new TemplateVariableNameAndValue("{productId}", "1"),
+                new TemplateVariableNameAndValue("{categoryId}", "2")
             };
             
             GivenIHaveADownstreamPath("api/product/products/1/2");
@@ -85,8 +129,8 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1"),
-                new TemplateVariableNameAndValue("{categoryid}", "2")
+                new TemplateVariableNameAndValue("{productId}", "1"),
+                new TemplateVariableNameAndValue("{categoryId}", "2")
             };
             
             GivenIHaveADownstreamPath("api/product/products/1/categories/2");
@@ -103,9 +147,9 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1"),
-                new TemplateVariableNameAndValue("{categoryid}", "2"),
-                new TemplateVariableNameAndValue("{variantid}", "123")
+                new TemplateVariableNameAndValue("{productId}", "1"),
+                new TemplateVariableNameAndValue("{categoryId}", "2"),
+                new TemplateVariableNameAndValue("{variantId}", "123")
             };
             
             GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/123");
@@ -122,8 +166,8 @@ namespace Ocelot.UnitTests
         {
             var expectedTemplates = new List<TemplateVariableNameAndValue> 
             {
-                new TemplateVariableNameAndValue("{productid}", "1"),
-                new TemplateVariableNameAndValue("{categoryid}", "2")
+                new TemplateVariableNameAndValue("{productId}", "1"),
+                new TemplateVariableNameAndValue("{categoryId}", "2")
             };
             
             GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/");
@@ -147,7 +191,7 @@ namespace Ocelot.UnitTests
 
         private void ThenTheUrlPathTemplateIs(string expectedUrlPathTemplate)
         {
-            _result.UrlPathTemplate.ShouldBe(expectedUrlPathTemplate);
+            _result.DownstreamUrlPathTemplate.ShouldBe(expectedUrlPathTemplate);
         }
         private void GivenIHaveADownstreamPath(string downstreamPath)
         {
