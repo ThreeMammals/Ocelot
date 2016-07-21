@@ -12,23 +12,23 @@ namespace Ocelot.Library.Infrastructure.HostUrlRepository
         }
         public Response AddBaseUrlMap(HostUrlMap baseUrlMap)
         {
-            if(_routes.ContainsKey(baseUrlMap.DownstreamHostUrl)) 
+            if(_routes.ContainsKey(baseUrlMap.UrlPathTemplate)) 
             {
                 return new ErrorResponse(new List<Error>(){new HostUrlMapKeyAlreadyExists()});
             }
 
-            _routes.Add(baseUrlMap.DownstreamHostUrl, baseUrlMap.UpstreamHostUrl);
+            _routes.Add(baseUrlMap.UrlPathTemplate, baseUrlMap.UpstreamHostUrl);
 
             return new OkResponse();
         }
 
-        public Response<HostUrlMap> GetBaseUrlMap(string downstreamUrl)
+        public Response<HostUrlMap> GetBaseUrlMap(string urlPathTemplate)
         {
             string upstreamUrl = null;
 
-            if(_routes.TryGetValue(downstreamUrl, out upstreamUrl))
+            if(_routes.TryGetValue(urlPathTemplate, out upstreamUrl))
             {
-                return new OkResponse<HostUrlMap>(new HostUrlMap(downstreamUrl, upstreamUrl));
+                return new OkResponse<HostUrlMap>(new HostUrlMap(urlPathTemplate, upstreamUrl));
             }
     
             return new ErrorResponse<HostUrlMap>(new List<Error>(){new HostUrlMapKeyDoesNotExist()});

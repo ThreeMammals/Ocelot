@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests
 
         private void ThenTheRouteIsReturned()
         {
-            _getRouteResponse.Data.DownstreamHostUrl.ShouldBe(_downstreamBaseUrl);
+            _getRouteResponse.Data.UrlPathTemplate.ShouldBe(_downstreamBaseUrl);
             _getRouteResponse.Data.UpstreamHostUrl.ShouldBe(_upstreamBaseUrl);
         }
 

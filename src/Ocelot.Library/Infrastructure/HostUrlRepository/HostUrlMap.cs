@@ -2,13 +2,13 @@ namespace Ocelot.Library.Infrastructure.HostUrlRepository
 {
     public class HostUrlMap
     {
-        public HostUrlMap(string downstreamHostUrl, string upstreamHostUrl)
+        public HostUrlMap(string urlPathTemplate, string upstreamHostUrl)
         {
-            DownstreamHostUrl = downstreamHostUrl;
+            UrlPathTemplate = urlPathTemplate;
             UpstreamHostUrl = upstreamHostUrl;
         }
 
-        public string DownstreamHostUrl {get;private set;}
+        public string UrlPathTemplate {get;private set;}
         public string UpstreamHostUrl {get;private set;}
     }
 }

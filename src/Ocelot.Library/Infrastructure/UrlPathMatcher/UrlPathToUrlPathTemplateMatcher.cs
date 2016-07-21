@@ -7,6 +7,8 @@ namespace Ocelot.Library.Infrastructure.UrlPathMatcher
     {
         public UrlPathMatch Match(string urlPath, string urlPathTemplate)
         {
+            var urlPathTemplateCopy = urlPathTemplate;
+
             var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
 
             urlPath = urlPath.ToLower();
@@ -37,12 +39,12 @@ namespace Ocelot.Library.Infrastructure.UrlPathMatcher
                     } 
                     else
                     {
-                        return new UrlPathMatch(false, templateKeysAndValues);
+                        return new UrlPathMatch(false, templateKeysAndValues, string.Empty);
                     } 
                 }
                 counterForUrl++;
             }
-            return new UrlPathMatch(true, templateKeysAndValues);
+            return new UrlPathMatch(true, templateKeysAndValues, urlPathTemplateCopy);
         }
 
         private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)

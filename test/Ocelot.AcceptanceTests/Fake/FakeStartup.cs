@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ocelot.Library.Middleware;
 
-namespace Ocelot
+namespace Ocelot.AcceptanceTests.Fake
 {
-    public class Startup
+    public class FakeStartup
     {
-        public Startup(IHostingEnvironment env)
+        public FakeStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -32,16 +31,10 @@ namespace Ocelot
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
-            loggerFactory.AddDebug();
-
-            app.UseProxy();
-            //app.Run()
-            // app.Run(async context =>
-            // {
-            //     await context.Response.WriteAsync("Hello from Tom");
-            // });
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Hello from Laura");
+            });
         }
     }
 }

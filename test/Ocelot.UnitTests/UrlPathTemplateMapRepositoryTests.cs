@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
 using Shouldly;
@@ -12,6 +13,7 @@ namespace Ocelot.UnitTests
         private IUrlPathTemplateMapRepository _repository;
         private Response _response;
         private Response<UrlPathTemplateMap> _getResponse;
+        private Response<List<UrlPathTemplateMap>> _listResponse;
 
         public UrlPathTemplateMapRepositoryTests() 
         {
@@ -33,6 +35,14 @@ namespace Ocelot.UnitTests
             GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
             WhenIRetrieveTheUrlPathByDownstreamUrl();
             ThenTheUrlPathIsReturned();
+        }
+
+        [Fact]
+        public void can_get_all_urls()
+        {
+            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
+            WhenIRetrieveTheUrls();
+            ThenTheUrlsAreReturned();
         }
  
         [Fact]
@@ -75,10 +85,20 @@ namespace Ocelot.UnitTests
             _getResponse = _repository.GetUrlPathTemplateMap(_downstreamUrlPath);
         }
 
+           private void WhenIRetrieveTheUrls()
+        {
+            _listResponse = _repository.All;
+        }
+
         private void ThenTheUrlPathIsReturned()
         {
             _getResponse.Data.DownstreamUrlPathTemplate.ShouldBe(_downstreamUrlPath);
             _getResponse.Data.UpstreamUrlPathTemplate.ShouldBe(_upstreamUrlPath);
+        }
+
+        private void ThenTheUrlsAreReturned()
+        {
+            _listResponse.Data.Count.ShouldBeGreaterThan(0);
         }
 
         private void GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath(string downstream, string upstreamApiUrl)

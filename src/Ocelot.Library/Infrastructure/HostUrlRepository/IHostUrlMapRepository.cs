@@ -5,6 +5,6 @@ namespace Ocelot.Library.Infrastructure.HostUrlRepository
     public interface IHostUrlMapRepository
     {
         Response AddBaseUrlMap(HostUrlMap baseUrlMap);
-        Response<HostUrlMap> GetBaseUrlMap(string downstreamUrl);
+        Response<HostUrlMap> GetBaseUrlMap(string urlPathTemplate);
     }
 } 

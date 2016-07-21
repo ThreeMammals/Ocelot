@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Library.Infrastructure.UrlPathMatcher;
@@ -25,7 +26,7 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-
+            ThenTheUrlPathTemplateIs("api/product/products/");
         }
 
         [Fact]
@@ -41,6 +42,7 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}/variants/");
         }
 
         [Fact]
@@ -56,6 +58,8 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}");
+
         }
 
         [Fact]
@@ -72,6 +76,8 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}/{categoryId}");
+
         }
 
         [Fact]
@@ -88,6 +94,8 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}");
+
         }
 
         [Fact]
@@ -105,6 +113,8 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}");
+
         }
 
         [Fact]
@@ -121,6 +131,8 @@ namespace Ocelot.UnitTests
             WhenIMatchThePaths();
             ThenTheResultIsTrue();
             ThenTheTemplatesDictionaryIs(expectedTemplates);
+            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/");
+
         }
 
         private void ThenTheTemplatesDictionaryIs(List<TemplateVariableNameAndValue> expectedResults)
@@ -133,6 +145,10 @@ namespace Ocelot.UnitTests
             }
         }
 
+        private void ThenTheUrlPathTemplateIs(string expectedUrlPathTemplate)
+        {
+            _result.UrlPathTemplate.ShouldBe(expectedUrlPathTemplate);
+        }
         private void GivenIHaveADownstreamPath(string downstreamPath)
         {
             _downstreamPath = downstreamPath;
