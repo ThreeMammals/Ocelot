@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+   "Microsoft.NETCore.App": {
+            "version": "1.0.0",
+            "type": "platform"
+    },
+    "BenchmarkDotNet": "0.9.8",
+    "Ocelot.Library": "1.0.0-*"
+  },
+
+     "frameworks": {
+        "netcoreapp1.0": {
+            "imports": [
+                "dotnet5.6",
+                "portable-net45+win8"
+            ]
+        }
+    },
+
+  "tooling": {
+    "defaultNamespace": "Ocelot.Benchmarks"
+  }
+}
