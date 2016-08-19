@@ -8,6 +8,8 @@ using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
 
 namespace Ocelot.Library.Middleware
 {
+    using System.Net;
+
     public class ProxyMiddleware
     {
         private readonly RequestDelegate _next;
@@ -49,9 +51,10 @@ namespace Ocelot.Library.Middleware
                 }
             }
 
-            if (!urlPathMatch.Match)
+            if (urlPathMatch == null || !urlPathMatch.Match)
             {
-                throw new Exception("BOOOM TING! no match");
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
             
             var upstreamHostUrl = _hostUrlRepository.GetBaseUrlMap(urlPathMatch.DownstreamUrlPathTemplate);

@@ -14,7 +14,7 @@ Type=UrlPathToUrlPathTemplateMatcherBenchmarks  Mode=Throughput  Toolchain=Core
 GarbageCollection=Concurrent Workstation  
 
 ```
-     Method |      Median |    StdDev |        Mean |  StdError |    StdDev |       Op/s |         Min |          Q1 |      Median |          Q3 |         Max |
------------ |------------ |---------- |------------ |---------- |---------- |----------- |------------ |------------ |------------ |------------ |------------ |
- Benchmark1 | 180.4251 ns | 4.1294 ns | 180.4400 ns | 0.9234 ns | 4.1294 ns | 5542007.02 | 174.5503 ns | 177.6286 ns | 180.4251 ns | 182.5334 ns | 190.9792 ns |
- Benchmark2 | 178.7267 ns | 6.1670 ns | 180.6081 ns | 1.3148 ns | 6.1670 ns |  5536849.8 | 174.0821 ns | 177.0992 ns | 178.7267 ns | 182.1962 ns | 198.1308 ns |
+     Method |      Median |     StdDev |        Mean |  StdError |     StdDev |       Op/s |         Min |          Q1 |      Median |          Q3 |         Max |
+----------- |------------ |----------- |------------ |---------- |----------- |----------- |------------ |------------ |------------ |------------ |------------ |
+ Benchmark1 | 184.4215 ns |  5.1537 ns | 185.3322 ns | 1.1524 ns |  5.1537 ns | 5395716.74 | 178.2386 ns | 181.8117 ns | 184.4215 ns | 188.2762 ns | 196.7310 ns |
+ Benchmark2 | 186.1899 ns | 35.7006 ns | 202.4315 ns | 3.9425 ns | 35.7006 ns | 4939943.34 | 176.9750 ns | 182.9672 ns | 186.1899 ns | 205.8946 ns | 369.0701 ns |
