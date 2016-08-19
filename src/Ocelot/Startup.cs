@@ -8,6 +8,11 @@ using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
+    using Library.Infrastructure.HostUrlRepository;
+    using Library.Infrastructure.UrlPathMatcher;
+    using Library.Infrastructure.UrlPathReplacer;
+    using Library.Infrastructure.UrlPathTemplateRepository;
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -26,7 +31,11 @@ namespace Ocelot
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            
+            services.AddSingleton<IHostUrlMapRepository, InMemoryHostUrlMapRepository>();
+            services.AddSingleton<IUrlPathToUrlPathTemplateMatcher, UrlPathToUrlPathTemplateMatcher>();
+            services.AddSingleton<IHostUrlMapRepository, InMemoryHostUrlMapRepository>();
+            services.AddSingleton<IUpstreamUrlPathTemplateVariableReplacer, UpstreamUrlPathTemplateVariableReplacer>();
+            services.AddSingleton<IUrlPathTemplateMapRepository, InMemoryUrlPathTemplateMapRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,11 +46,6 @@ namespace Ocelot
             loggerFactory.AddDebug();
 
             app.UseProxy();
-            //app.Run()
-            // app.Run(async context =>
-            // {
-            //     await context.Response.WriteAsync("Hello from Tom");
-            // });
         }
     }
 }

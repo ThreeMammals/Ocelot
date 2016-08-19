@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
@@ -9,41 +8,40 @@ using Shouldly;
 
 namespace Ocelot.AcceptanceTests
 {
+    using System.Net;
+
     public class RouterTests : IDisposable
     {
-        private FakeService _fakeService;
+        private readonly FakeService _fakeService;
         private readonly TestServer _server;
         private readonly HttpClient _client;
+        private HttpResponseMessage _response;
 
         public RouterTests()
         {
             _server = new TestServer(new WebHostBuilder()
                 .UseStartup<Startup>());
+
             _client = _server.CreateClient();
+
             _fakeService = new FakeService();
         }
 
         [Fact]
-        public void hello_world()
+        public void should_return_response_404()
         {
-            var response = _client.GetAsync("/").Result;
-            response.EnsureSuccessStatusCode();
-
-            var responseString = response.Content.ReadAsStringAsync().Result;
-            responseString.ShouldBe("Hello from Tom");      
+            WhenIRequestTheUrl("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task can_route_request()
-        {            
-            _fakeService.Start("http://localhost:5001");
+        private void WhenIRequestTheUrl(string url)
+        {
+            _response = _client.GetAsync("/").Result;
+        }
 
-            // Act
-            var response = await _client.GetAsync("/");
-            response.EnsureSuccessStatusCode();
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            responseString.ShouldBe("Hello from Laura");
+        private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
+        {
+            _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
         public void Dispose()
