@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
 
     "testRunner": "xunit",
@@ -22,7 +22,8 @@
         "Ocelot.Library": "1.0.0-*",
         "xunit": "2.1.0",
         "dotnet-test-xunit": "2.2.0-preview2-build1029",
-        "Shouldly": "2.8.0"
+      "Shouldly": "2.8.0",
+      "TestStack.BDDfy": "4.3.1"
     },
 
     "frameworks": {
