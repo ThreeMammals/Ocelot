@@ -5,11 +5,13 @@ using Xunit;
 
 namespace Ocelot.UnitTests
 {
+    using TestStack.BDDfy;
+
     public class HostUrlMapRepositoryTests
     {
         private string _upstreamBaseUrl;
         private string _downstreamBaseUrl;
-        private IHostUrlMapRepository _repository;
+        private readonly IHostUrlMapRepository _repository;
         private Response _response;
         private Response<HostUrlMap> _getRouteResponse;
  
@@ -21,34 +23,38 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_add_route()
         {
-            GivenIHaveAnUpstreamBaseUrl("www.someapi.com");
-            GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api");
-            WhenIAddTheConfiguration();
-            ThenTheResponseIsSuccesful();
+            this.Given(x => x.GivenIHaveAnUpstreamBaseUrl("www.someapi.com"))
+                .And(x => x.GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api"))
+                .When(x => x.WhenIAddTheConfiguration())
+                .Then(x => x.ThenTheResponseIsSuccesful())
+                .BDDfy();
         }
 
         [Fact]
         public void can_get_route_by_key()
         {
-            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com");
-            WhenIRetrieveTheRouteByKey();
-            ThenTheRouteIsReturned();
+            this.Given(x => x.GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com"))
+                .When(x => x.WhenIRetrieveTheRouteByKey())
+                .Then(x => x.ThenTheRouteIsReturned())
+                .BDDfy();
         }
  
         [Fact]
         public void should_return_error_response_when_key_already_used()
         {
-            GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com");
-            WhenITryToUseTheSameKey();
-            ThenTheKeyHasAlreadyBeenUsed();
+            this.Given(x => x.GivenIHaveSetUpAnApiKeyAndUpstreamUrl("api2", "www.someapi.com"))
+                .When(x => x.WhenITryToUseTheSameKey())
+                .Then(x => x.ThenTheKeyHasAlreadyBeenUsed())
+                .BDDfy();
         }
 
         [Fact]
         public void should_return_error_response_if_key_doesnt_exist()
         {
-            GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api");
-            WhenIRetrieveTheRouteByKey();
-            ThenTheKeyDoesNotExist();
+            this.Given(x => x.GivenIWantToRouteRequestsFromMyDownstreamBaseUrl("api"))
+                .When(x => x.WhenIRetrieveTheRouteByKey())
+                .Then(x => x.ThenTheKeyDoesNotExist())
+                .BDDfy();
         }
 
         private void WhenITryToUseTheSameKey()

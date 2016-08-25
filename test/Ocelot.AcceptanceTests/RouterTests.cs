@@ -9,6 +9,7 @@ using Shouldly;
 namespace Ocelot.AcceptanceTests
 {
     using System.Net;
+    using TestStack.BDDfy;
 
     public class RouterTests : IDisposable
     {
@@ -30,8 +31,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_404()
         {
-            WhenIRequestTheUrl("/");
-            ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
+            this.When(x => x.WhenIRequestTheUrl("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
         }
 
         private void WhenIRequestTheUrl(string url)

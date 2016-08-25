@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Library.Infrastructure.UrlPathMatcher;
@@ -7,9 +6,11 @@ using Xunit;
 
 namespace Ocelot.UnitTests
 {
+    using TestStack.BDDfy;
+
     public class UrlPathToUrlPathTemplateMatcherTests 
     {
-        private IUrlPathToUrlPathTemplateMatcher _urlMapper;
+        private readonly IUrlPathToUrlPathTemplateMatcher _urlMapper;
         private string _downstreamPath;
         private string _downstreamPathTemplate;
         private UrlPathMatch _result;
@@ -21,56 +22,61 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_match_down_stream_url()
         {
-            GivenIHaveADownstreamPath("");
-            GivenIHaveAnDownstreamPathTemplate("");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-            ThenTheUrlPathTemplateIs("");
+            this.Given(x => x.GivenIHaveADownstreamPath(""))
+                .And(x => x.GivenIHaveAnDownstreamPathTemplate(""))
+                .When(x => x.WhenIMatchThePaths())
+                .And(x => x.ThenTheResultIsTrue())
+                .And(x => x.ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>()))
+                .And(x => x.ThenTheUrlPathTemplateIs(""))
+                .BDDfy();
         }
 
         [Fact]
         public void can_match_down_stream_url_with_no_slash()
         {
-            GivenIHaveADownstreamPath("api");
-            GivenIHaveAnDownstreamPathTemplate("api");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-            ThenTheUrlPathTemplateIs("api");
+            this.Given(x => x.GivenIHaveADownstreamPath("api"))
+                 .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api"))
+                 .When(x => x.WhenIMatchThePaths())
+                 .Then(x => x.ThenTheResultIsTrue())
+                 .And(x => x.ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>()))
+                 .And(x => x.ThenTheUrlPathTemplateIs("api"))
+                 .BDDfy();
         }
 
          [Fact]
         public void can_match_down_stream_url_with_one_slash()
         {
-            GivenIHaveADownstreamPath("api/");
-            GivenIHaveAnDownstreamPathTemplate("api/");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-            ThenTheUrlPathTemplateIs("api/");
+            this.Given(x => x.GivenIHaveADownstreamPath("api/"))
+                 .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/"))
+                 .When(x => x.WhenIMatchThePaths())
+                 .Then(x => x.ThenTheResultIsTrue())
+                 .And(x => x.ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>()))
+                 .And(x => x.ThenTheUrlPathTemplateIs("api/"))
+                 .BDDfy();
         }
 
         [Fact]
         public void can_match_down_stream_url_with_downstream_template()
         {
-            GivenIHaveADownstreamPath("api/product/products/");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-            ThenTheUrlPathTemplateIs("api/product/products/");
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/"))
+              .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/"))
+              .When(x => x.WhenIMatchThePaths())
+              .Then(x => x.ThenTheResultIsTrue())
+              .And(x => x.ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>()))
+              .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/"))
+              .BDDfy();
         }
 
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_one_query_string_parameter()
         {
-            GivenIHaveADownstreamPath("api/product/products/?soldout=false");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>());
-            ThenTheUrlPathTemplateIs("api/product/products/");
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/?soldout=false"))
+              .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/"))
+              .When(x => x.WhenIMatchThePaths())
+              .Then(x => x.ThenTheResultIsTrue())
+              .And(x => x.ThenTheTemplatesDictionaryIs(new List<TemplateVariableNameAndValue>()))
+              .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/"))
+              .BDDfy();
         }
 
         [Fact]
@@ -80,13 +86,14 @@ namespace Ocelot.UnitTests
             {
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
-           
-            GivenIHaveADownstreamPath("api/product/products/1/variants/?soldout=false");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/variants/");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}/variants/");
+
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/variants/?soldout=false"))
+              .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/variants/"))
+              .When(x => x.WhenIMatchThePaths())
+              .Then(x => x.ThenTheResultIsTrue())
+              .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+              .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}/variants/"))
+              .BDDfy();
         }
 
         [Fact]
@@ -97,13 +104,13 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            GivenIHaveADownstreamPath("api/product/products/1");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}");
-
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1"))
+               .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}"))
+               .When(x => x.WhenIMatchThePaths())
+               .Then(x => x.ThenTheResultIsTrue())
+               .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+               .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}"))
+               .BDDfy();
         }
 
         [Fact]
@@ -114,14 +121,14 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1"),
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
-            
-            GivenIHaveADownstreamPath("api/product/products/1/2");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/{categoryId}");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}/{categoryId}");
 
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/2"))
+                 .Given(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/{categoryId}"))
+                 .When(x => x.WhenIMatchThePaths())
+                 .Then(x => x.ThenTheResultIsTrue())
+                 .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+                 .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}/{categoryId}"))
+                 .BDDfy();
         }
 
         [Fact]
@@ -132,14 +139,14 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1"),
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
-            
-            GivenIHaveADownstreamPath("api/product/products/1/categories/2");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}");
 
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2"))
+                .And(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}"))
+                .When(x => x.WhenIMatchThePaths())
+                .Then(x => x.ThenTheResultIsTrue())
+                .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+                .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}"))
+                .BDDfy();
         }
 
         [Fact]
@@ -151,14 +158,14 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{categoryId}", "2"),
                 new TemplateVariableNameAndValue("{variantId}", "123")
             };
-            
-            GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/123");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}");
 
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/123"))
+                .And(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}"))
+                .When(x => x.WhenIMatchThePaths())
+                .Then(x => x.ThenTheResultIsTrue())
+                .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+                .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}"))
+                .BDDfy();
         }
 
         [Fact]
@@ -169,14 +176,14 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1"),
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
-            
-            GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/");
-            GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}/variant/");
-            WhenIMatchThePaths();
-            ThenTheResultIsTrue();
-            ThenTheTemplatesDictionaryIs(expectedTemplates);
-            ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/");
 
+            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/"))
+                 .And(x => x.GivenIHaveAnDownstreamPathTemplate("api/product/products/{productId}/categories/{categoryId}/variant/"))
+                 .When(x => x.WhenIMatchThePaths())
+                 .Then(x => x.ThenTheResultIsTrue())
+                 .And(x => x.ThenTheTemplatesDictionaryIs(expectedTemplates))
+                 .And(x => x.ThenTheUrlPathTemplateIs("api/product/products/{productId}/categories/{categoryId}/variant/"))
+                 .BDDfy();
         }
 
         private void ThenTheTemplatesDictionaryIs(List<TemplateVariableNameAndValue> expectedResults)
