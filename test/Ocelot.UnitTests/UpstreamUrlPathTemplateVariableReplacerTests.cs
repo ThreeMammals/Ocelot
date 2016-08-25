@@ -6,52 +6,58 @@ using Xunit;
 
 namespace Ocelot.UnitTests
 {
+    using TestStack.BDDfy;
+
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {
-
         private string _upstreamUrlPath;
         private UrlPathMatch _urlPathMatch;
         private string _result;
-        private IUpstreamUrlPathTemplateVariableReplacer _upstreamUrlPathReplacer;
+        private readonly IUpstreamUrlPathTemplateVariableReplacer _upstreamUrlPathReplacer;
 
         public UpstreamUrlPathTemplateVariableReplacerTests()
         {
             _upstreamUrlPathReplacer = new UpstreamUrlPathTemplateVariableReplacer();
         }
+
         [Fact]
         public void can_replace_no_template_variables()
         {
-            GivenThereIsAnUpstreamUrlPath("");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), ""));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath(""))
+                .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "")))
+                .When(x => x.WhenIReplaceTheTemplateVariables())
+                .Then(x => x.ThenTheUpstreamUrlPathIsReturned(""))
+                .BDDfy();
         }
 
         [Fact]
         public void can_replace_url_no_slash()
         {
-            GivenThereIsAnUpstreamUrlPath("api");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("api");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("api"))
+                .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api")))
+                .When(x => x.WhenIReplaceTheTemplateVariables())
+                .Then(x => x.ThenTheUpstreamUrlPathIsReturned("api"))
+                .BDDfy();
         }
 
         [Fact]
         public void can_replace_url_one_slash()
         {
-            GivenThereIsAnUpstreamUrlPath("api/");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api/"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("api/");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("api/"))
+                .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api/")))
+                .When(x => x.WhenIReplaceTheTemplateVariables())
+                .Then(x => x.ThenTheUpstreamUrlPathIsReturned("api/"))
+                .BDDfy();
         }
 
         [Fact]
         public void can_replace_url_multiple_slash()
         {
-            GivenThereIsAnUpstreamUrlPath("api/product/products/");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api/product/products/"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("api/product/products/");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("api/product/products/"))
+                .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, new List<TemplateVariableNameAndValue>(), "api/product/products/")))
+                .When(x => x.WhenIReplaceTheTemplateVariables())
+                .Then(x => x.ThenTheUpstreamUrlPathIsReturned("api/product/products/"))
+                .BDDfy();
         }
 
         [Fact]
@@ -62,10 +68,11 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("productservice/products/1/");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/"))
+             .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/")))
+             .When(x => x.WhenIReplaceTheTemplateVariables())
+             .Then(x => x.ThenTheUpstreamUrlPathIsReturned("productservice/products/1/"))
+             .BDDfy();
         }
 
         [Fact]
@@ -76,10 +83,11 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/variants");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("productservice/products/1/variants");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/variants"))
+             .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/")))
+             .When(x => x.WhenIReplaceTheTemplateVariables())
+             .Then(x => x.ThenTheUpstreamUrlPathIsReturned("productservice/products/1/variants"))
+             .BDDfy();
         }
 
         [Fact]
@@ -91,10 +99,11 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{variantId}", "12")
             };
 
-            GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/variants/{variantId}");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/{variantId}"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("productservice/products/1/variants/12");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("productservice/products/{productId}/variants/{variantId}"))
+             .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{productId}/{variantId}")))
+             .When(x => x.WhenIReplaceTheTemplateVariables())
+             .Then(x => x.ThenTheUpstreamUrlPathIsReturned("productservice/products/1/variants/12"))
+             .BDDfy();
         }
 
            [Fact]
@@ -107,10 +116,11 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{categoryId}", "34")
             };
 
-            GivenThereIsAnUpstreamUrlPath("productservice/category/{categoryId}/products/{productId}/variants/{variantId}");
-            GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{categoryId}/{productId}/{variantId}"));
-            WhenIReplaceTheTemplateVariables();
-            ThenTheUpstreamUrlPathIsReturned("productservice/category/34/products/1/variants/12");
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("productservice/category/{categoryId}/products/{productId}/variants/{variantId}"))
+             .And(x => x.GivenThereIsAUrlPathMatch(new UrlPathMatch(true, templateVariables, "api/products/{categoryId}/{productId}/{variantId}")))
+             .When(x => x.WhenIReplaceTheTemplateVariables())
+             .Then(x => x.ThenTheUpstreamUrlPathIsReturned("productservice/category/34/products/1/variants/12"))
+             .BDDfy();
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

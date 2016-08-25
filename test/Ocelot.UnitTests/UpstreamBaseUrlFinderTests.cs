@@ -3,14 +3,14 @@ using Ocelot.Library.Infrastructure.UrlFinder;
 using Ocelot.Library.Infrastructure.Responses;
 using Xunit;
 using Shouldly;
-using System;
+using TestStack.BDDfy;
 
 namespace Ocelot.UnitTests
 {
     public class UpstreamBaseUrlFinderTests
     {
-        private IUpstreamHostUrlFinder _upstreamBaseUrlFinder;
-        private IHostUrlMapRepository _hostUrlMapRepository;
+        private readonly IUpstreamHostUrlFinder _upstreamBaseUrlFinder;
+        private readonly IHostUrlMapRepository _hostUrlMapRepository;
         private string _downstreamBaseUrl;
         private Response<string> _result;
         public UpstreamBaseUrlFinderTests()
@@ -22,18 +22,20 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_find_base_url()
         {
-            GivenTheBaseUrlMapExists(new HostUrlMap("api.tom.com", "api.laura.com"));
-            GivenTheDownstreamBaseUrlIs("api.tom.com");
-            WhenIFindTheMatchingUpstreamBaseUrl();
-            ThenTheFollowingIsReturned("api.laura.com");
+            this.Given(x => x.GivenTheBaseUrlMapExists(new HostUrlMap("api.tom.com", "api.laura.com")))
+                .And(x => x.GivenTheDownstreamBaseUrlIs("api.tom.com"))
+                .When(x => x.WhenIFindTheMatchingUpstreamBaseUrl())
+                .Then(x => x.ThenTheFollowingIsReturned("api.laura.com"))
+                .BDDfy();
         }
 
         [Fact]
         public void cant_find_base_url()
         {
-            GivenTheDownstreamBaseUrlIs("api.tom.com");
-            WhenIFindTheMatchingUpstreamBaseUrl();
-            ThenAnErrorIsReturned();
+            this.Given(x => x.GivenTheDownstreamBaseUrlIs("api.tom.com"))
+                .When(x => x.WhenIFindTheMatchingUpstreamBaseUrl())
+                .Then(x => x.ThenAnErrorIsReturned())
+                .BDDfy();
         }
 
         private void ThenAnErrorIsReturned()

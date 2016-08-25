@@ -6,6 +6,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests
 {
+    using TestStack.BDDfy;
+
     public class UrlPathTemplateMapRepositoryTests
     {
         private string _upstreamUrlPath; 
@@ -23,42 +25,47 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_add_url_path()
         {
-            GivenIHaveAnUpstreamUrlPath("/api/products/products/{productId}");
-            GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api/products/{productId}");
-            WhenIAddTheConfiguration();
-            ThenTheResponseIsSuccesful();
+            this.Given(x => x.GivenIHaveAnUpstreamUrlPath("/api/products/products/{productId}"))
+                .And(x => x.GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api/products/{productId}"))
+                .When(x => x.WhenIAddTheConfiguration())
+                .Then(x => x.ThenTheResponseIsSuccesful())
+                .BDDfy();
         }
 
         [Fact]
         public void can_get_url_path()
         {
-            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
-            WhenIRetrieveTheUrlPathByDownstreamUrl();
-            ThenTheUrlPathIsReturned();
+            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
+                 .When(x => x.WhenIRetrieveTheUrlPathByDownstreamUrl())
+                 .Then(x => x.ThenTheUrlPathIsReturned())
+                 .BDDfy();
         }
 
         [Fact]
         public void can_get_all_urls()
         {
-            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
-            WhenIRetrieveTheUrls();
-            ThenTheUrlsAreReturned();
+            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
+                 .When(x => x.WhenIRetrieveTheUrls())
+                 .Then(x => x.ThenTheUrlsAreReturned())
+                 .BDDfy();
         }
  
         [Fact]
         public void should_return_error_response_when_url_path_already_used()
         {
-            GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2");
-            WhenITryToUseTheSameDownstreamUrl();
-            ThenTheDownstreamUrlAlreadyBeenUsed();
+            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
+                 .When(x => x.WhenITryToUseTheSameDownstreamUrl())
+                 .Then(x => x.ThenTheDownstreamUrlAlreadyBeenUsed())
+                 .BDDfy();
         }
 
         [Fact]
         public void should_return_error_response_if_key_doesnt_exist()
         {
-            GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api");
-            WhenIRetrieveTheUrlPathByDownstreamUrl();
-            ThenTheKeyDoesNotExist();
+            this.Given(x => x.GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api"))
+                 .When(x => x.WhenIRetrieveTheUrlPathByDownstreamUrl())
+                 .Then(x => x.ThenTheKeyDoesNotExist())
+                 .BDDfy();
         }
 
         private void WhenITryToUseTheSameDownstreamUrl()

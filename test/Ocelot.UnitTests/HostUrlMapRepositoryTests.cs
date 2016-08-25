@@ -11,7 +11,7 @@ namespace Ocelot.UnitTests
     {
         private string _upstreamBaseUrl;
         private string _downstreamBaseUrl;
-        private IHostUrlMapRepository _repository;
+        private readonly IHostUrlMapRepository _repository;
         private Response _response;
         private Response<HostUrlMap> _getRouteResponse;
  
