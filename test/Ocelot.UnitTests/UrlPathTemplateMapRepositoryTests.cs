@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
+using Ocelot.Library.Infrastructure.UrlTemplateRepository;
 using Shouldly;
 using Xunit;
 
@@ -10,41 +10,31 @@ namespace Ocelot.UnitTests
 
     public class UrlPathTemplateMapRepositoryTests
     {
-        private string _upstreamUrlPath; 
-        private string _downstreamUrlPath;
-        private IUrlPathTemplateMapRepository _repository;
+        private string _upstreamUrlPathTemplate; 
+        private string _downstreamUrlTemplate;
+        private IUrlTemplateMapRepository _repository;
         private Response _response;
-        private Response<UrlPathTemplateMap> _getResponse;
-        private Response<List<UrlPathTemplateMap>> _listResponse;
+        private Response<List<UrlTemplateMap>> _listResponse;
 
         public UrlPathTemplateMapRepositoryTests() 
         {
-            _repository = new InMemoryUrlPathTemplateMapRepository();
+            _repository = new InMemoryUrlTemplateMapRepository();
         }
 
         [Fact]
         public void can_add_url_path()
         {
-            this.Given(x => x.GivenIHaveAnUpstreamUrlPath("/api/products/products/{productId}"))
-                .And(x => x.GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api/products/{productId}"))
+            this.Given(x => x.GivenIHaveAnUpstreamUrlPathTemplate("/api/products/products/{productId}"))
+                .And(x => x.GivenADownstreamUrlTemplate("/api/products/{productId}"))
                 .When(x => x.WhenIAddTheConfiguration())
                 .Then(x => x.ThenTheResponseIsSuccesful())
                 .BDDfy();
         }
 
         [Fact]
-        public void can_get_url_path()
-        {
-            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
-                 .When(x => x.WhenIRetrieveTheUrlPathByDownstreamUrl())
-                 .Then(x => x.ThenTheUrlPathIsReturned())
-                 .BDDfy();
-        }
-
-        [Fact]
         public void can_get_all_urls()
         {
-            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
+            this.Given(x => x.GivenIHaveSetUpADownstreamUrlTemplateAndAnUpstreamUrlPathTemplate("/api2", "http://www.someapi.com/api2"))
                  .When(x => x.WhenIRetrieveTheUrls())
                  .Then(x => x.ThenTheUrlsAreReturned())
                  .BDDfy();
@@ -53,18 +43,9 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_error_response_when_url_path_already_used()
         {
-            this.Given(x => x.GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath("/api2", "http://www.someapi.com/api2"))
+            this.Given(x => x.GivenIHaveSetUpADownstreamUrlTemplateAndAnUpstreamUrlPathTemplate("/api2", "http://www.someapi.com/api2"))
                  .When(x => x.WhenITryToUseTheSameDownstreamUrl())
                  .Then(x => x.ThenTheDownstreamUrlAlreadyBeenUsed())
-                 .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_response_if_key_doesnt_exist()
-        {
-            this.Given(x => x.GivenIWantToRouteRequestsToMyUpstreamUrlPath("/api"))
-                 .When(x => x.WhenIRetrieveTheUrlPathByDownstreamUrl())
-                 .Then(x => x.ThenTheKeyDoesNotExist())
                  .BDDfy();
         }
 
@@ -80,27 +61,9 @@ namespace Ocelot.UnitTests
             _response.Errors[0].Message.ShouldBe("This key has already been used");
         }
 
-        private void ThenTheKeyDoesNotExist()
-        {
-            _getResponse.ShouldNotBeNull();
-            _getResponse.ShouldBeOfType<ErrorResponse<UrlPathTemplateMap>>();
-            _getResponse.Errors[0].Message.ShouldBe("This key does not exist");
-        }
-
-        private void WhenIRetrieveTheUrlPathByDownstreamUrl()
-        {
-            _getResponse = _repository.GetUrlPathTemplateMap(_downstreamUrlPath);
-        }
-
-           private void WhenIRetrieveTheUrls()
+        private void WhenIRetrieveTheUrls()
         {
             _listResponse = _repository.All;
-        }
-
-        private void ThenTheUrlPathIsReturned()
-        {
-            _getResponse.Data.DownstreamUrlPathTemplate.ShouldBe(_downstreamUrlPath);
-            _getResponse.Data.UpstreamUrlPathTemplate.ShouldBe(_upstreamUrlPath);
         }
 
         private void ThenTheUrlsAreReturned()
@@ -108,26 +71,26 @@ namespace Ocelot.UnitTests
             _listResponse.Data.Count.ShouldBeGreaterThan(0);
         }
 
-        private void GivenIHaveSetUpADownstreamUrlPathAndAnUpstreamUrlPath(string downstream, string upstreamApiUrl)
+        private void GivenIHaveSetUpADownstreamUrlTemplateAndAnUpstreamUrlPathTemplate(string downstreamUrlTemplate, string upstreamUrlPathTemplate)
         {
-            GivenIHaveAnUpstreamUrlPath(upstreamApiUrl);
-            GivenIWantToRouteRequestsToMyUpstreamUrlPath(downstream);
+            GivenIHaveAnUpstreamUrlPathTemplate(upstreamUrlPathTemplate);
+            GivenADownstreamUrlTemplate(downstreamUrlTemplate);
             WhenIAddTheConfiguration();
         }
 
-        private void GivenIHaveAnUpstreamUrlPath(string upstreamApiUrl)
+        private void GivenIHaveAnUpstreamUrlPathTemplate(string upstreamUrlPathTemplate)
         {
-            _upstreamUrlPath = upstreamApiUrl;
+            _upstreamUrlPathTemplate = upstreamUrlPathTemplate;
         }
 
-        private void GivenIWantToRouteRequestsToMyUpstreamUrlPath(string apiKey)
+        private void GivenADownstreamUrlTemplate(string downstreamUrlTemplate)
         {
-            _downstreamUrlPath = apiKey;
+            _downstreamUrlTemplate = downstreamUrlTemplate;
         }
 
         private void WhenIAddTheConfiguration()
         {
-            _response = _repository.AddUrlPathTemplateMap(new UrlPathTemplateMap(_downstreamUrlPath, _upstreamUrlPath));
+            _response = _repository.AddUrlTemplateMap(new UrlTemplateMap(_downstreamUrlTemplate, _upstreamUrlPathTemplate));
         }
 
         private void ThenTheResponseIsSuccesful()

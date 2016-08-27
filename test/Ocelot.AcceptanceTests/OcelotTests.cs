@@ -11,14 +11,14 @@ namespace Ocelot.AcceptanceTests
     using System.Net;
     using TestStack.BDDfy;
 
-    public class RouterTests : IDisposable
+    public class OcelotTests : IDisposable
     {
         private readonly FakeService _fakeService;
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private HttpResponseMessage _response;
 
-        public RouterTests()
+        public OcelotTests()
         {
             _server = new TestServer(new WebHostBuilder()
                 .UseStartup<Startup>());
@@ -36,6 +36,15 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+                [Fact]
+        public void should_return_response_200()
+        {
+            this.When(x => x.WhenIRequestTheUrl("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
         private void WhenIRequestTheUrl(string url)
         {
             _response = _client.GetAsync("/").Result;
@@ -44,6 +53,11 @@ namespace Ocelot.AcceptanceTests
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
+        }
+
+        private void ThenTheResponseBodyShouldBe(string expectedBody)
+        {
+            _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
         }
 
         public void Dispose()

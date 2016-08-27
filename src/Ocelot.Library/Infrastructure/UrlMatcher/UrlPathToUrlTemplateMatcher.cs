@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ocelot.Library.Infrastructure.UrlPathMatcher
+namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
-     public class UrlPathToUrlPathTemplateMatcher : IUrlPathToUrlPathTemplateMatcher
+     public class UrlPathToUrlTemplateMatcher : IUrlPathToUrlTemplateMatcher
     {
-        public UrlPathMatch Match(string downstreamUrlPath, string downstreamUrlPathTemplate)
+        public UrlMatch Match(string downstreamUrlPath, string downstreamUrlTemplate)
         {
-            var urlPathTemplateCopy = downstreamUrlPathTemplate;
+            var urlPathTemplateCopy = downstreamUrlTemplate;
 
             var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
 
             int counterForUrl = 0;
 
-            for (int counterForTemplate = 0; counterForTemplate < downstreamUrlPathTemplate.Length; counterForTemplate++)
+            for (int counterForTemplate = 0; counterForTemplate < downstreamUrlTemplate.Length; counterForTemplate++)
             {
-                if (CharactersDontMatch(downstreamUrlPathTemplate[counterForTemplate], downstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,downstreamUrlPath.Length))
+                if (CharactersDontMatch(downstreamUrlTemplate[counterForTemplate], downstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,downstreamUrlPath.Length))
                 {
-                    if (IsPlaceholder(downstreamUrlPathTemplate[counterForTemplate]))
+                    if (IsPlaceholder(downstreamUrlTemplate[counterForTemplate]))
                     {
-                        var variableName = GetPlaceholderVariableName(downstreamUrlPathTemplate, counterForTemplate);
+                        var variableName = GetPlaceholderVariableName(downstreamUrlTemplate, counterForTemplate);
                         
                         var variableValue = GetPlaceholderVariableValue(downstreamUrlPath, counterForUrl);
 
@@ -27,7 +27,7 @@ namespace Ocelot.Library.Infrastructure.UrlPathMatcher
 
                         templateKeysAndValues.Add(templateVariableNameAndValue);
 
-                        counterForTemplate = GetNextCounterPosition(downstreamUrlPathTemplate, counterForTemplate, '}');
+                        counterForTemplate = GetNextCounterPosition(downstreamUrlTemplate, counterForTemplate, '}');
 
                         counterForUrl = GetNextCounterPosition(downstreamUrlPath, counterForUrl, '/');
 
@@ -35,12 +35,12 @@ namespace Ocelot.Library.Infrastructure.UrlPathMatcher
                     } 
                     else
                     {
-                        return new UrlPathMatch(false, templateKeysAndValues, string.Empty);
+                        return new UrlMatch(false, templateKeysAndValues, string.Empty);
                     } 
                 }
                 counterForUrl++;
             }
-            return new UrlPathMatch(true, templateKeysAndValues, urlPathTemplateCopy);
+            return new UrlMatch(true, templateKeysAndValues, urlPathTemplateCopy);
         }
 
         private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)

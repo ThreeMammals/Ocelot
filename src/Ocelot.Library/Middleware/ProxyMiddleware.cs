@@ -1,10 +1,8 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Infrastructure.HostUrlRepository;
-using Ocelot.Library.Infrastructure.UrlPathMatcher;
-using Ocelot.Library.Infrastructure.UrlPathReplacer;
-using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
+using Ocelot.Library.Infrastructure.UrlMatcher;
+using Ocelot.Library.Infrastructure.UrlTemplateRepository;
+using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
 {
@@ -13,53 +11,48 @@ namespace Ocelot.Library.Middleware
     public class ProxyMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IUrlPathToUrlPathTemplateMatcher _urlMatcher;
-        private readonly IUrlPathTemplateMapRepository _urlPathRepository;
-        private readonly IHostUrlMapRepository _hostUrlRepository;
-        private readonly IUpstreamUrlPathTemplateVariableReplacer _urlReplacer;
+        private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
+        private readonly IUrlTemplateMapRepository _urlTemplateMapRepository;
+        private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
         public ProxyMiddleware(RequestDelegate next, 
-            IUrlPathToUrlPathTemplateMatcher urlMatcher,
-            IUrlPathTemplateMapRepository urlPathRepository,
-            IHostUrlMapRepository hostUrlRepository,
-            IUpstreamUrlPathTemplateVariableReplacer urlReplacer)
+            IUrlPathToUrlTemplateMatcher urlMatcher,
+            IUrlTemplateMapRepository urlPathRepository,
+            IDownstreamUrlTemplateVariableReplacer urlReplacer)
         {
             _next = next;
             _urlMatcher = urlMatcher;
-            _urlPathRepository = urlPathRepository;
-            _hostUrlRepository = hostUrlRepository;
+            _urlTemplateMapRepository = urlPathRepository;
             _urlReplacer = urlReplacer;
         }
 
         public async Task Invoke(HttpContext context)
-        {
-            
-            var path = context.Request.Path.ToString();
+        {     
+            var downstreamUrlPath = context.Request.Path.ToString();
 
-            var urlPathTemplateMaps = _urlPathRepository.All;
+            var upstreamUrlTemplates = _urlTemplateMapRepository.All;
 
-            UrlPathMatch urlPathMatch = null;
-            string upstreamPathUrlTemplate = string.Empty;
+            UrlMatch urlMatch = null;
 
-            foreach (var template in urlPathTemplateMaps.Data)
+            string downstreamUrlTemplate = string.Empty;
+
+            foreach (var template in upstreamUrlTemplates.Data)
             {
-                urlPathMatch = _urlMatcher.Match(path, template.DownstreamUrlPathTemplate);
+                urlMatch = _urlMatcher.Match(downstreamUrlPath, template.DownstreamUrlTemplate);
 
-                if (urlPathMatch.Match)
+                if (urlMatch.Match)
                 {
-                    upstreamPathUrlTemplate = template.UpstreamUrlPathTemplate;
+                    downstreamUrlTemplate = template.DownstreamUrlTemplate;
                     break;
                 }
             }
 
-            if (urlPathMatch == null || !urlPathMatch.Match)
+            if (urlMatch == null || !urlMatch.Match)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
             
-            var upstreamHostUrl = _hostUrlRepository.GetBaseUrlMap(urlPathMatch.DownstreamUrlPathTemplate);
-
-            var pathUrl = _urlReplacer.ReplaceTemplateVariable(upstreamPathUrlTemplate, urlPathMatch);
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamUrlTemplate, urlMatch);
 
             //make a http request to this endpoint...maybe bring in a library
 

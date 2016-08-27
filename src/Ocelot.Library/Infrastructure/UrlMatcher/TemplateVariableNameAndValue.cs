@@ -1,4 +1,4 @@
-namespace Ocelot.Library.Infrastructure.UrlPathMatcher
+namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
     public class TemplateVariableNameAndValue
     {
