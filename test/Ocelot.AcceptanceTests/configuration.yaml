@@ -1,0 +1,3 @@
+﻿routes:
+     - downstream: "productservice/category/{categoryId}/products/{productId}/variants/{variantId}"
+       upstream: "https://www.moonpig.com/api/products/{categoryId}/{productId}/{variantId}"

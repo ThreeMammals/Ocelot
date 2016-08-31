@@ -36,7 +36,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-                [Fact]
+        [Fact]
         public void should_return_response_200()
         {
             this.When(x => x.WhenIRequestTheUrl("/"))

@@ -8,6 +8,7 @@ using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
+    using Library.Infrastructure.Configuration;
     using Library.Infrastructure.UrlMatcher;
     using Library.Infrastructure.UrlTemplateReplacer;
     using Library.Infrastructure.UrlTemplateRepository;
@@ -20,6 +21,7 @@ namespace Ocelot
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddYamlFile("configuration.yaml")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -29,6 +31,10 @@ namespace Ocelot
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+
+            services.Configure<Configuration>(Configuration);
+
             // Add framework services.
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();

@@ -7,6 +7,8 @@ using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 namespace Ocelot.Library.Middleware
 {
     using System.Net;
+    using Infrastructure.Configuration;
+    using Microsoft.Extensions.Options;
 
     public class ProxyMiddleware
     {
@@ -14,19 +16,23 @@ namespace Ocelot.Library.Middleware
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private readonly IUrlTemplateMapRepository _urlTemplateMapRepository;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
+        private readonly IOptions<Configuration> _optionsAccessor;
+
         public ProxyMiddleware(RequestDelegate next, 
             IUrlPathToUrlTemplateMatcher urlMatcher,
             IUrlTemplateMapRepository urlPathRepository,
-            IDownstreamUrlTemplateVariableReplacer urlReplacer)
+            IDownstreamUrlTemplateVariableReplacer urlReplacer, IOptions<Configuration> optionsAccessor)
         {
             _next = next;
             _urlMatcher = urlMatcher;
             _urlTemplateMapRepository = urlPathRepository;
             _urlReplacer = urlReplacer;
+            _optionsAccessor = optionsAccessor;
         }
 
         public async Task Invoke(HttpContext context)
         {     
+            
             var downstreamUrlPath = context.Request.Path.ToString();
 
             var upstreamUrlTemplates = _urlTemplateMapRepository.All;
