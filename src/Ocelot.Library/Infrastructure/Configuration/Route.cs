@@ -2,17 +2,7 @@
 {
     public class Route
     {
-        public Route()
-        {
-
-        }
-        public Route(string downstream, string upstream)
-        {
-            Downstream = downstream;
-            Upstream = upstream;
-        }
-
-        public string Downstream { get; private set; }
-        public string Upstream { get; private set; }
+        public string Downstream { get; set; }
+        public string Upstream { get; set; }
     }
 }
