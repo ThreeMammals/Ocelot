@@ -1,17 +1,17 @@
 using System.Text;
-using Ocelot.Library.Infrastructure.UrlMatcher;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 
 namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
 {
     public class DownstreamUrlTemplateVariableReplacer : IDownstreamUrlTemplateVariableReplacer
     {
-        public string ReplaceTemplateVariable(UrlMatch urlMatch)
+        public string ReplaceTemplateVariable(DownstreamRoute downstreamRoute)
         {
             var upstreamUrl = new StringBuilder();
 
-            upstreamUrl.Append(urlMatch.DownstreamUrlTemplate);
+            upstreamUrl.Append(downstreamRoute.DownstreamUrlTemplate);
 
-            foreach (var templateVarAndValue in urlMatch.TemplateVariableNameAndValues)
+            foreach (var templateVarAndValue in downstreamRoute.TemplateVariableNameAndValues)
             {
                 upstreamUrl.Replace(templateVarAndValue.TemplateVariableName, templateVarAndValue.TemplateVariableValue);
             }

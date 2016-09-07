@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot
@@ -36,6 +37,7 @@ namespace Ocelot
             // Add framework services.
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
+            services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,56 +1,62 @@
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Infrastructure.UrlMatcher;
+using Microsoft.Extensions.Options;
+using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
 {
-    using System.Net;
-    using Infrastructure.Configuration;
-    using Microsoft.Extensions.Options;
-
     public class ProxyMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
         private readonly IOptions<Configuration> _configuration;
+        private readonly IDownstreamRouteFinder _downstreamRouteFinder;
 
         public ProxyMiddleware(RequestDelegate next, 
-            IUrlPathToUrlTemplateMatcher urlMatcher,
-            IDownstreamUrlTemplateVariableReplacer urlReplacer, IOptions<Configuration> configuration)
+            IDownstreamUrlTemplateVariableReplacer urlReplacer, 
+            IOptions<Configuration> configuration, 
+            IDownstreamRouteFinder downstreamRouteFinder)
         {
             _next = next;
-            _urlMatcher = urlMatcher;
             _urlReplacer = urlReplacer;
             _configuration = configuration;
+            _downstreamRouteFinder = downstreamRouteFinder;
         }
 
         public async Task Invoke(HttpContext context)
         {   
             var upstreamUrlPath = context.Request.Path.ToString();
 
-            UrlMatch urlMatch = null;
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath);
 
-            foreach (var template in _configuration.Value.ReRoutes)
-            {
-                urlMatch = _urlMatcher.Match(upstreamUrlPath, template.UpstreamTemplate);
-
-                if (urlMatch.Match)
-                {
-                    break;
-                }
-            }
-
-            if (urlMatch == null || !urlMatch.Match)
+            if (downstreamRoute.IsError)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
-            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(urlMatch);
+
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamRoute.Data);
 
             //make a http request to this endpoint...maybe bring in a library
+            using (var httpClient = new HttpClient())
+            {
+                var httpMethod = new HttpMethod(context.Request.Method);
+
+                var httpRequestMessage = new HttpRequestMessage(httpMethod, downstreamUrl);
+
+                var response = await httpClient.SendAsync(httpRequestMessage);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    context.Response.StatusCode = (int)response.StatusCode;
+                    return;
+                }
+                await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
+            }
 
             await _next.Invoke(context);
         }

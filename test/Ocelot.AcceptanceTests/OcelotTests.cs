@@ -90,7 +90,7 @@ namespace Ocelot.AcceptanceTests
 
         private void WhenIRequestTheUrlOnTheApiGateway(string url)
         {
-            _response = _client.GetAsync("/").Result;
+            _response = _client.GetAsync(url).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

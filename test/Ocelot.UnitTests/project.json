@@ -24,7 +24,8 @@
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Shouldly": "2.8.0",
     "TestStack.BDDfy": "4.3.1",
-    "YamlDotNet":  "3.9.0" 
+    "YamlDotNet": "3.9.0",
+    "Moq": "4.6.38-alpha" 
   },
 
     "frameworks": {
