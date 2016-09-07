@@ -41,12 +41,12 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
                 .And(x => x.GivenThereIsAConfiguration(new Configuration
                 {
-                    Routes = new List<Route>
+                    ReRoutes = new List<ReRoute>
                     {
-                        new Route
+                        new ReRoute
                         {
-                            Downstream = "http://localhost:51879/",
-                            Upstream = "/heee"
+                            DownstreamTemplate = "http://localhost:51879/",
+                            UpstreamTemplate = "/"
                         }
                     }
                 }))

@@ -6,9 +6,9 @@ namespace Ocelot.Library.Infrastructure.Configuration
     {
         public Configuration()
         {
-            Routes = new List<Route>();
+            ReRoutes = new List<ReRoute>();
         }
 
-        public List<Route> Routes { get; set; }
+        public List<ReRoute> ReRoutes { get; set; }
     }
 }

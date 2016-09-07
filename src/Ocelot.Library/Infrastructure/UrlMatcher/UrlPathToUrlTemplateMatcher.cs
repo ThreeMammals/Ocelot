@@ -5,31 +5,31 @@ namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
      public class UrlPathToUrlTemplateMatcher : IUrlPathToUrlTemplateMatcher
     {
-        public UrlMatch Match(string downstreamUrlPath, string downstreamUrlTemplate)
+        public UrlMatch Match(string upstreamUrlPath, string upstreamUrlTemplate)
         {
-            var urlPathTemplateCopy = downstreamUrlTemplate;
+            var urlPathTemplateCopy = upstreamUrlTemplate;
 
             var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
 
             int counterForUrl = 0;
 
-            for (int counterForTemplate = 0; counterForTemplate < downstreamUrlTemplate.Length; counterForTemplate++)
+            for (int counterForTemplate = 0; counterForTemplate < upstreamUrlTemplate.Length; counterForTemplate++)
             {
-                if (CharactersDontMatch(downstreamUrlTemplate[counterForTemplate], downstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,downstreamUrlPath.Length))
+                if (CharactersDontMatch(upstreamUrlTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
                 {
-                    if (IsPlaceholder(downstreamUrlTemplate[counterForTemplate]))
+                    if (IsPlaceholder(upstreamUrlTemplate[counterForTemplate]))
                     {
-                        var variableName = GetPlaceholderVariableName(downstreamUrlTemplate, counterForTemplate);
+                        var variableName = GetPlaceholderVariableName(upstreamUrlTemplate, counterForTemplate);
                         
-                        var variableValue = GetPlaceholderVariableValue(downstreamUrlPath, counterForUrl);
+                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPath, counterForUrl);
 
                         var templateVariableNameAndValue = new TemplateVariableNameAndValue(variableName, variableValue);
 
                         templateKeysAndValues.Add(templateVariableNameAndValue);
 
-                        counterForTemplate = GetNextCounterPosition(downstreamUrlTemplate, counterForTemplate, '}');
+                        counterForTemplate = GetNextCounterPosition(upstreamUrlTemplate, counterForTemplate, '}');
 
-                        counterForUrl = GetNextCounterPosition(downstreamUrlPath, counterForUrl, '/');
+                        counterForUrl = GetNextCounterPosition(upstreamUrlPath, counterForUrl, '/');
 
                         continue;
                     } 

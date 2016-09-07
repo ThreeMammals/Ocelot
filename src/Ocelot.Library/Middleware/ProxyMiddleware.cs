@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.UrlMatcher;
-using Ocelot.Library.Infrastructure.UrlTemplateRepository;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
@@ -14,40 +13,31 @@ namespace Ocelot.Library.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
-        private readonly IUrlTemplateMapRepository _urlTemplateMapRepository;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
-        private readonly IOptions<Configuration> _optionsAccessor;
+        private readonly IOptions<Configuration> _configuration;
 
         public ProxyMiddleware(RequestDelegate next, 
             IUrlPathToUrlTemplateMatcher urlMatcher,
-            IUrlTemplateMapRepository urlPathRepository,
-            IDownstreamUrlTemplateVariableReplacer urlReplacer, IOptions<Configuration> optionsAccessor)
+            IDownstreamUrlTemplateVariableReplacer urlReplacer, IOptions<Configuration> configuration)
         {
             _next = next;
             _urlMatcher = urlMatcher;
-            _urlTemplateMapRepository = urlPathRepository;
             _urlReplacer = urlReplacer;
-            _optionsAccessor = optionsAccessor;
+            _configuration = configuration;
         }
 
         public async Task Invoke(HttpContext context)
-        {     
-            
-            var downstreamUrlPath = context.Request.Path.ToString();
-
-            var upstreamUrlTemplates = _urlTemplateMapRepository.All;
+        {   
+            var upstreamUrlPath = context.Request.Path.ToString();
 
             UrlMatch urlMatch = null;
 
-            string downstreamUrlTemplate = string.Empty;
-
-            foreach (var template in upstreamUrlTemplates.Data)
+            foreach (var template in _configuration.Value.ReRoutes)
             {
-                urlMatch = _urlMatcher.Match(downstreamUrlPath, template.DownstreamUrlTemplate);
+                urlMatch = _urlMatcher.Match(upstreamUrlPath, template.UpstreamTemplate);
 
                 if (urlMatch.Match)
                 {
-                    downstreamUrlTemplate = template.DownstreamUrlTemplate;
                     break;
                 }
             }
@@ -58,7 +48,7 @@ namespace Ocelot.Library.Middleware
                 return;
             }
             
-            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamUrlTemplate, urlMatch);
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(urlMatch);
 
             //make a http request to this endpoint...maybe bring in a library
 

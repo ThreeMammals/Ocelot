@@ -5,11 +5,11 @@ namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
 {
     public class DownstreamUrlTemplateVariableReplacer : IDownstreamUrlTemplateVariableReplacer
     {
-        public string ReplaceTemplateVariable(string downstreamPathTemplate, UrlMatch urlMatch)
+        public string ReplaceTemplateVariable(UrlMatch urlMatch)
         {
             var upstreamUrl = new StringBuilder();
 
-            upstreamUrl.Append(downstreamPathTemplate);
+            upstreamUrl.Append(urlMatch.DownstreamUrlTemplate);
 
             foreach (var templateVarAndValue in urlMatch.TemplateVariableNameAndValues)
             {

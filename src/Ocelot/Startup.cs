@@ -10,7 +10,6 @@ namespace Ocelot
     using Library.Infrastructure.Configuration;
     using Library.Infrastructure.UrlMatcher;
     using Library.Infrastructure.UrlTemplateReplacer;
-    using Library.Infrastructure.UrlTemplateRepository;
 
     public class Startup
     {
@@ -37,7 +36,6 @@ namespace Ocelot
             // Add framework services.
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
-            services.AddSingleton<IUrlTemplateMapRepository, InMemoryUrlTemplateMapRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,7 +10,6 @@ namespace Ocelot.UnitTests
 
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {
-        private string _downstreamUrlTemplate;
         private UrlMatch _urlMatch;
         private string _result;
         private readonly IDownstreamUrlTemplateVariableReplacer _downstreamUrlPathReplacer;
@@ -23,18 +22,25 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_replace_no_template_variables()
         {
-            this.Given(x => x.GivenThereIsADownstreamUrl(""))
-                .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "")))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned(""))
                 .BDDfy();
         }
 
         [Fact]
+        public void can_replace_no_template_variables_with_slash()
+        {
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "/")))
+                .When(x => x.WhenIReplaceTheTemplateVariables())
+                .Then(x => x.ThenTheDownstreamUrlPathIsReturned("/"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void can_replace_url_no_slash()
         {
-            this.Given(x => x.GivenThereIsADownstreamUrl("api"))
-                .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api")))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api"))
                 .BDDfy();
@@ -43,8 +49,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_replace_url_one_slash()
         {
-            this.Given(x => x.GivenThereIsADownstreamUrl("api/"))
-                .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api/")))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/"))
                 .BDDfy();
@@ -53,8 +58,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void can_replace_url_multiple_slash()
         {
-            this.Given(x => x.GivenThereIsADownstreamUrl("api/product/products/"))
-                .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api/product/products/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "api/product/products/")))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/product/products/"))
                 .BDDfy();
@@ -68,8 +72,7 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            this.Given(x => x.GivenThereIsADownstreamUrl("productservice/products/{productId}/"))
-             .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "api/products/{productId}/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "productservice/products/{productId}/")))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/"))
              .BDDfy();
@@ -83,8 +86,7 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            this.Given(x => x.GivenThereIsADownstreamUrl("productservice/products/{productId}/variants"))
-             .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "api/products/{productId}/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "productservice/products/{productId}/variants")))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants"))
              .BDDfy();
@@ -99,8 +101,7 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{variantId}", "12")
             };
 
-            this.Given(x => x.GivenThereIsADownstreamUrl("productservice/products/{productId}/variants/{variantId}"))
-             .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "api/products/{productId}/{variantId}")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "productservice/products/{productId}/variants/{variantId}")))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants/12"))
              .BDDfy();
@@ -116,16 +117,10 @@ namespace Ocelot.UnitTests
                 new TemplateVariableNameAndValue("{categoryId}", "34")
             };
 
-            this.Given(x => x.GivenThereIsADownstreamUrl("productservice/category/{categoryId}/products/{productId}/variants/{variantId}"))
-             .And(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "api/products/{categoryId}/{productId}/{variantId}")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new UrlMatch(true, templateVariables, "productservice/category/{categoryId}/products/{productId}/variants/{variantId}")))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/category/34/products/1/variants/12"))
              .BDDfy();
-        }
-
-        private void GivenThereIsADownstreamUrl(string downstreamUrlTemplate)
-        {
-            _downstreamUrlTemplate = downstreamUrlTemplate;
         }
 
         private void GivenThereIsAUrlMatch(UrlMatch urlMatch)
@@ -135,7 +130,7 @@ namespace Ocelot.UnitTests
 
         private void WhenIReplaceTheTemplateVariables()
         {
-            _result = _downstreamUrlPathReplacer.ReplaceTemplateVariable(_downstreamUrlTemplate, _urlMatch);
+            _result = _downstreamUrlPathReplacer.ReplaceTemplateVariable(_urlMatch);
         }
 
         private void ThenTheDownstreamUrlPathIsReturned(string expected)
