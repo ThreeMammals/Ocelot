@@ -1,17 +1,16 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
-    using Library.Infrastructure.HostUrlRepository;
-    using Library.Infrastructure.UrlPathMatcher;
-    using Library.Infrastructure.UrlPathReplacer;
-    using Library.Infrastructure.UrlPathTemplateRepository;
+    using Library.Infrastructure.Configuration;
+    using Library.Infrastructure.UrlMatcher;
+    using Library.Infrastructure.UrlTemplateReplacer;
 
     public class Startup
     {
@@ -21,6 +20,7 @@ namespace Ocelot
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddYamlFile("configuration.yaml")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -30,12 +30,14 @@ namespace Ocelot
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+
+            services.Configure<Configuration>(Configuration);
+
             // Add framework services.
-            services.AddSingleton<IHostUrlMapRepository, InMemoryHostUrlMapRepository>();
-            services.AddSingleton<IUrlPathToUrlPathTemplateMatcher, UrlPathToUrlPathTemplateMatcher>();
-            services.AddSingleton<IHostUrlMapRepository, InMemoryHostUrlMapRepository>();
-            services.AddSingleton<IUpstreamUrlPathTemplateVariableReplacer, UpstreamUrlPathTemplateVariableReplacer>();
-            services.AddSingleton<IUrlPathTemplateMapRepository, InMemoryUrlPathTemplateMapRepository>();
+            services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
+            services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
+            services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

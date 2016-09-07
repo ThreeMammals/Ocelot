@@ -1,0 +1,3 @@
+ReRoutes:
+- DownstreamTemplate: http://localhost:51879/
+  UpstreamTemplate: /

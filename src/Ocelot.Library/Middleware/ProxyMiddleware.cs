@@ -1,67 +1,62 @@
-using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Infrastructure.HostUrlRepository;
-using Ocelot.Library.Infrastructure.UrlPathMatcher;
-using Ocelot.Library.Infrastructure.UrlPathReplacer;
-using Ocelot.Library.Infrastructure.UrlPathTemplateRepository;
+using Microsoft.Extensions.Options;
+using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
 {
-    using System.Net;
-
     public class ProxyMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IUrlPathToUrlPathTemplateMatcher _urlMatcher;
-        private readonly IUrlPathTemplateMapRepository _urlPathRepository;
-        private readonly IHostUrlMapRepository _hostUrlRepository;
-        private readonly IUpstreamUrlPathTemplateVariableReplacer _urlReplacer;
+        private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
+        private readonly IOptions<Configuration> _configuration;
+        private readonly IDownstreamRouteFinder _downstreamRouteFinder;
+
         public ProxyMiddleware(RequestDelegate next, 
-            IUrlPathToUrlPathTemplateMatcher urlMatcher,
-            IUrlPathTemplateMapRepository urlPathRepository,
-            IHostUrlMapRepository hostUrlRepository,
-            IUpstreamUrlPathTemplateVariableReplacer urlReplacer)
+            IDownstreamUrlTemplateVariableReplacer urlReplacer, 
+            IOptions<Configuration> configuration, 
+            IDownstreamRouteFinder downstreamRouteFinder)
         {
             _next = next;
-            _urlMatcher = urlMatcher;
-            _urlPathRepository = urlPathRepository;
-            _hostUrlRepository = hostUrlRepository;
             _urlReplacer = urlReplacer;
+            _configuration = configuration;
+            _downstreamRouteFinder = downstreamRouteFinder;
         }
 
         public async Task Invoke(HttpContext context)
-        {
-            
-            var path = context.Request.Path.ToString();
+        {   
+            var upstreamUrlPath = context.Request.Path.ToString();
 
-            var urlPathTemplateMaps = _urlPathRepository.All;
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath);
 
-            UrlPathMatch urlPathMatch = null;
-            string upstreamPathUrlTemplate = string.Empty;
-
-            foreach (var template in urlPathTemplateMaps.Data)
-            {
-                urlPathMatch = _urlMatcher.Match(path, template.DownstreamUrlPathTemplate);
-
-                if (urlPathMatch.Match)
-                {
-                    upstreamPathUrlTemplate = template.UpstreamUrlPathTemplate;
-                    break;
-                }
-            }
-
-            if (urlPathMatch == null || !urlPathMatch.Match)
+            if (downstreamRoute.IsError)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
-            var upstreamHostUrl = _hostUrlRepository.GetBaseUrlMap(urlPathMatch.DownstreamUrlPathTemplate);
 
-            var pathUrl = _urlReplacer.ReplaceTemplateVariable(upstreamPathUrlTemplate, urlPathMatch);
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamRoute.Data);
 
             //make a http request to this endpoint...maybe bring in a library
+            using (var httpClient = new HttpClient())
+            {
+                var httpMethod = new HttpMethod(context.Request.Method);
+
+                var httpRequestMessage = new HttpRequestMessage(httpMethod, downstreamUrl);
+
+                var response = await httpClient.SendAsync(httpRequestMessage);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    context.Response.StatusCode = (int)response.StatusCode;
+                    return;
+                }
+                await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
+            }
 
             await _next.Invoke(context);
         }
