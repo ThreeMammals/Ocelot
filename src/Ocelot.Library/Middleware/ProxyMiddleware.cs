@@ -41,7 +41,6 @@ namespace Ocelot.Library.Middleware
 
             var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamRoute.Data);
 
-            //make a http request to this endpoint...maybe bring in a library
             using (var httpClient = new HttpClient())
             {
                 var httpMethod = new HttpMethod(context.Request.Method);
