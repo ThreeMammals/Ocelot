@@ -19,4 +19,10 @@ Priorities
 
 - Route configuration
 - IdentityServer reference & bearer tokens
+- Strip claims from tokens and use in proxy request
+- Authorise access to routes based on claims in token
 - Output Caching
+- Monitoring
+- Logging
+- Rate Limiting
+- Then a big list of cool things...
