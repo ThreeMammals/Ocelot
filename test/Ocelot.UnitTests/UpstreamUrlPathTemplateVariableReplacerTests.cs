@@ -131,7 +131,7 @@ namespace Ocelot.UnitTests
 
         private void WhenIReplaceTheTemplateVariables()
         {
-            _result = _downstreamUrlPathReplacer.ReplaceTemplateVariable(_downstreamRoute);
+            _result = _downstreamUrlPathReplacer.ReplaceTemplateVariables(_downstreamRoute);
         }
 
         private void ThenTheDownstreamUrlPathIsReturned(string expected)

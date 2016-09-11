@@ -58,6 +58,7 @@ namespace Ocelot.UnitTests
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<DownstreamTemplateAlreadyUsedError>())
                 .BDDfy();
         }
 
@@ -73,12 +74,17 @@ namespace Ocelot.UnitTests
 
         private void ThenTheResultIsValid()
         {
-            _result.IsError.ShouldBeFalse();
+            _result.Data.IsError.ShouldBeFalse();
         }
 
         private void ThenTheResultIsNotValid()
         {
-            _result.IsError.ShouldBeTrue();
+            _result.Data.IsError.ShouldBeTrue();
+        }
+
+        private void ThenTheErrorIs<T>()
+        {
+            _result.Data.Errors[0].ShouldBeOfType<T>();
         }
     }
 }

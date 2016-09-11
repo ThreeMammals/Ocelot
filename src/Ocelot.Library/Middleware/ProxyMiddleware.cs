@@ -1,10 +1,10 @@
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Requester;
+using Ocelot.Library.Infrastructure.Responder;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
@@ -15,16 +15,22 @@ namespace Ocelot.Library.Middleware
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
         private readonly IOptions<Configuration> _configuration;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
+        private readonly IHttpRequester _requester;
+        private readonly IHttpResponder _responder;
 
         public ProxyMiddleware(RequestDelegate next, 
             IDownstreamUrlTemplateVariableReplacer urlReplacer, 
             IOptions<Configuration> configuration, 
-            IDownstreamRouteFinder downstreamRouteFinder)
+            IDownstreamRouteFinder downstreamRouteFinder, 
+            IHttpRequester requester, 
+            IHttpResponder responder)
         {
             _next = next;
             _urlReplacer = urlReplacer;
             _configuration = configuration;
             _downstreamRouteFinder = downstreamRouteFinder;
+            _requester = requester;
+            _responder = responder;
         }
 
         public async Task Invoke(HttpContext context)
@@ -35,27 +41,15 @@ namespace Ocelot.Library.Middleware
 
             if (downstreamRoute.IsError)
             {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await _responder.CreateNotFoundResponse(context);
                 return;
             }
 
-            var downstreamUrl = _urlReplacer.ReplaceTemplateVariable(downstreamRoute.Data);
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
 
-            using (var httpClient = new HttpClient())
-            {
-                var httpMethod = new HttpMethod(context.Request.Method);
+            var response = await _requester.GetResponse(context.Request.Method, downstreamUrl);
 
-                var httpRequestMessage = new HttpRequestMessage(httpMethod, downstreamUrl);
-
-                var response = await httpClient.SendAsync(httpRequestMessage);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    context.Response.StatusCode = (int)response.StatusCode;
-                    return;
-                }
-                await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
-            }
+            context = await _responder.CreateSuccessResponse(context, response);
 
             await _next.Invoke(context);
         }

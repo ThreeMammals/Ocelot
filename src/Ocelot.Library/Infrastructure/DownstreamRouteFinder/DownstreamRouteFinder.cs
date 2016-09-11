@@ -18,7 +18,6 @@ namespace Ocelot.Library.Infrastructure.DownstreamRouteFinder
 
         public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath)
         {
-
             foreach (var template in _configuration.Value.ReRoutes)
             {
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, template.UpstreamTemplate);

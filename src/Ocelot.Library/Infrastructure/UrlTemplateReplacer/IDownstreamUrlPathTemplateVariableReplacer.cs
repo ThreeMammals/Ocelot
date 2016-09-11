@@ -5,6 +5,6 @@ namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
 {
     public interface IDownstreamUrlTemplateVariableReplacer
     {
-        string ReplaceTemplateVariable(DownstreamRoute downstreamRoute);   
+        string ReplaceTemplateVariables(DownstreamRoute downstreamRoute);   
     }
 }

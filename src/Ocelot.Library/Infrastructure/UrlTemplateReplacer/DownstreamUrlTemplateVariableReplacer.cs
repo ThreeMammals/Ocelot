@@ -5,7 +5,7 @@ namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
 {
     public class DownstreamUrlTemplateVariableReplacer : IDownstreamUrlTemplateVariableReplacer
     {
-        public string ReplaceTemplateVariable(DownstreamRoute downstreamRoute)
+        public string ReplaceTemplateVariables(DownstreamRoute downstreamRoute)
         {
             var upstreamUrl = new StringBuilder();
 

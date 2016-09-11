@@ -20,16 +20,19 @@ namespace Ocelot.AcceptanceTests
         private TestServer _server;
         private HttpClient _client;
         private HttpResponseMessage _response;
+        private readonly string _configurationPath;
 
         public OcelotTests()
         {
+            _configurationPath = "./bin/Debug/netcoreapp1.0/configuration.yaml";
             _fakeService = new FakeService();
         }
 
         [Fact]
         public void should_return_response_404()
         {
-            this.Given(x => x.GivenTheApiGatewayIsRunning())
+            this.Given(x => x.GivenThereIsAConfiguration(new Configuration()))
+                .And(x => x.GivenTheApiGatewayIsRunning())
                 .When(x => x.WhenIRequestTheUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
@@ -72,12 +75,12 @@ namespace Ocelot.AcceptanceTests
         {
             var serializer = new Serializer();
 
-            if (File.Exists("./configuration.yaml"))
+            if (File.Exists(_configurationPath))
             {
-                File.Delete("./configuration.yaml");
+                File.Delete(_configurationPath);
             }
 
-            using (TextWriter writer = File.CreateText("./configuration.yaml"))
+            using (TextWriter writer = File.CreateText(_configurationPath))
             {
                 serializer.Serialize(writer, configuration);
             }

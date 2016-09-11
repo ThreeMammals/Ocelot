@@ -35,21 +35,21 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_route()
         {
-            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("somePath"))
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(x => x.GivenTheConfigurationIs(new Configuration {
                     ReRoutes = new List<ReRoute>
                     {
                         new ReRoute()
                         {
-                            UpstreamTemplate = "somePath",
-                            DownstreamTemplate = "somPath"
+                            UpstreamTemplate = "someUpstreamPath",
+                            DownstreamTemplate = "someDownstreamPath"
                         }
                     }
                 }))
-                .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "somePath")))
+                .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "someDownstreamPath")))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
-                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "somePath")))
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "someDownstreamPath")))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
                 .BDDfy();
         }
@@ -117,6 +117,7 @@ namespace Ocelot.UnitTests
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)
         {
             _result.Data.DownstreamUrlTemplate.ShouldBe(expected.DownstreamUrlTemplate);
+
             for (int i = 0; i < _result.Data.TemplateVariableNameAndValues.Count; i++)
             {
                 _result.Data.TemplateVariableNameAndValues[i].TemplateVariableName.ShouldBe(

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Requester;
+using Ocelot.Library.Infrastructure.Responder;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot
@@ -38,6 +40,8 @@ namespace Ocelot
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
+            services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
+            services.AddSingleton<IHttpResponder, HttpContextResponder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

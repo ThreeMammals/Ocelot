@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Configuration
@@ -19,7 +17,7 @@ namespace Ocelot.Library.Infrastructure.Configuration
 
             if (duplicateUpstreamTemplates.Count <= 0)
             {
-                return new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult());
+                return new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false));
             }
                 
             var errors = new List<Error>();
@@ -31,7 +29,7 @@ namespace Ocelot.Library.Infrastructure.Configuration
                 errors.Add(error);
             }
 
-            return new ErrorResponse<ConfigurationValidationResult>(errors);
+            return new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(true, errors));
         }
     }
 }
