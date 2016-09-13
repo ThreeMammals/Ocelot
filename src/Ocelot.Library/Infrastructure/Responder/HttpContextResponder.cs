@@ -7,7 +7,7 @@ namespace Ocelot.Library.Infrastructure.Responder
 {
     public class HttpContextResponder : IHttpResponder
     {
-        public async Task<HttpContext> CreateSuccessResponse(HttpContext context, HttpResponseMessage response)
+        public async Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
             {

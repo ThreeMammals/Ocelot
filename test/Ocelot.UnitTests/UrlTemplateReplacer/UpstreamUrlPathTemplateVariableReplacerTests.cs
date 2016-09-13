@@ -3,12 +3,11 @@ using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.UrlMatcher;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 using Shouldly;
+using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.UrlTemplateReplacer
 {
-    using TestStack.BDDfy;
-
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {
         private DownstreamRoute _downstreamRoute;

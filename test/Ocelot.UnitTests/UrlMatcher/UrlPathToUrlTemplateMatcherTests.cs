@@ -2,12 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Library.Infrastructure.UrlMatcher;
 using Shouldly;
+using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.UrlMatcher
 {
-    using TestStack.BDDfy;
-
     public class UrlPathToUrlTemplateMatcherTests 
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;

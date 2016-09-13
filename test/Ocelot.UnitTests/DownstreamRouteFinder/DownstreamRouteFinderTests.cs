@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Library.Infrastructure.Configuration;
@@ -12,31 +9,31 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly Mock<IOptions<Configuration>> _mockConfig;
+        private readonly Mock<IOptions<Library.Infrastructure.Configuration.Configuration>> _mockConfig;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
         private Response<DownstreamRoute> _response;
-        private Configuration _configuration;
+        private Library.Infrastructure.Configuration.Configuration _configuration;
         private UrlMatch _match;
 
         public DownstreamRouteFinderTests()
         {
-            _mockConfig = new Mock<IOptions<Configuration>>();
+            _mockConfig = new Mock<IOptions<Library.Infrastructure.Configuration.Configuration>>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
-            _downstreamRouteFinder = new DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object);
+            _downstreamRouteFinder = new Library.Infrastructure.DownstreamRouteFinder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object);
         }
 
         [Fact]
         public void should_return_route()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
-                .And(x => x.GivenTheConfigurationIs(new Configuration {
+                .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration {
                     ReRoutes = new List<ReRoute>
                     {
                         new ReRoute()
@@ -58,7 +55,7 @@ namespace Ocelot.UnitTests
         public void should_not_return_route()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("somePath"))
-                 .And(x => x.GivenTheConfigurationIs(new Configuration
+                 .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration
                  {
                      ReRoutes = new List<ReRoute>
                      {
@@ -96,7 +93,7 @@ namespace Ocelot.UnitTests
                 .Returns(_match);
         }
 
-        private void GivenTheConfigurationIs(Configuration configuration)
+        private void GivenTheConfigurationIs(Library.Infrastructure.Configuration.Configuration configuration)
         {
             _configuration = configuration;
             _mockConfig

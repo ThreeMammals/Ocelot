@@ -5,11 +5,11 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.Configuration
 {
     public class ConfigurationValidationTests
     {
-        private Configuration _configuration;
+        private Library.Infrastructure.Configuration.Configuration _configuration;
         private readonly IConfigurationValidator _configurationValidator;
         private Response<ConfigurationValidationResult> _result;
 
@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void configuration_is_valid_with_one_reroute()
         {
-            this.Given(x => x.GivenAConfiguration(new Configuration()
+            this.Given(x => x.GivenAConfiguration(new Library.Infrastructure.Configuration.Configuration()
             {
                 ReRoutes = new List<ReRoute>
                 {
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes()
         {
-            this.Given(x => x.GivenAConfiguration(new Configuration()
+            this.Given(x => x.GivenAConfiguration(new Library.Infrastructure.Configuration.Configuration()
             {
                 ReRoutes = new List<ReRoute>
                 {
@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests
                 .BDDfy();
         }
 
-        private void GivenAConfiguration(Configuration configuration)
+        private void GivenAConfiguration(Library.Infrastructure.Configuration.Configuration configuration)
         {
             _configuration = configuration;
         }
