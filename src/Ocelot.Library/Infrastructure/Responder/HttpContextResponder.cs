@@ -9,12 +9,12 @@ namespace Ocelot.Library.Infrastructure.Responder
     {
         public async Task<HttpContext> CreateSuccessResponse(HttpContext context, HttpResponseMessage response)
         {
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 context.Response.StatusCode = (int)response.StatusCode;
+                await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
                 return context;
             }
-            await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
             return context;
         }
 

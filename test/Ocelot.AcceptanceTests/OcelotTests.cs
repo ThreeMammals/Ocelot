@@ -33,7 +33,7 @@ namespace Ocelot.AcceptanceTests
         {
             this.Given(x => x.GivenThereIsAConfiguration(new Configuration()))
                 .And(x => x.GivenTheApiGatewayIsRunning())
-                .When(x => x.WhenIRequestTheUrlOnTheApiGateway("/"))
+                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
@@ -54,9 +54,30 @@ namespace Ocelot.AcceptanceTests
                     }
                 }))
                 .And(x => x.GivenTheApiGatewayIsRunning())
-                .When(x => x.WhenIRequestTheUrlOnTheApiGateway("/"))
+                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => x.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_201()
+        {
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+                .And(x => x.GivenThereIsAConfiguration(new Configuration
+                {
+                    ReRoutes = new List<ReRoute>
+                    {
+                        new ReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51879/",
+                            UpstreamTemplate = "/"
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
 
@@ -91,9 +112,14 @@ namespace Ocelot.AcceptanceTests
             _fakeService.Start(url);
         }
 
-        private void WhenIRequestTheUrlOnTheApiGateway(string url)
+        private void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _client.GetAsync(url).Result;
+        }
+
+        private void WhenIPostUrlOnTheApiGateway(string url)
+        {
+            _response = _client.PostAsync(url, new StringContent(string.Empty)).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

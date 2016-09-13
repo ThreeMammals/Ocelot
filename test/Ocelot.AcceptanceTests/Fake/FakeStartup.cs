@@ -33,7 +33,14 @@ namespace Ocelot.AcceptanceTests.Fake
         {
             app.Run(async context =>
             {
-                await context.Response.WriteAsync("Hello from Laura");
+                if (context.Request.Method.ToLower() == "get")
+                {
+                    await context.Response.WriteAsync("Hello from Laura");
+                }
+                else
+                {
+                    context.Response.StatusCode = 201;
+                }
             });
         }
     }
