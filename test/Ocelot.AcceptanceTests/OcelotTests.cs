@@ -21,6 +21,7 @@ namespace Ocelot.AcceptanceTests
         private HttpClient _client;
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
+        private string _postContent;
 
         public OcelotTests()
         {
@@ -76,9 +77,15 @@ namespace Ocelot.AcceptanceTests
                     }
                 }))
                 .And(x => x.GivenTheApiGatewayIsRunning())
+                .And(x => x.GivenThePostHasContent("postContent"))
                 .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
+        }
+
+        private void GivenThePostHasContent(string postcontent)
+        {
+            _postContent = postcontent;
         }
 
         /// <summary>
@@ -119,7 +126,8 @@ namespace Ocelot.AcceptanceTests
 
         private void WhenIPostUrlOnTheApiGateway(string url)
         {
-            _response = _client.PostAsync(url, new StringContent(string.Empty)).Result;
+            var content = new StringContent(_postContent);
+            _response = _client.PostAsync(url, content).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

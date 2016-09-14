@@ -47,7 +47,9 @@ namespace Ocelot.Library.Middleware
 
             var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
 
-            var response = await _requester.GetResponse(context.Request.Method, downstreamUrl, context.Request.Body);
+            var response = await _requester
+                .GetResponse(context.Request.Method, downstreamUrl, context.Request.Body, 
+                context.Request.Headers, context.Request.Cookies, context.Request.Query);
 
             await _responder.CreateResponse(context, response);
 
