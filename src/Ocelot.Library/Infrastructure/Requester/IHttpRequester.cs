@@ -14,6 +14,7 @@ namespace Ocelot.Library.Infrastructure.Requester
             Stream content, 
             IHeaderDictionary headers, 
             IRequestCookieCollection cookies,
-            IQueryCollection queryString);
+            IQueryCollection queryString,
+            string contentType);
     }
 }

@@ -49,7 +49,7 @@ namespace Ocelot.Library.Middleware
 
             var response = await _requester
                 .GetResponse(context.Request.Method, downstreamUrl, context.Request.Body, 
-                context.Request.Headers, context.Request.Cookies, context.Request.Query);
+                context.Request.Headers, context.Request.Cookies, context.Request.Query, context.Request.ContentType);
 
             await _responder.CreateResponse(context, response);
 

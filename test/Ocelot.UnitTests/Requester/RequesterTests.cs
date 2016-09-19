@@ -27,6 +27,7 @@ namespace Ocelot.UnitTests.Requester
         private IHeaderDictionary _headers;
         private IRequestCookieCollection _cookies;
         private IQueryCollection _query;
+        private string _contentType;
 
         public RequesterTests()
         {
@@ -65,6 +66,7 @@ namespace Ocelot.UnitTests.Requester
             this.Given(x => x.GivenIHaveHttpMethod("POST"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
+                .And(x => x.GivenTheContentTypeIs("application/json"))
                .And(x => x.GivenTheDownstreamServerReturns(HttpStatusCode.Created))
                .When(x => x.WhenIMakeARequest())
                .Then(x => x.ThenTheFollowingIsReturned(HttpStatusCode.Created))
@@ -79,29 +81,18 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenIHaveHttpMethod("POST"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
-                .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")
-                {
-                    Headers =
-                    {
-                        {"Boom", "TickTick"}
-                    }
-                }))
+                .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
+                .And(x => x.GivenTheContentTypeIs("application/json"))
                .And(x => x.GivenTheDownstreamServerReturns(HttpStatusCode.Created))
                .When(x => x.WhenIMakeARequest())
                .Then(x => x.ThenTheFollowingIsReturned(HttpStatusCode.Created))
                .And(x => x.ThenTheDownstreamServerIsCalledCorrectly())
                .And(x => x.ThenTheCorrectHttpMethodIsUsed(HttpMethod.Post))
-               .And(x => x.ThenTheCorrectContentIsUsed(new StringContent("Hi from Tom")
-               {
-                   Headers =
-                   {
-                       { "Boom", "TickTick" }
-                   }
-               }))
+               .And(x => x.ThenTheCorrectContentIsUsed(new StringContent("Hi from Tom")))
                .And(x => x.ThenTheCorrectContentHeadersAreUsed(new HeaderDictionary
                 {
                     {
-                        "Boom", "TickTick"
+                        "Content-Type", "application/json"
                     }
                 }))
                .BDDfy();
@@ -165,6 +156,11 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        private void GivenTheContentTypeIs(string contentType)
+        {
+            _contentType = contentType;
+        }
+
         private void ThenTheCorrectQueryStringIsUsed(string expected)
         {
             _httpTest.CallLog[0].Request.RequestUri.Query.ShouldBe(expected);
@@ -211,7 +207,7 @@ namespace Ocelot.UnitTests.Requester
             foreach (var expectedHeader in expectedHeaders)
             {
                 _httpTest.CallLog[0].Request.Content.Headers.ShouldContain(x => x.Key == expectedHeader.Key 
-                //&& x.Value.First() == expectedHeader.Value[0]
+                && x.Value.First() == expectedHeader.Value[0]
                 );
             }
         }
@@ -246,7 +242,7 @@ namespace Ocelot.UnitTests.Requester
             _result = _httpRequester
                 .GetResponse(_httpMethod, _downstreamUrl, 
                 _content != null ? _content.ReadAsStreamAsync().Result : Stream.Null, 
-                _headers, _cookies, _query).Result;
+                _headers, _cookies, _query, _contentType).Result;
         }
 
         private void ThenTheFollowingIsReturned(HttpStatusCode expected)

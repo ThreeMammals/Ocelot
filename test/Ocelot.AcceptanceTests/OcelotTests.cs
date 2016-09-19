@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Ocelot.AcceptanceTests.Fake;
+using Ocelot.Library.Infrastructure.Configuration;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
+using YamlDotNet.Serialization;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Net.Http;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Xunit;
-    using Ocelot.AcceptanceTests.Fake;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using Library.Infrastructure.Configuration;
-    using TestStack.BDDfy;
-    using YamlDotNet.Serialization;
-
     public class OcelotTests : IDisposable
     {
         private readonly FakeService _fakeService;
@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
         private HttpClient _client;
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
-        private string _postContent;
+        private StringContent _postContent;
 
         public OcelotTests()
         {
@@ -82,10 +82,9 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
-
         private void GivenThePostHasContent(string postcontent)
         {
-            _postContent = postcontent;
+            _postContent = new StringContent(postcontent);
         }
 
         /// <summary>
@@ -126,8 +125,7 @@ namespace Ocelot.AcceptanceTests
 
         private void WhenIPostUrlOnTheApiGateway(string url)
         {
-            var content = new StringContent(_postContent);
-            _response = _client.PostAsync(url, content).Result;
+            _response = _client.PostAsync(url, _postContent).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

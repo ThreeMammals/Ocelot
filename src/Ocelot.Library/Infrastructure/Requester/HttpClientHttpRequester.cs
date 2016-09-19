@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Flurl;
 using Flurl.Http;
@@ -15,17 +16,30 @@ namespace Ocelot.Library.Infrastructure.Requester
             Stream content,
             IHeaderDictionary headers,
             IRequestCookieCollection cookies,
-            IQueryCollection queryString)
+            IQueryCollection queryString,
+            string contentType)
         {
             var method = new HttpMethod(httpMethod);
             var streamContent = new StreamContent(content);
+
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                var splitCt = contentType.Split(';');
+                var cT = splitCt[0];
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue(cT);
+            }
+
+            if (headers != null)
+            {
+                headers.Remove("Content-Type");
+            }
 
             if (content.Length > 0)
             {
                 return await downstreamUrl
                 .SetQueryParams(queryString)
                 .WithCookies(cookies)
-                .WithHeaders(streamContent.Headers)
+                .WithHeaders(headers)
                 .SendAsync(method, streamContent);
             }
 
