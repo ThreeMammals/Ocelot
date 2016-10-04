@@ -50,7 +50,8 @@ namespace Ocelot.AcceptanceTests
                         new ReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
-                            UpstreamTemplate = "/"
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Get"
                         }
                     }
                 }))
@@ -72,7 +73,8 @@ namespace Ocelot.AcceptanceTests
                         new ReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
-                            UpstreamTemplate = "/"
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Post"
                         }
                     }
                 }))

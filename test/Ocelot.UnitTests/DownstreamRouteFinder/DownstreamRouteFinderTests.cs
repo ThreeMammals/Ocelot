@@ -21,6 +21,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private Response<DownstreamRoute> _response;
         private Library.Infrastructure.Configuration.Configuration _configuration;
         private UrlMatch _match;
+        private string _upstreamHttpMethod;
 
         public DownstreamRouteFinderTests()
         {
@@ -39,15 +40,47 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         new ReRoute()
                         {
                             UpstreamTemplate = "someUpstreamPath",
-                            DownstreamTemplate = "someDownstreamPath"
+                            DownstreamTemplate = "someDownstreamPath",
+                            UpstreamHttpMethod = "Get"
                         }
                     }
                 }))
                 .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "someDownstreamPath")))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "someDownstreamPath")))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_correct_route_for_http_verb()
+        {
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
+                .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration
+                {
+                    ReRoutes = new List<ReRoute>
+                    {
+                        new ReRoute()
+                        {
+                            UpstreamTemplate = "someUpstreamPath",
+                            DownstreamTemplate = "someDownstreamPath",
+                            UpstreamHttpMethod = "Get"
+                        },
+                         new ReRoute()
+                        {
+                            UpstreamTemplate = "someUpstreamPath",
+                            DownstreamTemplate = "someDownstreamPathForAPost",
+                            UpstreamHttpMethod = "Post"
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "someDownstreamPathForAPost")))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "someDownstreamPathForAPost")))
                 .BDDfy();
         }
 
@@ -62,16 +95,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         new ReRoute()
                         {
                             UpstreamTemplate = "somePath",
-                            DownstreamTemplate = "somPath"
+                            DownstreamTemplate = "somPath",
+                            UpstreamHttpMethod = "Get"
                         }
                      }
                  }))
                  .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(false, new List<TemplateVariableNameAndValue>(), null)))
+                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                  .When(x => x.WhenICallTheFinder())
                  .Then(
                      x => x.ThenAnErrorResponseIsReturned())
                  .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
                  .BDDfy();
+        }
+
+        private void GivenTheUpstreamHttpMethodIs(string upstreamHttpMethod)
+        {
+            _upstreamHttpMethod = upstreamHttpMethod;
         }
 
         private void ThenAnErrorResponseIsReturned()
@@ -108,7 +148,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath);
+            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod);
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

@@ -4,6 +4,6 @@ namespace Ocelot.Library.Infrastructure.DownstreamRouteFinder
 {
     public interface IDownstreamRouteFinder
     {
-        Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath);
+        Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod);
     }
 }

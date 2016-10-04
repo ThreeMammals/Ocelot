@@ -51,7 +51,11 @@ namespace Ocelot
 
             loggerFactory.AddDebug();
 
-            app.UseProxy();
+            app.UseDownstreamRouteFinderMiddleware();
+
+            app.UserDownstreamUrlCreatorMiddleware();
+
+            app.UseHttpRequesterMiddleware();
         }
     }
 }

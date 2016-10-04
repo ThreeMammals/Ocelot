@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Options;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.UrlMatcher;
@@ -16,9 +18,9 @@ namespace Ocelot.Library.Infrastructure.DownstreamRouteFinder
             _urlMatcher = urlMatcher;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath)
+        public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
         {
-            foreach (var template in _configuration.Value.ReRoutes)
+            foreach (var template in _configuration.Value.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase)))
             {
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, template.UpstreamTemplate);
 
