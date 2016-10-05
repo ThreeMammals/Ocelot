@@ -1,6 +1,6 @@
 using Ocelot.Library.Infrastructure.Responses;
 
-namespace Ocelot.Library.Infrastructure.Services
+namespace Ocelot.Library.Infrastructure.Repository
 {
     public interface IScopedRequestDataRepository
     {

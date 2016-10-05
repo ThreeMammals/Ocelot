@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.Requester;
 using Ocelot.Library.Infrastructure.Responder;
-using Ocelot.Library.Infrastructure.Services;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot

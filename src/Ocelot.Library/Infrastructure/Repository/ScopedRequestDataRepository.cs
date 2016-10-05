@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Responses;
 
-namespace Ocelot.Library.Infrastructure.Services
+namespace Ocelot.Library.Infrastructure.Repository
 {
     public class ScopedRequestDataRepository : IScopedRequestDataRepository
     {
