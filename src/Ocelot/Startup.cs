@@ -47,7 +47,7 @@ namespace Ocelot
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<IRequestDataService, RequestDataService>();
+            services.AddScoped<IScopedRequestDataRepository, ScopedRequestDataRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

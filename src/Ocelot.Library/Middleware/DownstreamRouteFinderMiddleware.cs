@@ -11,17 +11,17 @@ namespace Ocelot.Library.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
         private readonly IHttpResponder _responder;
-        private readonly IRequestDataService _requestDataService;
+        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
 
         public DownstreamRouteFinderMiddleware(RequestDelegate next, 
             IDownstreamRouteFinder downstreamRouteFinder, 
             IHttpResponder responder,
-            IRequestDataService requestDataService)
+            IScopedRequestDataRepository scopedRequestDataRepository)
         {
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
             _responder = responder;
-            _requestDataService = requestDataService;
+            _scopedRequestDataRepository = scopedRequestDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
@@ -36,7 +36,7 @@ namespace Ocelot.Library.Middleware
                 return;
             }
 
-            _requestDataService.Add("DownstreamRoute", downstreamRoute.Data);
+            _scopedRequestDataRepository.Add("DownstreamRoute", downstreamRoute.Data);
             
             await _next.Invoke(context);
         }

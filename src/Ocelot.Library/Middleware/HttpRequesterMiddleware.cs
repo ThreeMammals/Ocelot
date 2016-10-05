@@ -11,22 +11,22 @@ namespace Ocelot.Library.Middleware
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
         private readonly IHttpResponder _responder;
-        private readonly IRequestDataService _requestDataService;
+        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
 
         public HttpRequesterMiddleware(RequestDelegate next, 
             IHttpRequester requester, 
             IHttpResponder responder,
-            IRequestDataService requestDataService)
+            IScopedRequestDataRepository scopedRequestDataRepository)
         {
             _next = next;
             _requester = requester;
             _responder = responder;
-            _requestDataService = requestDataService;
+            _scopedRequestDataRepository = scopedRequestDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamUrl = _requestDataService.Get<string>("DownstreamUrl");
+            var downstreamUrl = _scopedRequestDataRepository.Get<string>("DownstreamUrl");
 
             if (downstreamUrl.IsError)
             {

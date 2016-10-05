@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Moq;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.Services;
 using Shouldly;
@@ -12,19 +7,19 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Services
 {
-    public class RequestDataServiceTests
+    public class ScopedRequestDataRepositoryTests
     {
-        private IRequestDataService _requestDataService;
+        private IScopedRequestDataRepository _scopedRequestDataRepository;
         private IHttpContextAccessor _httpContextAccesor;
         private string _key;
         private object _toAdd;
         private Response<int[]> _result;
 
-        public RequestDataServiceTests()
+        public ScopedRequestDataRepositoryTests()
         {
             _httpContextAccesor = new HttpContextAccessor();
             _httpContextAccesor.HttpContext = new DefaultHttpContext();
-            _requestDataService = new RequestDataService(_httpContextAccesor);
+            _scopedRequestDataRepository = new ScopedRequestDataRepository(_httpContextAccesor);
         }
 
         [Fact]
@@ -53,7 +48,7 @@ namespace Ocelot.UnitTests.Services
 
         private void WhenIGetTheItem()
         {
-            _result = _requestDataService.Get<int[]>(_key);
+            _result = _scopedRequestDataRepository.Get<int[]>(_key);
         }
 
         private void GivenThereIsAnItemInTheContext(string key)
@@ -71,7 +66,7 @@ namespace Ocelot.UnitTests.Services
 
         private void WhenIAddTheItem()
         {
-            _requestDataService.Add(_key, _toAdd);
+            _scopedRequestDataRepository.Add(_key, _toAdd);
         }
 
         private void ThenTheItemIsAdded()

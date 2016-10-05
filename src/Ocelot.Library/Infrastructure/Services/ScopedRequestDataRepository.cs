@@ -5,11 +5,11 @@ using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Services
 {
-    public class RequestDataService : IRequestDataService
+    public class ScopedRequestDataRepository : IScopedRequestDataRepository
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public RequestDataService(IHttpContextAccessor httpContextAccessor)
+        public ScopedRequestDataRepository(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }

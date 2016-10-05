@@ -11,23 +11,23 @@ namespace Ocelot.Library.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
-        private readonly IRequestDataService _requestDataService;
+        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IHttpResponder _responder;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
             IDownstreamUrlTemplateVariableReplacer urlReplacer,
-            IRequestDataService requestDataService, 
+            IScopedRequestDataRepository scopedRequestDataRepository, 
             IHttpResponder responder)
         {
             _next = next;
             _urlReplacer = urlReplacer;
-            _requestDataService = requestDataService;
+            _scopedRequestDataRepository = scopedRequestDataRepository;
             _responder = responder;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _requestDataService.Get<DownstreamRoute>("DownstreamRoute");
+            var downstreamRoute = _scopedRequestDataRepository.Get<DownstreamRoute>("DownstreamRoute");
 
             if (downstreamRoute.IsError)
             {
@@ -37,7 +37,7 @@ namespace Ocelot.Library.Middleware
 
             var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
 
-            _requestDataService.Add("DownstreamUrl", downstreamUrl);
+            _scopedRequestDataRepository.Add("DownstreamUrl", downstreamUrl);
                 
             await _next.Invoke(context);
         }
