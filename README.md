@@ -26,3 +26,5 @@ Priorities
 - Logging
 - Rate Limiting
 - Then a big list of cool things...
+
+## How to use

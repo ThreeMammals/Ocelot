@@ -1,4 +1,4 @@
 ReRoutes:
-- DownstreamTemplate: http://localhost:51879/
+- DownstreamTemplate: http://www.bbc.co.uk
   UpstreamTemplate: /
   UpstreamHttpMethod: Get
