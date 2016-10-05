@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Responder;
+using Ocelot.Library.Infrastructure.Services;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
@@ -9,34 +11,35 @@ namespace Ocelot.Library.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
+        private readonly IRequestDataService _requestDataService;
+        private readonly IHttpResponder _responder;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
-            IDownstreamUrlTemplateVariableReplacer urlReplacer)
+            IDownstreamUrlTemplateVariableReplacer urlReplacer,
+            IRequestDataService requestDataService, 
+            IHttpResponder responder)
         {
             _next = next;
             _urlReplacer = urlReplacer;
+            _requestDataService = requestDataService;
+            _responder = responder;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = GetDownstreamRouteFromOwinItems(context);
+            var downstreamRoute = _requestDataService.Get<DownstreamRoute>("DownstreamRoute");
 
-            var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute);
-
-            context.Items.Add("DownstreamUrl", downstreamUrl);
-
-            await _next.Invoke(context);
-        }
-
-        private DownstreamRoute GetDownstreamRouteFromOwinItems(HttpContext context)
-        {
-            object obj;
-            DownstreamRoute downstreamRoute = null;
-            if (context.Items.TryGetValue("DownstreamRoute", out obj))
+            if (downstreamRoute.IsError)
             {
-                downstreamRoute = (DownstreamRoute) obj;
+                await _responder.CreateNotFoundResponse(context);
+                return;
             }
-            return downstreamRoute;
+
+            var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
+
+            _requestDataService.Add("DownstreamUrl", downstreamUrl);
+                
+            await _next.Invoke(context);
         }
     }
 }

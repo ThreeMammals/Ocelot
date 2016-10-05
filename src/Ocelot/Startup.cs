@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Requester;
 using Ocelot.Library.Infrastructure.Responder;
+using Ocelot.Library.Infrastructure.Services;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot
@@ -42,6 +44,10 @@ namespace Ocelot
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
+
+            // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IRequestDataService, RequestDataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
