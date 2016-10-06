@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
@@ -16,10 +13,13 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class RequesterTests : IDisposable
+    using System;
+    using Library.Infrastructure.HttpClient;
+    using Moq;
+
+    public class RequesterTests 
     {
         private readonly IHttpRequester _httpRequester;
-        private readonly HttpTest _httpTest;
         private string _httpMethod;
         private string _downstreamUrl;
         private HttpResponseMessage _result;
@@ -28,11 +28,12 @@ namespace Ocelot.UnitTests.Requester
         private IRequestCookieCollection _cookies;
         private IQueryCollection _query;
         private string _contentType;
+        private Mock<IHttpClient> _httpClient;
 
         public RequesterTests()
         {
-            _httpTest = new HttpTest();
-            _httpRequester = new HttpClientHttpRequester();
+            _httpClient = new Mock<IHttpClient>();
+            _httpRequester = new HttpClientHttpRequester(_httpClient.Object);
         }
 
         [Fact]
@@ -163,7 +164,8 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheCorrectQueryStringIsUsed(string expected)
         {
-            _httpTest.CallLog[0].Request.RequestUri.Query.ShouldBe(expected);
+            throw new NotImplementedException();
+            //_httpTest.CallLog[0].Request.RequestUri.Query.ShouldBe(expected);
         }
 
         private void GivenTheQueryStringIs(IQueryCollection query)
@@ -173,16 +175,18 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheCorrectCookiesAreUsed(IRequestCookieCollection cookies)
         {
-            var expectedCookies = cookies.Select(x => new KeyValuePair<string, string>(x.Key, x.Value));
+            throw new NotImplementedException();
 
-            foreach (var expectedCookie in expectedCookies)
-            {
-                _httpTest
-                    .CallLog[0]
-                    .Request
-                    .Headers
-                    .ShouldContain(x => x.Key == "Cookie" && x.Value.First() == string.Format("{0}={1}", expectedCookie.Key, expectedCookie.Value));
-            }
+            /* var expectedCookies = cookies.Select(x => new KeyValuePair<string, string>(x.Key, x.Value));
+
+             foreach (var expectedCookie in expectedCookies)
+             {
+                 _httpTest
+                     .CallLog[0]
+                     .Request
+                     .Headers
+                     .ShouldContain(x => x.Key == "Cookie" && x.Value.First() == string.Format("{0}={1}", expectedCookie.Key, expectedCookie.Value));
+             }*/
         }
 
         private void GivenTheCookiesAre(IRequestCookieCollection cookies)
@@ -192,24 +196,28 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheCorrectHeadersAreUsed(IHeaderDictionary headers)
         {
-            var expectedHeaders = headers.Select(x => new KeyValuePair<string, string[]>(x.Key, x.Value));
+            throw new NotImplementedException();
+
+            /*var expectedHeaders = headers.Select(x => new KeyValuePair<string, string[]>(x.Key, x.Value));
 
             foreach (var expectedHeader in expectedHeaders)
             {
                 _httpTest.CallLog[0].Request.Headers.ShouldContain(x => x.Key == expectedHeader.Key && x.Value.First() == expectedHeader.Value[0]);
-            }
+            }*/
         }
 
         private void ThenTheCorrectContentHeadersAreUsed(IHeaderDictionary headers)
         {
-            var expectedHeaders = headers.Select(x => new KeyValuePair<string, string[]>(x.Key, x.Value));
+            throw new NotImplementedException();
+
+            /*var expectedHeaders = headers.Select(x => new KeyValuePair<string, string[]>(x.Key, x.Value));
 
             foreach (var expectedHeader in expectedHeaders)
             {
                 _httpTest.CallLog[0].Request.Content.Headers.ShouldContain(x => x.Key == expectedHeader.Key 
                 && x.Value.First() == expectedHeader.Value[0]
                 );
-            }
+            }*/
         }
 
         private void GivenTheHttpHeadersAre(IHeaderDictionary headers)
@@ -234,15 +242,22 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheDownstreamServerReturns(HttpStatusCode statusCode)
         {
-            _httpTest.RespondWith(_content != null ? _content.ReadAsStringAsync().Result : string.Empty, (int)statusCode);
+            _httpClient
+                .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = statusCode,
+                    Content = _content != null ? _content : null
+
+                });
+            /*  _httpTest
+                .RespondWith(_content != null ? _content.ReadAsStringAsync().Result : string.Empty, (int)statusCode);*/
         }
 
         private void WhenIMakeARequest()
         {
             _result = _httpRequester
-                .GetResponse(_httpMethod, _downstreamUrl, 
-                _content != null ? _content.ReadAsStreamAsync().Result : Stream.Null, 
-                _headers, _cookies, _query, _contentType).Result;
+                .GetResponse(new HttpRequestMessage()).Result;
         }
 
         private void ThenTheFollowingIsReturned(HttpStatusCode expected)
@@ -252,22 +267,23 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheDownstreamServerIsCalledCorrectly()
         {
-            _httpTest.ShouldHaveCalled(_downstreamUrl);
+            throw new NotImplementedException();
+
+            //_httpTest.ShouldHaveCalled(_downstreamUrl);
         }
 
         private void ThenTheCorrectHttpMethodIsUsed(HttpMethod expected)
         {
-            _httpTest.CallLog[0].Request.Method.ShouldBe(expected);
+            throw new NotImplementedException();
+
+            //_httpTest.CallLog[0].Request.Method.ShouldBe(expected);
         }
 
         private void ThenTheCorrectContentIsUsed(HttpContent content)
         {
-            _httpTest.CallLog[0].Response.Content.ReadAsStringAsync().Result.ShouldBe(content.ReadAsStringAsync().Result);
-        }
+            throw new NotImplementedException();
 
-        public void Dispose()
-        {
-            _httpTest.Dispose();
+            //_httpTest.CallLog[0].Response.Content.ReadAsStringAsync().Result.ShouldBe(content.ReadAsStringAsync().Result);
         }
     }
 }

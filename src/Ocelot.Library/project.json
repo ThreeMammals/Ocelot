@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
 
     "dependencies": {
@@ -17,8 +17,7 @@
         "Microsoft.Extensions.Logging.Debug": "1.0.0",
         "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
         "Microsoft.AspNetCore.Http": "1.0.0",
-        "YamlDotNet": "3.9.0",
-        "Flurl.Http": "1.0.1"
+        "YamlDotNet": "3.9.0"
     },
 
     "frameworks": {
