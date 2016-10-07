@@ -8,22 +8,19 @@ namespace Ocelot.Library.Middleware
 {
     using Infrastructure.RequestBuilder;
 
-    public class HttpRequesterMiddleware
+    public class HttpRequestBuilderMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IHttpRequester _requester;
         private readonly IHttpResponder _responder;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IRequestBuilder _requestBuilder;
 
-        public HttpRequesterMiddleware(RequestDelegate next, 
-            IHttpRequester requester, 
+        public HttpRequestBuilderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
             IScopedRequestDataRepository scopedRequestDataRepository, 
             IRequestBuilder requestBuilder)
         {
             _next = next;
-            _requester = requester;
             _responder = responder;
             _scopedRequestDataRepository = scopedRequestDataRepository;
             _requestBuilder = requestBuilder;
@@ -31,18 +28,19 @@ namespace Ocelot.Library.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var request = _scopedRequestDataRepository.Get<Request>("Request");
+            var downstreamUrl = _scopedRequestDataRepository.Get<string>("DownstreamUrl");
 
-            if (request.IsError)
+            if (downstreamUrl.IsError)
             {
                 await _responder.CreateNotFoundResponse(context);
                 return;
             }
 
-            var response = await _requester
-                .GetResponse(request.Data);
+            var request = _requestBuilder
+              .Build(context.Request.Method, downstreamUrl.Data, context.Request.Body,
+              context.Request.Headers, context.Request.Cookies, context.Request.QueryString.Value, context.Request.ContentType);
 
-            await _responder.CreateResponse(context, response);
+            _scopedRequestDataRepository.Add("Request", request);
 
             await _next.Invoke(context);
         }

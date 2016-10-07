@@ -62,6 +62,8 @@ namespace Ocelot
 
             app.UserDownstreamUrlCreatorMiddleware();
 
+            app.UseHttpRequestBuilderMiddleware();
+
             app.UseHttpRequesterMiddleware();
         }
     }
