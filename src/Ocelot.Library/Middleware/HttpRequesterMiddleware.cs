@@ -41,7 +41,7 @@ namespace Ocelot.Library.Middleware
 
             var request = _requestBuilder
               .Build(context.Request.Method, downstreamUrl.Data, context.Request.Body,
-              context.Request.Headers, context.Request.Cookies, context.Request.Query, context.Request.ContentType);
+              context.Request.Headers, context.Request.Cookies, context.Request.QueryString.Value, context.Request.ContentType);
 
             var response = await _requester
                 .GetResponse(request);

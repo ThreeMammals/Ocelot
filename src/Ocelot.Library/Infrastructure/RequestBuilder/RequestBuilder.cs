@@ -1,24 +1,27 @@
-﻿namespace Ocelot.Library.Infrastructure.RequestBuilder
-{
-    using System;
-    using System.IO;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 
+namespace Ocelot.Library.Infrastructure.RequestBuilder
+{
     public class RequestBuilder : IRequestBuilder
     {
-        public HttpRequestMessage Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
-            IRequestCookieCollection cookies, IQueryCollection queryString, string contentType)
+        public Request Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
+            IRequestCookieCollection cookies, string queryString, string contentType)
         {
             var method = new HttpMethod(httpMethod);
 
-            var uri = new Uri(downstreamUrl + queryString);
+            var uri = new Uri(string.Format("{0}{1}", downstreamUrl, queryString));
 
-            var httpRequestMessage = new HttpRequestMessage(method, uri)
+            var httpRequestMessage = new HttpRequestMessage(method, uri);
+
+            if (content != null)
             {
-                Content = new StreamContent(content),
-            };
+                httpRequestMessage.Content = new StreamContent(content);
+            }
 
             if (!string.IsNullOrEmpty(contentType))
             {
@@ -42,8 +45,19 @@
                 }
             }
 
-            return httpRequestMessage;
+            var cookieContainer = new CookieContainer();
 
+            //todo get rid of if
+            if (cookies != null)
+            {
+                foreach (var cookie in cookies)
+                {
+                    cookieContainer.Add(uri, new Cookie(cookie.Key, cookie.Value));
+                }
+            }
+
+
+            return new Request(httpRequestMessage, cookieContainer);
         }
     }
 }

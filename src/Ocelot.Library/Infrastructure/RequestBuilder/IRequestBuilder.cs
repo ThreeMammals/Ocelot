@@ -1,17 +1,16 @@
-﻿namespace Ocelot.Library.Infrastructure.RequestBuilder
-{
-    using System.IO;
-    using System.Net.Http;
-    using Microsoft.AspNetCore.Http;
+﻿using System.IO;
+using Microsoft.AspNetCore.Http;
 
+namespace Ocelot.Library.Infrastructure.RequestBuilder
+{
     public interface IRequestBuilder
     {
-        HttpRequestMessage Build(string httpMethod,
+        Request Build(string httpMethod,
             string downstreamUrl,
             Stream content,
             IHeaderDictionary headers,
             IRequestCookieCollection cookies,
-            IQueryCollection queryString,
+            string queryString,
             string contentType);
     }
 }

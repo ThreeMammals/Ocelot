@@ -4,21 +4,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
+using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Requester;
 using Ocelot.Library.Infrastructure.Responder;
+using Ocelot.Library.Infrastructure.UrlMatcher;
+using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
-    using System.Net.Http;
-    using Library.Infrastructure.Configuration;
-    using Library.Infrastructure.HttpClient;
-    using Library.Infrastructure.RequestBuilder;
-    using Library.Infrastructure.UrlMatcher;
-    using Library.Infrastructure.UrlTemplateReplacer;
-
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -47,8 +44,6 @@ namespace Ocelot
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
-            services.AddTransient<HttpClient>();
-            services.AddTransient<IHttpClient, HttpClientWrapper>();
             services.AddSingleton<IRequestBuilder, RequestBuilder>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc

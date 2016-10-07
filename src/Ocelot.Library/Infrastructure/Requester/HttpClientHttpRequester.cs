@@ -1,22 +1,18 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
+using Ocelot.Library.Infrastructure.RequestBuilder;
 
 namespace Ocelot.Library.Infrastructure.Requester
 {
-    using HttpClient;
-
     public class HttpClientHttpRequester : IHttpRequester
     {
-        private readonly IHttpClient _httpClient;
-
-        public HttpClientHttpRequester(IHttpClient httpClient)
+        public async Task<HttpResponseMessage> GetResponse(Request request)
         {
-            _httpClient = httpClient;
-        }
-
-        public async Task<HttpResponseMessage> GetResponse(HttpRequestMessage httpRequestMessage)
-        {
-            return await _httpClient.SendAsync(httpRequestMessage);
+            using (var handler = new HttpClientHandler { CookieContainer = request.CookieContainer })
+            using (var httpClient = new HttpClient(handler))
+            {
+                return await httpClient.SendAsync(request.HttpRequestMessage);
+            }
         }
     }
 }
