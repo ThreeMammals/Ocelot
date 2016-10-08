@@ -19,6 +19,16 @@ namespace Ocelot.UnitTests.UrlMatcher
         }
 
         [Fact]
+        public void should_find_match_when_template_smaller_than_valid_path()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/api/products/2354325435624623464235"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/api/products/{productId}"))
+                .When(x => x.WhenIMatchThePaths())
+                .And(x => x.ThenTheResultIsTrue())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_not_find_match()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("/api/values"))
