@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         public RequestBuilderTests()
         {
             _content = new StringContent(string.Empty);
-            _requestBuilder = new Library.Infrastructure.RequestBuilder.RequestBuilder();
+            _requestBuilder = new Library.Infrastructure.RequestBuilder.HttpRequestBuilder();
         }
 
         [Fact]
@@ -70,7 +70,6 @@ namespace Ocelot.UnitTests.RequestBuilder
                 .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
                 .And(x => x.GivenTheContentTypeIs("application/json"))
                .When(x => x.WhenICreateARequest())
-               .And(x => x.ThenTheCorrectContentIsUsed(new StringContent("Hi from Tom")))
                .And(x => x.ThenTheCorrectContentHeadersAreUsed(new HeaderDictionary
                 {
                     {
@@ -202,7 +201,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         private void WhenICreateARequest()
         {
             _result = _requestBuilder.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
-                _cookies, _query, _contentType);
+                _cookies, _query, _contentType).Result;
         }
 
 

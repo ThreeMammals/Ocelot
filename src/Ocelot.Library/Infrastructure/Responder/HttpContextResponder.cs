@@ -11,7 +11,12 @@ namespace Ocelot.Library.Infrastructure.Responder
         {
             if (response.IsSuccessStatusCode)
             {
-                context.Response.StatusCode = (int)response.StatusCode;
+                context.Response.OnStarting(x =>
+                {
+                    context.Response.StatusCode = (int)response.StatusCode;
+                    return Task.CompletedTask;
+                }, context);
+
                 await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
                 return context;
             }
@@ -20,7 +25,11 @@ namespace Ocelot.Library.Infrastructure.Responder
 
         public async Task<HttpContext> CreateNotFoundResponse(HttpContext context)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            context.Response.OnStarting(x =>
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
+            }, context);
             return context;
         }
     }

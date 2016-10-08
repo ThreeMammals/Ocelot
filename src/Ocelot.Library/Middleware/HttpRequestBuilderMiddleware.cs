@@ -36,7 +36,7 @@ namespace Ocelot.Library.Middleware
                 return;
             }
 
-            var request = _requestBuilder
+            var request = await _requestBuilder
               .Build(context.Request.Method, downstreamUrl.Data, context.Request.Body,
               context.Request.Headers, context.Request.Cookies, context.Request.QueryString.Value, context.Request.ContentType);
 

@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Repository;
@@ -14,19 +15,16 @@ namespace Ocelot.Library.Middleware
         private readonly IHttpRequester _requester;
         private readonly IHttpResponder _responder;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
-        private readonly IRequestBuilder _requestBuilder;
 
         public HttpRequesterMiddleware(RequestDelegate next, 
             IHttpRequester requester, 
             IHttpResponder responder,
-            IScopedRequestDataRepository scopedRequestDataRepository, 
-            IRequestBuilder requestBuilder)
+            IScopedRequestDataRepository scopedRequestDataRepository)
         {
             _next = next;
             _requester = requester;
             _responder = responder;
             _scopedRequestDataRepository = scopedRequestDataRepository;
-            _requestBuilder = requestBuilder;
         }
 
         public async Task Invoke(HttpContext context)
@@ -42,8 +40,8 @@ namespace Ocelot.Library.Middleware
             var response = await _requester
                 .GetResponse(request.Data);
 
-            await _responder.CreateResponse(context, response);
-
+            _scopedRequestDataRepository.Add("Response", response.Data);
+            
             await _next.Invoke(context);
         }
     }

@@ -3,13 +3,14 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Library.Infrastructure.RequestBuilder
 {
-    public class RequestBuilder : IRequestBuilder
+    public class HttpRequestBuilder : IRequestBuilder
     {
-        public Request Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
+        public async Task<Request> Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
             IRequestCookieCollection cookies, string queryString, string contentType)
         {
             var method = new HttpMethod(httpMethod);
@@ -20,7 +21,11 @@ namespace Ocelot.Library.Infrastructure.RequestBuilder
 
             if (content != null)
             {
-                httpRequestMessage.Content = new StreamContent(content);
+                using (var reader = new StreamReader(content))
+                {
+                    var body = await reader.ReadToEndAsync();
+                    httpRequestMessage.Content = new StringContent(body);
+                }
             }
 
             if (!string.IsNullOrEmpty(contentType))
@@ -41,7 +46,11 @@ namespace Ocelot.Library.Infrastructure.RequestBuilder
             {
                 foreach (var header in headers)
                 {
-                    httpRequestMessage.Headers.Add(header.Key, header.Value.ToArray());
+                    //todo get rid of if..
+                    if (header.Key.ToLower() != "host")
+                    {
+                        httpRequestMessage.Headers.Add(header.Key, header.Value.ToArray());
+                    }
                 }
             }
 

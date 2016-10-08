@@ -19,10 +19,20 @@ namespace Ocelot.UnitTests.UrlMatcher
         }
 
         [Fact]
+        public void should_not_find_match()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/api/values"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/"))
+                .When(x => x.WhenIMatchThePaths())
+                .And(x => x.ThenTheResultIsFalse())
+                .BDDfy();
+        }
+
+        [Fact]
         public void can_match_down_stream_url()
         {
-            this.Given(x => x.GivenIHaveADownstreamPath(""))
-                .And(x => x.GivenIHaveAnDownstreamUrlTemplate(""))
+            this.Given(x => x.GivenIHaveAUpstreamPath(""))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate(""))
                 .When(x => x.WhenIMatchThePaths())
                 .And(x => x.ThenTheResultIsTrue())
                 .And(x => x.ThenTheTemplatesVariablesAre(new List<TemplateVariableNameAndValue>()))
@@ -33,8 +43,8 @@ namespace Ocelot.UnitTests.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_no_slash()
         {
-            this.Given(x => x.GivenIHaveADownstreamPath("api"))
-                 .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api"))
+                 .Given(x => x.GivenIHaveAnUpstreamUrlTemplate("api"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .And(x => x.ThenTheTemplatesVariablesAre(new List<TemplateVariableNameAndValue>()))
@@ -45,8 +55,8 @@ namespace Ocelot.UnitTests.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_one_slash()
         {
-            this.Given(x => x.GivenIHaveADownstreamPath("api/"))
-                 .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/"))
+                 .Given(x => x.GivenIHaveAnUpstreamUrlTemplate("api/"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .And(x => x.ThenTheTemplatesVariablesAre(new List<TemplateVariableNameAndValue>()))
@@ -57,41 +67,12 @@ namespace Ocelot.UnitTests.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template()
         {
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/"))
-              .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/"))
+              .Given(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/"))
               .When(x => x.WhenIMatchThePaths())
               .Then(x => x.ThenTheResultIsTrue())
               .And(x => x.ThenTheTemplatesVariablesAre(new List<TemplateVariableNameAndValue>()))
               .And(x => x.ThenTheDownstreamUrlTemplateIs("api/product/products/"))
-              .BDDfy();
-        }
-
-        [Fact]
-        public void can_match_down_stream_url_with_downstream_template_with_one_query_string_parameter()
-        {
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/?soldout=false"))
-              .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/"))
-              .When(x => x.WhenIMatchThePaths())
-              .Then(x => x.ThenTheResultIsTrue())
-              .And(x => x.ThenTheTemplatesVariablesAre(new List<TemplateVariableNameAndValue>()))
-              .And(x => x.ThenTheDownstreamUrlTemplateIs("api/product/products/"))
-              .BDDfy();
-        }
-
-        [Fact]
-        public void can_match_down_stream_url_with_downstream_template_with_one_query_string_parameter_and_one_template()
-        {
-            var expectedTemplates = new List<TemplateVariableNameAndValue> 
-            {
-                new TemplateVariableNameAndValue("{productId}", "1")
-            };
-
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/variants/?soldout=false"))
-              .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}/variants/"))
-              .When(x => x.WhenIMatchThePaths())
-              .Then(x => x.ThenTheResultIsTrue())
-              .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
-              .And(x => x.ThenTheDownstreamUrlTemplateIs("api/product/products/{productId}/variants/"))
               .BDDfy();
         }
 
@@ -103,8 +84,8 @@ namespace Ocelot.UnitTests.UrlMatcher
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1"))
-               .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1"))
+               .Given(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/{productId}"))
                .When(x => x.WhenIMatchThePaths())
                .Then(x => x.ThenTheResultIsTrue())
                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
@@ -121,8 +102,8 @@ namespace Ocelot.UnitTests.UrlMatcher
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
 
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/2"))
-                 .Given(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}/{categoryId}"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/2"))
+                 .Given(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/{productId}/{categoryId}"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
@@ -139,8 +120,8 @@ namespace Ocelot.UnitTests.UrlMatcher
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
 
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2"))
-                .And(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}"))
                 .When(x => x.WhenIMatchThePaths())
                 .Then(x => x.ThenTheResultIsTrue())
                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
@@ -158,8 +139,8 @@ namespace Ocelot.UnitTests.UrlMatcher
                 new TemplateVariableNameAndValue("{variantId}", "123")
             };
 
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/123"))
-                .And(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2/variant/123"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}/variant/{variantId}"))
                 .When(x => x.WhenIMatchThePaths())
                 .Then(x => x.ThenTheResultIsTrue())
                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
@@ -176,8 +157,8 @@ namespace Ocelot.UnitTests.UrlMatcher
                 new TemplateVariableNameAndValue("{categoryId}", "2")
             };
 
-            this.Given(x => x.GivenIHaveADownstreamPath("api/product/products/1/categories/2/variant/"))
-                 .And(x => x.GivenIHaveAnDownstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}/variant/"))
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2/variant/"))
+                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/product/products/{productId}/categories/{categoryId}/variant/"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
@@ -199,12 +180,12 @@ namespace Ocelot.UnitTests.UrlMatcher
         {
             _result.DownstreamUrlTemplate.ShouldBe(expectedDownstreamUrlTemplate);
         }
-        private void GivenIHaveADownstreamPath(string downstreamPath)
+        private void GivenIHaveAUpstreamPath(string downstreamPath)
         {
             _downstreamUrlPath = downstreamPath;
         }
 
-        private void GivenIHaveAnDownstreamUrlTemplate(string downstreamUrlTemplate)
+        private void GivenIHaveAnUpstreamUrlTemplate(string downstreamUrlTemplate)
         {
             _downstreamPathTemplate = downstreamUrlTemplate;
         }
@@ -217,6 +198,11 @@ namespace Ocelot.UnitTests.UrlMatcher
         private void ThenTheResultIsTrue()
         {
             _result.Match.ShouldBeTrue();
+        }
+
+        private void ThenTheResultIsFalse()
+        {
+            _result.Match.ShouldBeFalse();
         }
     }
 } 

@@ -44,7 +44,7 @@ namespace Ocelot
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
-            services.AddSingleton<IRequestBuilder, RequestBuilder>();
+            services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -65,6 +65,8 @@ namespace Ocelot
             app.UseHttpRequestBuilderMiddleware();
 
             app.UseHttpRequesterMiddleware();
+
+            app.UseHttpResponderMiddleware();
         }
     }
 }

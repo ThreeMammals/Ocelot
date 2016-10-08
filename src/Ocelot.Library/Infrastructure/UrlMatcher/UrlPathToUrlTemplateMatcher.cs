@@ -5,21 +5,26 @@ namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
      public class UrlPathToUrlTemplateMatcher : IUrlPathToUrlTemplateMatcher
     {
-        public UrlMatch Match(string upstreamUrlPath, string upstreamUrlTemplate)
+        public UrlMatch Match(string upstreamUrlPath, string upstreamUrlPathTemplate)
         {
-            var urlPathTemplateCopy = upstreamUrlTemplate;
+            if (upstreamUrlPath.Length > upstreamUrlPathTemplate.Length)
+            {
+                return new UrlMatch(false, new List<TemplateVariableNameAndValue>(), string.Empty);
+            }
+
+            var urlPathTemplateCopy = upstreamUrlPathTemplate;
 
             var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
 
             int counterForUrl = 0;
 
-            for (int counterForTemplate = 0; counterForTemplate < upstreamUrlTemplate.Length; counterForTemplate++)
+            for (int counterForTemplate = 0; counterForTemplate < upstreamUrlPathTemplate.Length; counterForTemplate++)
             {
-                if (CharactersDontMatch(upstreamUrlTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
+                if (CharactersDontMatch(upstreamUrlPathTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
                 {
-                    if (IsPlaceholder(upstreamUrlTemplate[counterForTemplate]))
+                    if (IsPlaceholder(upstreamUrlPathTemplate[counterForTemplate]))
                     {
-                        var variableName = GetPlaceholderVariableName(upstreamUrlTemplate, counterForTemplate);
+                        var variableName = GetPlaceholderVariableName(upstreamUrlPathTemplate, counterForTemplate);
                         
                         var variableValue = GetPlaceholderVariableValue(upstreamUrlPath, counterForUrl);
 
@@ -27,7 +32,7 @@ namespace Ocelot.Library.Infrastructure.UrlMatcher
 
                         templateKeysAndValues.Add(templateVariableNameAndValue);
 
-                        counterForTemplate = GetNextCounterPosition(upstreamUrlTemplate, counterForTemplate, '}');
+                        counterForTemplate = GetNextCounterPosition(upstreamUrlPathTemplate, counterForTemplate, '}');
 
                         counterForUrl = GetNextCounterPosition(upstreamUrlPath, counterForUrl, '/');
 

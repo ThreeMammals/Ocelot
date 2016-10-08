@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Library.Infrastructure.RequestBuilder
 {
     public interface IRequestBuilder
     {
-        Request Build(string httpMethod,
+        Task<Request> Build(string httpMethod,
             string downstreamUrl,
             Stream content,
             IHeaderDictionary headers,
