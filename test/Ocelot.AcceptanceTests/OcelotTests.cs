@@ -6,7 +6,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Ocelot.AcceptanceTests.Fake;
-using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -32,7 +32,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_404()
         {
-            this.Given(x => x.GivenThereIsAConfiguration(new Configuration()))
+            this.Given(x => x.GivenThereIsAConfiguration(new YamlConfiguration()))
                 .And(x => x.GivenTheApiGatewayIsRunning())
                 .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
@@ -43,11 +43,11 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
-                .And(x => x.GivenThereIsAConfiguration(new Configuration
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
-                    ReRoutes = new List<ReRoute>
+                    ReRoutes = new List<YamlReRoute>
                     {
-                        new ReRoute
+                        new YamlReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
                             UpstreamTemplate = "/",
@@ -66,11 +66,11 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_201()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
-                .And(x => x.GivenThereIsAConfiguration(new Configuration
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
-                    ReRoutes = new List<ReRoute>
+                    ReRoutes = new List<YamlReRoute>
                     {
-                        new ReRoute
+                        new YamlReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
                             UpstreamTemplate = "/",
@@ -100,7 +100,7 @@ namespace Ocelot.AcceptanceTests
             _client = _server.CreateClient();
         }
 
-        private void GivenThereIsAConfiguration(Configuration configuration)
+        private void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
         {
             var serializer = new Serializer();
 
@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
 
             using (TextWriter writer = File.CreateText(_configurationPath))
             {
-                serializer.Serialize(writer, configuration);
+                serializer.Serialize(writer, yamlConfiguration);
             }
         }
 

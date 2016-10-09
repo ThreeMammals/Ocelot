@@ -2,25 +2,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responder;
 
 namespace Ocelot.Library.Middleware
 {
-    public class DownstreamRouteFinderMiddleware
+    public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IHttpResponder _responder;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
 
         public DownstreamRouteFinderMiddleware(RequestDelegate next, 
             IDownstreamRouteFinder downstreamRouteFinder, 
-            IHttpResponder responder,
             IScopedRequestDataRepository scopedRequestDataRepository)
+            :base(scopedRequestDataRepository)
         {
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
-            _responder = responder;
             _scopedRequestDataRepository = scopedRequestDataRepository;
         }
 
@@ -32,12 +29,12 @@ namespace Ocelot.Library.Middleware
 
             if (downstreamRoute.IsError)
             {
-                await _responder.CreateNotFoundResponse(context);
+                SetPipelineError(downstreamRoute.Errors);
                 return;
             }
 
             _scopedRequestDataRepository.Add("DownstreamRoute", downstreamRoute.Data);
-            
+
             await _next.Invoke(context);
         }
     }

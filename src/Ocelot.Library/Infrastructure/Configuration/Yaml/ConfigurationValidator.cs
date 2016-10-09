@@ -2,11 +2,11 @@
 using System.Linq;
 using Ocelot.Library.Infrastructure.Responses;
 
-namespace Ocelot.Library.Infrastructure.Configuration
+namespace Ocelot.Library.Infrastructure.Configuration.Yaml
 {
     public class ConfigurationValidator : IConfigurationValidator
     {
-        public Response<ConfigurationValidationResult> IsValid(Configuration configuration)
+        public Response<ConfigurationValidationResult> IsValid(YamlConfiguration configuration)
         {
             var duplicateUpstreamTemplates = configuration.ReRoutes
                 .Select(r => r.DownstreamTemplate)

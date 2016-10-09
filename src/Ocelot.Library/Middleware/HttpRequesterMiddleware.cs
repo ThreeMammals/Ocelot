@@ -1,29 +1,24 @@
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Repository;
+using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Requester;
-using Ocelot.Library.Infrastructure.Responder;
 
 namespace Ocelot.Library.Middleware
 {
-    using Infrastructure.RequestBuilder;
-
-    public class HttpRequesterMiddleware
+    public class HttpRequesterMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
-        private readonly IHttpResponder _responder;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
 
         public HttpRequesterMiddleware(RequestDelegate next, 
             IHttpRequester requester, 
-            IHttpResponder responder,
             IScopedRequestDataRepository scopedRequestDataRepository)
+            :base(scopedRequestDataRepository)
         {
             _next = next;
             _requester = requester;
-            _responder = responder;
             _scopedRequestDataRepository = scopedRequestDataRepository;
         }
 
@@ -33,16 +28,19 @@ namespace Ocelot.Library.Middleware
 
             if (request.IsError)
             {
-                await _responder.CreateNotFoundResponse(context);
+                SetPipelineError(request.Errors);
                 return;
             }
 
-            var response = await _requester
-                .GetResponse(request.Data);
+            var response = await _requester.GetResponse(request.Data);
 
-            _scopedRequestDataRepository.Add("Response", response.Data);
-            
-            await _next.Invoke(context);
+            if (response.IsError)
+            {
+                SetPipelineError(response.Errors);
+                return;
+            }
+
+            _scopedRequestDataRepository.Add("Response", response.Data);            
         }
     }
 }

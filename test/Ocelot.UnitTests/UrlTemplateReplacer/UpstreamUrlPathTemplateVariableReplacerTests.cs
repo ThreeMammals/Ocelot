@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.UrlMatcher;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 using Shouldly;
@@ -11,7 +12,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {
         private DownstreamRoute _downstreamRoute;
-        private string _result;
+        private Response<string> _result;
         private readonly IDownstreamUrlTemplateVariableReplacer _downstreamUrlPathReplacer;
 
         public UpstreamUrlPathTemplateVariableReplacerTests()
@@ -135,7 +136,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
 
         private void ThenTheDownstreamUrlPathIsReturned(string expected)
         {
-            _result.ShouldBe(expected);
+            _result.Data.ShouldBe(expected);
         }
 
     }

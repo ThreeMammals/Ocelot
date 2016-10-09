@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
@@ -26,6 +30,7 @@ namespace Ocelot
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddYamlFile("configuration.yaml")
                 .AddEnvironmentVariables();
+
             Configuration = builder.Build();
         }
 
@@ -35,11 +40,13 @@ namespace Ocelot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-
-            services.Configure<Configuration>(Configuration);
+                        
+            services.Configure<YamlConfiguration>(Configuration);
 
             // Add framework services.
-            services.AddSingleton<IUrlPathToUrlTemplateMatcher, UrlPathToUrlTemplateMatcher>();
+            services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
+            services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
+            services.AddSingleton<ITemplateVariableNameAndValueFinder, TemplateVariableNameAndValueFinder>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
@@ -58,6 +65,8 @@ namespace Ocelot
 
             loggerFactory.AddDebug();
 
+            app.UseHttpResponderMiddleware();
+
             app.UseDownstreamRouteFinderMiddleware();
 
             app.UserDownstreamUrlCreatorMiddleware();
@@ -65,8 +74,6 @@ namespace Ocelot
             app.UseHttpRequestBuilderMiddleware();
 
             app.UseHttpRequesterMiddleware();
-
-            app.UseHttpResponderMiddleware();
         }
     }
 }

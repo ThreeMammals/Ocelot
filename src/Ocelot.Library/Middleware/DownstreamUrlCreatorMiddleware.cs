@@ -7,22 +7,20 @@ using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
 {
-    public class DownstreamUrlCreatorMiddleware
+    public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
-        private readonly IHttpResponder _responder;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
             IDownstreamUrlTemplateVariableReplacer urlReplacer,
-            IScopedRequestDataRepository scopedRequestDataRepository, 
-            IHttpResponder responder)
+            IScopedRequestDataRepository scopedRequestDataRepository)
+            :base(scopedRequestDataRepository)
         {
             _next = next;
             _urlReplacer = urlReplacer;
             _scopedRequestDataRepository = scopedRequestDataRepository;
-            _responder = responder;
         }
 
         public async Task Invoke(HttpContext context)
@@ -31,13 +29,19 @@ namespace Ocelot.Library.Middleware
 
             if (downstreamRoute.IsError)
             {
-                await _responder.CreateNotFoundResponse(context);
+                SetPipelineError(downstreamRoute.Errors);
                 return;
             }
 
             var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
 
-            _scopedRequestDataRepository.Add("DownstreamUrl", downstreamUrl);
+            if (downstreamUrl.IsError)
+            {
+                SetPipelineError(downstreamUrl.Errors);
+                return;
+            }
+
+            _scopedRequestDataRepository.Add("DownstreamUrl", downstreamUrl.Data);
                 
             await _next.Invoke(context);
         }

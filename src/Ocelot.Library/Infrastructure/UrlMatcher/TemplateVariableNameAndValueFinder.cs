@@ -1,23 +1,16 @@
-using System;
 using System.Collections.Generic;
+using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
-     public class UrlPathToUrlTemplateMatcher : IUrlPathToUrlTemplateMatcher
+     public class TemplateVariableNameAndValueFinder : ITemplateVariableNameAndValueFinder
     {
-        public UrlMatch Match(string upstreamUrlPath, string upstreamUrlPathTemplate)
+        public Response<List<TemplateVariableNameAndValue>> Find(string upstreamUrlPath, string upstreamUrlPathTemplate)
         {
-            if (upstreamUrlPath.Length > upstreamUrlPathTemplate.Length)
-            {
-                return new UrlMatch(false, new List<TemplateVariableNameAndValue>(), string.Empty);
-            }
-
-            var urlPathTemplateCopy = upstreamUrlPathTemplate;
-
             var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
 
             int counterForUrl = 0;
-
+         
             for (int counterForTemplate = 0; counterForTemplate < upstreamUrlPathTemplate.Length; counterForTemplate++)
             {
                 if (CharactersDontMatch(upstreamUrlPathTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
@@ -37,15 +30,14 @@ namespace Ocelot.Library.Infrastructure.UrlMatcher
                         counterForUrl = GetNextCounterPosition(upstreamUrlPath, counterForUrl, '/');
 
                         continue;
-                    } 
-                    else
-                    {
-                        return new UrlMatch(false, templateKeysAndValues, string.Empty);
-                    } 
+                    }
+
+                    return new OkResponse<List<TemplateVariableNameAndValue>>(templateKeysAndValues);
                 }
                 counterForUrl++;
             }
-            return new UrlMatch(true, templateKeysAndValues, urlPathTemplateCopy);
+
+            return new OkResponse<List<TemplateVariableNameAndValue>>(templateKeysAndValues);
         }
 
         private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)

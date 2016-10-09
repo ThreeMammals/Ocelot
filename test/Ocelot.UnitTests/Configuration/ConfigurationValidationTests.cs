@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ConfigurationValidationTests
     {
-        private Library.Infrastructure.Configuration.Configuration _configuration;
+        private YamlConfiguration _yamlConfiguration;
         private readonly IConfigurationValidator _configurationValidator;
         private Response<ConfigurationValidationResult> _result;
 
@@ -21,11 +21,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_valid_with_one_reroute()
         {
-            this.Given(x => x.GivenAConfiguration(new Library.Infrastructure.Configuration.Configuration()
+            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
             {
-                ReRoutes = new List<ReRoute>
+                ReRoutes = new List<YamlReRoute>
                 {
-                    new ReRoute
+                    new YamlReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
@@ -40,16 +40,16 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes()
         {
-            this.Given(x => x.GivenAConfiguration(new Library.Infrastructure.Configuration.Configuration()
+            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
             {
-                ReRoutes = new List<ReRoute>
+                ReRoutes = new List<YamlReRoute>
                 {
-                    new ReRoute
+                    new YamlReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
                     },
-                    new ReRoute
+                    new YamlReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://lol.com"
@@ -62,14 +62,14 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenAConfiguration(Library.Infrastructure.Configuration.Configuration configuration)
+        private void GivenAConfiguration(YamlConfiguration yamlConfiguration)
         {
-            _configuration = configuration;
+            _yamlConfiguration = yamlConfiguration;
         }
 
         private void WhenIValidateTheConfiguration()
         {
-            _result = _configurationValidator.IsValid(_configuration);
+            _result = _configurationValidator.IsValid(_yamlConfiguration);
         }
 
         private void ThenTheResultIsValid()

@@ -6,10 +6,7 @@ using Ocelot.Library.Infrastructure.Responder;
 
 namespace Ocelot.Library.Middleware
 {
-    /// <summary>
-    /// Terminating middleware that is responsible for returning a http response to the client
-    /// </summary>
-    public class HttpResponderMiddleware
+    public class HttpResponderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
@@ -18,6 +15,7 @@ namespace Ocelot.Library.Middleware
         public HttpResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
             IScopedRequestDataRepository scopedRequestDataRepository)
+            :base(scopedRequestDataRepository)
         {
             _next = next;
             _responder = responder;
@@ -26,9 +24,22 @@ namespace Ocelot.Library.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var response = _scopedRequestDataRepository.Get<HttpResponseMessage>("Response");
+            await _next.Invoke(context);
 
-            await _responder.CreateResponse(context, response.Data);
+            if (PipelineError())
+            {
+                //todo obviously this needs to be better...prob look at response errors
+                // and make a decision i guess
+                var errors = GetPipelineErrors();
+
+                await _responder.CreateNotFoundResponse(context);
+            }
+            else
+            {
+                var response = _scopedRequestDataRepository.Get<HttpResponseMessage>("Response");
+
+                await _responder.CreateResponse(context, response.Data);
+            }
         }
     }
 }

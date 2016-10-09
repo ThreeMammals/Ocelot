@@ -6,6 +6,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Ocelot.Library.Infrastructure.RequestBuilder;
+using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -22,7 +23,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         private string _query;
         private string _contentType;
         private readonly IRequestBuilder _requestBuilder;
-        private Request _result;
+        private Response<Request> _result;
 
         public RequestBuilderTests()
         {
@@ -131,7 +132,7 @@ namespace Ocelot.UnitTests.RequestBuilder
 
         private void ThenTheCorrectQueryStringIsUsed(string expected)
         {
-            _result.HttpRequestMessage.RequestUri.Query.ShouldBe(expected);
+            _result.Data.HttpRequestMessage.RequestUri.Query.ShouldBe(expected);
         }
 
         private void GivenTheQueryStringIs(string query)
@@ -141,7 +142,7 @@ namespace Ocelot.UnitTests.RequestBuilder
 
         private void ThenTheCorrectCookiesAreUsed(IRequestCookieCollection expected)
         {
-            var resultCookies = _result.CookieContainer.GetCookies(new Uri(_downstreamUrl + _query));
+            var resultCookies = _result.Data.CookieContainer.GetCookies(new Uri(_downstreamUrl + _query));
             var resultDictionary = resultCookies.Cast<Cookie>().ToDictionary(cook => cook.Name, cook => cook.Value);
 
             foreach (var expectedCookie in expected)
@@ -162,7 +163,7 @@ namespace Ocelot.UnitTests.RequestBuilder
 
             foreach (var expectedHeader in expectedHeaders)
             {
-                _result.HttpRequestMessage.Headers.ShouldContain(x => x.Key == expectedHeader.Key && x.Value.First() == expectedHeader.Value[0]);
+                _result.Data.HttpRequestMessage.Headers.ShouldContain(x => x.Key == expectedHeader.Key && x.Value.First() == expectedHeader.Value[0]);
             }
         }
 
@@ -172,7 +173,7 @@ namespace Ocelot.UnitTests.RequestBuilder
 
             foreach (var expectedHeader in expectedHeaders)
             {
-                _result.HttpRequestMessage.Content.Headers.ShouldContain(x => x.Key == expectedHeader.Key 
+                _result.Data.HttpRequestMessage.Content.Headers.ShouldContain(x => x.Key == expectedHeader.Key 
                 && x.Value.First() == expectedHeader.Value[0]
                 );
             }
@@ -207,17 +208,17 @@ namespace Ocelot.UnitTests.RequestBuilder
 
         private void ThenTheCorrectDownstreamUrlIsUsed(string expected)
         {
-            _result.HttpRequestMessage.RequestUri.AbsoluteUri.ShouldBe(expected);
+            _result.Data.HttpRequestMessage.RequestUri.AbsoluteUri.ShouldBe(expected);
         }
 
         private void ThenTheCorrectHttpMethodIsUsed(HttpMethod expected)
         {
-            _result.HttpRequestMessage.Method.Method.ShouldBe(expected.Method);
+            _result.Data.HttpRequestMessage.Method.Method.ShouldBe(expected.Method);
         }
 
         private void ThenTheCorrectContentIsUsed(HttpContent expected)
         {
-            _result.HttpRequestMessage.Content.ReadAsStringAsync().Result.ShouldBe(expected.ReadAsStringAsync().Result);
+            _result.Data.HttpRequestMessage.Content.ReadAsStringAsync().Result.ShouldBe(expected.ReadAsStringAsync().Result);
         }
     }
 }

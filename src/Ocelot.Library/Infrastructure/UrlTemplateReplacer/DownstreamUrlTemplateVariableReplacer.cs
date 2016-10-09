@@ -1,11 +1,12 @@
 using System.Text;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
 {
     public class DownstreamUrlTemplateVariableReplacer : IDownstreamUrlTemplateVariableReplacer
     {
-        public string ReplaceTemplateVariables(DownstreamRoute downstreamRoute)
+        public Response<string> ReplaceTemplateVariables(DownstreamRoute downstreamRoute)
         {
             var upstreamUrl = new StringBuilder();
 
@@ -16,7 +17,7 @@ namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
                 upstreamUrl.Replace(templateVarAndValue.TemplateVariableName, templateVarAndValue.TemplateVariableValue);
             }
 
-            return upstreamUrl.ToString();
+            return new OkResponse<string>(upstreamUrl.ToString());
         }
     }
 }

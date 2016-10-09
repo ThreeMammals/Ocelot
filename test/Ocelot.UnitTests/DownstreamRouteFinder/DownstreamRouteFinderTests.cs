@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
@@ -14,38 +13,35 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly Mock<IOptions<Library.Infrastructure.Configuration.Configuration>> _mockConfig;
+        private readonly Mock<IOcelotConfiguration> _mockConfig;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
+        private readonly Mock<ITemplateVariableNameAndValueFinder> _finder;
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
         private Response<DownstreamRoute> _response;
-        private Library.Infrastructure.Configuration.Configuration _configuration;
-        private UrlMatch _match;
+        private List<ReRoute> _reRoutesConfig;
+        private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;
 
         public DownstreamRouteFinderTests()
         {
-            _mockConfig = new Mock<IOptions<Library.Infrastructure.Configuration.Configuration>>();
+            _mockConfig = new Mock<IOcelotConfiguration>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
-            _downstreamRouteFinder = new Library.Infrastructure.DownstreamRouteFinder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object);
+            _finder = new Mock<ITemplateVariableNameAndValueFinder>();
+            _downstreamRouteFinder = new Library.Infrastructure.DownstreamRouteFinder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
         }
 
         [Fact]
         public void should_return_route()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
-                .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration {
-                    ReRoutes = new List<ReRoute>
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
-                        new ReRoute()
-                        {
-                            UpstreamTemplate = "someUpstreamPath",
-                            DownstreamTemplate = "someDownstreamPath",
-                            UpstreamHttpMethod = "Get"
-                        }
+                        new ReRoute("someDownstreamPath","someUpstreamPath", "Get", "someUpstreamPath")
                     }
-                }))
-                .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "someDownstreamPath")))
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
@@ -58,25 +54,14 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_return_correct_route_for_http_verb()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
-                .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration
-                {
-                    ReRoutes = new List<ReRoute>
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
-                        new ReRoute()
-                        {
-                            UpstreamTemplate = "someUpstreamPath",
-                            DownstreamTemplate = "someDownstreamPath",
-                            UpstreamHttpMethod = "Get"
-                        },
-                         new ReRoute()
-                        {
-                            UpstreamTemplate = "someUpstreamPath",
-                            DownstreamTemplate = "someDownstreamPathForAPost",
-                            UpstreamHttpMethod = "Post"
-                        }
+                        new ReRoute("someDownstreamPath", "someUpstreamPath", "Get", string.Empty),
+                        new ReRoute("someDownstreamPathForAPost", "someUpstreamPath", "Post", string.Empty)
                     }
-                }))
-                .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true, new List<TemplateVariableNameAndValue>(), "someDownstreamPathForAPost")))
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
@@ -88,25 +73,25 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_not_return_route()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("somePath"))
-                 .And(x => x.GivenTheConfigurationIs(new Library.Infrastructure.Configuration.Configuration
-                 {
-                     ReRoutes = new List<ReRoute>
+                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
-                        new ReRoute()
-                        {
-                            UpstreamTemplate = "somePath",
-                            DownstreamTemplate = "somPath",
-                            UpstreamHttpMethod = "Get"
-                        }
+                        new ReRoute("somPath", "somePath", "Get", "somePath")
                      }
-                 }))
-                 .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(false, new List<TemplateVariableNameAndValue>(), null)))
+                 ))
+                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false))))
                  .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                  .When(x => x.WhenICallTheFinder())
                  .Then(
                      x => x.ThenAnErrorResponseIsReturned())
                  .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
                  .BDDfy();
+        }
+
+        private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<TemplateVariableNameAndValue>> response)
+        {
+            _finder
+                .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(response);
         }
 
         private void GivenTheUpstreamHttpMethodIs(string upstreamHttpMethod)
@@ -122,10 +107,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void ThenTheUrlMatcherIsCalledCorrectly()
         {
             _mockMatcher
-                .Verify(x => x.Match(_upstreamUrlPath, _configuration.ReRoutes[0].UpstreamTemplate), Times.Once);
+                .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamTemplate), Times.Once);
         }
 
-        private void GivenTheUrlMatcherReturns(UrlMatch match)
+        private void GivenTheUrlMatcherReturns(Response<UrlMatch> match)
         {
             _match = match;
             _mockMatcher
@@ -133,12 +118,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Returns(_match);
         }
 
-        private void GivenTheConfigurationIs(Library.Infrastructure.Configuration.Configuration configuration)
+        private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig)
         {
-            _configuration = configuration;
+            _reRoutesConfig = reRoutesConfig;
             _mockConfig
-                .Setup(x => x.Value)
-                .Returns(_configuration);
+                .Setup(x => x.ReRoutes)
+                .Returns(_reRoutesConfig);
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

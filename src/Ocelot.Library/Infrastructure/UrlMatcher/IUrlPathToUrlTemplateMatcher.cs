@@ -1,7 +1,9 @@
+using Ocelot.Library.Infrastructure.Responses;
+
 namespace Ocelot.Library.Infrastructure.UrlMatcher
 {
      public interface IUrlPathToUrlTemplateMatcher
      {
-        UrlMatch Match(string upstreamUrlPath, string upstreamUrlPathTemplate);
+        Response<UrlMatch> Match(string upstreamUrlPath, string upstreamUrlPathTemplate);
      }
 } 

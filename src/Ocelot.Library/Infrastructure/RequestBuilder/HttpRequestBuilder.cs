@@ -5,12 +5,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.RequestBuilder
 {
     public class HttpRequestBuilder : IRequestBuilder
     {
-        public async Task<Request> Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
+        public async Task<Response<Request>> Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
             IRequestCookieCollection cookies, string queryString, string contentType)
         {
             var method = new HttpMethod(httpMethod);
@@ -64,9 +65,8 @@ namespace Ocelot.Library.Infrastructure.RequestBuilder
                     cookieContainer.Add(uri, new Cookie(cookie.Key, cookie.Value));
                 }
             }
-
-
-            return new Request(httpRequestMessage, cookieContainer);
+            
+            return new OkResponse<Request>(new Request(httpRequestMessage, cookieContainer));
         }
     }
 }
