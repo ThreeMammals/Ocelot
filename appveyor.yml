@@ -4,6 +4,8 @@ configuration:
 platform: Any CPU
 build_script:
 - build.sh
+test_script:
+- run-tests.sh
 artifacts:
 - path: artifacts\**\*.*
 cache:
