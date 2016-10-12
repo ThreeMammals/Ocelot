@@ -13,7 +13,6 @@ using TestStack.BDDfy;
 using Xunit;
 using YamlDotNet.Serialization;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
 {
     public class OcelotTests : IDisposable
@@ -31,7 +30,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_404()
+        public void should_return_response_404_when_no_configuration_at_all()
         {
             this.Given(x => x.GivenThereIsAConfiguration(new YamlConfiguration()))
                 .And(x => x.GivenTheApiGatewayIsRunning())
@@ -41,7 +40,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200()
+        public void should_return_response_200_with_simple_url()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
@@ -64,7 +63,30 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_201()
+        public void should_return_response_200_with_complex_url()
+        {
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                {
+                    ReRoutes = new List<YamlReRoute>
+                    {
+                        new YamlReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            UpstreamTemplate = "/products/{productId}",
+                            UpstreamHttpMethod = "Get"
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .When(x => x.WhenIGetUrlOnTheApiGateway("/products/1"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheResponseBodyShouldBe("Some Product"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_201_with_simple_url()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
