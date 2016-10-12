@@ -43,7 +43,6 @@
             {
                 await _next.Invoke(context);
             }
-
         }
 
         private static bool IsAuthenticatedRoute(Response<bool> isAuthenticated)
