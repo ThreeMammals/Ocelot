@@ -5,3 +5,7 @@ platform: Any CPU
 environment:
 build_script:
 - build.sh
+artifacts:
+- path: artifacts\**\*.*
+cache:
+- '%USERPROFILE%\.nuget\packages'
