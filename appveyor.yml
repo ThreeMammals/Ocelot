@@ -1,12 +1,7 @@
 version: 1.0.{build}
 configuration:
-- Debug
 - Release
 platform: Any CPU
 environment:
-  # Don't report back to the mothership
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-init:
-- ps: $Env:LABEL = "CI" + $Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
 build_script:
 - build.sh
