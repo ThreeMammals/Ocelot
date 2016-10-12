@@ -20,6 +20,8 @@ using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
+    using Library.Infrastructure.Authentication;
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -52,6 +54,7 @@ namespace Ocelot
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
             services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
+            services.AddSingleton<IRouteRequiresAuthentication, RouteRequiresAuthentication>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -69,7 +72,9 @@ namespace Ocelot
 
             app.UseDownstreamRouteFinderMiddleware();
 
-            app.UserDownstreamUrlCreatorMiddleware();
+            app.UseAuthenticationMiddleware();
+
+            app.UseDownstreamUrlCreatorMiddleware();
 
             app.UseHttpRequestBuilderMiddleware();
 

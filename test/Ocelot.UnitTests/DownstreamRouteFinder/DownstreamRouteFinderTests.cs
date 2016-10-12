@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
-                        new ReRoute("someDownstreamPath","someUpstreamPath", "Get", "someUpstreamPath")
+                        new ReRoute("someDownstreamPath","someUpstreamPath", "Get", "someUpstreamPath", false)
                     }
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -57,8 +57,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
-                        new ReRoute("someDownstreamPath", "someUpstreamPath", "Get", string.Empty),
-                        new ReRoute("someDownstreamPathForAPost", "someUpstreamPath", "Post", string.Empty)
+                        new ReRoute("someDownstreamPath", "someUpstreamPath", "Get", string.Empty, false),
+                        new ReRoute("someDownstreamPathForAPost", "someUpstreamPath", "Post", string.Empty, false)
                     }
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -75,7 +75,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("somePath"))
                  .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
-                        new ReRoute("somPath", "somePath", "Get", "somePath")
+                        new ReRoute("somPath", "somePath", "Get", "somePath", false)
                      }
                  ))
                  .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false))))

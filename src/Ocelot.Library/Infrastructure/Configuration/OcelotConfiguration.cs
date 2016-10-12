@@ -43,7 +43,9 @@ namespace Ocelot.Library.Infrastructure.Configuration
 
                 upstreamTemplate = $"{upstreamTemplate}{RegExMatchEndString}";
 
-                _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod, upstreamTemplate));
+                var isAuthenticated = !string.IsNullOrEmpty(reRoute.Authentication);
+
+                _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated));
             }   
         }
 

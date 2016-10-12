@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}", "Get", "/api/products/.*$")
+                    new ReRoute("/products/{productId}","/api/products/{productId}", "Get", "/api/products/.*$", false)
                 }))
                 .BDDfy();
         }
@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}", "Get", "/api/products/.*/variants/.*$")
+                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}", "Get", "/api/products/.*/variants/.*$", false)
                 }))
                 .BDDfy();
         }
@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}/", "Get", "/api/products/.*/variants/.*/$")
+                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}/", "Get", "/api/products/.*/variants/.*/$", false)
                 }))
                 .BDDfy();
         }
@@ -107,7 +107,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/api/products/","/", "Get", "/$")
+                    new ReRoute("/api/products/","/", "Get", "/$", false)
                 }))
                 .BDDfy();
         }

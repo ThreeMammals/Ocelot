@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responder;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
 namespace Ocelot.Library.Middleware
