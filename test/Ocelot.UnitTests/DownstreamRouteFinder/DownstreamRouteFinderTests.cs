@@ -18,7 +18,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private readonly Mock<ITemplateVariableNameAndValueFinder> _finder;
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
-        private Response<DownstreamRoute> _response;
         private List<ReRoute> _reRoutesConfig;
         private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;

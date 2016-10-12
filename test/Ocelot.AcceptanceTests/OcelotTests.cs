@@ -1,32 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Ocelot.AcceptanceTests.Fake;
-using Ocelot.Library.Infrastructure.Configuration.Yaml;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-using YamlDotNet.Serialization;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
+    using Ocelot.Library.Infrastructure.Configuration.Yaml;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+    using YamlDotNet.Serialization;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+
     public class OcelotTests : IDisposable
     {
-        private readonly FakeService _fakeService;
         private TestServer _server;
         private HttpClient _client;
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
         private StringContent _postContent;
+        private Task _fake;
 
         public OcelotTests()
         {
             _configurationPath = "./bin/Debug/netcoreapp1.0/configuration.yaml";
-            _fakeService = new FakeService();
         }
 
         [Fact]
@@ -117,7 +118,29 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url)
         {
-            _fakeService.Start(url);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        if (context.Request.Method.ToLower() == "get")
+                        {
+                            await context.Response.WriteAsync("Hello from Laura");
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 201;
+                        }
+                    });
+                })
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .Build();
+
+            _fake = Task.Run(() => builder.Run());
         }
 
         private void WhenIGetUrlOnTheApiGateway(string url)
@@ -141,8 +164,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         public void Dispose()
-        {               
-            _fakeService.Stop();
+        {
             _client.Dispose();
             _server.Dispose();
         }
