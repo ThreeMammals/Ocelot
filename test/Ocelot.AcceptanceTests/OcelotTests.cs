@@ -1,22 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Ocelot.Library.Infrastructure.Configuration.Yaml;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
+using YamlDotNet.Serialization;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Ocelot.Library.Infrastructure.Configuration.Yaml;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-    using YamlDotNet.Serialization;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-
     public class OcelotTests : IDisposable
     {
         private TestServer _server;
@@ -24,7 +23,7 @@ namespace Ocelot.AcceptanceTests
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
         private StringContent _postContent;
-        private Task _fake;
+        private IWebHost _builder;
 
         public OcelotTests()
         {
@@ -44,12 +43,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200()
         {
-            var serviceResponse = new DefaultHttpContext();
-            serviceResponse.Request.Method = "get";
-            serviceResponse.Response.Body = GenerateStreamFromString("Hello from Laura");
-            serviceResponse.Response.StatusCode = 200;
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", serviceResponse))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
@@ -72,11 +66,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201()
         {
-            var serviceResponse = new DefaultHttpContext();
-            serviceResponse.Request.Method = "post";
-            serviceResponse.Response.StatusCode = 201;
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", serviceResponse))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
@@ -100,15 +90,6 @@ namespace Ocelot.AcceptanceTests
             _postContent = new StringContent(postcontent);
         }
 
-        public Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
-        }
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
         /// </summary>
@@ -135,34 +116,25 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, HttpContext httpContext)
+        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        context.Response.Body = httpContext.Response.Body;
-                        context.Response.StatusCode = httpContext.Response.StatusCode;
-
-                       /* if (context.Request.Method.ToLower() == "get")
-                        {
-                            await context.Response.WriteAsync("Hello from Laura");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = 201;
-                        }*/
-                    });
-                })
+            _builder = new WebHostBuilder()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseUrls(url)
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync(responseBody);
+                    });
+                })
                 .Build();
 
-            _fake = Task.Run(() => builder.Run());
+            _builder.Start();
         }
 
         private void WhenIGetUrlOnTheApiGateway(string url)
@@ -187,6 +159,10 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
+            if (_builder != null)
+            {
+                _builder.Dispose();
+            }
             _client.Dispose();
             _server.Dispose();
         }
