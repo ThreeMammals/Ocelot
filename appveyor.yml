@@ -2,7 +2,6 @@ version: 1.0.{build}
 configuration:
 - Release
 platform: Any CPU
-environment:
 build_script:
 - build.sh
 artifacts:
