@@ -5,6 +5,7 @@ namespace Ocelot.AcceptanceTests
     using System.IO;
     using System.Net;
     using System.Net.Http;
+    using System.Text;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.TestHost;
     using Ocelot.Library.Infrastructure.Configuration.Yaml;
@@ -43,7 +44,12 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200()
         {
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+            var serviceResponse = new DefaultHttpContext();
+            serviceResponse.Request.Method = "get";
+            serviceResponse.Response.Body = GenerateStreamFromString("Hello from Laura");
+            serviceResponse.Response.StatusCode = 200;
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", serviceResponse))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
@@ -66,7 +72,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201()
         {
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+            var serviceResponse = new DefaultHttpContext();
+            serviceResponse.Request.Method = "post";
+            serviceResponse.Response.StatusCode = 201;
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", serviceResponse))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
@@ -90,6 +100,15 @@ namespace Ocelot.AcceptanceTests
             _postContent = new StringContent(postcontent);
         }
 
+        public Stream GenerateStreamFromString(string s)
+        {
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
         /// </summary>
@@ -116,21 +135,24 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        private void GivenThereIsAServiceRunningOn(string url)
+        private void GivenThereIsAServiceRunningOn(string url, HttpContext httpContext)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Run(async context =>
                     {
-                        if (context.Request.Method.ToLower() == "get")
+                        context.Response.Body = httpContext.Response.Body;
+                        context.Response.StatusCode = httpContext.Response.StatusCode;
+
+                       /* if (context.Request.Method.ToLower() == "get")
                         {
                             await context.Response.WriteAsync("Hello from Laura");
                         }
                         else
                         {
                             context.Response.StatusCode = 201;
-                        }
+                        }*/
                     });
                 })
                 .UseUrls(url)
