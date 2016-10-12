@@ -1,4 +1,3 @@
- #!/bin/bash 
 echo -------------------------
 
 echo Running Ocelot.Benchmarks
