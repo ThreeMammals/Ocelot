@@ -3,9 +3,9 @@ configuration:
 - Release
 platform: Any CPU
 build_script:
-- build.sh
+- build.bat
 test_script:
-- run-tests.sh
+- run-tests.bat
 artifacts:
 - path: artifacts\**\*.*
 cache:
