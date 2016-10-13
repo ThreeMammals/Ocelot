@@ -1,5 +1,4 @@
-![Build status](https://ci.appveyor.com/api/projects/status/github/TomPallister/Ocelot?svg=true)
-
+[![Build status](https://ci.appveyor.com/api/projects/status/roahbe4nl526ysya?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot)
 
 
 
