@@ -4,11 +4,11 @@ using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Middleware
 {
-    public class OcelotMiddleware
+    public abstract class OcelotMiddleware
     {
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
 
-        public OcelotMiddleware(IScopedRequestDataRepository scopedRequestDataRepository)
+        protected OcelotMiddleware(IScopedRequestDataRepository scopedRequestDataRepository)
         {
             _scopedRequestDataRepository = scopedRequestDataRepository;
         }

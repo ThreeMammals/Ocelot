@@ -3,12 +3,12 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
+using Ocelot.Library.Infrastructure.Requester;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Middleware;
 using TestStack.BDDfy;
@@ -16,27 +16,27 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    public class HttpRequestBuilderMiddlewareTests : IDisposable
+    public class HttpRequesterMiddlewareTests : IDisposable
     {
-        private readonly Mock<IRequestBuilder> _requestBuilder;
+        private readonly Mock<IHttpRequester> _requester;
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
+        private OkResponse<HttpResponseMessage> _response;
         private OkResponse<Request> _request;
-        private OkResponse<string> _downstreamUrl;
 
-        public HttpRequestBuilderMiddlewareTests()
+        public HttpRequesterMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _requestBuilder = new Mock<IRequestBuilder>();
+            _requester = new Mock<IHttpRequester>();
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_requestBuilder.Object);
+                  x.AddSingleton(_requester.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
               .UseUrls(_url)
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.Middleware
               .UseUrls(_url)
               .Configure(app =>
               {
-                  app.UseHttpRequestBuilderMiddleware();
+                  app.UseHttpRequesterMiddleware();
               });
 
             _server = new TestServer(builder);
@@ -56,26 +56,25 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
-                .And(x => x.GivenTheRequestBuilderReturns(new Request(new HttpRequestMessage(), new CookieContainer())))
+            this.Given(x => x.GivenTheRequestIs(new Request(new HttpRequestMessage(),new CookieContainer())))
+                .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void GivenTheRequestBuilderReturns(Request request)
+        private void GivenTheRequesterReturns(HttpResponseMessage response)
         {
-            _request = new OkResponse<Request>(request);
-            _requestBuilder
-                .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(),
-                It.IsAny<IRequestCookieCollection>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(_request);
+            _response = new OkResponse<HttpResponseMessage>(response);
+            _requester
+                .Setup(x => x.GetResponse(It.IsAny<Request>()))
+                .ReturnsAsync(_response);
         }
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
             _scopedRepository
-                .Verify(x => x.Add("Request", _request.Data), Times.Once());
+                .Verify(x => x.Add("Response", _response.Data), Times.Once());
         }
 
         private void WhenICallTheMiddleware()
@@ -83,12 +82,12 @@ namespace Ocelot.UnitTests.Middleware
             _result = _client.GetAsync(_url).Result;
         }
 
-        private void GivenTheDownStreamUrlIs(string downstreamUrl)
+        private void GivenTheRequestIs(Request request)
         {
-            _downstreamUrl = new OkResponse<string>(downstreamUrl);
+            _request = new OkResponse<Request>(request);
             _scopedRepository
-                .Setup(x => x.Get<string>(It.IsAny<string>()))
-                .Returns(_downstreamUrl);
+                .Setup(x => x.Get<Request>(It.IsAny<string>()))
+                .Returns(_request);
         }
 
         public void Dispose()

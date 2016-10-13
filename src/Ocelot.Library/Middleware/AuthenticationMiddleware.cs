@@ -12,6 +12,7 @@
         private readonly RequestDelegate _next;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IRouteRequiresAuthentication _requiresAuthentication;
+
         public AuthenticationMiddleware(RequestDelegate next, 
             IScopedRequestDataRepository scopedRequestDataRepository, 
             IRouteRequiresAuthentication requiresAuthentication) 
