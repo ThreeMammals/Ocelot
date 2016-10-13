@@ -7,6 +7,6 @@ build_script:
 test_script:
 - run-tests.bat
 artifacts:
-- path: site\wwwroot\*.*
+- path: site\wwwroot\**\*.*
 cache:
 - '%USERPROFILE%\.nuget\packages'
