@@ -6,6 +6,8 @@
 
 # Ocelot
 
+[![Join the chat at https://gitter.im/Ocelotey/Lobby](https://badges.gitter.im/Ocelotey/Lobby.svg)](https://gitter.im/Ocelotey/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Attempt at a .NET Api Gateway
 
 This project is aimed at people using .NET running 
