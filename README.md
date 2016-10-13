@@ -1,3 +1,8 @@
+![Build status](https://ci.appveyor.com/api/projects/status/github/TomPallister/Ocelot?svg=true)
+
+
+
+
 # Ocelot
 
 Attempt at a .NET Api Gateway
