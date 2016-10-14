@@ -24,9 +24,12 @@ namespace Ocelot.AcceptanceTests
         private StringContent _postContent;
         private IWebHost _builder;
 
+        // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
+        private double _netCoreAppVersion = 1.4;
+
         public OcelotTests()
         {
-            _configurationPath = "./bin/Debug/netcoreapp1.0/configuration.yaml";
+            _configurationPath = $"./bin/Debug/netcoreapp{_netCoreAppVersion}/configuration.yaml";
         }
 
         [Fact]
