@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Library.Infrastructure.Authentication;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.Responses;
@@ -17,9 +16,10 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
+    using Library.Infrastructure.Configuration;
+
     public class AuthenticationMiddlewareTests : IDisposable
     {
-        private readonly Mock<IRouteRequiresAuthentication> _requiresAuth;
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
@@ -30,13 +30,11 @@ namespace Ocelot.UnitTests.Middleware
         public AuthenticationMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _requiresAuth = new Mock<IRouteRequiresAuthentication>();
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_requiresAuth.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
               .UseUrls(_url)
@@ -56,8 +54,7 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "any old string")))
-                .And(x => x.GivenTheRouteIsNotAuthenticated())
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("","","","",false, ""))))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenNoExceptionsAreThrown())
                 .BDDfy();
@@ -74,13 +71,6 @@ namespace Ocelot.UnitTests.Middleware
             _scopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
-        }
-
-        private void GivenTheRouteIsNotAuthenticated()
-        {
-            _requiresAuth
-                .Setup(x => x.IsAuthenticated(It.IsAny<DownstreamRoute>(), It.IsAny<string>()))
-                .Returns(new OkResponse<bool>(false));
         }
 
         private void WhenICallTheMiddleware()

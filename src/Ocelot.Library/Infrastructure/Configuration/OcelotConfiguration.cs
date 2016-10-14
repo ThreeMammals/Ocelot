@@ -45,7 +45,7 @@ namespace Ocelot.Library.Infrastructure.Configuration
 
                 var isAuthenticated = !string.IsNullOrEmpty(reRoute.Authentication);
 
-                _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated));
+                _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, reRoute.Authentication));
             }   
         }
 

@@ -9,6 +9,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.UrlTemplateReplacer
 {
+    using Library.Infrastructure.Configuration;
+
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {
         private DownstreamRoute _downstreamRoute;
@@ -23,7 +25,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         [Fact]
         public void can_replace_no_template_variables()
         {
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("", "", "", "", false, ""))))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned(""))
                 .BDDfy();
@@ -32,7 +34,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         [Fact]
         public void can_replace_no_template_variables_with_slash()
         {
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("/", "", "", "", false, ""))))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("/"))
                 .BDDfy();
@@ -41,7 +43,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_no_slash()
         {
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "api")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("api", "", "", "", false, ""))))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api"))
                 .BDDfy();
@@ -50,7 +52,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_one_slash()
         {
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "api/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("api/", "", "", "", false, ""))))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/"))
                 .BDDfy();
@@ -59,7 +61,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_multiple_slash()
         {
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "api/product/products/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("api/product/products/", "", "", "", false, ""))))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
                 .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/product/products/"))
                 .BDDfy();
@@ -73,7 +75,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, "productservice/products/{productId}/")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, new ReRoute("productservice/products/{productId}/", "", "", "", false, ""))))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/"))
              .BDDfy();
@@ -87,7 +89,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
                 new TemplateVariableNameAndValue("{productId}", "1")
             };
 
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, "productservice/products/{productId}/variants")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, new ReRoute("productservice/products/{productId}/variants", "", "", "", false, ""))))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants"))
              .BDDfy();
@@ -102,7 +104,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
                 new TemplateVariableNameAndValue("{variantId}", "12")
             };
 
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, "productservice/products/{productId}/variants/{variantId}")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, new ReRoute("productservice/products/{productId}/variants/{variantId}", "", "", "", false, ""))))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants/12"))
              .BDDfy();
@@ -118,7 +120,7 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
                 new TemplateVariableNameAndValue("{categoryId}", "34")
             };
 
-            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, "productservice/category/{categoryId}/products/{productId}/variants/{variantId}")))
+            this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRoute(templateVariables, new ReRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}", "", "", "", false, ""))))
              .When(x => x.WhenIReplaceTheTemplateVariables())
              .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/category/34/products/1/variants/12"))
              .BDDfy();
@@ -138,6 +140,5 @@ namespace Ocelot.UnitTests.UrlTemplateReplacer
         {
             _result.Data.ShouldBe(expected);
         }
-
     }
 }

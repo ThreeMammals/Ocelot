@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
+    using Library.Infrastructure.Configuration;
     using Library.Infrastructure.DownstreamRouteFinder;
     using Library.Infrastructure.Repository;
     using Library.Infrastructure.Responses;
@@ -55,7 +56,7 @@
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), "any old string")))
+            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("any old string", "", "", "",false, ""))))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();

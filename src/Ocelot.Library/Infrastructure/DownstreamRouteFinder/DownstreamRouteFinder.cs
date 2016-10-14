@@ -32,7 +32,7 @@ namespace Ocelot.Library.Infrastructure.DownstreamRouteFinder
                     var templateVariableNameAndValues = _templateVariableNameAndValueFinder.Find(upstreamUrlPath,
                         template.UpstreamTemplate);
 
-                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, template.DownstreamTemplate));
+                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, template));
                 }
             }
         

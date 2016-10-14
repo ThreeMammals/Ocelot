@@ -3,14 +3,16 @@ using Ocelot.Library.Infrastructure.UrlMatcher;
 
 namespace Ocelot.Library.Infrastructure.DownstreamRouteFinder
 {
+    using Configuration;
+
     public class DownstreamRoute
     {
-        public DownstreamRoute(List<TemplateVariableNameAndValue> templateVariableNameAndValues, string downstreamUrlTemplate)
+        public DownstreamRoute(List<TemplateVariableNameAndValue> templateVariableNameAndValues, ReRoute reRoute)
         {
             TemplateVariableNameAndValues = templateVariableNameAndValues;
-            DownstreamUrlTemplate = downstreamUrlTemplate;
+            ReRoute = reRoute;
         }
         public List<TemplateVariableNameAndValue> TemplateVariableNameAndValues { get; private set; }
-        public string DownstreamUrlTemplate { get; private set; }
+        public ReRoute ReRoute { get; private set; }
     }
 }

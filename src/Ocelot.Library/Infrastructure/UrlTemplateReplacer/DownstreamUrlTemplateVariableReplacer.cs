@@ -10,7 +10,7 @@ namespace Ocelot.Library.Infrastructure.UrlTemplateReplacer
         {
             var upstreamUrl = new StringBuilder();
 
-            upstreamUrl.Append(downstreamRoute.DownstreamUrlTemplate);
+            upstreamUrl.Append(downstreamRoute.ReRoute.DownstreamTemplate);
 
             foreach (var templateVarAndValue in downstreamRoute.TemplateVariableNameAndValues)
             {
