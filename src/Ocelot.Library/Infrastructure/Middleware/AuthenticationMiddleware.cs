@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,11 @@ using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.Responses;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Ocelot.Library.Infrastructure.Authentication;
 
 namespace Ocelot.Library.Infrastructure.Middleware
 {
@@ -16,13 +22,15 @@ namespace Ocelot.Library.Infrastructure.Middleware
         private RequestDelegate _authenticationNext;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IApplicationBuilder _app;
+        private readonly IAuthenticationProviderFactory _authProviderFactory;
 
         public AuthenticationMiddleware(RequestDelegate next, IApplicationBuilder app,
-            IScopedRequestDataRepository scopedRequestDataRepository) 
+            IScopedRequestDataRepository scopedRequestDataRepository, IAuthenticationProviderFactory authProviderFactory) 
             : base(scopedRequestDataRepository)
         {
             _next = next;
             _scopedRequestDataRepository = scopedRequestDataRepository;
+            _authProviderFactory = authProviderFactory;
             _app = app;
         }
 
@@ -38,25 +46,17 @@ namespace Ocelot.Library.Infrastructure.Middleware
 
             if (IsAuthenticatedRoute(downstreamRoute.Data.ReRoute))
             {
-                //todo - build auth pipeline and then call normal pipeline if all good?
-                //create new app builder
-                var builder = _app.New();
-                //set up any options for the authentication
-                var jwtBearerOptions = new JwtBearerOptions
+                var authenticationNext = _authProviderFactory.Get(downstreamRoute.Data.ReRoute.AuthenticationProvider, _app);
+
+                if (!authenticationNext.IsError)
                 {
-                    AutomaticAuthenticate = true,
-                    AutomaticChallenge = true,
-                    RequireHttpsMetadata = false,
-                };
-                //set the authentication middleware
-                builder.UseJwtBearerAuthentication(jwtBearerOptions);
-                //use mvc so we hit the catch all authorised controller
-                builder.UseMvc();
-                //then build it
-                _authenticationNext = builder.Build();
-                //then call it
-                await _authenticationNext(context);
-                //check if the user is authenticated
+                    await authenticationNext.Data.Handler.Invoke(context);
+                }
+                else
+                {
+                    SetPipelineError(authenticationNext.Errors);
+                }
+
                 if (context.User.Identity.IsAuthenticated)
                 {
                     await _next.Invoke(context);

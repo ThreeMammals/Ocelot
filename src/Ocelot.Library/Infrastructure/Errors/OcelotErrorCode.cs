@@ -8,6 +8,7 @@
         UnableToFindDownstreamRouteError,
         CannotAddDataError,
         CannotFindDataError,
-        UnableToCompleteRequestError
+        UnableToCompleteRequestError,
+        UnableToCreateAuthenticationHandlerError
     }
 }

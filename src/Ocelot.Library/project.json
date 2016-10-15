@@ -1,34 +1,35 @@
 {
     "version": "1.0.0-*",
 
-  "dependencies": {
-    "Microsoft.NETCore.App": {
-      "version": "1.0.0",
-      "type": "platform"
+    "dependencies": {
+        "Microsoft.NETCore.App": {
+            "version": "1.0.0",
+            "type": "platform"
+        },
+        "Microsoft.AspNetCore.Mvc": "1.0.0",
+        "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
+        "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0",
+        "Microsoft.Extensions.Logging": "1.0.0",
+        "Microsoft.Extensions.Logging.Console": "1.0.0",
+        "Microsoft.Extensions.Logging.Debug": "1.0.0",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
+        "Microsoft.AspNetCore.Http": "1.0.0",
+        "System.Text.RegularExpressions": "4.1.0",
+        "YamlDotNet": "3.9.0",
+        "Microsoft.AspNetCore.Authentication.OAuth": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0",
+        "Microsoft.AspNetCore.Authentication": "1.0.0",
+        "IdentityServer4.AccessTokenValidation": "1.0.1-rc2"
     },
-    "Microsoft.AspNetCore.Mvc": "1.0.0",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
-    "Microsoft.AspNetCore.Http": "1.0.0",
-    "System.Text.RegularExpressions": "4.1.0",
-    "YamlDotNet": "3.9.0",
-    "Microsoft.AspNetCore.Authentication.OAuth": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0",
-    "Microsoft.AspNetCore.Authentication": "1.0.0"
-  },
 
     "frameworks": {
         "netcoreapp1.4": {

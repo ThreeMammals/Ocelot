@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using IdentityServer4.Models;
 using IdentityServer4.Services.InMemory;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Shouldly;
 using TestStack.BDDfy;
@@ -21,17 +23,17 @@ namespace Ocelot.AcceptanceTests
 {
     public class AuthenticationTests : IDisposable
     {
-        private TestServer _server;
-        private HttpClient _client;
+        private TestServer _ocelotServer;
+        private HttpClient _ocelotClient;
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
         private StringContent _postContent;
-        private IWebHost _builder;
+        private IWebHost _ocelotBbuilder;
 
         // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
         private double _netCoreAppVersion = 1.4;
-        private HttpClient _idServerClient;
-        private TestServer _idServer;
+        private BearerToken _token;
+        private IWebHost _identityServerBuilder;
 
         public AuthenticationTests()
         {
@@ -39,7 +41,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_401_using_jwt()
+        public void should_return_401_using_identity_server_access_token()
         {
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888"))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
@@ -63,6 +65,33 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_201_using_identity_server_access_token()
+        {
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888"))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
+                .And(x => x.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                {
+                    ReRoutes = new List<YamlReRoute>
+                    {
+                        new YamlReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51876/",
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Post",
+                            Authentication = "JwtBearerAuthentication"
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .And(x => x.GivenIHaveAddedATokenToMyRequest())
+                .And(x => x.GivenThePostHasContent("postContent"))
+                .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+                .BDDfy();
+        }
+
         private void GivenThePostHasContent(string postcontent)
         {
             _postContent = new StringContent(postcontent);
@@ -73,10 +102,10 @@ namespace Ocelot.AcceptanceTests
         /// </summary>
         private void GivenTheApiGatewayIsRunning()
         {
-            _server = new TestServer(new WebHostBuilder()
+            _ocelotServer = new TestServer(new WebHostBuilder()
                 .UseStartup<Startup>());
 
-            _client = _server.CreateClient();
+            _ocelotClient = _ocelotServer.CreateClient();
         }
 
         private void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
@@ -96,7 +125,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
+            _ocelotBbuilder = new WebHostBuilder()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -112,12 +141,12 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _builder.Start();
+            _ocelotBbuilder.Start();
         }
 
         private void GivenThereIsAnIdentityServerOn(string url)
         {
-            var builder = new WebHostBuilder()
+            _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -126,41 +155,51 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(services =>
                 {
                     services.AddDeveloperIdentityServer()
-                    .AddInMemoryClients(new List<Client> {
-                    new Client
-                    {
-                        ClientId = "test",
-                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                        ClientSecrets = new List<Secret> {  new Secret("test".Sha256()) },
-                        AllowedScopes = new List<string> { "api1" },
-                        AllowAccessToAllScopes = true,
-                        AccessTokenType = AccessTokenType.Jwt,
-                        Enabled = true
-
-                    } })
                     .AddInMemoryScopes(new List<Scope> { new Scope
                     {
-                        Name = "api1",
+                        Name = "api",
                         Description = "My API",
                         Enabled = true
 
                     }})
+                    .AddInMemoryClients(new List<Client> {
+                    new Client
+                    {
+                        ClientId = "client",
+                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                        ClientSecrets = new List<Secret> {  new Secret("secret".Sha256()) },
+                        AllowedScopes = new List<string> { "api" },
+                        AccessTokenType = AccessTokenType.Jwt,
+                        Enabled = true,
+                        RequireClientSecret = false
+                    } })
                     .AddInMemoryUsers(new List<InMemoryUser> { new InMemoryUser
                     {
-                        Username = "test", Password = "test", Enabled = true, Subject = "asdads"
+                        Username = "test",
+                        Password = "test",
+                        Enabled = true,
+                        Subject = "asdads"
                     }});
                 })
                 .Configure(app =>
                 {
                     app.UseIdentityServer();
-                });
-                
-            _idServer = new TestServer(builder);
-            _idServerClient = _idServer.CreateClient();
+                })
+                .Build();
 
-            var response = _idServerClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
-            response.EnsureSuccessStatusCode();
-            var content = response.Content.ReadAsStringAsync().Result;
+            _identityServerBuilder.Start();
+
+            VerifyIdentiryServerStarted(url);
+
+        }
+
+        private void VerifyIdentiryServerStarted(string url)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         private void GivenIHaveAToken(string url)
@@ -168,21 +207,32 @@ namespace Ocelot.AcceptanceTests
             var tokenUrl = $"{url}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "test"),
-                new KeyValuePair<string, string>("client_secret", "test".Sha256()),
-                new KeyValuePair<string, string>("scope", "api1"),
+                new KeyValuePair<string, string>("client_id", "client"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
                 new KeyValuePair<string, string>("grant_type", "password")
             };
             var content = new FormUrlEncodedContent(formData);
-            var response = _idServerClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                response.EnsureSuccessStatusCode();
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
+        private void GivenIHaveAddedATokenToMyRequest()
+        {
+            _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
         private void WhenIPostUrlOnTheApiGateway(string url)
         {
-            _response = _client.PostAsync(url, _postContent).Result;
+            _response = _ocelotClient.PostAsync(url, _postContent).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
@@ -192,11 +242,22 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _idServerClient?.Dispose();
-            _idServer?.Dispose();
-            _builder?.Dispose();
-            _client.Dispose();
-            _server.Dispose();
+            _ocelotBbuilder?.Dispose();
+            _ocelotClient?.Dispose();
+            _ocelotServer?.Dispose();
+            _identityServerBuilder?.Dispose();
+        }
+
+        class BearerToken
+        {
+            [JsonProperty("access_token")]
+            public string AccessToken { get; set; }
+
+            [JsonProperty("expires_in")]
+            public int ExpiresIn { get; set; }
+
+            [JsonProperty("token_type")]
+            public string TokenType { get; set; }
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Library.Infrastructure.Authentication;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
@@ -41,7 +42,8 @@ namespace Ocelot
         {
             services.AddOptions();
             services.AddMvc();
-            
+            services.AddMvcCore().AddAuthorization().AddJsonFormatters();
+
             services.Configure<YamlConfiguration>(Configuration);
             services.AddAuthentication();
 
@@ -55,6 +57,8 @@ namespace Ocelot
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
             services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
             services.AddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
+            services.AddSingleton<IAuthenticationProviderFactory, AuthenticationProviderFactory>();
+            services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

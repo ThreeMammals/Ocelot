@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Library.Infrastructure.Authentication;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Middleware;
 using Ocelot.Library.Infrastructure.Repository;
@@ -21,6 +22,7 @@ namespace Ocelot.UnitTests.Middleware
     public class AuthenticationMiddlewareTests : IDisposable
     {
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IAuthenticationProviderFactory> _authFactory;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -31,10 +33,11 @@ namespace Ocelot.UnitTests.Middleware
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
-
+            _authFactory = new Mock<IAuthenticationProviderFactory>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton(_authFactory.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
               .UseUrls(_url)

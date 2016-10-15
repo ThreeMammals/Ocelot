@@ -3,7 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Library.Infrastructure.Responder
-{
+{   
+    /// <summary>
+    /// Cannot unit test things in this class due to methods not being implemented
+    /// on .net concretes used for testing
+    /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
         public async Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response)

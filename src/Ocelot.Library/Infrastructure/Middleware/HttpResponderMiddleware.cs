@@ -43,7 +43,6 @@ namespace Ocelot.Library.Infrastructure.Middleware
                 {
                     await _responder.CreateErrorResponse(context, 500);
                 }
-
             }
             else
             {
