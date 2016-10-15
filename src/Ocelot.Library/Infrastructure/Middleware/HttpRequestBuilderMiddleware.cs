@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class HttpRequestBuilderMiddleware : OcelotMiddleware
     {

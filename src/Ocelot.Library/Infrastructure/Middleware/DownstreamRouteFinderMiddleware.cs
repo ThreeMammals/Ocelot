@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {

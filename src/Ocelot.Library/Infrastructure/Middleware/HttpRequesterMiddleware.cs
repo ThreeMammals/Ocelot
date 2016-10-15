@@ -4,7 +4,7 @@ using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Requester;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class HttpRequesterMiddleware : OcelotMiddleware
     {

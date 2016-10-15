@@ -1,10 +1,11 @@
-﻿using Ocelot.Library.Infrastructure.Responses;
+﻿using Ocelot.Library.Infrastructure.Errors;
+using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Configuration.Yaml
 {
     public class DownstreamTemplateAlreadyUsedError : Error
     {
-        public DownstreamTemplateAlreadyUsedError(string message) : base(message)
+        public DownstreamTemplateAlreadyUsedError(string message) : base(message, OcelotErrorCode.DownstreamTemplateAlreadyUsedError)
         {
         }
     }

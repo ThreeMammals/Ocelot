@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Middleware
+﻿using Ocelot.Library.Infrastructure.Middleware;
+
+namespace Ocelot.UnitTests.Middleware
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +12,6 @@
     using Library.Infrastructure.Responses;
     using Library.Infrastructure.UrlMatcher;
     using Library.Infrastructure.UrlTemplateReplacer;
-    using Library.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Extensions.DependencyInjection;

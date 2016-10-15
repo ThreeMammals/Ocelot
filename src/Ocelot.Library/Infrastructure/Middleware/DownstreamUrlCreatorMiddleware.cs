@@ -4,7 +4,7 @@ using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {

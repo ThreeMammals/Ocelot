@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -23,11 +22,11 @@ namespace Ocelot.Library.Infrastructure.Responder
             return context;
         }
 
-        public async Task<HttpContext> CreateNotFoundResponse(HttpContext context)
+        public async Task<HttpContext> CreateErrorResponse(HttpContext context, int statusCode)
         {
             context.Response.OnStarting(x =>
             {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.StatusCode = statusCode;
                 return Task.CompletedTask;
             }, context);
             return context;

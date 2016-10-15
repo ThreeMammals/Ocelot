@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using Ocelot.Library.Infrastructure.Configuration;
+using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Responses;
 using Ocelot.Library.Infrastructure.UrlMatcher;
 

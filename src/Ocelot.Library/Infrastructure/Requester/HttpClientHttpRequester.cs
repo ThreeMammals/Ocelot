@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Responses;
 

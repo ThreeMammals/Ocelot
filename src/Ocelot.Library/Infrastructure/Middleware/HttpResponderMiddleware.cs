@@ -4,22 +4,25 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.Responder;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class HttpResponderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
         public HttpResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
-            IScopedRequestDataRepository scopedRequestDataRepository)
+            IScopedRequestDataRepository scopedRequestDataRepository, 
+            IErrorsToHttpStatusCodeMapper codeMapper)
             :base(scopedRequestDataRepository)
         {
             _next = next;
             _responder = responder;
             _scopedRequestDataRepository = scopedRequestDataRepository;
+            _codeMapper = codeMapper;
         }
 
         public async Task Invoke(HttpContext context)
@@ -28,11 +31,19 @@ namespace Ocelot.Library.Middleware
 
             if (PipelineError())
             {
-                //todo obviously this needs to be better...prob look at response errors
-                // and make a decision i guess
                 var errors = GetPipelineErrors();
+                
+                var statusCode = _codeMapper.Map(errors);
 
-                await _responder.CreateNotFoundResponse(context);
+                if (!statusCode.IsError)
+                {
+                    await _responder.CreateErrorResponse(context, statusCode.Data);
+                }
+                else
+                {
+                    await _responder.CreateErrorResponse(context, 500);
+                }
+
             }
             else
             {

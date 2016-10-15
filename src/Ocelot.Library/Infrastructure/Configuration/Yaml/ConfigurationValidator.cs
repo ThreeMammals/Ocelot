@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Configuration.Yaml

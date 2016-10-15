@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Repository

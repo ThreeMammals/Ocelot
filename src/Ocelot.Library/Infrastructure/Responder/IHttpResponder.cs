@@ -7,7 +7,6 @@ namespace Ocelot.Library.Infrastructure.Responder
     public interface IHttpResponder
     {
         Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response);
-        Task<HttpContext> CreateNotFoundResponse(HttpContext context);
-
+        Task<HttpContext> CreateErrorResponse(HttpContext context, int statusCode);
     }
 }

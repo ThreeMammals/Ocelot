@@ -10,13 +10,13 @@ using Microsoft.Extensions.Options;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.Configuration.Yaml;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Middleware;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Requester;
 using Ocelot.Library.Infrastructure.Responder;
 using Ocelot.Library.Infrastructure.UrlMatcher;
 using Ocelot.Library.Infrastructure.UrlTemplateReplacer;
-using Ocelot.Library.Middleware;
 
 namespace Ocelot
 {
@@ -40,8 +40,10 @@ namespace Ocelot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-                        
+            services.AddMvc();
+            
             services.Configure<YamlConfiguration>(Configuration);
+            services.AddAuthentication();
 
             // Add framework services.
             services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
@@ -52,6 +54,7 @@ namespace Ocelot
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
             services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
+            services.AddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

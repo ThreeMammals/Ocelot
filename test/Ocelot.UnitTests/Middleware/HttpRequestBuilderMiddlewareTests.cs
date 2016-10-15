@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Library.Infrastructure.Middleware;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.RequestBuilder;
 using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Middleware;
 using TestStack.BDDfy;
 using Xunit;
 

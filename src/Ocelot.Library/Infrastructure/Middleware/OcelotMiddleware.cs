@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Repository;
 using Ocelot.Library.Infrastructure.Responses;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Library.Infrastructure.Middleware
 {
     public abstract class OcelotMiddleware
     {
