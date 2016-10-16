@@ -1,4 +1,5 @@
-﻿using Ocelot.Library.Infrastructure.Middleware;
+﻿using Ocelot.Library.Infrastructure.Builder;
+using Ocelot.Library.Infrastructure.Middleware;
 
 namespace Ocelot.UnitTests.Middleware
 {
@@ -59,7 +60,7 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("any old string", "", "", "", false, ""))))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
                 .And(x => x.TheUrlReplacerReturns("any old string"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())

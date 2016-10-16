@@ -43,7 +43,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_401_using_identity_server_access_token()
         {
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
                 {
@@ -54,7 +54,48 @@ namespace Ocelot.AcceptanceTests
                             DownstreamTemplate = "http://localhost:51876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Post",
-                            Authentication = "JwtBearerAuthentication"
+                            AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888", 
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            }
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .And(x => x.GivenThePostHasContent("postContent"))
+                .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_401_using_identity_server_reference_token()
+        {
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Reference))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                {
+                    ReRoutes = new List<YamlReRoute>
+                    {
+                        new YamlReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51876/",
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Post",
+                            AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            }
                         }
                     }
                 }))
@@ -68,7 +109,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_201_using_identity_server_access_token()
         {
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
                 .And(x => x.GivenIHaveAToken("http://localhost:51888"))
                 .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
@@ -80,7 +121,50 @@ namespace Ocelot.AcceptanceTests
                             DownstreamTemplate = "http://localhost:51876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Post",
-                            Authentication = "JwtBearerAuthentication"
+                            AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            }
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .And(x => x.GivenIHaveAddedATokenToMyRequest())
+                .And(x => x.GivenThePostHasContent("postContent"))
+                .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_201_using_identity_server_reference_token()
+        {
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Reference))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 201, string.Empty))
+                .And(x => x.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                {
+                    ReRoutes = new List<YamlReRoute>
+                    {
+                        new YamlReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51876/",
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Post",
+                            AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes = new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            }
                         }
                     }
                 }))
@@ -144,7 +228,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotBbuilder.Start();
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url)
+        private void GivenThereIsAnIdentityServerOn(string url, string scopeName, AccessTokenType tokenType)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -154,13 +238,21 @@ namespace Ocelot.AcceptanceTests
                 .UseUrls(url)
                 .ConfigureServices(services =>
                 {
+                    services.AddLogging();
                     services.AddDeveloperIdentityServer()
                     .AddInMemoryScopes(new List<Scope> { new Scope
                     {
-                        Name = "api",
+                        Name = scopeName,
                         Description = "My API",
-                        Enabled = true
-
+                        Enabled = true,
+                        AllowUnrestrictedIntrospection = true,
+                        ScopeSecrets = new List<Secret>()
+                        {
+                            new Secret
+                            {
+                                Value = "secret".Sha256()
+                            }
+                        }
                     }})
                     .AddInMemoryClients(new List<Client> {
                     new Client
@@ -168,8 +260,8 @@ namespace Ocelot.AcceptanceTests
                         ClientId = "client",
                         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                         ClientSecrets = new List<Secret> {  new Secret("secret".Sha256()) },
-                        AllowedScopes = new List<string> { "api" },
-                        AccessTokenType = AccessTokenType.Jwt,
+                        AllowedScopes = new List<string> { scopeName },
+                        AccessTokenType = tokenType,
                         Enabled = true,
                         RequireClientSecret = false
                     } })
@@ -182,7 +274,7 @@ namespace Ocelot.AcceptanceTests
                     }});
                 })
                 .Configure(app =>
-                {
+                 {
                     app.UseIdentityServer();
                 })
                 .Build();
@@ -248,6 +340,7 @@ namespace Ocelot.AcceptanceTests
             _identityServerBuilder?.Dispose();
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Local
         class BearerToken
         {
             [JsonProperty("access_token")]

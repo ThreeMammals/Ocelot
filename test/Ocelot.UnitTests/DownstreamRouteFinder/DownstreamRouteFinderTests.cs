@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Moq;
+using Ocelot.Library.Infrastructure.Builder;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Responses;
@@ -34,17 +35,29 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_return_route()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
-                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                .And(
+                    x =>
+                        x.GivenTheTemplateVariableAndNameFinderReturns(
+                            new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
-                    {
-                        new ReRoute("someDownstreamPath","someUpstreamPath", "Get", "someUpstreamPath", false, "")
-                    }
-                ))
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("someDownstreamPath")
+                        .WithUpstreamTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("someUpstreamPath")
+                        .Build()
+                }
+                    ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
-                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("someDownstreamPath","","","",false, ""))))
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamTemplate("someDownstreamPath")
+                            .Build()
+                        )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
                 .BDDfy();
         }
@@ -53,18 +66,35 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_return_correct_route_for_http_verb()
         {
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
-                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                .And(
+                    x =>
+                        x.GivenTheTemplateVariableAndNameFinderReturns(
+                            new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
-                    {
-                        new ReRoute("someDownstreamPath", "someUpstreamPath", "Get", string.Empty, false, ""),
-                        new ReRoute("someDownstreamPathForAPost", "someUpstreamPath", "Post", string.Empty, false, "")
-                    }
-                ))
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("someDownstreamPath")
+                        .WithUpstreamTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("")
+                        .Build(),
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("someDownstreamPathForAPost")
+                        .WithUpstreamTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("Post")
+                        .WithUpstreamTemplatePattern("")
+                        .Build()
+                }
+                    ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
-                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("someDownstreamPathForAPost", "","","",false, ""))))
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamTemplate("someDownstreamPathForAPost")
+                            .Build()
+                        )))
                 .BDDfy();
         }
 
@@ -74,7 +104,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("somePath"))
                  .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
-                        new ReRoute("somPath", "somePath", "Get", "somePath", false, "")
+                        new ReRouteBuilder()
+                        .WithDownstreamTemplate("somPath")
+                        .WithUpstreamTemplate("somePath")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("somePath")
+                        .Build(),   
                      }
                  ))
                  .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false))))

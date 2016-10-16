@@ -5,6 +5,6 @@
         public string DownstreamTemplate { get; set; }
         public string UpstreamTemplate { get; set; }
         public string UpstreamHttpMethod { get; set; }
-        public string Authentication { get; set; }
+        public YamlAuthenticationOptions AuthenticationOptions { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Moq;
+using Ocelot.Library.Infrastructure.Builder;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.Configuration.Yaml;
+using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -12,11 +14,13 @@ namespace Ocelot.UnitTests.Configuration
     public class OcelotConfigurationTests
     {
         private readonly Mock<IOptions<YamlConfiguration>> _yamlConfig;
+        private readonly Mock<IConfigurationValidator> _validator;
         private OcelotConfiguration _config;
         private YamlConfiguration _yamlConfiguration;
 
         public OcelotConfigurationTests()
         {
+            _validator = new Mock<IConfigurationValidator>();
             _yamlConfig = new Mock<IOptions<YamlConfiguration>>();
         }
 
@@ -35,10 +39,16 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
+                .And(x => x.GivenTheYamlConfigIsValid())
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}", "Get", "/api/products/.*$", false, "")
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("/products/{productId}")
+                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("/api/products/.*$")
+                        .Build()
                 }))
                 .BDDfy();
         }
@@ -58,10 +68,16 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
+                .And(x => x.GivenTheYamlConfigIsValid())
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}", "Get", "/api/products/.*/variants/.*$", false, "")
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("/products/{productId}")
+                        .WithUpstreamTemplate("/api/products/{productId}/variants/{variantId}")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("/api/products/.*/variants/.*$")
+                        .Build()
                 }))
                 .BDDfy();
         }
@@ -81,10 +97,16 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
+                .And(x => x.GivenTheYamlConfigIsValid())
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/products/{productId}","/api/products/{productId}/variants/{variantId}/", "Get", "/api/products/.*/variants/.*/$", false, "")
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("/products/{productId}")
+                        .WithUpstreamTemplate("/api/products/{productId}/variants/{variantId}/")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("/api/products/.*/variants/.*/$")
+                        .Build()
                 }))
                 .BDDfy();
         }
@@ -104,12 +126,25 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
+                .And(x => x.GivenTheYamlConfigIsValid())
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
-                    new ReRoute("/api/products/","/", "Get", "/$", false, "")
+                    new ReRouteBuilder()
+                        .WithDownstreamTemplate("/api/products/")
+                        .WithUpstreamTemplate("/")
+                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamTemplatePattern("/$")
+                        .Build()
                 }))
                 .BDDfy();
+        }
+
+        private void GivenTheYamlConfigIsValid()
+        {
+            _validator
+                .Setup(x => x.IsValid(It.IsAny<YamlConfiguration>()))
+                .Returns(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false)));
         }
 
         private void GivenTheYamlConfigIs(YamlConfiguration yamlConfiguration)
@@ -122,7 +157,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenIInstanciateTheOcelotConfig()
         {
-            _config = new OcelotConfiguration(_yamlConfig.Object);
+            _config = new OcelotConfiguration(_yamlConfig.Object, _validator.Object);
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)

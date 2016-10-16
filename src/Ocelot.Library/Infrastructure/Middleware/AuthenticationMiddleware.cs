@@ -1,25 +1,18 @@
 ﻿using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Library.Infrastructure.Authentication;
 using Ocelot.Library.Infrastructure.Configuration;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Errors;
 using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responses;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Ocelot.Library.Infrastructure.Authentication;
 
 namespace Ocelot.Library.Infrastructure.Middleware
 {
     public class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private RequestDelegate _authenticationNext;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IApplicationBuilder _app;
         private readonly IAuthenticationHandlerFactory _authHandlerFactory;
@@ -46,7 +39,7 @@ namespace Ocelot.Library.Infrastructure.Middleware
 
             if (IsAuthenticatedRoute(downstreamRoute.Data.ReRoute))
             {
-                var authenticationNext = _authHandlerFactory.Get(downstreamRoute.Data.ReRoute.AuthenticationProvider, _app);
+                var authenticationNext = _authHandlerFactory.Get(_app, downstreamRoute.Data.ReRoute.AuthenticationOptions);
 
                 if (!authenticationNext.IsError)
                 {

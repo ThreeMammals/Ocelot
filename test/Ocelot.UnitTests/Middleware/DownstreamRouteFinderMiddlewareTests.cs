@@ -1,23 +1,22 @@
-﻿using Ocelot.Library.Infrastructure.Middleware;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Library.Infrastructure.Builder;
+using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
+using Ocelot.Library.Infrastructure.Middleware;
+using Ocelot.Library.Infrastructure.Repository;
+using Ocelot.Library.Infrastructure.Responses;
+using Ocelot.Library.Infrastructure.UrlMatcher;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net.Http;
-    using Library.Infrastructure.Configuration;
-    using Library.Infrastructure.DownstreamRouteFinder;
-    using Library.Infrastructure.Repository;
-    using Library.Infrastructure.Responses;
-    using Library.Infrastructure.UrlMatcher;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class DownstreamRouteFinderMiddlewareTests : IDisposable
     {
         private readonly Mock<IDownstreamRouteFinder> _downstreamRouteFinder;
@@ -57,7 +56,7 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("any old string", "", "", "",false, ""))))
+            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();

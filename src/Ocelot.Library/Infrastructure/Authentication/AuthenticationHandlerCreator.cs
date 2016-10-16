@@ -1,6 +1,8 @@
+using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Library.Infrastructure.Responses;
+using AuthenticationOptions = Ocelot.Library.Infrastructure.Configuration.AuthenticationOptions;
 
 namespace Ocelot.Library.Infrastructure.Authentication
 {
@@ -9,17 +11,18 @@ namespace Ocelot.Library.Infrastructure.Authentication
     /// </summary>
     public class AuthenticationHandlerCreator : IAuthenticationHandlerCreator
     {
-        public Response<RequestDelegate> CreateIdentityServerAuthenticationHandler(IApplicationBuilder app)
+        public Response<RequestDelegate> CreateIdentityServerAuthenticationHandler(IApplicationBuilder app, AuthenticationOptions authOptions)
         {
             var builder = app.New();
 
             builder.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
-                //todo sort these options out
-                Authority = "http://localhost:51888",
-                ScopeName = "api",
-
-                RequireHttpsMetadata = false
+                Authority = authOptions.ProviderRootUrl,
+                ScopeName = authOptions.ScopeName,
+                RequireHttpsMetadata = authOptions.RequireHttps,
+                AdditionalScopes = authOptions.AdditionalScopes,
+                SupportedTokens = SupportedTokens.Both,
+                ScopeSecret = authOptions.ScopeSecret
             });
 
             builder.UseMvc();

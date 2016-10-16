@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Library.Infrastructure.Authentication;
+using Ocelot.Library.Infrastructure.Builder;
 using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
 using Ocelot.Library.Infrastructure.Middleware;
 using Ocelot.Library.Infrastructure.Repository;
@@ -57,7 +58,7 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRoute("","","","",false, ""))))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenNoExceptionsAreThrown())
                 .BDDfy();

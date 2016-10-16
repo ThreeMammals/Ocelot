@@ -9,6 +9,7 @@
         CannotAddDataError,
         CannotFindDataError,
         UnableToCompleteRequestError,
-        UnableToCreateAuthenticationHandlerError
+        UnableToCreateAuthenticationHandlerError,
+        UnsupportedAuthenticationProviderError
     }
 }

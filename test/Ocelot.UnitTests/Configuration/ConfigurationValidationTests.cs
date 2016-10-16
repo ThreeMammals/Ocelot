@@ -38,6 +38,53 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void configuration_is_valid_with_valid_authentication_provider()
+        {
+            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            {
+                ReRoutes = new List<YamlReRoute>
+                {
+                    new YamlReRoute
+                    {
+                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        UpstreamTemplate = "http://asdf.com",
+                        AuthenticationOptions = new YamlAuthenticationOptions
+                        {
+                            Provider = "IdentityServer"
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_with_invalid_authentication_provider()
+        {
+            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            {
+                ReRoutes = new List<YamlReRoute>
+                {
+                    new YamlReRoute
+                    {
+                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        UpstreamTemplate = "http://asdf.com",
+                        AuthenticationOptions = new YamlAuthenticationOptions
+                        {
+                            Provider = "BootyBootyBottyRockinEverywhere"
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<UnsupportedAuthenticationProviderError>())
+                .BDDfy();
+        }
+
+        [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes()
         {
             this.Given(x => x.GivenAConfiguration(new YamlConfiguration()

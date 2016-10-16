@@ -17,8 +17,7 @@ namespace Ocelot.UnitTests.Authentication
         private readonly IAuthenticationHandlerFactory _authenticationHandlerFactory;
         private readonly Mock<IApplicationBuilder> _app;
         private readonly Mock<IAuthenticationHandlerCreator> _creator;
-
-        private string _provider;
+        private Library.Infrastructure.Configuration.AuthenticationOptions _authenticationOptions;
         private Response<AuthenticationHandler> _result;
 
         public AuthenticationHandlerFactoryTests()
@@ -31,27 +30,32 @@ namespace Ocelot.UnitTests.Authentication
         [Fact]
         public void should_return_identity_server_access_token_handler()
         {
-            this.Given(x => x.GivenTheProviderIs("IdentityServer.AccessToken"))
+            this.Given(x => x.GivenTheAuthenticationOptionsAre(new Library.Infrastructure.Configuration.AuthenticationOptions("IdentityServer", "","",false, new List<string>(), "")))
                 .And(x => x.GivenTheCreatorReturns())
                 .When(x => x.WhenIGetFromTheFactory())
-                .Then(x => x.ThenTheHandlerIsReturned("IdentityServer.AccessToken"))
+                .Then(x => x.ThenTheHandlerIsReturned("IdentityServer"))
                 .BDDfy();
         }
 
         [Fact]
         public void should_return_error_if_cannot_create_handler()
         {
-            this.Given(x => x.GivenTheProviderIs("IdentityServer.AccessToken"))
+            this.Given(x => x.GivenTheAuthenticationOptionsAre(new Library.Infrastructure.Configuration.AuthenticationOptions("IdentityServer", "", "", false, new List<string>(), "")))
                 .And(x => x.GivenTheCreatorReturnsAnError())
                 .When(x => x.WhenIGetFromTheFactory())
                 .Then(x => x.ThenAnErrorResponseIsReturned())
                 .BDDfy();
         }
 
+        private void GivenTheAuthenticationOptionsAre(Library.Infrastructure.Configuration.AuthenticationOptions authenticationOptions)
+        {
+            _authenticationOptions = authenticationOptions;
+        }
+
         private void GivenTheCreatorReturnsAnError()
         {
             _creator
-                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>()))
+                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>(), It.IsAny<Library.Infrastructure.Configuration.AuthenticationOptions>()))
                 .Returns(new ErrorResponse<RequestDelegate>(new List<Error>
             {
                 new UnableToCreateAuthenticationHandlerError($"Unable to create authentication handler for xxx")
@@ -61,18 +65,13 @@ namespace Ocelot.UnitTests.Authentication
         private void GivenTheCreatorReturns()
         {
             _creator
-                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>()))
+                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>(), It.IsAny<Library.Infrastructure.Configuration.AuthenticationOptions>()))
                 .Returns(new OkResponse<RequestDelegate>(x => Task.CompletedTask));
-        }
-
-        private void GivenTheProviderIs(string provider)
-        {
-            _provider = provider;
         }
 
         private void WhenIGetFromTheFactory()
         {
-            _result = _authenticationHandlerFactory.Get(_provider, _app.Object);
+            _result = _authenticationHandlerFactory.Get(_app.Object, _authenticationOptions);
         }
 
         private void ThenTheHandlerIsReturned(string expected)

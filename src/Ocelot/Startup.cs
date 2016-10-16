@@ -43,11 +43,13 @@ namespace Ocelot
             services.AddOptions();
             services.AddMvc();
             services.AddMvcCore().AddAuthorization().AddJsonFormatters();
+            services.AddAuthentication();
+            services.AddLogging();
 
             services.Configure<YamlConfiguration>(Configuration);
-            services.AddAuthentication();
 
             // Add framework services.
+            services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
             services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<ITemplateVariableNameAndValueFinder, TemplateVariableNameAndValueFinder>();

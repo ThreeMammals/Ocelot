@@ -31,6 +31,19 @@ Priorities
 - Rate Limiting
 - Then a big list of cool things...
 
-## How to use
+# How to use
 
-TBC....
+# Configuration
+
+TBC really but example configuration for a route below.
+
+ReRoutes:
+- DownstreamTemplate: http://localhost:51876/
+  UpstreamTemplate: /
+  UpstreamHttpMethod: Post
+  AuthenticationOptions:
+    Provider: IdentityServer.AccessToken
+    ProviderRootUrl: http://localhost:51888
+    ScopeName: api
+    AdditionalScopes: []
+    ScopeSecret: secret
