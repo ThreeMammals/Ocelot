@@ -12,24 +12,24 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Authentication
 {
-    public class AuthenticationProviderFactoryTests
+    public class AuthenticationHandlerFactoryTests
     {
-        private readonly IAuthenticationProviderFactory _authenticationProviderFactory;
+        private readonly IAuthenticationHandlerFactory _authenticationHandlerFactory;
         private readonly Mock<IApplicationBuilder> _app;
         private readonly Mock<IAuthenticationHandlerCreator> _creator;
 
         private string _provider;
         private Response<AuthenticationHandler> _result;
 
-        public AuthenticationProviderFactoryTests()
+        public AuthenticationHandlerFactoryTests()
         {
             _app = new Mock<IApplicationBuilder>();
             _creator = new Mock<IAuthenticationHandlerCreator>();
-            _authenticationProviderFactory = new AuthenticationProviderFactory(_creator.Object);
+            _authenticationHandlerFactory = new AuthenticationHandlerFactory(_creator.Object);
         }
 
         [Fact]
-        public void should_return_identity_server_access_token_provider()
+        public void should_return_identity_server_access_token_handler()
         {
             this.Given(x => x.GivenTheProviderIs("IdentityServer.AccessToken"))
                 .And(x => x.GivenTheCreatorReturns())
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Authentication
 
         private void WhenIGetFromTheFactory()
         {
-            _result = _authenticationProviderFactory.Get(_provider, _app.Object);
+            _result = _authenticationHandlerFactory.Get(_provider, _app.Object);
         }
 
         private void ThenTheHandlerIsReturned(string expected)

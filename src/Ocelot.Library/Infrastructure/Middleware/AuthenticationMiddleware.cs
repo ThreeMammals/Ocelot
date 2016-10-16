@@ -22,15 +22,15 @@ namespace Ocelot.Library.Infrastructure.Middleware
         private RequestDelegate _authenticationNext;
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
         private readonly IApplicationBuilder _app;
-        private readonly IAuthenticationProviderFactory _authProviderFactory;
+        private readonly IAuthenticationHandlerFactory _authHandlerFactory;
 
         public AuthenticationMiddleware(RequestDelegate next, IApplicationBuilder app,
-            IScopedRequestDataRepository scopedRequestDataRepository, IAuthenticationProviderFactory authProviderFactory) 
+            IScopedRequestDataRepository scopedRequestDataRepository, IAuthenticationHandlerFactory authHandlerFactory) 
             : base(scopedRequestDataRepository)
         {
             _next = next;
             _scopedRequestDataRepository = scopedRequestDataRepository;
-            _authProviderFactory = authProviderFactory;
+            _authHandlerFactory = authHandlerFactory;
             _app = app;
         }
 
@@ -46,7 +46,7 @@ namespace Ocelot.Library.Infrastructure.Middleware
 
             if (IsAuthenticatedRoute(downstreamRoute.Data.ReRoute))
             {
-                var authenticationNext = _authProviderFactory.Get(downstreamRoute.Data.ReRoute.AuthenticationProvider, _app);
+                var authenticationNext = _authHandlerFactory.Get(downstreamRoute.Data.ReRoute.AuthenticationProvider, _app);
 
                 if (!authenticationNext.IsError)
                 {

@@ -5,11 +5,11 @@ using Ocelot.Library.Infrastructure.Responses;
 
 namespace Ocelot.Library.Infrastructure.Authentication
 {
-    public class AuthenticationProviderFactory : IAuthenticationProviderFactory
+    public class AuthenticationHandlerFactory : IAuthenticationHandlerFactory
     {
         private readonly IAuthenticationHandlerCreator _creator;
 
-        public AuthenticationProviderFactory(IAuthenticationHandlerCreator creator)
+        public AuthenticationHandlerFactory(IAuthenticationHandlerCreator creator)
         {
             _creator = creator;
         }

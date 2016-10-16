@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Middleware
     public class AuthenticationMiddlewareTests : IDisposable
     {
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
-        private readonly Mock<IAuthenticationProviderFactory> _authFactory;
+        private readonly Mock<IAuthenticationHandlerFactory> _authFactory;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Middleware
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
-            _authFactory = new Mock<IAuthenticationProviderFactory>();
+            _authFactory = new Mock<IAuthenticationHandlerFactory>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {

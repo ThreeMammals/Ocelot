@@ -57,7 +57,7 @@ namespace Ocelot
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
             services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
             services.AddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            services.AddSingleton<IAuthenticationProviderFactory, AuthenticationProviderFactory>();
+            services.AddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
             services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
