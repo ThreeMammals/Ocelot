@@ -55,7 +55,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamTemplate = "http://localhost:51879/",
                             UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Get"
+                            UpstreamHttpMethod = "Get",
                         }
                     }
                 }))

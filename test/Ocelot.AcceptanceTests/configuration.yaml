@@ -1,5 +1,13 @@
 ReRoutes:
-- DownstreamTemplate: http://localhost:51879/
+- DownstreamTemplate: http://localhost:51876/
   UpstreamTemplate: /
-  UpstreamHttpMethod: Get
-  Authentication: IdentityServer.AccessToken
+  UpstreamHttpMethod: Post
+  AuthenticationOptions:
+    Provider: IdentityServer
+    ProviderRootUrl: http://localhost:51888
+    ScopeName: api
+    AdditionalScopes: []
+    ScopeSecret: secret
+  ProxyRequestHeaders:
+	- CustomerId: Claims[CustomerId]
+

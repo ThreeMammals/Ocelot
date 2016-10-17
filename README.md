@@ -42,7 +42,7 @@ ReRoutes:
   UpstreamTemplate: /
   UpstreamHttpMethod: Post
   AuthenticationOptions:
-    Provider: IdentityServer.AccessToken
+    Provider: IdentityServer
     ProviderRootUrl: http://localhost:51888
     ScopeName: api
     AdditionalScopes: []
