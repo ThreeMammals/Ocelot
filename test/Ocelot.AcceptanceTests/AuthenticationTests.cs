@@ -171,8 +171,10 @@ namespace Ocelot.AcceptanceTests
                             },
                             AddHeadersToRequest =
                             {
-                                { "CustomerId","Claims[CustomerId] > long" },
-                                { "LocationId","Claims[LocationId] > int" }
+                                { "CustomerId", "Claims[CustomerId] -> value" },
+                                { "LocationId", "Claims[LocationId] -> value"},
+                                { "UserId", "Claims[Subject] -> delimiter(|) -> value[0]" },
+                                { "UserId", "Claims[Subject] -> delimiter(|) -> value[1]" }
                             }
                         }
                     }
@@ -374,7 +376,12 @@ namespace Ocelot.AcceptanceTests
                                 Username = "test",
                                 Password = "test",
                                 Enabled = true,
-                                Subject = "asdads"
+                                Subject = "registered|1231231",
+                                Claims = new List<Claim>
+                                {
+                                   new Claim("CustomerId", "123"),
+                                   new Claim("LocationId", "321")
+                                }
                             }
                         });
                 })
