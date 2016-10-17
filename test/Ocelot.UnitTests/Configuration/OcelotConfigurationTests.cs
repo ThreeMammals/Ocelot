@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Moq;
-using Ocelot.Library.Infrastructure.Builder;
-using Ocelot.Library.Infrastructure.Configuration;
-using Ocelot.Library.Infrastructure.Configuration.Yaml;
-using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using Library.Builder;
+    using Library.Configuration;
+    using Library.Configuration.Yaml;
+    using Library.Responses;
+
     public class OcelotConfigurationTests
     {
         private readonly Mock<IOptions<YamlConfiguration>> _yamlConfig;

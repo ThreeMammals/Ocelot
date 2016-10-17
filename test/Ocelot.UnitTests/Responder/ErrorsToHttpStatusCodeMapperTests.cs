@@ -2,16 +2,17 @@
 using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Infrastructure.Errors;
-using Ocelot.Library.Infrastructure.Middleware;
-using Ocelot.Library.Infrastructure.Responder;
-using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {
+    using Library.Errors;
+    using Library.Middleware;
+    using Library.Responder;
+    using Library.Responses;
+
     public class ErrorsToHttpStatusCodeMapperTests
     {
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;

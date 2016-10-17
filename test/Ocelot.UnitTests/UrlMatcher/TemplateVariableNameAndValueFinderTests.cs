@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.UrlMatcher;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.UrlMatcher
 {
+    using Library.Responses;
+    using Library.UrlMatcher;
+
     public class UrlPathToUrlTemplateMatcherTests 
     {
         private readonly ITemplateVariableNameAndValueFinder _finder;

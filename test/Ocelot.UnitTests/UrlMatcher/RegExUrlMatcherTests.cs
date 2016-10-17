@@ -1,11 +1,12 @@
-using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.UrlMatcher;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.UrlMatcher
 {
+    using Library.Responses;
+    using Library.UrlMatcher;
+
     public class RegExUrlMatcherTests
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;

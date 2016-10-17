@@ -6,16 +6,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Library.Infrastructure.Middleware;
-using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.RequestBuilder;
-using Ocelot.Library.Infrastructure.Requester;
-using Ocelot.Library.Infrastructure.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
+    using Library.Middleware;
+    using Library.Repository;
+    using Library.RequestBuilder;
+    using Library.Requester;
+    using Library.Responses;
+
     public class HttpRequesterMiddlewareTests : IDisposable
     {
         private readonly Mock<IHttpRequester> _requester;

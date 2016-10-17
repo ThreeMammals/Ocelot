@@ -6,19 +6,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Library.Infrastructure.Authentication;
-using Ocelot.Library.Infrastructure.Builder;
-using Ocelot.Library.Infrastructure.DownstreamRouteFinder;
-using Ocelot.Library.Infrastructure.Middleware;
-using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responses;
-using Ocelot.Library.Infrastructure.UrlMatcher;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    using Library.Infrastructure.Configuration;
+    using Library.Authentication;
+    using Library.Builder;
+    using Library.DownstreamRouteFinder;
+    using Library.Middleware;
+    using Library.Repository;
+    using Library.Responses;
+    using Library.UrlMatcher;
 
     public class AuthenticationMiddlewareTests : IDisposable
     {

@@ -1,18 +1,16 @@
-﻿using Ocelot.Library.Infrastructure.Builder;
-using Ocelot.Library.Infrastructure.Middleware;
-
-namespace Ocelot.UnitTests.Middleware
+﻿namespace Ocelot.UnitTests.Middleware
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
-    using Library.Infrastructure.Configuration;
-    using Library.Infrastructure.DownstreamRouteFinder;
-    using Library.Infrastructure.Repository;
-    using Library.Infrastructure.Responses;
-    using Library.Infrastructure.UrlMatcher;
-    using Library.Infrastructure.UrlTemplateReplacer;
+    using Library.Builder;
+    using Library.DownstreamRouteFinder;
+    using Library.Middleware;
+    using Library.Repository;
+    using Library.Responses;
+    using Library.UrlMatcher;
+    using Library.UrlTemplateReplacer;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Extensions.DependencyInjection;

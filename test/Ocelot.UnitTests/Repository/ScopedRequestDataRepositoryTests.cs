@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Repository
 {
+    using Library.Repository;
+    using Library.Responses;
+
     public class ScopedRequestDataRepositoryTests
     {
         private IScopedRequestDataRepository _scopedRequestDataRepository;

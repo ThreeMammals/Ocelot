@@ -6,15 +6,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Library.Infrastructure.Middleware;
-using Ocelot.Library.Infrastructure.Repository;
-using Ocelot.Library.Infrastructure.Responder;
-using Ocelot.Library.Infrastructure.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
+    using Library.Middleware;
+    using Library.Repository;
+    using Library.Responder;
+    using Library.Responses;
+
     public class HttpResponderMiddlewareTests : IDisposable
     {
         private readonly Mock<IHttpResponder> _responder;
