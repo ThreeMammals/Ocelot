@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Ocelot.Library.RequestBuilder.Builder;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

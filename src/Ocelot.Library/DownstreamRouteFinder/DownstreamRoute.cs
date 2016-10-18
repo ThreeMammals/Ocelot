@@ -1,8 +1,9 @@
-﻿namespace Ocelot.Library.DownstreamRouteFinder
+﻿using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
+
+namespace Ocelot.Library.DownstreamRouteFinder
 {
     using System.Collections.Generic;
     using Configuration;
-    using UrlMatcher;
 
     public class DownstreamRoute
     {

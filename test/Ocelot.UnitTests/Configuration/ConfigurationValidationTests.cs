@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ocelot.Library.Configuration.Validator;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

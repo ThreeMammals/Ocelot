@@ -2,6 +2,8 @@
 using Moq;
 using Ocelot.Library.Configuration.Builder;
 using Ocelot.Library.Configuration.Provider;
+using Ocelot.Library.DownstreamRouteFinder.Finder;
+using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -11,7 +13,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     using Library.Configuration;
     using Library.DownstreamRouteFinder;
     using Library.Responses;
-    using Library.UrlMatcher;
 
     public class DownstreamRouteFinderTests
     {
@@ -30,7 +31,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _mockConfig = new Mock<IOcelotConfigurationProvider>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _finder = new Mock<ITemplateVariableNameAndValueFinder>();
-            _downstreamRouteFinder = new DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
+            _downstreamRouteFinder = new Library.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
         }
 
         [Fact]

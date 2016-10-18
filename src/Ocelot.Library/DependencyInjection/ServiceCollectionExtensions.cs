@@ -1,7 +1,17 @@
-﻿using Ocelot.Library.Configuration.Creator;
+﻿using Ocelot.Library.Authentication.Handler.Creator;
+using Ocelot.Library.Authentication.Handler.Factory;
+using Ocelot.Library.Configuration.Creator;
 using Ocelot.Library.Configuration.Parser;
 using Ocelot.Library.Configuration.Provider;
 using Ocelot.Library.Configuration.Repository;
+using Ocelot.Library.Configuration.Validator;
+using Ocelot.Library.DownstreamRouteFinder.Finder;
+using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Library.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Library.HeaderBuilder;
+using Ocelot.Library.HeaderBuilder.Parser;
+using Ocelot.Library.RequestBuilder.Builder;
+using Ocelot.Library.ScopedData;
 
 namespace Ocelot.Library.DependencyInjection
 {
@@ -12,12 +22,9 @@ namespace Ocelot.Library.DependencyInjection
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Repository;
     using RequestBuilder;
     using Requester;
     using Responder;
-    using UrlMatcher;
-    using UrlTemplateReplacer;
 
     public static class ServiceCollectionExtensions
     {
@@ -48,7 +55,7 @@ namespace Ocelot.Library.DependencyInjection
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<ITemplateVariableNameAndValueFinder, TemplateVariableNameAndValueFinder>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
-            services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
+            services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
             services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();

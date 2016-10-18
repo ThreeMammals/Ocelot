@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Library.ScopedData;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Repository
 {
-    using Library.Repository;
     using Library.Responses;
 
     public class ScopedRequestDataRepositoryTests

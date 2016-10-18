@@ -1,8 +1,9 @@
-﻿namespace Ocelot.Library.Middleware
+﻿using Ocelot.Library.ScopedData;
+
+namespace Ocelot.Library.Middleware
 {
     using System.Collections.Generic;
     using Errors;
-    using Repository;
 
     public abstract class OcelotMiddleware
     {
