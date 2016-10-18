@@ -5,7 +5,7 @@ using Ocelot.Library.Errors;
 using Ocelot.Library.RequestBuilder;
 using Ocelot.Library.Responses;
 
-namespace Ocelot.Library.Configuration
+namespace Ocelot.Library.Configuration.Parser
 {
     public class ClaimToHeaderConfigurationParser : IClaimToHeaderConfigurationParser
     {

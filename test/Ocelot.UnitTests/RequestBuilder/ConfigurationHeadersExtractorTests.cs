@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Library.Configuration;
+using Ocelot.Library.Configuration.Parser;
 using Ocelot.Library.Errors;
 using Ocelot.Library.RequestBuilder;
 using Ocelot.Library.Responses;

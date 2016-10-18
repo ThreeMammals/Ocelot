@@ -2,6 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Ocelot.Library.Configuration.Builder;
+using Ocelot.Library.Configuration.Parser;
+using Ocelot.Library.Configuration.Repository;
 using Ocelot.Library.RequestBuilder;
 using Shouldly;
 using TestStack.BDDfy;
@@ -9,26 +12,28 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using Library.Builder;
     using Library.Configuration;
     using Library.Configuration.Yaml;
     using Library.Responses;
 
-    public class OcelotConfigurationTests
+    public class YamlConfigurationCreatorTests
     {
         private readonly Mock<IOptions<YamlConfiguration>> _yamlConfig;
         private readonly Mock<IConfigurationValidator> _validator;
-        private OcelotConfiguration _config;
+        private Response<IOcelotConfiguration> _config;
         private YamlConfiguration _yamlConfiguration;
-        private readonly Mock<IClaimToHeaderConfigurationParser> _configExtractor;
-        private readonly Mock<ILogger<OcelotConfiguration>> _logger;
+        private readonly Mock<IClaimToHeaderConfigurationParser> _configParser;
+        private readonly Mock<ILogger<YamlOcelotConfigurationCreator>> _logger;
+        private readonly YamlOcelotConfigurationCreator _ocelotConfigurationCreator;
 
-        public OcelotConfigurationTests()
+        public YamlConfigurationCreatorTests()
         {
-            _logger = new Mock<ILogger<OcelotConfiguration>>();
-            _configExtractor = new Mock<IClaimToHeaderConfigurationParser>();
+            _logger = new Mock<ILogger<YamlOcelotConfigurationCreator>>();
+            _configParser = new Mock<IClaimToHeaderConfigurationParser>();
             _validator = new Mock<IConfigurationValidator>();
             _yamlConfig = new Mock<IOptions<YamlConfiguration>>();
+            _ocelotConfigurationCreator = new YamlOcelotConfigurationCreator( 
+                _yamlConfig.Object, _validator.Object, _configParser.Object, _logger.Object);
         }
 
         [Fact]
@@ -47,7 +52,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -109,7 +114,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
                 .And(x => x.GivenTheConfigHeaderExtractorReturns(new ClaimToHeader("CustomerId", "CustomerId", "", 0)))
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .BDDfy();
@@ -117,7 +122,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheConfigHeaderExtractorReturns(ClaimToHeader expected)
         {
-            _configExtractor
+            _configParser
                 .Setup(x => x.Extract(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new OkResponse<ClaimToHeader>(expected));
         }
@@ -162,7 +167,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .BDDfy();
@@ -184,7 +189,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -213,7 +218,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -242,7 +247,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -270,17 +275,16 @@ namespace Ocelot.UnitTests.Configuration
                 .Returns(_yamlConfiguration);
         }
 
-        private void WhenIInstanciateTheOcelotConfig()
+        private void WhenICreateTheConfig()
         {
-            _config = new OcelotConfiguration(_yamlConfig.Object, _validator.Object,
-                _configExtractor.Object, _logger.Object);
+            _config = _ocelotConfigurationCreator.Create();
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
         {
-            for (int i = 0; i < _config.ReRoutes.Count; i++)
+            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
-                var result = _config.ReRoutes[i];
+                var result = _config.Data.ReRoutes[i];
                 var expected = expectedReRoutes[i];
 
                 result.DownstreamTemplate.ShouldBe(expected.DownstreamTemplate);
@@ -292,9 +296,9 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {
-            for (int i = 0; i < _config.ReRoutes.Count; i++)
+            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
-                var result = _config.ReRoutes[i].AuthenticationOptions;
+                var result = _config.Data.ReRoutes[i].AuthenticationOptions;
                 var expected = expectedReRoutes[i].AuthenticationOptions;
 
                 result.AdditionalScopes.ShouldBe(expected.AdditionalScopes);

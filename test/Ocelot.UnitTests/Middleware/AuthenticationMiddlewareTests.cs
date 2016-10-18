@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Library.Configuration.Builder;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
     using Library.Authentication;
-    using Library.Builder;
     using Library.DownstreamRouteFinder;
     using Library.Middleware;
     using Library.Repository;

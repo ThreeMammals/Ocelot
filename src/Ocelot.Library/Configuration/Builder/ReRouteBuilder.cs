@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Ocelot.Library.Configuration;
 
-namespace Ocelot.Library.Builder
+namespace Ocelot.Library.Configuration.Builder
 {
     public class ReRouteBuilder
     {

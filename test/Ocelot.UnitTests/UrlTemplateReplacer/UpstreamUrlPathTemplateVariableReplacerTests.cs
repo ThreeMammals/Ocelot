@@ -1,11 +1,11 @@
 using System.Collections.Generic;
+using Ocelot.Library.Configuration.Builder;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.UrlTemplateReplacer
 {
-    using Library.Builder;
     using Library.DownstreamRouteFinder;
     using Library.Responses;
     using Library.UrlMatcher;

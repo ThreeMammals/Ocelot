@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using Moq;
+using Ocelot.Library.Configuration.Builder;
+using Ocelot.Library.Configuration.Provider;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using Library.Builder;
     using Library.Configuration;
     using Library.DownstreamRouteFinder;
     using Library.Responses;
@@ -15,7 +16,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly Mock<IOcelotConfiguration> _mockConfig;
+        private readonly Mock<IOcelotConfigurationProvider> _mockConfig;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
         private readonly Mock<ITemplateVariableNameAndValueFinder> _finder;
         private string _upstreamUrlPath;
@@ -26,7 +27,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         public DownstreamRouteFinderTests()
         {
-            _mockConfig = new Mock<IOcelotConfiguration>();
+            _mockConfig = new Mock<IOcelotConfigurationProvider>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _finder = new Mock<ITemplateVariableNameAndValueFinder>();
             _downstreamRouteFinder = new DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
@@ -157,8 +158,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _reRoutesConfig = reRoutesConfig;
             _mockConfig
-                .Setup(x => x.ReRoutes)
-                .Returns(_reRoutesConfig);
+                .Setup(x => x.Get())
+                .Returns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig)));
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

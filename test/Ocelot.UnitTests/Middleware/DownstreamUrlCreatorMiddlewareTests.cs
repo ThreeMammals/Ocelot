@@ -1,10 +1,11 @@
-﻿namespace Ocelot.UnitTests.Middleware
+﻿using Ocelot.Library.Configuration.Builder;
+
+namespace Ocelot.UnitTests.Middleware
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net.Http;
-    using Library.Builder;
     using Library.DownstreamRouteFinder;
     using Library.Middleware;
     using Library.Repository;

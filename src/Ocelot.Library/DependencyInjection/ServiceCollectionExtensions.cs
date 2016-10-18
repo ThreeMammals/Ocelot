@@ -1,4 +1,9 @@
-﻿namespace Ocelot.Library.DependencyInjection
+﻿using Ocelot.Library.Configuration.Creator;
+using Ocelot.Library.Configuration.Parser;
+using Ocelot.Library.Configuration.Provider;
+using Ocelot.Library.Configuration.Repository;
+
+namespace Ocelot.Library.DependencyInjection
 {
     using Authentication;
     using Configuration;
@@ -16,22 +21,30 @@
 
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
+        public static IServiceCollection AddOcelotYamlConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
-            // framework services
-            services.AddOptions();
-            services.AddMvcCore().AddJsonFormatters();
-            services.AddLogging();
-
             // initial configuration from yaml
             services.Configure<YamlConfiguration>(configurationRoot);
 
             // ocelot services.
-            services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
-            services.AddSingleton<IClaimsParser, ClaimsParser>();
+            services.AddSingleton<IOcelotConfigurationCreator, YamlOcelotConfigurationCreator>();
+            services.AddSingleton<IOcelotConfigurationProvider, YamlOcelotConfigurationProvider>();
+            services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IClaimToHeaderConfigurationParser, ClaimToHeaderConfigurationParser>();
             services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
-            services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddOcelot(this IServiceCollection services)
+        {
+            // framework services
+            services.AddMvcCore().AddJsonFormatters();
+            services.AddLogging();
+
+            // ocelot services.
+            services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
+            services.AddSingleton<IClaimsParser, ClaimsParser>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<ITemplateVariableNameAndValueFinder, TemplateVariableNameAndValueFinder>();
             services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
