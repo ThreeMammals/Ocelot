@@ -20,7 +20,7 @@ namespace Ocelot.Middleware
 
             builder.UseAuthenticationMiddleware();
 
-            //builder.UseAuthorisationMiddleware();
+            builder.UseAuthorisationMiddleware();
 
             builder.UseHttpRequestHeadersBuilderMiddleware();
 

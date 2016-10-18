@@ -4,7 +4,7 @@ using System.Security.Claims;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.HeaderBuilder.Parser
+namespace Ocelot.Claims.Parser
 {
     public class ClaimsParser : IClaimsParser
     {

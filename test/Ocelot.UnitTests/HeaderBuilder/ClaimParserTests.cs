@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
+using Ocelot.Claims.Parser;
 using Ocelot.Errors;
-using Ocelot.HeaderBuilder.Parser;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

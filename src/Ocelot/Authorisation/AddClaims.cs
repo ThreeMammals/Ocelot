@@ -4,15 +4,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Claims.Parser;
 using Ocelot.Configuration;
+using Ocelot.HeaderBuilder;
 using Ocelot.Responses;
 
-namespace Ocelot.HeaderBuilder
+namespace Ocelot.Authorisation
 {
-    public class AddHeadersToRequest : IAddHeadersToRequest
+    public class AddClaims : IAddHeadersToRequest
     {
         private readonly IClaimsParser _claimsParser;
 
-        public AddHeadersToRequest(IClaimsParser claimsParser)
+        public AddClaims(IClaimsParser claimsParser)
         {
             _claimsParser = claimsParser;
         }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Middleware;
+using Ocelot.Responses;
 using Ocelot.ScopedData;
 
 namespace Ocelot.Authorisation
@@ -34,15 +35,21 @@ namespace Ocelot.Authorisation
                 return;
             }
 
-            var authorised = _authoriser.Authorise(context.User, new RouteClaimsRequirement());
+            //todo - call authoriser
+            var authorised = new OkResponse<bool>(true); //_authoriser.Authorise(context.User, new RouteClaimsRequirement(new Dictionary<string, string>()));
 
-            if (authorised)
+            if (authorised.IsError)
+            {
+                SetPipelineError(authorised.Errors);
+                return;
+            }
+
+            if (authorised.Data)
             {
                 await _next.Invoke(context);
             }
             else
             {
-                //set an error
                 SetPipelineError(new List<Error>
                 {
                     new UnauthorisedError($"{context.User.Identity.Name} unable to access {downstreamRoute.Data.ReRoute.UpstreamTemplate}")

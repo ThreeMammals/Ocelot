@@ -1,10 +1,11 @@
 ﻿using System.Security.Claims;
+using Ocelot.Responses;
 
 namespace Ocelot.Authorisation
 {
     public interface IAuthoriser
     {
-        bool Authorise(ClaimsPrincipal claimsPrincipal, 
+        Response<bool> Authorise(ClaimsPrincipal claimsPrincipal, 
             RouteClaimsRequirement routeClaimsRequirement);
     }
 }

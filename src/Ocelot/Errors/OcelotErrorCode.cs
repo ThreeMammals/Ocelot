@@ -15,6 +15,8 @@
         ParsingConfigurationHeaderError,
         NoInstructionsError,
         InstructionNotForClaimsError,
-        UnauthorizedError
+        UnauthorizedError,
+        ClaimValueNotAuthorisedError,
+        UserDoesNotHaveClaimError
     }
 }
