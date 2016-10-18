@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Ocelot.Library.Errors;
+using Ocelot.Library.RequestBuilder;
 using Ocelot.Library.Responses;
 
-namespace Ocelot.Library.RequestBuilder
+namespace Ocelot.Library.Configuration
 {
-    public class ConfigurationHeaderExtrator : IConfigurationHeaderExtrator
+    public class ClaimToHeaderConfigurationParser : IClaimToHeaderConfigurationParser
     {
         private readonly Regex _claimRegex = new Regex("Claims\\[.*\\]");
         private readonly Regex _indexRegex = new Regex("value\\[.*\\]");
         private const string SplitToken = ">";
 
-        public Response<ConfigurationHeaderExtractorProperties> Extract(string headerKey, string value)
+        public Response<ClaimToHeader> Extract(string headerKey, string value)
         {
             try
             {
@@ -20,7 +21,7 @@ namespace Ocelot.Library.RequestBuilder
 
                 if (instructions.Length <= 1)
                 {
-                    return new ErrorResponse<ConfigurationHeaderExtractorProperties>(
+                    return new ErrorResponse<ClaimToHeader>(
                         new List<Error>
                     {
                         new NoInstructionsError(SplitToken)
@@ -31,7 +32,7 @@ namespace Ocelot.Library.RequestBuilder
 
                 if (!claimMatch)
                 {
-                    return new ErrorResponse<ConfigurationHeaderExtractorProperties>(
+                    return new ErrorResponse<ClaimToHeader>(
                         new List<Error>
                         {
                             new InstructionNotForClaimsError()
@@ -48,12 +49,12 @@ namespace Ocelot.Library.RequestBuilder
                     delimiter = instructions[2].Trim();
                 }
 
-                return new OkResponse<ConfigurationHeaderExtractorProperties>(
-                               new ConfigurationHeaderExtractorProperties(headerKey, claimKey, delimiter, index));
+                return new OkResponse<ClaimToHeader>(
+                               new ClaimToHeader(headerKey, claimKey, delimiter, index));
             }
             catch (Exception exception)
             {
-                return new ErrorResponse<ConfigurationHeaderExtractorProperties>(
+                return new ErrorResponse<ClaimToHeader>(
                     new List<Error>
                     {
                         new ParsingConfigurationHeaderError(exception)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Ocelot.Library.Configuration;
 using Ocelot.Library.Errors;
 using Ocelot.Library.RequestBuilder;
 using Ocelot.Library.Responses;
@@ -12,12 +13,12 @@ namespace Ocelot.UnitTests.RequestBuilder
     public class ConfigurationHeadersExtractorTests
     {
         private Dictionary<string, string> _dictionary;
-        private readonly IConfigurationHeaderExtrator _configurationHeaderExtrator;
-        private Response<ConfigurationHeaderExtractorProperties> _result;
+        private readonly IClaimToHeaderConfigurationParser _claimToHeaderConfigurationParser;
+        private Response<ClaimToHeader> _result;
 
         public ConfigurationHeadersExtractorTests()
         {
-            _configurationHeaderExtrator = new ConfigurationHeaderExtrator();
+            _claimToHeaderConfigurationParser = new ClaimToHeaderConfigurationParser();
         }
 
         [Fact]
@@ -30,7 +31,7 @@ namespace Ocelot.UnitTests.RequestBuilder
                 .When(x => x.WhenICallTheExtractor())
                 .Then(
                     x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ConfigurationHeaderExtractorProperties>(
+                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToHeader>(
                             new List<Error>
                             {
                                 new NoInstructionsError(">")
@@ -48,7 +49,7 @@ namespace Ocelot.UnitTests.RequestBuilder
                 .When(x => x.WhenICallTheExtractor())
                 .Then(
                     x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ConfigurationHeaderExtractorProperties>(
+                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToHeader>(
                             new List<Error>
                             {
                                 new InstructionNotForClaimsError()
@@ -67,8 +68,8 @@ namespace Ocelot.UnitTests.RequestBuilder
                 .Then(
                     x =>
                         x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ConfigurationHeaderExtractorProperties>(
-                                new ConfigurationHeaderExtractorProperties("CustomerId", "CustomerId", "", 0))))
+                            new OkResponse<ClaimToHeader>(
+                                new ClaimToHeader("CustomerId", "CustomerId", "", 0))))
                 .BDDfy();
         }
 
@@ -83,18 +84,18 @@ namespace Ocelot.UnitTests.RequestBuilder
                 .Then(
                     x =>
                         x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ConfigurationHeaderExtractorProperties>(
-                                new ConfigurationHeaderExtractorProperties("UserId", "Subject", "|", 0))))
+                            new OkResponse<ClaimToHeader>(
+                                new ClaimToHeader("UserId", "Subject", "|", 0))))
                 .BDDfy();
         }
 
-        private void ThenAnErrorIsReturned(Response<ConfigurationHeaderExtractorProperties> expected)
+        private void ThenAnErrorIsReturned(Response<ClaimToHeader> expected)
         {
             _result.IsError.ShouldBe(expected.IsError);
             _result.Errors[0].ShouldBeOfType(expected.Errors[0].GetType());
         }
 
-        private void ThenTheClaimParserPropertiesAreReturned(Response<ConfigurationHeaderExtractorProperties> expected)
+        private void ThenTheClaimParserPropertiesAreReturned(Response<ClaimToHeader> expected)
         {
             _result.Data.ClaimKey.ShouldBe(expected.Data.ClaimKey);
             _result.Data.Delimiter.ShouldBe(expected.Data.Delimiter);
@@ -105,7 +106,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         private void WhenICallTheExtractor()
         {
             var first = _dictionary.First();
-            _result = _configurationHeaderExtrator.Extract(first.Key, first.Value);
+            _result = _claimToHeaderConfigurationParser.Extract(first.Key, first.Value);
         }
 
         private void GivenTheDictionaryIs(Dictionary<string, string> dictionary)

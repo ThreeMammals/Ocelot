@@ -20,13 +20,13 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IConfigurationValidator> _validator;
         private OcelotConfiguration _config;
         private YamlConfiguration _yamlConfiguration;
-        private readonly Mock<IConfigurationHeaderExtrator> _configExtractor;
+        private readonly Mock<IClaimToHeaderConfigurationParser> _configExtractor;
         private readonly Mock<ILogger<OcelotConfiguration>> _logger;
 
         public OcelotConfigurationTests()
         {
             _logger = new Mock<ILogger<OcelotConfiguration>>();
-            _configExtractor = new Mock<IConfigurationHeaderExtrator>();
+            _configExtractor = new Mock<IClaimToHeaderConfigurationParser>();
             _validator = new Mock<IConfigurationValidator>();
             _yamlConfig = new Mock<IOptions<YamlConfiguration>>();
         }
@@ -75,9 +75,9 @@ namespace Ocelot.UnitTests.Configuration
                     .WithRequireHttps(false)
                     .WithScopeSecret("secret")
                     .WithAuthenticationProviderScopeName("api")
-                    .WithConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+                    .WithConfigurationHeaderExtractorProperties(new List<ClaimToHeader>
                     {
-                        new ConfigurationHeaderExtractorProperties("CustomerId", "CustomerId", "", 0),
+                        new ClaimToHeader("CustomerId", "CustomerId", "", 0),
                     })
                     .Build()
             };
@@ -108,18 +108,18 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheYamlConfigIsValid())
-                .And(x => x.GivenTheConfigHeaderExtractorReturns(new ConfigurationHeaderExtractorProperties("CustomerId", "CustomerId", "", 0)))
+                .And(x => x.GivenTheConfigHeaderExtractorReturns(new ClaimToHeader("CustomerId", "CustomerId", "", 0)))
                 .When(x => x.WhenIInstanciateTheOcelotConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .BDDfy();
         }
 
-        private void GivenTheConfigHeaderExtractorReturns(ConfigurationHeaderExtractorProperties expected)
+        private void GivenTheConfigHeaderExtractorReturns(ClaimToHeader expected)
         {
             _configExtractor
                 .Setup(x => x.Extract(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new OkResponse<ConfigurationHeaderExtractorProperties>(expected));
+                .Returns(new OkResponse<ClaimToHeader>(expected));
         }
 
         [Fact]

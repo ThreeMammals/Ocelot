@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Moq;
+using Ocelot.Library.Configuration;
 using Ocelot.Library.Errors;
 using Ocelot.Library.RequestBuilder;
 using Ocelot.Library.Responses;
@@ -17,7 +18,7 @@ namespace Ocelot.UnitTests.RequestBuilder
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private readonly Mock<IClaimsParser> _parser;
-        private List<ConfigurationHeaderExtractorProperties> _configuration;
+        private List<ClaimToHeader> _configuration;
         private HttpContext _context;
         private Response _result;
         private Response<string> _claimValue;
@@ -40,9 +41,9 @@ namespace Ocelot.UnitTests.RequestBuilder
             };
 
             this.Given(
-                x => x.GivenConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+                x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToHeader>
                 {
-                    new ConfigurationHeaderExtractorProperties("header-key", "", "", 0)
+                    new ClaimToHeader("header-key", "", "", 0)
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -66,9 +67,9 @@ namespace Ocelot.UnitTests.RequestBuilder
             context.Request.Headers.Add("header-key", new StringValues("initial"));
 
             this.Given(
-                x => x.GivenConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+                x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToHeader>
                 {
-                    new ConfigurationHeaderExtractorProperties("header-key", "", "", 0)
+                    new ClaimToHeader("header-key", "", "", 0)
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -82,9 +83,9 @@ namespace Ocelot.UnitTests.RequestBuilder
         public void should_return_error()
         {
             this.Given(
-               x => x.GivenConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+               x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToHeader>
                {
-                    new ConfigurationHeaderExtractorProperties("", "", "", 0)
+                    new ClaimToHeader("", "", "", 0)
                }))
                .Given(x => x.GivenHttpContext(new DefaultHttpContext()))
                .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
@@ -102,7 +103,7 @@ namespace Ocelot.UnitTests.RequestBuilder
             header.Value.First().ShouldBe(_claimValue.Data);
         }
 
-        private void GivenConfigurationHeaderExtractorProperties(List<ConfigurationHeaderExtractorProperties> configuration)
+        private void GivenConfigurationHeaderExtractorProperties(List<ClaimToHeader> configuration)
         {
             _configuration = configuration;
         }

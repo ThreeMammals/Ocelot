@@ -18,12 +18,18 @@
     {
         public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
+            // framework services
+            services.AddOptions();
+            services.AddMvcCore().AddJsonFormatters();
+            services.AddLogging();
+
+            // initial configuration from yaml
             services.Configure<YamlConfiguration>(configurationRoot);
 
-            // Add framework services.
+            // ocelot services.
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             services.AddSingleton<IClaimsParser, ClaimsParser>();
-            services.AddSingleton<IConfigurationHeaderExtrator, ConfigurationHeaderExtrator>();
+            services.AddSingleton<IClaimToHeaderConfigurationParser, ClaimToHeaderConfigurationParser>();
             services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
             services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
@@ -38,6 +44,7 @@
             services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
+            // could maybe use a scoped data repository
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IScopedRequestDataRepository, ScopedRequestDataRepository>();
 

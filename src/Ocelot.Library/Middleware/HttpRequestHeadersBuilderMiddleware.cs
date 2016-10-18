@@ -30,9 +30,9 @@ namespace Ocelot.Library.Middleware
         {
             var downstreamRoute = _scopedRequestDataRepository.Get<DownstreamRoute>("DownstreamRoute");
 
-            if (downstreamRoute.Data.ReRoute.ConfigurationHeaderExtractorProperties.Any())
+            if (downstreamRoute.Data.ReRoute.ClaimsToHeaders.Any())
             {
-                _addHeadersToRequest.SetHeadersOnContext(downstreamRoute.Data.ReRoute.ConfigurationHeaderExtractorProperties, context);
+                _addHeadersToRequest.SetHeadersOnContext(downstreamRoute.Data.ReRoute.ClaimsToHeaders, context);
             }
             
             await _next.Invoke(context);

@@ -16,17 +16,17 @@ namespace Ocelot.Library.Configuration
         private readonly List<ReRoute> _reRoutes;
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
-        private readonly IConfigurationHeaderExtrator _configurationHeaderExtrator;
+        private readonly IClaimToHeaderConfigurationParser _claimToHeaderConfigurationParser;
         private readonly ILogger<OcelotConfiguration> _logger;
 
         public OcelotConfiguration(IOptions<YamlConfiguration> options, 
             IConfigurationValidator configurationValidator, 
-            IConfigurationHeaderExtrator configurationHeaderExtrator, 
+            IClaimToHeaderConfigurationParser claimToHeaderConfigurationParser, 
             ILogger<OcelotConfiguration> logger)
         {
             _options = options;
             _configurationValidator = configurationValidator;
-            _configurationHeaderExtrator = configurationHeaderExtrator;
+            _claimToHeaderConfigurationParser = claimToHeaderConfigurationParser;
             _logger = logger;
             _reRoutes = new List<ReRoute>();
             SetUpConfiguration();
@@ -92,17 +92,17 @@ namespace Ocelot.Library.Configuration
             else
             {
                 _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod,
-                    upstreamTemplate, isAuthenticated, null, new List<ConfigurationHeaderExtractorProperties>()));
+                    upstreamTemplate, isAuthenticated, null, new List<ClaimToHeader>()));
             }
         }
 
-        private List<ConfigurationHeaderExtractorProperties> GetHeadersToAddToRequest(YamlReRoute reRoute)
+        private List<ClaimToHeader> GetHeadersToAddToRequest(YamlReRoute reRoute)
         {
-            var configHeaders = new List<ConfigurationHeaderExtractorProperties>();
+            var configHeaders = new List<ClaimToHeader>();
 
             foreach (var add in reRoute.AddHeadersToRequest)
             {
-                var configurationHeader = _configurationHeaderExtrator.Extract(add.Key, add.Value);
+                var configurationHeader = _claimToHeaderConfigurationParser.Extract(add.Key, add.Value);
 
                 if (configurationHeader.IsError)
                 {

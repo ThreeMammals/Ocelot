@@ -25,8 +25,6 @@ namespace Ocelot.Library.Authentication
                 ScopeSecret = authOptions.ScopeSecret
             });
 
-            builder.UseMvc();
-
             var authenticationNext = builder.Build();
 
             return new OkResponse<RequestDelegate>(authenticationNext);

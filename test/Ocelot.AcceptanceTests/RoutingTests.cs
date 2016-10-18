@@ -16,7 +16,7 @@ namespace Ocelot.AcceptanceTests
 {
     using Library.Configuration.Yaml;
 
-    public class OcelotTests : IDisposable
+    public class RoutingTests : IDisposable
     {
         private TestServer _server;
         private HttpClient _client;
@@ -28,7 +28,7 @@ namespace Ocelot.AcceptanceTests
         // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
         private double _netCoreAppVersion = 1.4;
 
-        public OcelotTests()
+        public RoutingTests()
         {
             _configurationPath = $"./bin/Debug/netcoreapp{_netCoreAppVersion}/configuration.yaml";
         }

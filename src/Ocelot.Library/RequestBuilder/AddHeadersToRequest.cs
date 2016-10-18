@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Ocelot.Library.Configuration;
 using Ocelot.Library.Responses;
 
 namespace Ocelot.Library.RequestBuilder
@@ -15,7 +16,7 @@ namespace Ocelot.Library.RequestBuilder
             _claimsParser = claimsParser;
         }
 
-        public Response SetHeadersOnContext(List<ConfigurationHeaderExtractorProperties> configurationHeaderExtractorProperties, HttpContext context)
+        public Response SetHeadersOnContext(List<ClaimToHeader> configurationHeaderExtractorProperties, HttpContext context)
         {
             foreach (var config in configurationHeaderExtractorProperties)
             {

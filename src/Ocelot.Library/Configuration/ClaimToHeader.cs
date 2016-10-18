@@ -1,8 +1,8 @@
-﻿namespace Ocelot.Library.RequestBuilder
+﻿namespace Ocelot.Library.Configuration
 {
-    public class ConfigurationHeaderExtractorProperties
+    public class ClaimToHeader
     {
-        public ConfigurationHeaderExtractorProperties(string headerKey, string claimKey, string delimiter, int index)
+        public ClaimToHeader(string headerKey, string claimKey, string delimiter, int index)
         {
             ClaimKey = claimKey;
             Delimiter = delimiter;

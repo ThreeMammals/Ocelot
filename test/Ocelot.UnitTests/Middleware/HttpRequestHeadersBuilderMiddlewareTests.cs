@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Library.Builder;
+using Ocelot.Library.Configuration;
 using Ocelot.Library.DownstreamRouteFinder;
 using Ocelot.Library.Middleware;
 using Ocelot.Library.Repository;
@@ -60,9 +61,9 @@ namespace Ocelot.UnitTests.Middleware
             var downstreamRoute = new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamTemplate("any old string")
-                    .WithConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+                    .WithConfigurationHeaderExtractorProperties(new List<ClaimToHeader>
                     {
-                        new ConfigurationHeaderExtractorProperties("UserId", "Subject", "", 0)
+                        new ClaimToHeader("UserId", "Subject", "", 0)
                     })
                     .Build());
 
@@ -76,7 +77,7 @@ namespace Ocelot.UnitTests.Middleware
         private void GivenTheAddHeadersToRequestReturns(string claimValue)
         {
             _addHeaders
-                .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ConfigurationHeaderExtractorProperties>>(), 
+                .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToHeader>>(), 
                 It.IsAny<HttpContext>()))
                 .Returns(new OkResponse());
         }
@@ -84,7 +85,7 @@ namespace Ocelot.UnitTests.Middleware
         private void ThenTheAddHeadersToRequestIsCalledCorrectly()
         {
             _addHeaders
-                .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ConfigurationHeaderExtractorProperties>>(),
+                .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToHeader>>(),
                 It.IsAny<HttpContext>()), Times.Once);
         }
 
