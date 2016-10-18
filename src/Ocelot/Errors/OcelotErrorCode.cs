@@ -14,6 +14,7 @@
         CannotFindClaimError,
         ParsingConfigurationHeaderError,
         NoInstructionsError,
-        InstructionNotForClaimsError
+        InstructionNotForClaimsError,
+        UnauthorizedError
     }
 }

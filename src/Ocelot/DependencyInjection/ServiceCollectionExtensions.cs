@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
+using Ocelot.Authorisation;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
@@ -45,6 +47,7 @@ namespace Ocelot.DependencyInjection
             services.AddLogging();
 
             // ocelot services.
+            services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             services.AddSingleton<IClaimsParser, ClaimsParser>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
