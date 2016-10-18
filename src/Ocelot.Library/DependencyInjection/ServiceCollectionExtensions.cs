@@ -21,6 +21,9 @@
             services.Configure<YamlConfiguration>(configurationRoot);
 
             // Add framework services.
+            services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
+            services.AddSingleton<IClaimsParser, ClaimsParser>();
+            services.AddSingleton<IConfigurationHeaderExtrator, ConfigurationHeaderExtrator>();
             services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
             services.AddSingleton<IOcelotConfiguration, OcelotConfiguration>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();

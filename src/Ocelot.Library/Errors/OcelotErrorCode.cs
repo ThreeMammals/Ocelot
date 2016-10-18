@@ -10,6 +10,10 @@
         CannotFindDataError,
         UnableToCompleteRequestError,
         UnableToCreateAuthenticationHandlerError,
-        UnsupportedAuthenticationProviderError
+        UnsupportedAuthenticationProviderError,
+        CannotFindClaimError,
+        ParsingConfigurationHeaderError,
+        NoInstructionsError,
+        InstructionNotForClaimsError
     }
 }

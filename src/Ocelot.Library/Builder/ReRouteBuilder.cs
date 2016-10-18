@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Library.Builder
+﻿using Ocelot.Library.RequestBuilder;
+
+namespace Ocelot.Library.Builder
 {
     using System.Collections.Generic;
     using Configuration;
@@ -16,6 +18,7 @@
         private List<string> _additionalScopes;
         private bool _requireHttps;
         private string _scopeSecret;
+        private List<ConfigurationHeaderExtractorProperties> _configHeaderExtractorProperties;
 
         public ReRouteBuilder()
         {
@@ -86,9 +89,15 @@
             return this;
         }
 
+        public ReRouteBuilder WithConfigurationHeaderExtractorProperties(List<ConfigurationHeaderExtractorProperties> input)
+        {
+            _configHeaderExtractorProperties = input;
+            return this;
+        }
+
         public ReRoute Build()
         {
-            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret));
+            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties);
         }
     }
 }

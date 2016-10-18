@@ -1,3 +1,8 @@
+using System;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Ocelot.Library.RequestBuilder;
+
 namespace Ocelot.Library.Configuration
 {
     using System.Collections.Generic;
@@ -11,11 +16,18 @@ namespace Ocelot.Library.Configuration
         private readonly List<ReRoute> _reRoutes;
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
+        private readonly IConfigurationHeaderExtrator _configurationHeaderExtrator;
+        private readonly ILogger<OcelotConfiguration> _logger;
 
-        public OcelotConfiguration(IOptions<YamlConfiguration> options, IConfigurationValidator configurationValidator)
+        public OcelotConfiguration(IOptions<YamlConfiguration> options, 
+            IConfigurationValidator configurationValidator, 
+            IConfigurationHeaderExtrator configurationHeaderExtrator, 
+            ILogger<OcelotConfiguration> logger)
         {
             _options = options;
             _configurationValidator = configurationValidator;
+            _configurationHeaderExtrator = configurationHeaderExtrator;
+            _logger = logger;
             _reRoutes = new List<ReRoute>();
             SetUpConfiguration();
         }
@@ -43,7 +55,7 @@ namespace Ocelot.Library.Configuration
 
             var placeholders = new List<string>();
 
-            for (int i = 0; i < upstreamTemplate.Length; i++)
+            for (var i = 0; i < upstreamTemplate.Length; i++)
             {
                 if (IsPlaceHolder(upstreamTemplate, i))
                 {
@@ -70,15 +82,39 @@ namespace Ocelot.Library.Configuration
                     reRoute.AuthenticationOptions.RequireHttps, reRoute.AuthenticationOptions.AdditionalScopes,
                     reRoute.AuthenticationOptions.ScopeSecret);
 
+                var configHeaders = GetHeadersToAddToRequest(reRoute);
+
                 _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate,
-                    reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, authOptionsForRoute
+                    reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
+                    authOptionsForRoute, configHeaders
                     ));
             }
             else
             {
                 _reRoutes.Add(new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod,
-                    upstreamTemplate, isAuthenticated, null));
+                    upstreamTemplate, isAuthenticated, null, new List<ConfigurationHeaderExtractorProperties>()));
             }
+        }
+
+        private List<ConfigurationHeaderExtractorProperties> GetHeadersToAddToRequest(YamlReRoute reRoute)
+        {
+            var configHeaders = new List<ConfigurationHeaderExtractorProperties>();
+
+            foreach (var add in reRoute.AddHeadersToRequest)
+            {
+                var configurationHeader = _configurationHeaderExtrator.Extract(add.Key, add.Value);
+
+                if (configurationHeader.IsError)
+                {
+                    _logger.LogCritical(new EventId(1, "Application Failed to start"),
+                        $"Unable to extract configuration for key: {add.Key} and value: {add.Value} your configuration file is incorrect");
+
+                    throw new Exception(configurationHeader.Errors[0].Message);
+                }
+                configHeaders.Add(configurationHeader.Data);
+            }
+
+            return configHeaders;
         }
 
         private bool IsPlaceHolder(string upstreamTemplate, int i)

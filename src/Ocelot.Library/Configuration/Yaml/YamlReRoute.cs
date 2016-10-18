@@ -13,6 +13,6 @@
         public string UpstreamTemplate { get; set; }
         public string UpstreamHttpMethod { get; set; }
         public YamlAuthenticationOptions AuthenticationOptions { get; set; }
-        public Dictionary<string,string> AddHeadersToRequest { get; set; }
+        public Dictionary<string, string> AddHeadersToRequest { get; set; }
     }
 }

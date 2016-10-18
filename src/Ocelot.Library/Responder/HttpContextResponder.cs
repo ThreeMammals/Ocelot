@@ -12,18 +12,14 @@
     {
         public async Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response)
         {
-            if (response.IsSuccessStatusCode)
+            context.Response.OnStarting(x =>
             {
-                context.Response.OnStarting(x =>
-                {
-                    context.Response.StatusCode = (int)response.StatusCode;
-                    return Task.CompletedTask;
-                }, context);
+                context.Response.StatusCode = (int)response.StatusCode;
+                return Task.CompletedTask;
+            }, context);
 
-                await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
-                return context;
-            }
-            return context;
+            await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
+            return context;       
         }
 
         public async Task<HttpContext> CreateErrorResponse(HttpContext context, int statusCode)

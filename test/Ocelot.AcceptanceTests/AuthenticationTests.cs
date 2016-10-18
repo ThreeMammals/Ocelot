@@ -145,49 +145,6 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_and_foward_claim_as_header()
-        {
-
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
-                .And(x => x.GivenIHaveAToken("http://localhost:51888"))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
-                    {
-                        new YamlReRoute
-                        {
-                            DownstreamTemplate = "http://localhost:51876/",
-                            UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Get",
-                            AuthenticationOptions = new YamlAuthenticationOptions
-                            {
-                                AdditionalScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
-                            },
-                            AddHeadersToRequest =
-                            {
-                                { "CustomerId", "Claims[CustomerId] -> value" },
-                                { "LocationId", "Claims[LocationId] -> value"},
-                                { "UserId", "Claims[Subject] -> delimiter(|) -> value[0]" },
-                                { "UserId", "Claims[Subject] -> delimiter(|) -> value[1]" }
-                            }
-                        }
-                    }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .And(x => x.GivenIHaveAddedATokenToMyRequest())
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_return_201_using_identity_server_access_token()
         {
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))

@@ -38,12 +38,25 @@ Priorities
 TBC really but example configuration for a route below.
 
 ReRoutes:
-- DownstreamTemplate: http://localhost:51876/
+# the url we are forwarding the request to
+- DownstreamTemplate: http://localhost:52876/
+# the path we are listening on for this re route
   UpstreamTemplate: /
-  UpstreamHttpMethod: Post
+# the method we are listening for on this re route
+  UpstreamHttpMethod: Get
+# only support identity server at the moment
   AuthenticationOptions:
     Provider: IdentityServer
-    ProviderRootUrl: http://localhost:51888
+    ProviderRootUrl: http://localhost:52888
     ScopeName: api
-    AdditionalScopes: []
+    AdditionalScopes:
+    - openid
+    - offline_access
+#require if using reference tokens
     ScopeSecret: secret
+# WARNING - will overwrite any headers already in the request with these values
+  AddHeadersToRequest:
+    CustomerId: Claims[CustomerId] > value
+    LocationId: Claims[LocationId] > value
+    UserType: Claims[sub] > value[0] > |
+    UserId: Claims[sub] > value[1] > |

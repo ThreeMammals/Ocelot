@@ -3,9 +3,9 @@
 
   "buildOptions": {
     "copyToOutput": {
-      "include": [
-        "configuration.yaml"
-      ]
+        "include": [
+            "configuration.yaml"
+        ]
     }
   },
 

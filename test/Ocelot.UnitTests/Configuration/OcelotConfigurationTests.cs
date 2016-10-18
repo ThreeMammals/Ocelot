@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Ocelot.Library.RequestBuilder;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -18,9 +20,13 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IConfigurationValidator> _validator;
         private OcelotConfiguration _config;
         private YamlConfiguration _yamlConfiguration;
+        private readonly Mock<IConfigurationHeaderExtrator> _configExtractor;
+        private readonly Mock<ILogger<OcelotConfiguration>> _logger;
 
         public OcelotConfigurationTests()
         {
+            _logger = new Mock<ILogger<OcelotConfiguration>>();
+            _configExtractor = new Mock<IConfigurationHeaderExtrator>();
             _validator = new Mock<IConfigurationValidator>();
             _yamlConfig = new Mock<IOptions<YamlConfiguration>>();
         }
@@ -51,6 +57,114 @@ namespace Ocelot.UnitTests.Configuration
                         .WithUpstreamTemplatePattern("/api/products/.*$")
                         .Build()
                 }))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_with_headers_to_extract()
+        {
+            var expected = new List<ReRoute>
+            {
+                new ReRouteBuilder()
+                    .WithDownstreamTemplate("/products/{productId}")
+                    .WithUpstreamTemplate("/api/products/{productId}")
+                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamTemplatePattern("/api/products/.*$")
+                    .WithAuthenticationProvider("IdentityServer")
+                    .WithAuthenticationProviderUrl("http://localhost:51888")
+                    .WithRequireHttps(false)
+                    .WithScopeSecret("secret")
+                    .WithAuthenticationProviderScopeName("api")
+                    .WithConfigurationHeaderExtractorProperties(new List<ConfigurationHeaderExtractorProperties>
+                    {
+                        new ConfigurationHeaderExtractorProperties("CustomerId", "CustomerId", "", 0),
+                    })
+                    .Build()
+            };
+
+            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
+                {
+                    new YamlReRoute
+                    {
+                        UpstreamTemplate = "/api/products/{productId}",
+                        DownstreamTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = "Get",
+                        AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            },
+                        AddHeadersToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                        }
+                    }
+                }
+            }))
+                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigHeaderExtractorReturns(new ConfigurationHeaderExtractorProperties("CustomerId", "CustomerId", "", 0)))
+                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
+                .BDDfy();
+        }
+
+        private void GivenTheConfigHeaderExtractorReturns(ConfigurationHeaderExtractorProperties expected)
+        {
+            _configExtractor
+                .Setup(x => x.Extract(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new OkResponse<ConfigurationHeaderExtractorProperties>(expected));
+        }
+
+        [Fact]
+        public void should_create_with_authentication_properties()
+        {
+            var expected = new List<ReRoute>
+            {
+                new ReRouteBuilder()
+                    .WithDownstreamTemplate("/products/{productId}")
+                    .WithUpstreamTemplate("/api/products/{productId}")
+                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamTemplatePattern("/api/products/.*$")
+                    .WithAuthenticationProvider("IdentityServer")
+                    .WithAuthenticationProviderUrl("http://localhost:51888")
+                    .WithRequireHttps(false)
+                    .WithScopeSecret("secret")
+                    .WithAuthenticationProviderScopeName("api")
+                    .Build()
+            };
+
+            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
+                {
+                    new YamlReRoute
+                    {
+                        UpstreamTemplate = "/api/products/{productId}",
+                        DownstreamTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = "Get",
+                        AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            }
+                    }
+                }
+            }))
+                .And(x => x.GivenTheYamlConfigIsValid())
+                .When(x => x.WhenIInstanciateTheOcelotConfig())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .BDDfy();
         }
 
@@ -158,7 +272,8 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenIInstanciateTheOcelotConfig()
         {
-            _config = new OcelotConfiguration(_yamlConfig.Object, _validator.Object);
+            _config = new OcelotConfiguration(_yamlConfig.Object, _validator.Object,
+                _configExtractor.Object, _logger.Object);
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -172,6 +287,23 @@ namespace Ocelot.UnitTests.Configuration
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamTemplate.ShouldBe(expected.UpstreamTemplate);
                 result.UpstreamTemplatePattern.ShouldBe(expected.UpstreamTemplatePattern);
+            }
+        }
+
+        private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
+        {
+            for (int i = 0; i < _config.ReRoutes.Count; i++)
+            {
+                var result = _config.ReRoutes[i].AuthenticationOptions;
+                var expected = expectedReRoutes[i].AuthenticationOptions;
+
+                result.AdditionalScopes.ShouldBe(expected.AdditionalScopes);
+                result.Provider.ShouldBe(expected.Provider);
+                result.ProviderRootUrl.ShouldBe(expected.ProviderRootUrl);
+                result.RequireHttps.ShouldBe(expected.RequireHttps);
+                result.ScopeName.ShouldBe(expected.ScopeName);
+                result.ScopeSecret.ShouldBe(expected.ScopeSecret);
+
             }
         }
     }

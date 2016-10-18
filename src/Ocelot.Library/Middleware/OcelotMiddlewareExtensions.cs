@@ -12,6 +12,8 @@
 
             builder.UseAuthenticationMiddleware();
 
+            builder.UseHttpRequestHeadersBuilderMiddleware();
+
             builder.UseDownstreamUrlCreatorMiddleware();
 
             builder.UseHttpRequestBuilderMiddleware();
