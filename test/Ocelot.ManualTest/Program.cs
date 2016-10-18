@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Ocelot
+namespace Ocelot.ManualTest
 {
     public class Program
     {

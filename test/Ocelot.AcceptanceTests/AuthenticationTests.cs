@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Library.DependencyInjection;
+using Ocelot.Library.Middleware;
 
-namespace Ocelot
+namespace Ocelot.ManualTest
 {
-    using Library.DependencyInjection;
-    using Library.Middleware;
-
     public class Startup
     {
         public Startup(IHostingEnvironment env)

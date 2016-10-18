@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Library.Configuration.Yaml;
+using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

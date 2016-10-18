@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
