@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.DownstreamRouteFinder;
-using Ocelot.Library.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.ScopedData;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.DownstreamUrlCreator.Middleware
+namespace Ocelot.DownstreamUrlCreator.Middleware
 {
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {

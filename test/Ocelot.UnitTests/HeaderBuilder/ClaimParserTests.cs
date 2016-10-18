@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
-using Ocelot.Library.Errors;
-using Ocelot.Library.HeaderBuilder.Parser;
-using Ocelot.Library.Responses;
+using Ocelot.Errors;
+using Ocelot.HeaderBuilder.Parser;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

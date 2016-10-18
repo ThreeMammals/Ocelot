@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Configuration;
-using Ocelot.Library.Responses;
+using Ocelot.Configuration;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.HeaderBuilder
+namespace Ocelot.HeaderBuilder
 {
     public interface IAddHeadersToRequest
     {

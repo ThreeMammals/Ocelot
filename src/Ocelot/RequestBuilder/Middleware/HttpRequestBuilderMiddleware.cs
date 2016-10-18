@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.RequestBuilder.Builder;
-using Ocelot.Library.ScopedData;
+using Ocelot.Middleware;
+using Ocelot.RequestBuilder.Builder;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.RequestBuilder.Middleware
+namespace Ocelot.RequestBuilder.Middleware
 {
     public class HttpRequestBuilderMiddleware : OcelotMiddleware
     {

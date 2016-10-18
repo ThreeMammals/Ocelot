@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
-using Ocelot.Library.Configuration.Validator;
+using Ocelot.Configuration.Validator;
+using Ocelot.Configuration.Yaml;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using Library.Configuration.Yaml;
-    using Library.Responses;
-
     public class ConfigurationValidationTests
     {
         private YamlConfiguration _yamlConfiguration;

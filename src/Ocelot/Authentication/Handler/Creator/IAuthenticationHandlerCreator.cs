@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Authentication.Handler.Creator
+namespace Ocelot.Authentication.Handler.Creator
 {
     using AuthenticationOptions = Configuration.AuthenticationOptions;
 

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Responses;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.HeaderBuilder.Parser
+namespace Ocelot.HeaderBuilder.Parser
 {
     public class ClaimsParser : IClaimsParser
     {

@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.RequestBuilder.Builder
+namespace Ocelot.RequestBuilder.Builder
 {
     public interface IRequestBuilder
     {

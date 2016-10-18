@@ -1,8 +1,8 @@
-﻿using Ocelot.Library.Configuration.Creator;
-using Ocelot.Library.Configuration.Repository;
-using Ocelot.Library.Responses;
+﻿using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.Repository;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Provider
+namespace Ocelot.Configuration.Provider
 {
     /// <summary>
     /// Register as singleton

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Ocelot.Library.Configuration.Builder;
-using Ocelot.Library.DownstreamRouteFinder;
-using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Library.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Library.Responses;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

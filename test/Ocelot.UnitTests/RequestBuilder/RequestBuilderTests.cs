@@ -5,16 +5,15 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Ocelot.Library.RequestBuilder.Builder;
+using Ocelot.RequestBuilder;
+using Ocelot.RequestBuilder.Builder;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.RequestBuilder
 {
-    using Library.RequestBuilder;
-    using Library.Responses;
-
     public class RequestBuilderTests
     {
         private string _httpMethod;

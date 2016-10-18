@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Library.Responder
-{
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
+namespace Ocelot.Responder
+{
     /// <summary>
     /// Cannot unit test things in this class due to methods not being implemented
     /// on .net concretes used for testing

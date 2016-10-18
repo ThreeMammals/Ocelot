@@ -1,6 +1,6 @@
-﻿using Ocelot.Library.Errors;
+﻿using Ocelot.Errors;
 
-namespace Ocelot.Library.HeaderBuilder.Parser
+namespace Ocelot.HeaderBuilder.Parser
 {
     public class CannotFindClaimError : Error
     {

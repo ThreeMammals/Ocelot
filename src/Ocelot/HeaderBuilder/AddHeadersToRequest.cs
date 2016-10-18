@@ -2,11 +2,11 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Library.Configuration;
-using Ocelot.Library.HeaderBuilder.Parser;
-using Ocelot.Library.Responses;
+using Ocelot.Configuration;
+using Ocelot.HeaderBuilder.Parser;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.HeaderBuilder
+namespace Ocelot.HeaderBuilder
 {
     public class AddHeadersToRequest : IAddHeadersToRequest
     {

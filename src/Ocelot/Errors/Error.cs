@@ -1,4 +1,4 @@
-namespace Ocelot.Library.Errors
+namespace Ocelot.Errors
 {
     public abstract class Error 
     {

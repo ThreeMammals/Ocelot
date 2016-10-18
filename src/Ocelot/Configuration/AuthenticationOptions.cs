@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Library.Configuration
-{
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+namespace Ocelot.Configuration
+{
     public class AuthenticationOptions
     {
         public AuthenticationOptions(string provider, string providerRootUrl, string scopeName, bool requireHttps, List<string> additionalScopes, string scopeSecret)

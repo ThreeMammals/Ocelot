@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Ocelot.Configuration.Yaml;
 using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
@@ -22,7 +23,6 @@ using YamlDotNet.Serialization;
 namespace Ocelot.AcceptanceTests
 {
     using System.Security.Claims;
-    using Library.Configuration.Yaml;
 
     public class AuthenticationTests : IDisposable
     {

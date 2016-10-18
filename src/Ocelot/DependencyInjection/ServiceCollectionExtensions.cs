@@ -1,31 +1,26 @@
-﻿using Ocelot.Library.Authentication.Handler.Creator;
-using Ocelot.Library.Authentication.Handler.Factory;
-using Ocelot.Library.Configuration.Creator;
-using Ocelot.Library.Configuration.Parser;
-using Ocelot.Library.Configuration.Provider;
-using Ocelot.Library.Configuration.Repository;
-using Ocelot.Library.Configuration.Validator;
-using Ocelot.Library.DownstreamRouteFinder.Finder;
-using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Library.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Library.HeaderBuilder;
-using Ocelot.Library.HeaderBuilder.Parser;
-using Ocelot.Library.RequestBuilder.Builder;
-using Ocelot.Library.ScopedData;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Authentication.Handler.Creator;
+using Ocelot.Authentication.Handler.Factory;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.Parser;
+using Ocelot.Configuration.Provider;
+using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Validator;
+using Ocelot.Configuration.Yaml;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.HeaderBuilder;
+using Ocelot.HeaderBuilder.Parser;
+using Ocelot.RequestBuilder.Builder;
+using Ocelot.Requester;
+using Ocelot.Responder;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.DependencyInjection
+namespace Ocelot.DependencyInjection
 {
-    using Authentication;
-    using Configuration;
-    using Configuration.Yaml;
-    using DownstreamRouteFinder;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using RequestBuilder;
-    using Requester;
-    using Responder;
-
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddOcelotYamlConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)

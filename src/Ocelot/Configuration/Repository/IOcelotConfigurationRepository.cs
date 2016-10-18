@@ -1,6 +1,6 @@
-﻿using Ocelot.Library.Responses;
+﻿using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Repository
+namespace Ocelot.Configuration.Repository
 {
     public interface IOcelotConfigurationRepository
     {

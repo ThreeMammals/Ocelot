@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Ocelot.Library.Configuration
+namespace Ocelot.Configuration
 {
     public class OcelotConfiguration : IOcelotConfiguration
     {

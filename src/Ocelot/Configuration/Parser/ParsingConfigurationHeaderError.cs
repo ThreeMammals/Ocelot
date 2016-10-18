@@ -1,7 +1,7 @@
 ﻿using System;
-using Ocelot.Library.Errors;
+using Ocelot.Errors;
 
-namespace Ocelot.Library.Configuration.Parser
+namespace Ocelot.Configuration.Parser
 {
     public class ParsingConfigurationHeaderError : Error
     {

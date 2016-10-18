@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Library.Responder.Middleware
+namespace Ocelot.Responder.Middleware
 {
     public static class HttpResponderMiddlewareExtensions
     {

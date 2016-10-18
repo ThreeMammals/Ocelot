@@ -1,10 +1,9 @@
-﻿using Ocelot.Library.ScopedData;
+﻿using System.Collections.Generic;
+using Ocelot.Errors;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Middleware
 {
-    using System.Collections.Generic;
-    using Errors;
-
     public abstract class OcelotMiddleware
     {
         private readonly IScopedRequestDataRepository _scopedRequestDataRepository;

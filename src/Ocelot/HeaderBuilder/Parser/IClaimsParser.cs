@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.HeaderBuilder.Parser
+namespace Ocelot.HeaderBuilder.Parser
 {
     public interface IClaimsParser
     {

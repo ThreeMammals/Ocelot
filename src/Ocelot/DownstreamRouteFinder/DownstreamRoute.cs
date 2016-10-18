@@ -1,10 +1,9 @@
-﻿using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
+﻿using System.Collections.Generic;
+using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
-namespace Ocelot.Library.DownstreamRouteFinder
+namespace Ocelot.DownstreamRouteFinder
 {
-    using System.Collections.Generic;
-    using Configuration;
-
     public class DownstreamRoute
     {
         public DownstreamRoute(List<TemplateVariableNameAndValue> templateVariableNameAndValues, ReRoute reRoute)

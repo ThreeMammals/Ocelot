@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Library.Configuration
+﻿namespace Ocelot.Configuration
 {
     public class ClaimToHeader
     {

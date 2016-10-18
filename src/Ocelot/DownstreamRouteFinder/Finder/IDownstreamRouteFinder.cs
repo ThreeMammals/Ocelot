@@ -1,6 +1,6 @@
-﻿using Ocelot.Library.Responses;
+﻿using Ocelot.Responses;
 
-namespace Ocelot.Library.DownstreamRouteFinder.Finder
+namespace Ocelot.DownstreamRouteFinder.Finder
 {
     public interface IDownstreamRouteFinder
     {

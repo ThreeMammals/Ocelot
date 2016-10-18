@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Library.Responder
-{
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
+namespace Ocelot.Responder
+{
     public interface IHttpResponder
     {
         Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response);

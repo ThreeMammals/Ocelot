@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Ocelot.Configuration.Yaml;
 using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
@@ -15,8 +16,6 @@ using YamlDotNet.Serialization;
 
 namespace Ocelot.AcceptanceTests
 {
-    using Library.Configuration.Yaml;
-
     public class RoutingTests : IDisposable
     {
         private TestServer _server;

@@ -3,20 +3,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Ocelot.Library.Authentication.Handler;
-using Ocelot.Library.Authentication.Handler.Creator;
-using Ocelot.Library.Authentication.Handler.Factory;
+using Ocelot.Authentication.Handler;
+using Ocelot.Authentication.Handler.Creator;
+using Ocelot.Authentication.Handler.Factory;
+using Ocelot.Errors;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using AuthenticationOptions = Ocelot.Configuration.AuthenticationOptions;
 
 namespace Ocelot.UnitTests.Authentication
 {
-    using Library.Authentication;
-    using Library.Configuration;
-    using Library.Errors;
-    using Library.Responses;
-
     public class AuthenticationHandlerFactoryTests
     {
         private readonly IAuthenticationHandlerFactory _authenticationHandlerFactory;

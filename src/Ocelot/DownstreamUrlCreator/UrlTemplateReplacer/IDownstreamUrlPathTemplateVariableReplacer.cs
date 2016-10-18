@@ -1,7 +1,7 @@
-using Ocelot.Library.DownstreamRouteFinder;
-using Ocelot.Library.Responses;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.DownstreamUrlCreator.UrlTemplateReplacer
+namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
     public interface IDownstreamUrlTemplateVariableReplacer
     {

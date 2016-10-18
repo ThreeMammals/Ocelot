@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
     public interface ITemplateVariableNameAndValueFinder
     {

@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Library.Authentication.Handler
+﻿namespace Ocelot.Authentication.Handler
 {
     public enum SupportedAuthenticationProviders
     {

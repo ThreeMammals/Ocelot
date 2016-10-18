@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.Library.Authentication.Handler
+namespace Ocelot.Authentication.Handler
 {
     public class AuthenticationHandler
     {

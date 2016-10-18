@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Responses;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.ScopedData
+namespace Ocelot.ScopedData
 {
     public class ScopedRequestDataRepository : IScopedRequestDataRepository
     {

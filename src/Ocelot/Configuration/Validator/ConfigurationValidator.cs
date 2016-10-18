@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Library.Authentication;
-using Ocelot.Library.Authentication.Handler;
-using Ocelot.Library.Configuration.Yaml;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Responses;
+using Ocelot.Authentication.Handler;
+using Ocelot.Configuration.Yaml;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Validator
+namespace Ocelot.Configuration.Validator
 {
     public class ConfigurationValidator : IConfigurationValidator
     {

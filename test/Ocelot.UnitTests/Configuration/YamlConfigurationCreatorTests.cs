@@ -2,22 +2,19 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Ocelot.Library.Configuration.Builder;
-using Ocelot.Library.Configuration.Creator;
-using Ocelot.Library.Configuration.Parser;
-using Ocelot.Library.Configuration.Repository;
-using Ocelot.Library.Configuration.Validator;
-using Ocelot.Library.RequestBuilder;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.Parser;
+using Ocelot.Configuration.Validator;
+using Ocelot.Configuration.Yaml;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using Library.Configuration;
-    using Library.Configuration.Yaml;
-    using Library.Responses;
-
     public class YamlConfigurationCreatorTests
     {
         private readonly Mock<IOptions<YamlConfiguration>> _yamlConfig;

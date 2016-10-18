@@ -2,14 +2,14 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Authentication.Handler.Factory;
-using Ocelot.Library.Configuration;
-using Ocelot.Library.DownstreamRouteFinder;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.ScopedData;
+using Ocelot.Authentication.Handler.Factory;
+using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.Errors;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.Authentication.Middleware
+namespace Ocelot.Authentication.Middleware
 {
     public class AuthenticationMiddleware : OcelotMiddleware
     {

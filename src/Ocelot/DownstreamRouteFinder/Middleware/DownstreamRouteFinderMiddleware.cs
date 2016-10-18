@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.DownstreamRouteFinder.Finder;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.ScopedData;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.DownstreamRouteFinder.Middleware
+namespace Ocelot.DownstreamRouteFinder.Middleware
 {
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {

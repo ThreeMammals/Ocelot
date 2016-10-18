@@ -1,6 +1,6 @@
-﻿using Ocelot.Library.Errors;
+﻿using Ocelot.Errors;
 
-namespace Ocelot.Library.ScopedData
+namespace Ocelot.ScopedData
 {
     public class CannotAddDataError : Error
     {

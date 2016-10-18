@@ -1,8 +1,8 @@
-﻿namespace Ocelot.Library.RequestBuilder
-{
-    using System.Net;
-    using System.Net.Http;
+﻿using System.Net;
+using System.Net.Http;
 
+namespace Ocelot.RequestBuilder
+{
     public class Request
     {
         public Request(HttpRequestMessage httpRequestMessage, CookieContainer cookieContainer)

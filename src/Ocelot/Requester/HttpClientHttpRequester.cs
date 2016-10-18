@@ -1,13 +1,13 @@
-﻿namespace Ocelot.Library.Requester
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Errors;
-    using RequestBuilder;
-    using Responses;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Ocelot.Errors;
+using Ocelot.RequestBuilder;
+using Ocelot.Responses;
 
+namespace Ocelot.Requester
+{
     public class HttpClientHttpRequester : IHttpRequester
     {
         public async Task<Response<HttpResponseMessage>> GetResponse(Request request)

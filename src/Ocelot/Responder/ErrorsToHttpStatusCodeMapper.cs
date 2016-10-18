@@ -1,10 +1,10 @@
-namespace Ocelot.Library.Responder
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using Errors;
-    using Responses;
+using System.Collections.Generic;
+using System.Linq;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
+namespace Ocelot.Responder
+{
     public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
     {
         public Response<int> Map(List<Error> errors)

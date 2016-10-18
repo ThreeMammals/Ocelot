@@ -1,6 +1,6 @@
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Parser
+namespace Ocelot.Configuration.Parser
 {
     public interface IClaimToHeaderConfigurationParser
     {

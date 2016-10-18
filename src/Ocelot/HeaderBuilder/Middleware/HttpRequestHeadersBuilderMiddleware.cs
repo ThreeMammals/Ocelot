@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.DownstreamRouteFinder;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.ScopedData;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.HeaderBuilder.Middleware
+namespace Ocelot.HeaderBuilder.Middleware
 {
     public class HttpRequestHeadersBuilderMiddleware : OcelotMiddleware
     {

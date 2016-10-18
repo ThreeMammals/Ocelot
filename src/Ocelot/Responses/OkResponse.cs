@@ -1,4 +1,4 @@
-namespace Ocelot.Library.Responses
+namespace Ocelot.Responses
 {
     public class OkResponse : Response
     {

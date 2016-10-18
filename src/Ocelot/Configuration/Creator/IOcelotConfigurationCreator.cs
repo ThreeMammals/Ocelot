@@ -1,6 +1,6 @@
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Creator
+namespace Ocelot.Configuration.Creator
 {
     public interface IOcelotConfigurationCreator
     {

@@ -1,10 +1,10 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Middleware;
-using Ocelot.Library.ScopedData;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 
-namespace Ocelot.Library.Responder.Middleware
+namespace Ocelot.Responder.Middleware
 {
     public class HttpResponderMiddleware : OcelotMiddleware
     {

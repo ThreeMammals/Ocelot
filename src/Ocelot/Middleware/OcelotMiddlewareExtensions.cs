@@ -1,15 +1,14 @@
-﻿using Ocelot.Library.Authentication.Middleware;
-using Ocelot.Library.DownstreamRouteFinder.Middleware;
-using Ocelot.Library.DownstreamUrlCreator.Middleware;
-using Ocelot.Library.HeaderBuilder.Middleware;
-using Ocelot.Library.RequestBuilder.Middleware;
-using Ocelot.Library.Requester.Middleware;
-using Ocelot.Library.Responder.Middleware;
+﻿using Microsoft.AspNetCore.Builder;
+using Ocelot.Authentication.Middleware;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.HeaderBuilder.Middleware;
+using Ocelot.RequestBuilder.Middleware;
+using Ocelot.Requester.Middleware;
+using Ocelot.Responder.Middleware;
 
-namespace Ocelot.Library.Middleware
+namespace Ocelot.Middleware
 {
-    using Microsoft.AspNetCore.Builder;
-
     public static class OcelotMiddlewareExtensions
     {
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)

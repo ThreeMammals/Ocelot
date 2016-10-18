@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Ocelot.Library.Errors;
+using Ocelot.Errors;
 
-namespace Ocelot.Library.Configuration.Validator
+namespace Ocelot.Configuration.Validator
 {
     public class ConfigurationValidationResult
     {

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Ocelot.Library.Configuration.Parser;
-using Ocelot.Library.Configuration.Validator;
-using Ocelot.Library.Configuration.Yaml;
-using Ocelot.Library.Responses;
+using Ocelot.Configuration.Parser;
+using Ocelot.Configuration.Validator;
+using Ocelot.Configuration.Yaml;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Creator
+namespace Ocelot.Configuration.Creator
 {
     /// <summary>
     /// Register as singleton

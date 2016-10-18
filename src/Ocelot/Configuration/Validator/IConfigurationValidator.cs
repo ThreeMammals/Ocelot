@@ -1,7 +1,7 @@
-﻿using Ocelot.Library.Configuration.Yaml;
-using Ocelot.Library.Responses;
+﻿using Ocelot.Configuration.Yaml;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Validator
+namespace Ocelot.Configuration.Validator
 {
     public interface IConfigurationValidator
     {

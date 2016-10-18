@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Ocelot.Library.Errors;
-using Ocelot.Library.RequestBuilder;
-using Ocelot.Library.Responses;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Configuration.Parser
+namespace Ocelot.Configuration.Parser
 {
     public class ClaimToHeaderConfigurationParser : IClaimToHeaderConfigurationParser
     {

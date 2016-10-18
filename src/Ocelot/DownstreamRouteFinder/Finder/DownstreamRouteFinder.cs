@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Library.Configuration.Provider;
-using Ocelot.Library.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Responses;
+using Ocelot.Configuration.Provider;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.DownstreamRouteFinder.Finder
+namespace Ocelot.DownstreamRouteFinder.Finder
 {
     public class DownstreamRouteFinder : IDownstreamRouteFinder
     {

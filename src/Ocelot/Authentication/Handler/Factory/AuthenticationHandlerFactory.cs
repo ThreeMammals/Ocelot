@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
-using Ocelot.Library.Authentication.Handler.Creator;
-using Ocelot.Library.Errors;
-using Ocelot.Library.Responses;
+using Ocelot.Authentication.Handler.Creator;
+using Ocelot.Errors;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.Authentication.Handler.Factory
+namespace Ocelot.Authentication.Handler.Factory
 {
     using AuthenticationOptions = Configuration.AuthenticationOptions;
 

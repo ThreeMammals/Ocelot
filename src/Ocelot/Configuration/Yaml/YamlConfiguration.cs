@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Library.Configuration.Yaml
-{
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+namespace Ocelot.Configuration.Yaml
+{
     public class YamlConfiguration
     {
         public YamlConfiguration()

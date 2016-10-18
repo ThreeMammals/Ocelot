@@ -1,8 +1,8 @@
-﻿namespace Ocelot.Library.Requester
-{
-    using System;
-    using Errors;
+﻿using System;
+using Ocelot.Errors;
 
+namespace Ocelot.Requester
+{
     public class UnableToCompleteRequestError : Error
     {
         public UnableToCompleteRequestError(Exception exception) 

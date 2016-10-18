@@ -5,9 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Library.Responses;
+using Ocelot.Responses;
 
-namespace Ocelot.Library.RequestBuilder.Builder
+namespace Ocelot.RequestBuilder.Builder
 {
     public class HttpRequestBuilder : IRequestBuilder
     {

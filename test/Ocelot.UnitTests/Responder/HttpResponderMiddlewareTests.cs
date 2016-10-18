@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Library.Responder;
-using Ocelot.Library.Responder.Middleware;
-using Ocelot.Library.Responses;
-using Ocelot.Library.ScopedData;
+using Ocelot.Responder;
+using Ocelot.Responder.Middleware;
+using Ocelot.Responses;
+using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 

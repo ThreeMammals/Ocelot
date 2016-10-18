@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Library.DownstreamUrlCreator.Middleware
+namespace Ocelot.DownstreamUrlCreator.Middleware
 {
     public static class DownstreamUrlCreatorMiddlewareExtensions
     {
