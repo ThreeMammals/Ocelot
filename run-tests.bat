@@ -3,8 +3,8 @@ echo -------------------------
 echo Restoring Ocelot
 dotnet restore src/Ocelot
 
-echo Restoring Ocelot
-dotnet restore src/Ocelot.Library
+echo Restoring Ocelot.ManualTest
+dotnet restore test/Ocelot.ManualTest/
 
 echo Running Ocelot.UnitTests
 dotnet restore test/Ocelot.UnitTests/
