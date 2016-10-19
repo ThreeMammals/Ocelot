@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Ocelot.Claims.Parser;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Authorisation
 {
+    using Infrastructure.Claims.Parser;
+
     public class ClaimsAuthoriser : IAuthoriser
     {
         private readonly IClaimsParser _claimsParser;
@@ -16,9 +17,9 @@ namespace Ocelot.Authorisation
             _claimsParser = claimsParser;
         }
 
-        public Response<bool> Authorise(ClaimsPrincipal claimsPrincipal, RouteClaimsRequirement routeClaimsRequirement)
+        public Response<bool> Authorise(ClaimsPrincipal claimsPrincipal, Dictionary<string, string> routeClaimsRequirement)
         {
-            foreach (var required in routeClaimsRequirement.RequiredClaimsAndValues)
+            foreach (var required in routeClaimsRequirement)
             {
                 var value = _claimsParser.GetValue(claimsPrincipal.Claims, required.Key, string.Empty, 0);
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
-using Ocelot.Authorisation;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.HeaderBuilder.Middleware;
@@ -10,6 +9,9 @@ using Ocelot.Responder.Middleware;
 
 namespace Ocelot.Middleware
 {
+    using Authorisation.Middleware;
+    using ClaimsBuilder.Middleware;
+
     public static class OcelotMiddlewareExtensions
     {
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
@@ -19,6 +21,8 @@ namespace Ocelot.Middleware
             builder.UseDownstreamRouteFinderMiddleware();
 
             builder.UseAuthenticationMiddleware();
+
+            builder.UseClaimsBuilderMiddleware();
 
             builder.UseAuthorisationMiddleware();
 

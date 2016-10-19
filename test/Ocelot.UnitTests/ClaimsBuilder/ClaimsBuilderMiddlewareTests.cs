@@ -1,40 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.HeaderBuilder;
-using Ocelot.HeaderBuilder.Middleware;
-using Ocelot.Responses;
-using Ocelot.ScopedData;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.HeaderBuilder
+﻿namespace Ocelot.UnitTests.ClaimsBuilder
 {
-    public class HttpRequestHeadersBuilderMiddlewareTests : IDisposable
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.TestHost;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.ClaimsBuilder;
+    using Ocelot.ClaimsBuilder.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Responses;
+    using ScopedData;
+    using TestStack.BDDfy;
+    using Xunit;
+
+    public class ClaimsBuilderMiddlewareTests : IDisposable
     {
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
-        private readonly Mock<IAddHeadersToRequest> _addHeaders;
+        private readonly Mock<IAddClaimsToRequest> _addHeaders;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
 
-        public HttpRequestHeadersBuilderMiddlewareTests()
+        public ClaimsBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
-            _addHeaders = new Mock<IAddHeadersToRequest>();
+            _addHeaders = new Mock<IAddClaimsToRequest>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
               .UseUrls(_url)
               .Configure(app =>
               {
-                  app.UseHttpRequestHeadersBuilderMiddleware();
+                  app.UseClaimsBuilderMiddleware();
               });
 
             _server = new TestServer(builder);
@@ -61,31 +61,31 @@ namespace Ocelot.UnitTests.HeaderBuilder
             var downstreamRoute = new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamTemplate("any old string")
-                    .WithClaimsToHeaders(new List<ClaimToThing>
+                    .WithClaimsToClaims(new List<ClaimToThing>
                     {
-                        new ClaimToThing("UserId", "Subject", "", 0)
+                        new ClaimToThing("sub", "UserType", "|", 0)
                     })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheAddHeadersToRequestReturns("123"))
+                .And(x => x.GivenTheAddClaimsToRequestReturns())
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheAddHeadersToRequestIsCalledCorrectly())
+                .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void GivenTheAddHeadersToRequestReturns(string claimValue)
+        private void GivenTheAddClaimsToRequestReturns()
         {
             _addHeaders
-                .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(), 
+                .Setup(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
                 It.IsAny<HttpContext>()))
                 .Returns(new OkResponse());
         }
 
-        private void ThenTheAddHeadersToRequestIsCalledCorrectly()
+        private void ThenTheClaimsToRequestIsCalledCorrectly()
         {
             _addHeaders
-                .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(),
+                .Verify(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
                 It.IsAny<HttpContext>()), Times.Once);
         }
 

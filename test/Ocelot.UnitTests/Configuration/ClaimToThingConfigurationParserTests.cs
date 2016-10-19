@@ -10,15 +10,15 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ConfigurationHeadersExtractorTests
+    public class ClaimToThingConfigurationParserTests
     {
         private Dictionary<string, string> _dictionary;
-        private readonly IClaimToHeaderConfigurationParser _claimToHeaderConfigurationParser;
-        private Response<ClaimToHeader> _result;
+        private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
+        private Response<ClaimToThing> _result;
 
-        public ConfigurationHeadersExtractorTests()
+        public ClaimToThingConfigurationParserTests()
         {
-            _claimToHeaderConfigurationParser = new ClaimToHeaderConfigurationParser();
+            _claimToThingConfigurationParser = new ClaimToThingConfigurationParser();
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenICallTheExtractor())
                 .Then(
                     x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToHeader>(
+                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
                             new List<Error>
                             {
                                 new NoInstructionsError(">")
@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenICallTheExtractor())
                 .Then(
                     x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToHeader>(
+                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
                             new List<Error>
                             {
                                 new InstructionNotForClaimsError()
@@ -68,8 +68,8 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(
                     x =>
                         x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ClaimToHeader>(
-                                new ClaimToHeader("CustomerId", "CustomerId", "", 0))))
+                            new OkResponse<ClaimToThing>(
+                                new ClaimToThing("CustomerId", "CustomerId", "", 0))))
                 .BDDfy();
         }
 
@@ -84,20 +84,20 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(
                     x =>
                         x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ClaimToHeader>(
-                                new ClaimToHeader("UserId", "Subject", "|", 0))))
+                            new OkResponse<ClaimToThing>(
+                                new ClaimToThing("UserId", "Subject", "|", 0))))
                 .BDDfy();
         }
 
-        private void ThenAnErrorIsReturned(Response<ClaimToHeader> expected)
+        private void ThenAnErrorIsReturned(Response<ClaimToThing> expected)
         {
             _result.IsError.ShouldBe(expected.IsError);
             _result.Errors[0].ShouldBeOfType(expected.Errors[0].GetType());
         }
 
-        private void ThenTheClaimParserPropertiesAreReturned(Response<ClaimToHeader> expected)
+        private void ThenTheClaimParserPropertiesAreReturned(Response<ClaimToThing> expected)
         {
-            _result.Data.ClaimKey.ShouldBe(expected.Data.ClaimKey);
+            _result.Data.NewKey.ShouldBe(expected.Data.NewKey);
             _result.Data.Delimiter.ShouldBe(expected.Data.Delimiter);
             _result.Data.Index.ShouldBe(expected.Data.Index);
             _result.IsError.ShouldBe(expected.IsError);
@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.Configuration
         private void WhenICallTheExtractor()
         {
             var first = _dictionary.First();
-            _result = _claimToHeaderConfigurationParser.Extract(first.Key, first.Value);
+            _result = _claimToThingConfigurationParser.Extract(first.Key, first.Value);
         }
 
         private void GivenTheDictionaryIs(Dictionary<string, string> dictionary)

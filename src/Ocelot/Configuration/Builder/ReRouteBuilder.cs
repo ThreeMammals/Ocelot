@@ -15,7 +15,10 @@ namespace Ocelot.Configuration.Builder
         private List<string> _additionalScopes;
         private bool _requireHttps;
         private string _scopeSecret;
-        private List<ClaimToHeader> _configHeaderExtractorProperties;
+        private List<ClaimToThing> _configHeaderExtractorProperties;
+        private List<ClaimToThing> _claimToClaims;
+        private Dictionary<string, string> _routeClaimRequirement;
+        private bool _isAuthorised;
 
         public ReRouteBuilder()
         {
@@ -48,8 +51,14 @@ namespace Ocelot.Configuration.Builder
         {
             _isAuthenticated = input;
             return this;
-
         }
+
+        public ReRouteBuilder WithIsAuthorised(bool input)
+        {
+            _isAuthorised = input;
+            return this;
+        }
+
         public ReRouteBuilder WithAuthenticationProvider(string input)
         {
             _authenticationProvider = input;
@@ -86,15 +95,27 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithConfigurationHeaderExtractorProperties(List<ClaimToHeader> input)
+        public ReRouteBuilder WithClaimsToHeaders(List<ClaimToThing> input)
         {
             _configHeaderExtractorProperties = input;
             return this;
         }
 
+        public ReRouteBuilder WithClaimsToClaims(List<ClaimToThing> input)
+        {
+            _claimToClaims = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithRouteClaimsRequirement(Dictionary<string, string> input)
+        {
+            _routeClaimRequirement = input;
+            return this;
+        }
+
         public ReRoute Build()
         {
-            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties);
+            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, _isAuthorised);
         }
     }
 }

@@ -6,13 +6,13 @@ using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {
-    public class ClaimToHeaderConfigurationParser : IClaimToHeaderConfigurationParser
+    public class ClaimToThingConfigurationParser : IClaimToThingConfigurationParser
     {
         private readonly Regex _claimRegex = new Regex("Claims\\[.*\\]");
         private readonly Regex _indexRegex = new Regex("value\\[.*\\]");
         private const string SplitToken = ">";
 
-        public Response<ClaimToHeader> Extract(string headerKey, string value)
+        public Response<ClaimToThing> Extract(string existingKey, string value)
         {
             try
             {
@@ -20,7 +20,7 @@ namespace Ocelot.Configuration.Parser
 
                 if (instructions.Length <= 1)
                 {
-                    return new ErrorResponse<ClaimToHeader>(
+                    return new ErrorResponse<ClaimToThing>(
                         new List<Error>
                     {
                         new NoInstructionsError(SplitToken)
@@ -31,14 +31,14 @@ namespace Ocelot.Configuration.Parser
 
                 if (!claimMatch)
                 {
-                    return new ErrorResponse<ClaimToHeader>(
+                    return new ErrorResponse<ClaimToThing>(
                         new List<Error>
                         {
                             new InstructionNotForClaimsError()
                         });
                 }
 
-                var claimKey = GetIndexValue(instructions[0]);
+                var newKey = GetIndexValue(instructions[0]);
                 var index = 0;
                 var delimiter = string.Empty;
 
@@ -48,12 +48,12 @@ namespace Ocelot.Configuration.Parser
                     delimiter = instructions[2].Trim();
                 }
 
-                return new OkResponse<ClaimToHeader>(
-                               new ClaimToHeader(headerKey, claimKey, delimiter, index));
+                return new OkResponse<ClaimToThing>(
+                               new ClaimToThing(existingKey, newKey, delimiter, index));
             }
             catch (Exception exception)
             {
-                return new ErrorResponse<ClaimToHeader>(
+                return new ErrorResponse<ClaimToThing>(
                     new List<Error>
                     {
                         new ParsingConfigurationHeaderError(exception)

@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using Ocelot.Claims.Parser;
-using Ocelot.Errors;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.HeaderBuilder
+﻿namespace Ocelot.UnitTests.Infrastructure
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using Errors;
+    using Ocelot.Infrastructure.Claims.Parser;
+    using Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ClaimParserTests
     {
         private readonly IClaimsParser _claimsParser;

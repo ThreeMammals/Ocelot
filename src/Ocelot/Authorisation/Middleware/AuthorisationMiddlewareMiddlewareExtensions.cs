@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Builder;
-
-namespace Ocelot.Authorisation
+namespace Ocelot.Authorisation.Middleware
 {
+    using Microsoft.AspNetCore.Builder;
+
     public static class AuthorisationMiddlewareMiddlewareExtensions
     {
         public static IApplicationBuilder UseAuthorisationMiddleware(this IApplicationBuilder builder)

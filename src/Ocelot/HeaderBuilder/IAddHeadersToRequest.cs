@@ -7,7 +7,7 @@ namespace Ocelot.HeaderBuilder
 {
     public interface IAddHeadersToRequest
     {
-        Response SetHeadersOnContext(List<ClaimToHeader> configurationHeaderExtractorProperties,
+        Response SetHeadersOnContext(List<ClaimToThing> claimsToThings,
             HttpContext context);
     }
 }

@@ -1,38 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Errors;
-using Ocelot.HeaderBuilder;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.HeaderBuilder
+﻿namespace Ocelot.UnitTests.ClaimsBuilder
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Security.Claims;
+    using Errors;
+    using Microsoft.AspNetCore.Http;
+    using Moq;
+    using Ocelot.ClaimsBuilder;
+    using Ocelot.Configuration;
     using Ocelot.Infrastructure.Claims.Parser;
+    using Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
 
-    public class AddHeadersToRequestTests
+    public class AddClaimsToRequestTests
     {
-        private readonly AddHeadersToRequest _addHeadersToRequest;
+        private readonly AddClaimsToRequest _addClaimsToRequest;
         private readonly Mock<IClaimsParser> _parser;
-        private List<ClaimToThing> _configuration;
+        private List<ClaimToThing> _claimsToThings;
         private HttpContext _context;
         private Response _result;
         private Response<string> _claimValue;
 
-        public AddHeadersToRequestTests()
+        public AddClaimsToRequestTests()
         {
             _parser = new Mock<IClaimsParser>();
-            _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
+            _addClaimsToRequest = new AddClaimsToRequest(_parser.Object);
         }
 
         [Fact]
-        public void should_add_headers_to_context()
+        public void should_add_claims_to_context()
         {
             var context = new DefaultHttpContext
             {
@@ -43,41 +41,38 @@ namespace Ocelot.UnitTests.HeaderBuilder
             };
 
             this.Given(
-                x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
+                x => x.GivenClaimsToThings(new List<ClaimToThing>
                 {
-                    new ClaimToThing("header-key", "", "", 0)
+                    new ClaimToThing("claim-key", "", "", 0)
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-                .When(x => x.WhenIAddHeadersToTheRequest())
+                .When(x => x.WhenIAddClaimsToTheRequest())
                 .Then(x => x.ThenTheResultIsSuccess())
-                .And(x => x.ThenTheHeaderIsAdded())
                 .BDDfy();
         }
 
         [Fact]
-        public void if_header_exists_should_replace_it()
+        public void if_claims_exists_should_replace_it()
         {
             var context = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim("test", "data")
+                    new Claim("existing-key", "data"),
+                    new Claim("new-key", "data")
                 })),
             };
 
-            context.Request.Headers.Add("header-key", new StringValues("initial"));
-
             this.Given(
-                x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
+                x => x.GivenClaimsToThings(new List<ClaimToThing>
                 {
-                    new ClaimToThing("header-key", "", "", 0)
+                    new ClaimToThing("existing-key", "new-key", "", 0)
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-                .When(x => x.WhenIAddHeadersToTheRequest())
+                .When(x => x.WhenIAddClaimsToTheRequest())
                 .Then(x => x.ThenTheResultIsSuccess())
-                .And(x => x.ThenTheHeaderIsAdded())
                 .BDDfy();
         }
 
@@ -85,7 +80,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
         public void should_return_error()
         {
             this.Given(
-               x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
+               x => x.GivenClaimsToThings(new List<ClaimToThing>
                {
                     new ClaimToThing("", "", "", 0)
                }))
@@ -94,20 +89,15 @@ namespace Ocelot.UnitTests.HeaderBuilder
                {
                    new AnyError()
                })))
-               .When(x => x.WhenIAddHeadersToTheRequest())
+               .When(x => x.WhenIAddClaimsToTheRequest())
                .Then(x => x.ThenTheResultIsError())
                .BDDfy();
         }
 
-        private void ThenTheHeaderIsAdded()
-        {
-            var header = _context.Request.Headers.First(x => x.Key == "header-key");
-            header.Value.First().ShouldBe(_claimValue.Data);
-        }
 
-        private void GivenConfigurationHeaderExtractorProperties(List<ClaimToThing> configuration)
+        private void GivenClaimsToThings(List<ClaimToThing> configuration)
         {
-            _configuration = configuration;
+            _claimsToThings = configuration;
         }
 
         private void GivenHttpContext(HttpContext context)
@@ -121,16 +111,16 @@ namespace Ocelot.UnitTests.HeaderBuilder
             _parser
                 .Setup(
                     x =>
-                        x.GetValue(It.IsAny<IEnumerable<Claim>>(), 
-                        It.IsAny<string>(), 
+                        x.GetValue(It.IsAny<IEnumerable<Claim>>(),
+                        It.IsAny<string>(),
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                 .Returns(_claimValue);
         }
 
-        private void WhenIAddHeadersToTheRequest()
+        private void WhenIAddClaimsToTheRequest()
         {
-            _result = _addHeadersToRequest.SetHeadersOnContext(_configuration, _context);
+            _result = _addClaimsToRequest.SetClaimsOnContext(_claimsToThings, _context);
         }
 
         private void ThenTheResultIsSuccess()
@@ -146,7 +136,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
 
         class AnyError : Error
         {
-            public AnyError() 
+            public AnyError()
                 : base("blahh", OcelotErrorCode.UnknownError)
             {
             }

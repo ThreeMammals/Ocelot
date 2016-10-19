@@ -18,7 +18,9 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Authorization
 {
-    public class AuthorizationMiddlewareTests : IDisposable
+    using Authorisation.Middleware;
+
+    public class AuthorisationMiddlewareTests : IDisposable
     {
         private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
         private readonly Mock<IAuthoriser> _authService;
@@ -28,7 +30,7 @@ namespace Ocelot.UnitTests.Authorization
         private HttpResponseMessage _result;
         private OkResponse<DownstreamRoute> _downstreamRoute;
 
-        public AuthorizationMiddlewareTests()
+        public AuthorisationMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IScopedRequestDataRepository>();
@@ -56,18 +58,17 @@ namespace Ocelot.UnitTests.Authorization
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithIsAuthorised(true).Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
-                //todo stick this back in
-                //.Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
+                .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
                 .BDDfy();
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)
         {
             _authService
-                .Setup(x => x.Authorise(It.IsAny<ClaimsPrincipal>(), It.IsAny<RouteClaimsRequirement>()))
+                .Setup(x => x.Authorise(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>()))
                 .Returns(expected);
         }
 
@@ -75,7 +76,7 @@ namespace Ocelot.UnitTests.Authorization
         {
             _authService
                 .Verify(x => x.Authorise(It.IsAny<ClaimsPrincipal>(),
-                It.IsAny<RouteClaimsRequirement>()), Times.Once);
+                It.IsAny<Dictionary<string, string>>()), Times.Once);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

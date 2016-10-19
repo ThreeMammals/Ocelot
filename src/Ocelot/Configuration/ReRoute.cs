@@ -4,7 +4,7 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(string downstreamTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToHeader> configurationHeaderExtractorProperties)
+        public ReRoute(string downstreamTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised)
         {
             DownstreamTemplate = downstreamTemplate;
             UpstreamTemplate = upstreamTemplate;
@@ -12,8 +12,12 @@ namespace Ocelot.Configuration
             UpstreamTemplatePattern = upstreamTemplatePattern;
             IsAuthenticated = isAuthenticated;
             AuthenticationOptions = authenticationOptions;
+            RouteClaimsRequirement = routeClaimsRequirement;
+            IsAuthorised = isAuthorised;
+            ClaimsToClaims = claimsToClaims 
+                ?? new List<ClaimToThing>();
             ClaimsToHeaders = configurationHeaderExtractorProperties 
-                ?? new List<ClaimToHeader>();
+                ?? new List<ClaimToThing>();
         }
 
         public string DownstreamTemplate { get; private set; }
@@ -21,7 +25,11 @@ namespace Ocelot.Configuration
         public string UpstreamTemplatePattern { get; private set; }
         public string UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
+        public bool IsAuthorised { get; private set; }
         public AuthenticationOptions AuthenticationOptions { get; private set; }
-        public List<ClaimToHeader> ClaimsToHeaders { get; private set; } 
+        public List<ClaimToThing> ClaimsToHeaders { get; private set; }
+        public List<ClaimToThing> ClaimsToClaims { get; private set; }
+        public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
+
     }
 }

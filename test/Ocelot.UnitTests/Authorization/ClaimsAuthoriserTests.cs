@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 using Ocelot.Authorisation;
-using Ocelot.Claims.Parser;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -9,11 +8,13 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Authorization
 {
+    using Ocelot.Infrastructure.Claims.Parser;
+
     public class ClaimsAuthoriserTests
     {
         private readonly ClaimsAuthoriser _claimsAuthoriser;
         private ClaimsPrincipal _claimsPrincipal;
-        private RouteClaimsRequirement _requirement;
+        private Dictionary<string, string> _requirement;
         private Response<bool> _result;
 
         public ClaimsAuthoriserTests()
@@ -28,10 +29,10 @@ namespace Ocelot.UnitTests.Authorization
                 {
                     new Claim("UserType", "registered")
                 }))))
-                .And(x => x.GivenARouteClaimsRequirement(new RouteClaimsRequirement(new Dictionary<string, string>
+                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
                     {"UserType", "registered"}
-                })))
+                }))
                 .When(x => x.WhenICallTheAuthoriser())
                 .Then(x => x.ThenTheUserIsAuthorised())
                 .BDDfy();
@@ -41,10 +42,10 @@ namespace Ocelot.UnitTests.Authorization
         public void should_not_authorise_user()
         {
             this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()))))
-            .And(x => x.GivenARouteClaimsRequirement(new RouteClaimsRequirement(new Dictionary<string, string>
+            .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
                     { "UserType", "registered" }
-                })))
+                }))
             .When(x => x.WhenICallTheAuthoriser())
             .Then(x => x.ThenTheUserIsntAuthorised())
             .BDDfy();
@@ -55,7 +56,7 @@ namespace Ocelot.UnitTests.Authorization
             _claimsPrincipal = claimsPrincipal;
         }
 
-        private void GivenARouteClaimsRequirement(RouteClaimsRequirement requirement)
+        private void GivenARouteClaimsRequirement(Dictionary<string, string> requirement)
         {
             _requirement = requirement;
         }

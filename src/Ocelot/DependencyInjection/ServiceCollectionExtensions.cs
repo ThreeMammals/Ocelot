@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
-using Ocelot.Claims.Parser;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
@@ -23,6 +22,9 @@ using Ocelot.ScopedData;
 
 namespace Ocelot.DependencyInjection
 {
+    using ClaimsBuilder;
+    using Infrastructure.Claims.Parser;
+
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddOcelotYamlConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
@@ -34,7 +36,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IOcelotConfigurationCreator, YamlOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationProvider, YamlOcelotConfigurationProvider>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
-            services.AddSingleton<IClaimToHeaderConfigurationParser, ClaimToHeaderConfigurationParser>();
+            services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
 
             return services;
@@ -48,6 +50,7 @@ namespace Ocelot.DependencyInjection
 
             // ocelot services.
             services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();
+            services.AddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             services.AddSingleton<IClaimsParser, ClaimsParser>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();

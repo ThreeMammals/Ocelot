@@ -18,18 +18,18 @@ namespace Ocelot.Configuration.Creator
         private readonly IConfigurationValidator _configurationValidator;
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
-        private readonly IClaimToHeaderConfigurationParser _claimToHeaderConfigurationParser;
+        private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<YamlOcelotConfigurationCreator> _logger;
 
         public YamlOcelotConfigurationCreator(
             IOptions<YamlConfiguration> options, 
             IConfigurationValidator configurationValidator, 
-            IClaimToHeaderConfigurationParser claimToHeaderConfigurationParser, 
+            IClaimToThingConfigurationParser claimToThingConfigurationParser, 
             ILogger<YamlOcelotConfigurationCreator> logger)
         {
             _options = options;
             _configurationValidator = configurationValidator;
-            _claimToHeaderConfigurationParser = claimToHeaderConfigurationParser;
+            _claimToThingConfigurationParser = claimToThingConfigurationParser;
             _logger = logger;
         }
 
@@ -89,6 +89,8 @@ namespace Ocelot.Configuration.Creator
 
             var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
 
+            var isAuthorised = reRoute.RouteClaimsRequirement?.Count > 0;
+
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
@@ -96,37 +98,38 @@ namespace Ocelot.Configuration.Creator
                     reRoute.AuthenticationOptions.RequireHttps, reRoute.AuthenticationOptions.AdditionalScopes,
                     reRoute.AuthenticationOptions.ScopeSecret);
 
-                var configHeaders = GetHeadersToAddToRequest(reRoute);
+                var claimsToHeaders = GetAddThingsToRequest(reRoute.AddHeadersToRequest);
+                var claimsToClaims = GetAddThingsToRequest(reRoute.AddClaimsToRequest);
 
                 return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate,
                     reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
-                    authOptionsForRoute, configHeaders
+                    authOptionsForRoute, claimsToHeaders, claimsToClaims, reRoute.RouteClaimsRequirement, isAuthorised
                     );
             }
 
             return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod,
-                upstreamTemplate, isAuthenticated, null, new List<ClaimToHeader>());
+                upstreamTemplate, isAuthenticated, null, new List<ClaimToThing>(), new List<ClaimToThing>(), reRoute.RouteClaimsRequirement, isAuthorised);
         }
 
-        private List<ClaimToHeader> GetHeadersToAddToRequest(YamlReRoute reRoute)
+        private List<ClaimToThing> GetAddThingsToRequest(Dictionary<string,string> thingBeingAdded)
         {
-            var configHeaders = new List<ClaimToHeader>();
+            var claimsToTHings = new List<ClaimToThing>();
 
-            foreach (var add in reRoute.AddHeadersToRequest)
+            foreach (var add in thingBeingAdded)
             {
-                var configurationHeader = _claimToHeaderConfigurationParser.Extract(add.Key, add.Value);
+                var claimToHeader = _claimToThingConfigurationParser.Extract(add.Key, add.Value);
 
-                if (configurationHeader.IsError)
+                if (claimToHeader.IsError)
                 {
                     _logger.LogCritical(new EventId(1, "Application Failed to start"),
                         $"Unable to extract configuration for key: {add.Key} and value: {add.Value} your configuration file is incorrect");
 
-                    throw new Exception(configurationHeader.Errors[0].Message);
+                    throw new Exception(claimToHeader.Errors[0].Message);
                 }
-                configHeaders.Add(configurationHeader.Data);
+                claimsToTHings.Add(claimToHeader.Data);
             }
 
-            return configHeaders;
+            return claimsToTHings;
         }
 
         private bool IsPlaceHolder(string upstreamTemplate, int i)

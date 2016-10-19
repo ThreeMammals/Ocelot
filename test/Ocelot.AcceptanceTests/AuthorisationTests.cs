@@ -74,11 +74,15 @@ namespace Ocelot.AcceptanceTests
                                 {"UserType", "Claims[sub] > value[0] > |"},
                                 {"UserId", "Claims[sub] > value[1] > |"}
                             },
-                            AddClaims = 
+                            AddClaimsToRequest = 
                             {
                                 {"CustomerId", "Claims[CustomerId] > value"},
                                 {"UserType", "Claims[sub] > value[0] > |"},
                                 {"UserId", "Claims[sub] > value[1] > |"}
+                            },
+                            RouteClaimsRequirement =
+                            {
+                                {"UserType", "registered"}
                             }
                         }
                     }
@@ -91,24 +95,64 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_response_403_authorising_route()
+        {
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+                .And(x => x.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                {
+                    ReRoutes = new List<YamlReRoute>
+                    {
+                        new YamlReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51876/",
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Get",
+                            AuthenticationOptions = new YamlAuthenticationOptions
+                            {
+                                AdditionalScopes =  new List<string>(),
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ScopeName = "api",
+                                ScopeSecret = "secret"
+                            },
+                            AddHeadersToRequest =
+                            {
+                                {"CustomerId", "Claims[CustomerId] > value"},
+                                {"LocationId", "Claims[LocationId] > value"},
+                                {"UserType", "Claims[sub] > value[0] > |"},
+                                {"UserId", "Claims[sub] > value[1] > |"}
+                            },
+                            AddClaimsToRequest =
+                            {
+                                {"CustomerId", "Claims[CustomerId] > value"},
+                                {"UserId", "Claims[sub] > value[1] > |"}
+                            },
+                            RouteClaimsRequirement =
+                            {
+                                {"UserType", "registered"}
+                            }
+                        }
+                    }
+                }))
+                .And(x => x.GivenTheApiGatewayIsRunning())
+                .And(x => x.GivenIHaveAddedATokenToMyRequest())
+                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+                .BDDfy();
+        }
+
         private void WhenIGetUrlOnTheApiGateway(string url)
         {   
             _response = _ocelotClient.GetAsync(url).Result;     
         }
 
-        private void WhenIPostUrlOnTheApiGateway(string url)
-        {
-            _response = _ocelotClient.PostAsync(url, _postContent).Result;
-        }
-
         private void ThenTheResponseBodyShouldBe(string expectedBody)
         {
             _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-        }
-
-        private void GivenThePostHasContent(string postcontent)
-        {
-            _postContent = new StringContent(postcontent);
         }
 
         /// <summary>
@@ -184,7 +228,8 @@ namespace Ocelot.AcceptanceTests
                                     {
                                         Value = "secret".Sha256()
                                     }
-                                }
+                                },
+                                IncludeAllClaimsForUser = true
                             },
 
                             StandardScopes.OpenId,
