@@ -6,9 +6,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.Yaml;
+using Ocelot.DependencyInjection;
 using Ocelot.ManualTest;
+using Ocelot.Middleware;
 using Shouldly;
 using YamlDotNet.Serialization;
 
@@ -21,7 +25,6 @@ namespace Ocelot.AcceptanceTests
         private HttpResponseMessage _response;
         private HttpContent _postContent;
         private BearerToken _token;
-
         public HttpClient OcelotClient => _ocelotClient;
 
         public void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
@@ -67,6 +70,39 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddYamlFile("configuration.yaml")
+                .AddEnvironmentVariables();
+
+            var configuration = builder.Build();
+
+            _ocelotServer = new TestServer(new WebHostBuilder()
+                .UseConfiguration(configuration)
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelotYamlConfiguration(configuration);
+                    s.AddOcelot();
+                })
+                .ConfigureLogging(l =>
+                {
+                    l.AddConsole(configuration.GetSection("Logging"));
+                    l.AddDebug();
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot(ocelotMiddlewareConfig);
+                }));
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         public void GivenIHaveAddedATokenToMyRequest()
         {
             _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
@@ -94,6 +130,16 @@ namespace Ocelot.AcceptanceTests
                 _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             }
         }
+
+        public void VerifyIdentiryServerStarted(string url)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
 
         public void WhenIGetUrlOnTheApiGateway(string url)
         {

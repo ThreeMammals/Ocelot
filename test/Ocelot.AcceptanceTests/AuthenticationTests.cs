@@ -19,7 +19,6 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _servicebuilder;
         private readonly Steps _steps;
-        private BearerToken _token;
         private IWebHost _identityServerBuilder;
         private string _identityServerRootUrl = "http://localhost:51888";
         private string _downstreamServiceRootUrl = "http://localhost:51876/";

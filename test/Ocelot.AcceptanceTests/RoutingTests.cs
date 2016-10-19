@@ -2,14 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
 using Ocelot.Configuration.Yaml;
-using Ocelot.ManualTest;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -17,10 +13,6 @@ namespace Ocelot.AcceptanceTests
 {
     public class RoutingTests : IDisposable
     {
-        private TestServer _server;
-        private HttpClient _client;
-        private HttpResponseMessage _response;
-        private StringContent _postContent;
         private IWebHost _builder;
         private readonly Steps _steps;
 
@@ -33,19 +25,18 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_404_when_no_configuration_at_all()
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration()))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
 
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -54,21 +45,23 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
         [Fact]
         public void should_return_response_200_with_complex_url()
         {
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -77,21 +70,23 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get"
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/products/1"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("Some Product"))
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
 
         [Fact]
         public void should_return_response_201_with_simple_url()
         {
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -100,28 +95,15 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Post"
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .And(x => x.GivenThePostHasContent("postContent"))
-                .When(x => x.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenThePostHasContent("postContent"))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
-        }
-
-        private void GivenThePostHasContent(string postcontent)
-        {
-            _postContent = new StringContent(postcontent);
-        }
-
-        /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
-        /// </summary>
-        private void GivenTheApiGatewayIsRunning()
-        {
-            _server = new TestServer(new WebHostBuilder()
-                .UseStartup<Startup>());
-
-            _client = _server.CreateClient();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
@@ -145,31 +127,10 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        private void WhenIGetUrlOnTheApiGateway(string url)
-        {
-            _response = _client.GetAsync(url).Result;
-        }
-
-        private void WhenIPostUrlOnTheApiGateway(string url)
-        {
-            _response = _client.PostAsync(url, _postContent).Result;
-        }
-
-        private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
-        {
-            _response.StatusCode.ShouldBe(expectedHttpStatusCode);
-        }
-
-        private void ThenTheResponseBodyShouldBe(string expectedBody)
-        {
-            _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-        }
-
         public void Dispose()
         {
             _builder?.Dispose();
-            _client.Dispose();
-            _server.Dispose();
+            _steps.Dispose();
         }
     }
 }

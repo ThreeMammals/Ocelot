@@ -3,20 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using IdentityServer4.Models;
 using IdentityServer4.Services.InMemory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Ocelot.Configuration.Yaml;
-using Ocelot.ManualTest;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -25,11 +19,7 @@ namespace Ocelot.AcceptanceTests
 {
     public class ClaimsToHeadersForwardingTests : IDisposable
     {
-        private TestServer _ocelotServer;
-        private HttpClient _ocelotClient;
-        private HttpResponseMessage _response;
         private IWebHost _servicebuilder;
-        private BearerToken _token;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
 
@@ -54,12 +44,9 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
-                .And(x => x.GivenIHaveAToken("http://localhost:52888"))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -87,34 +74,18 @@ namespace Ocelot.AcceptanceTests
                             }
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning())
-                .And(x => x.GivenIHaveAddedATokenToMyRequest())
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            };
+
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
+                .And(x => _steps.GivenIHaveAToken("http://localhost:52888"))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
                 .BDDfy();
-        }
-
-        private void WhenIGetUrlOnTheApiGateway(string url)
-        {
-            _response = _ocelotClient.GetAsync(url).Result;
-        }
-
-        private void ThenTheResponseBodyShouldBe(string expectedBody)
-        {
-            _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-        }
-
-        /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
-        /// </summary>
-        private void GivenTheApiGatewayIsRunning()
-        {
-            _ocelotServer = new TestServer(new WebHostBuilder()
-                .UseStartup<Startup>());
-
-            _ocelotClient = _ocelotServer.CreateClient();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
@@ -203,71 +174,14 @@ namespace Ocelot.AcceptanceTests
 
             _identityServerBuilder.Start();
 
-            VerifyIdentiryServerStarted(url);
-
-        }
-
-        private void VerifyIdentiryServerStarted(string url)
-        {
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        private void GivenIHaveAToken(string url)
-        {
-            var tokenUrl = $"{url}/connect/token";
-            var formData = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("client_id", "client"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "api"),
-                new KeyValuePair<string, string>("username", "test"),
-                new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password")
-            };
-            var content = new FormUrlEncodedContent(formData);
-
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.PostAsync(tokenUrl, content).Result;
-                response.EnsureSuccessStatusCode();
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-            }
-        }
-
-        private void GivenIHaveAddedATokenToMyRequest()
-        {
-            _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-        }
-
-        private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
-        {
-            _response.StatusCode.ShouldBe(expectedHttpStatusCode);
+            _steps.VerifyIdentiryServerStarted(url);
         }
 
         public void Dispose()
         {
             _servicebuilder?.Dispose();
-            _ocelotClient?.Dispose();
-            _ocelotServer?.Dispose();
+            _steps.Dispose();
             _identityServerBuilder?.Dispose();
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        class BearerToken
-        {
-            [JsonProperty("access_token")]
-            public string AccessToken { get; set; }
-
-            [JsonProperty("expires_in")]
-            public int ExpiresIn { get; set; }
-
-            [JsonProperty("token_type")]
-            public string TokenType { get; set; }
         }
     }
 }

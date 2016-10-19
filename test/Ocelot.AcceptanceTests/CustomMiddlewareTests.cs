@@ -6,15 +6,10 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.Yaml;
-using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.ScopedData;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -22,9 +17,6 @@ namespace Ocelot.AcceptanceTests
 {
     public class CustomMiddlewareTests : IDisposable
     {
-        private TestServer _server;
-        private HttpClient _client;
-        private HttpResponseMessage _response;
         private readonly string _configurationPath;
         private IWebHost _builder;
         private readonly Steps _steps;
@@ -32,7 +24,7 @@ namespace Ocelot.AcceptanceTests
         public CustomMiddlewareTests()
         {
             _steps = new Steps();;
-            _configurationPath = $"configuration.yaml";
+            _configurationPath = "configuration.yaml";
         }
 
         [Fact]
@@ -46,10 +38,9 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -58,11 +49,14 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                         }
                     }
-                }, _configurationPath))
-                .And(x => x.GivenOcelotIsRunning(configuration))
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("PreHttpResponderMiddleware"))
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunning(configuration))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("PreHttpResponderMiddleware"))
                 .BDDfy();
         }
 
@@ -78,10 +72,9 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
-                {
-                    ReRoutes = new List<YamlReRoute>
+            var yamlConfiguration = new YamlConfiguration
+            {
+                ReRoutes = new List<YamlReRoute>
                     {
                         new YamlReRoute
                         {
@@ -90,47 +83,15 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                         }
                     }
-                }, _configurationPath))
-                .And(x => x.GivenOcelotIsRunning(configuration))
-                .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheResponseBodyShouldBe("PreHttpRequesterMiddleware"))
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunning(configuration))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("PreHttpRequesterMiddleware"))
                 .BDDfy();
-        }
-
-
-
-        /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
-        /// </summary>
-        private void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddYamlFile("configuration.yaml")
-                .AddEnvironmentVariables();
-
-            var configuration = builder.Build();
-
-            _server = new TestServer(new WebHostBuilder()
-                .UseConfiguration(configuration)
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelotYamlConfiguration(configuration);
-                    s.AddOcelot();
-                })
-                .ConfigureLogging(l =>
-                {
-                    l.AddConsole(configuration.GetSection("Logging"));
-                    l.AddDebug();
-                })
-                .Configure(a =>
-                {
-                    a.UseOcelot(ocelotMiddlewareConfig);
-                }));
-                
-            _client = _server.CreateClient();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
@@ -153,26 +114,10 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        private void WhenIGetUrlOnTheApiGateway(string url)
-        {
-            _response = _client.GetAsync(url).Result;
-        }
-
-        private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
-        {
-            _response.StatusCode.ShouldBe(expectedHttpStatusCode);
-        }
-
-        private void ThenTheResponseBodyShouldBe(string expectedBody)
-        {
-            _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-        }
-
         public void Dispose()
         {
             _builder?.Dispose();
-            _client.Dispose();
-            _server.Dispose();
+            _steps.Dispose();
         }
     }
 }
