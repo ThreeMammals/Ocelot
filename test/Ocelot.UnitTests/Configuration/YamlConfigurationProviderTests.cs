@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _creator = new Mock<IOcelotConfigurationCreator>();
             _configurationRepository = new Mock<IOcelotConfigurationRepository>();
-            _ocelotConfigurationProvider = new YamlOcelotConfigurationProvider(_configurationRepository.Object, _creator.Object);
+            _ocelotConfigurationProvider = new OcelotConfigurationProvider(_configurationRepository.Object, _creator.Object);
         }
 
         [Fact]

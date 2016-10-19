@@ -34,7 +34,7 @@ namespace Ocelot.DependencyInjection
 
             // ocelot services.
             services.AddSingleton<IOcelotConfigurationCreator, YamlOcelotConfigurationCreator>();
-            services.AddSingleton<IOcelotConfigurationProvider, YamlOcelotConfigurationProvider>();
+            services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
