@@ -7,38 +7,31 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.Yaml;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.ScopedData;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using YamlDotNet.Serialization;
 
 namespace Ocelot.AcceptanceTests
 {
-    using System.Linq;
-    using System.Threading.Tasks;
-    using DependencyInjection;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Primitives;
-    using Middleware;
-    using ScopedData;
-
     public class CustomMiddlewareTests : IDisposable
     {
         private TestServer _server;
         private HttpClient _client;
         private HttpResponseMessage _response;
         private readonly string _configurationPath;
-        private StringContent _postContent;
         private IWebHost _builder;
-
-        // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
-        private double _netCoreAppVersion = 1.4;
+        private readonly Steps _steps;
 
         public CustomMiddlewareTests()
         {
+            _steps = new Steps();;
             _configurationPath = $"configuration.yaml";
         }
 
@@ -54,7 +47,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -65,8 +58,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning(configuration))
+                }, _configurationPath))
+                .And(x => x.GivenOcelotIsRunning(configuration))
                 .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => x.ThenTheResponseBodyShouldBe("PreHttpResponderMiddleware"))
@@ -81,13 +74,12 @@ namespace Ocelot.AcceptanceTests
                 PreHttpRequesterMiddleware = async (ctx, next) =>
                 {
                     var service = ctx.RequestServices.GetService<IScopedRequestDataRepository>();
-                    service.Add("Response",
-                        new HttpResponseMessage {Content = new StringContent("PreHttpRequesterMiddleware")});
+                    service.Add("Response", new HttpResponseMessage {Content = new StringContent("PreHttpRequesterMiddleware")});
                 }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -98,8 +90,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                         }
                     }
-                }))
-                .And(x => x.GivenTheApiGatewayIsRunning(configuration))
+                }, _configurationPath))
+                .And(x => x.GivenOcelotIsRunning(configuration))
                 .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => x.ThenTheResponseBodyShouldBe("PreHttpRequesterMiddleware"))
@@ -111,7 +103,7 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
         /// </summary>
-        private void GivenTheApiGatewayIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
+        private void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -139,21 +131,6 @@ namespace Ocelot.AcceptanceTests
                 }));
                 
             _client = _server.CreateClient();
-        }
-
-        private void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
-        {
-            var serializer = new Serializer();
-
-            if (File.Exists(_configurationPath))
-            {
-                File.Delete(_configurationPath);
-            }
-
-            using (TextWriter writer = File.CreateText(_configurationPath))
-            {
-                serializer.Serialize(writer, yamlConfiguration);
-            }
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)

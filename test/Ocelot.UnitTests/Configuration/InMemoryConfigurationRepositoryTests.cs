@@ -42,29 +42,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        /// <summary>
-        /// long runnnig unit test to make sure repo thread safeok on
-        /// </summary>
-        [Fact]
-        public void repo_is_thread_safe()
-        {
-            var tasks = new Task[100000];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = Fire();
-            }
-
-            Task.WaitAll(tasks);
-        }
-
-        private async Task Fire()
-        {
-            var taskGuid = Guid.NewGuid().ToString();
-            _repo.AddOrReplace(new FakeConfig(taskGuid));
-            var configuration = _repo.Get();
-            configuration.Data.ReRoutes[0].DownstreamTemplate.ShouldBe(taskGuid);
-        }
-
         private void ThenTheConfigurationIsReturned()
         {
             _getResult.Data.ReRoutes[0].DownstreamTemplate.ShouldBe("initial");

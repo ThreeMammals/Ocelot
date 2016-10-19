@@ -12,7 +12,6 @@ using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using YamlDotNet.Serialization;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -21,22 +20,19 @@ namespace Ocelot.AcceptanceTests
         private TestServer _server;
         private HttpClient _client;
         private HttpResponseMessage _response;
-        private readonly string _configurationPath;
         private StringContent _postContent;
         private IWebHost _builder;
-
-        // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
-        private double _netCoreAppVersion = 1.4;
+        private readonly Steps _steps;
 
         public RoutingTests()
         {
-            _configurationPath = $"./bin/Debug/netcoreapp{_netCoreAppVersion}/configuration.yaml";
+            _steps = new Steps();
         }
 
         [Fact]
         public void should_return_response_404_when_no_configuration_at_all()
         {
-            this.Given(x => x.GivenThereIsAConfiguration(new YamlConfiguration()))
+            this.Given(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration()))
                 .And(x => x.GivenTheApiGatewayIsRunning())
                 .When(x => x.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => x.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
@@ -47,7 +43,7 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200_with_simple_url()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -70,7 +66,7 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200_with_complex_url()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -93,7 +89,7 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_201_with_simple_url()
         {
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -126,21 +122,6 @@ namespace Ocelot.AcceptanceTests
                 .UseStartup<Startup>());
 
             _client = _server.CreateClient();
-        }
-
-        private void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
-        {
-            var serializer = new Serializer();
-
-            if (File.Exists(_configurationPath))
-            {
-                File.Delete(_configurationPath);
-            }
-
-            using (TextWriter writer = File.CreateText(_configurationPath))
-            {
-                serializer.Serialize(writer, yamlConfiguration);
-            }
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)

@@ -19,7 +19,6 @@ using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using YamlDotNet.Serialization;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
@@ -29,17 +28,14 @@ namespace Ocelot.AcceptanceTests
         private TestServer _ocelotServer;
         private HttpClient _ocelotClient;
         private HttpResponseMessage _response;
-        private readonly string _configurationPath;
         private IWebHost _servicebuilder;
-
-        // Sadly we need to change this when we update the netcoreapp version to make the test update the config correctly
-        private double _netCoreAppVersion = 1.4;
         private BearerToken _token;
         private IWebHost _identityServerBuilder;
+        private readonly Steps _steps;
 
         public ClaimsToHeadersForwardingTests()
         {
-            _configurationPath = $"./bin/Debug/netcoreapp{_netCoreAppVersion}/configuration.yaml";
+            _steps = new Steps();
         }
 
         [Fact]
@@ -61,7 +57,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
                 .And(x => x.GivenIHaveAToken("http://localhost:52888"))
-                .And(x => x.GivenThereIsAConfiguration(new YamlConfiguration
+                .And(x => _steps.GivenThereIsAConfiguration(new YamlConfiguration
                 {
                     ReRoutes = new List<YamlReRoute>
                     {
@@ -119,21 +115,6 @@ namespace Ocelot.AcceptanceTests
                 .UseStartup<Startup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
-        }
-
-        private void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
-        {
-            var serializer = new Serializer();
-
-            if (File.Exists(_configurationPath))
-            {
-                File.Delete(_configurationPath);
-            }
-
-            using (TextWriter writer = File.CreateText(_configurationPath))
-            {
-                serializer.Serialize(writer, yamlConfiguration);
-            }
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
