@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests.Configuration
                     new YamlReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
-                        UpstreamTemplate = "http://lol.com"
+                        UpstreamTemplate = "http://asdf.com"
                     }
                 }
             }))
