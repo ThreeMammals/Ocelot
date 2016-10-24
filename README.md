@@ -23,6 +23,6 @@ to do this.
 
 # Configuration
 
-An example configuration can be found here https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml 
+An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml ) 
 
 
