@@ -21,42 +21,12 @@ to do this.
 
 Priorities
 
-- Route configuration
-- IdentityServer reference & bearer tokens
-- Strip claims from tokens and use in proxy request
-- Authorise access to routes based on claims in token
-- Output Caching
-- Monitoring
-- Logging
-- Rate Limiting
-- Then a big list of cool things...
-
 # How to use
 
 # Configuration
 
+An example configuration can be found here https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml 
+
 TBC really but example configuration for a route below.
 
-ReRoutes:
-# the url we are forwarding the request to
-- DownstreamTemplate: http://localhost:52876/
-# the path we are listening on for this re route
-  UpstreamTemplate: /
-# the method we are listening for on this re route
-  UpstreamHttpMethod: Get
-# only support identity server at the moment
-  AuthenticationOptions:
-    Provider: IdentityServer
-    ProviderRootUrl: http://localhost:52888
-    ScopeName: api
-    AdditionalScopes:
-    - openid
-    - offline_access
-#require if using reference tokens
-    ScopeSecret: secret
-# WARNING - will overwrite any headers already in the request with these values
-  AddHeadersToRequest:
-    CustomerId: Claims[CustomerId] > value
-    LocationId: Claims[LocationId] > value
-    UserType: Claims[sub] > value[0] > |
-    UserId: Claims[sub] > value[1] > |
+
