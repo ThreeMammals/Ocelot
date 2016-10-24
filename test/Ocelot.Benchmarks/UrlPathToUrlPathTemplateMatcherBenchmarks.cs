@@ -1,16 +1,14 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Jobs;
-using Ocelot.Library.Infrastructure.UrlPathMatcher;
-
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
 namespace Ocelot.Benchmarks
 {
     [Config(typeof(UrlPathToUrlPathTemplateMatcherBenchmarks))]
     public class UrlPathToUrlPathTemplateMatcherBenchmarks : ManualConfig
     {
-        private UrlPathToUrlPathTemplateMatcher _urlPathMatcher;
+        private RegExUrlMatcher _urlPathMatcher;
         private string _downstreamUrlPath;
         private string _downstreamUrlPathTemplate;
 
@@ -22,7 +20,7 @@ namespace Ocelot.Benchmarks
         [Setup]
         public void SetUp()
         {
-            _urlPathMatcher = new UrlPathToUrlPathTemplateMatcher();
+            _urlPathMatcher = new RegExUrlMatcher();
             _downstreamUrlPath = "api/product/products/1/variants/?soldout=false";
             _downstreamUrlPathTemplate = "api/product/products/{productId}/variants/";
         }
