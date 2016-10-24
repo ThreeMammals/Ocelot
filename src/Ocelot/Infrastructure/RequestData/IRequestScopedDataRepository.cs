@@ -1,8 +1,8 @@
 using Ocelot.Responses;
 
-namespace Ocelot.ScopedData
+namespace Ocelot.Infrastructure.RequestData
 {
-    public interface IScopedRequestDataRepository
+    public interface IRequestScopedDataRepository
     {
         Response Add<T>(string key, T value);
         Response<T> Get<T>(string key);

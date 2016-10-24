@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.ClaimsBuilder
+﻿using Ocelot.Infrastructure.RequestData;
+
+namespace Ocelot.UnitTests.ClaimsBuilder
 {
     using System;
     using System.Collections.Generic;
@@ -16,13 +18,12 @@
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Responses;
-    using ScopedData;
     using TestStack.BDDfy;
     using Xunit;
 
     public class ClaimsBuilderMiddlewareTests : IDisposable
     {
-        private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAddClaimsToRequest> _addHeaders;
         private readonly string _url;
         private readonly TestServer _server;
@@ -33,7 +34,7 @@
         public ClaimsBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _scopedRepository = new Mock<IScopedRequestDataRepository>();
+            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addHeaders = new Mock<IAddClaimsToRequest>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>

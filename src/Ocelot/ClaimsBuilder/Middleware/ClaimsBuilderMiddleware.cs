@@ -1,31 +1,32 @@
-﻿namespace Ocelot.ClaimsBuilder.Middleware
+﻿using Ocelot.Infrastructure.RequestData;
+
+namespace Ocelot.ClaimsBuilder.Middleware
 {
     using System.Linq;
     using System.Threading.Tasks;
     using DownstreamRouteFinder;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Middleware;
-    using ScopedData;
 
     public class ClaimsBuilderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IAddClaimsToRequest _addClaimsToRequest;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public ClaimsBuilderMiddleware(RequestDelegate next, 
-            IScopedRequestDataRepository scopedRequestDataRepository,
+            IRequestScopedDataRepository requestScopedDataRepository,
             IAddClaimsToRequest addClaimsToRequest) 
-            : base(scopedRequestDataRepository)
+            : base(requestScopedDataRepository)
         {
             _next = next;
             _addClaimsToRequest = addClaimsToRequest;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _scopedRequestDataRepository.Get<DownstreamRoute>("DownstreamRoute");
+            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
 
             if (downstreamRoute.Data.ReRoute.ClaimsToClaims.Any())
             {

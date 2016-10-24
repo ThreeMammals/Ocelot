@@ -11,8 +11,8 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
-using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     public class DownstreamUrlCreatorMiddlewareTests : IDisposable
     {
         private readonly Mock<IDownstreamUrlTemplateVariableReplacer> _downstreamUrlTemplateVariableReplacer;
-        private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         {
             _url = "http://localhost:51879";
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamUrlTemplateVariableReplacer>();
-            _scopedRepository = new Mock<IScopedRequestDataRepository>();
+            _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>

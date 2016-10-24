@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using Ocelot.RequestBuilder;
-using Ocelot.ScopedData;
 
 namespace Ocelot.Requester.Middleware
 {
@@ -10,21 +10,21 @@ namespace Ocelot.Requester.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public HttpRequesterMiddleware(RequestDelegate next, 
             IHttpRequester requester, 
-            IScopedRequestDataRepository scopedRequestDataRepository)
-            :base(scopedRequestDataRepository)
+            IRequestScopedDataRepository requestScopedDataRepository)
+            :base(requestScopedDataRepository)
         {
             _next = next;
             _requester = requester;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var request = _scopedRequestDataRepository.Get<Request>("Request");
+            var request = _requestScopedDataRepository.Get<Request>("Request");
 
             if (request.IsError)
             {
@@ -40,7 +40,7 @@ namespace Ocelot.Requester.Middleware
                 return;
             }
 
-            _scopedRequestDataRepository.Add("Response", response.Data);            
+            _requestScopedDataRepository.Add("Response", response.Data);            
         }
     }
 }

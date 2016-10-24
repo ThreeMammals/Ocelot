@@ -1,8 +1,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
-using Ocelot.ScopedData;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -10,18 +10,18 @@ namespace Ocelot.Responder.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
         public HttpResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
-            IScopedRequestDataRepository scopedRequestDataRepository, 
+            IRequestScopedDataRepository requestScopedDataRepository, 
             IErrorsToHttpStatusCodeMapper codeMapper)
-            :base(scopedRequestDataRepository)
+            :base(requestScopedDataRepository)
         {
             _next = next;
             _responder = responder;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
             _codeMapper = codeMapper;
         }
 
@@ -46,7 +46,7 @@ namespace Ocelot.Responder.Middleware
             }
             else
             {
-                var response = _scopedRequestDataRepository.Get<HttpResponseMessage>("Response");
+                var response = _requestScopedDataRepository.Get<HttpResponseMessage>("Response");
 
                 await _responder.CreateResponse(context, response.Data);
             }

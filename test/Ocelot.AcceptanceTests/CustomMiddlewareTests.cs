@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.Yaml;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
-using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -67,7 +67,7 @@ namespace Ocelot.AcceptanceTests
             {
                 PreHttpRequesterMiddleware = async (ctx, next) =>
                 {
-                    var service = ctx.RequestServices.GetService<IScopedRequestDataRepository>();
+                    var service = ctx.RequestServices.GetService<IRequestScopedDataRepository>();
                     service.Add("Response", new HttpResponseMessage {Content = new StringContent("PreHttpRequesterMiddleware")});
                 }
             };

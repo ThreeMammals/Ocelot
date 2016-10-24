@@ -65,20 +65,19 @@ namespace Ocelot.Configuration.Validator
 
         private ConfigurationValidationResult CheckForDupliateReRoutes(YamlConfiguration configuration)
         {
-            var duplicateUpstreamTemplates = configuration.ReRoutes
-                .Select(r => r.DownstreamTemplate)
-                .GroupBy(r => r)
-                .Where(r => r.Count() > 1)
-                .Select(r => r.Key)
-                .ToList();
+            var hasDupes = configuration.ReRoutes
+                   .GroupBy(x => new { x.UpstreamTemplate, x.UpstreamHttpMethod }).Any(x => x.Skip(1).Any());
 
-            if (duplicateUpstreamTemplates.Count <= 0)
+            if (!hasDupes)
             {
                 return new ConfigurationValidationResult(false);
             }
 
-            var errors = duplicateUpstreamTemplates
-                .Select(duplicateUpstreamTemplate => new DownstreamTemplateAlreadyUsedError(string.Format("Duplicate DownstreamTemplate: {0}", duplicateUpstreamTemplate)))
+            var dupes = configuration.ReRoutes.GroupBy(x => new { x.UpstreamTemplate, x.UpstreamHttpMethod })
+                               .Where(x => x.Skip(1).Any());
+
+            var errors = dupes
+                .Select(d => new DownstreamTemplateAlreadyUsedError(string.Format("Duplicate DownstreamTemplate: {0}", d.Key.UpstreamTemplate)))
                 .Cast<Error>()
                 .ToList();
 

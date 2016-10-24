@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
-using Ocelot.ScopedData;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Repository
 {
     public class ScopedRequestDataRepositoryTests
     {
-        private IScopedRequestDataRepository _scopedRequestDataRepository;
+        private IRequestScopedDataRepository _requestScopedDataRepository;
         private IHttpContextAccessor _httpContextAccesor;
         private string _key;
         private object _toAdd;
@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Repository
         {
             _httpContextAccesor = new HttpContextAccessor();
             _httpContextAccesor.HttpContext = new DefaultHttpContext();
-            _scopedRequestDataRepository = new ScopedRequestDataRepository(_httpContextAccesor);
+            _requestScopedDataRepository = new HttpDataRepository(_httpContextAccesor);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Repository
 
         private void WhenIGetTheItem()
         {
-            _result = _scopedRequestDataRepository.Get<int[]>(_key);
+            _result = _requestScopedDataRepository.Get<int[]>(_key);
         }
 
         private void GivenThereIsAnItemInTheContext(string key)
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Repository
 
         private void WhenIAddTheItem()
         {
-            _scopedRequestDataRepository.Add(_key, _toAdd);
+            _requestScopedDataRepository.Add(_key, _toAdd);
         }
 
         private void ThenTheItemIsAdded()

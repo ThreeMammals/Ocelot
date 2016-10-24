@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
-using Ocelot.ScopedData;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
@@ -10,16 +10,16 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public DownstreamRouteFinderMiddleware(RequestDelegate next, 
             IDownstreamRouteFinder downstreamRouteFinder, 
-            IScopedRequestDataRepository scopedRequestDataRepository)
-            :base(scopedRequestDataRepository)
+            IRequestScopedDataRepository requestScopedDataRepository)
+            :base(requestScopedDataRepository)
         {
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
@@ -34,7 +34,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            _scopedRequestDataRepository.Add("DownstreamRoute", downstreamRoute.Data);
+            _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute.Data);
 
             await _next.Invoke(context);
         }

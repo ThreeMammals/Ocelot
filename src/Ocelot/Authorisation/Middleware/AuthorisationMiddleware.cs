@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Authorisation.Middleware
+﻿using Ocelot.Infrastructure.RequestData;
+
+namespace Ocelot.Authorisation.Middleware
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -6,27 +8,26 @@
     using Errors;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Middleware;
-    using ScopedData;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IAuthoriser _authoriser;
 
         public AuthorisationMiddleware(RequestDelegate next,
-            IScopedRequestDataRepository scopedRequestDataRepository,
+            IRequestScopedDataRepository requestScopedDataRepository,
             IAuthoriser authoriser)
-            : base(scopedRequestDataRepository)
+            : base(requestScopedDataRepository)
         {
             _next = next;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
             _authoriser = authoriser;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _scopedRequestDataRepository.Get<DownstreamRoute>("DownstreamRoute");
+            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
 
             if (downstreamRoute.IsError)
             {

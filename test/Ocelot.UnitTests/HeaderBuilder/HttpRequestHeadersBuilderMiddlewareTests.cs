@@ -13,8 +13,8 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.HeaderBuilder;
 using Ocelot.HeaderBuilder.Middleware;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
-using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
 {
     public class HttpRequestHeadersBuilderMiddlewareTests : IDisposable
     {
-        private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
         private readonly string _url;
         private readonly TestServer _server;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
         public HttpRequestHeadersBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _scopedRepository = new Mock<IScopedRequestDataRepository>();
+            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addHeaders = new Mock<IAddHeadersToRequest>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>

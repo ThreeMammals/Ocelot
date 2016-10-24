@@ -1,4 +1,26 @@
 ReRoutes:
+# the url we are forwarding the request to
+- DownstreamTemplate: http://localhost:52876/
+# the path we are listening on for this re route
+  UpstreamTemplate: /identityserverexample
+# the method we are listening for on this re route
+  UpstreamHttpMethod: Get
+# only support identity server at the moment
+  AuthenticationOptions:
+    Provider: IdentityServer
+    ProviderRootUrl: http://localhost:52888
+    ScopeName: api
+    AdditionalScopes:
+    - openid
+    - offline_access
+#require if using reference tokens
+    ScopeSecret: secret
+# WARNING - will overwrite any headers already in the request with these values
+  AddHeadersToRequest:
+    CustomerId: Claims[CustomerId] > value
+    LocationId: Claims[LocationId] > value
+    UserType: Claims[sub] > value[0] > |
+    UserId: Claims[sub] > value[1] > |
 - DownstreamTemplate: http://www.bbc.co.uk
   UpstreamTemplate: /
   UpstreamHttpMethod: Get

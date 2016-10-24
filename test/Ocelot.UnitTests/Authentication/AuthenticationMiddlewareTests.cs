@@ -11,8 +11,8 @@ using Ocelot.Authentication.Middleware;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
-using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -20,7 +20,7 @@ namespace Ocelot.UnitTests.Authentication
 {
     public class AuthenticationMiddlewareTests : IDisposable
     {
-        private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAuthenticationHandlerFactory> _authFactory;
         private readonly string _url;
         private readonly TestServer _server;
@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Authentication
         public AuthenticationMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _scopedRepository = new Mock<IScopedRequestDataRepository>();
+            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _authFactory = new Mock<IAuthenticationHandlerFactory>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>

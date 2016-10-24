@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.ScopedData
+namespace Ocelot.Infrastructure.RequestData
 {
-    public class ScopedRequestDataRepository : IScopedRequestDataRepository
+    public class HttpDataRepository : IRequestScopedDataRepository
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ScopedRequestDataRepository(IHttpContextAccessor httpContextAccessor)
+        public HttpDataRepository(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
@@ -45,6 +45,6 @@ namespace Ocelot.ScopedData
             {
                 new CannotFindDataError($"Unable to find data for key: {key}")
             });
-        } 
+        }
     }
 }

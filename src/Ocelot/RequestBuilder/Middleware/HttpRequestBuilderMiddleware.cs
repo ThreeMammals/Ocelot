@@ -1,30 +1,30 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using Ocelot.RequestBuilder.Builder;
-using Ocelot.ScopedData;
 
 namespace Ocelot.RequestBuilder.Middleware
 {
     public class HttpRequestBuilderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IRequestBuilder _requestBuilder;
 
         public HttpRequestBuilderMiddleware(RequestDelegate next, 
-            IScopedRequestDataRepository scopedRequestDataRepository, 
+            IRequestScopedDataRepository requestScopedDataRepository, 
             IRequestBuilder requestBuilder)
-            :base(scopedRequestDataRepository)
+            :base(requestScopedDataRepository)
         {
             _next = next;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
             _requestBuilder = requestBuilder;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamUrl = _scopedRequestDataRepository.Get<string>("DownstreamUrl");
+            var downstreamUrl = _requestScopedDataRepository.Get<string>("DownstreamUrl");
 
             if (downstreamUrl.IsError)
             {
@@ -42,7 +42,7 @@ namespace Ocelot.RequestBuilder.Middleware
                 return;
             }
 
-            _scopedRequestDataRepository.Add("Request", request.Data);
+            _requestScopedDataRepository.Add("Request", request.Data);
 
             await _next.Invoke(context);
         }

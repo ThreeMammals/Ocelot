@@ -15,10 +15,10 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.HeaderBuilder;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.RequestBuilder.Builder;
 using Ocelot.Requester;
 using Ocelot.Responder;
-using Ocelot.ScopedData;
 
 namespace Ocelot.DependencyInjection
 {
@@ -44,7 +44,7 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services)
         {
-            // framework services
+            // framework services dependency for the identity server middleware
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
 
@@ -67,7 +67,7 @@ namespace Ocelot.DependencyInjection
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<IScopedRequestDataRepository, ScopedRequestDataRepository>();
+            services.AddScoped<IRequestScopedDataRepository, HttpDataRepository>();
 
             return services;
         }

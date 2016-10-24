@@ -39,7 +39,8 @@
         "preserveCompilationContext": true,
         "copyToOutput": {
             "include": [
-                "middlewareConfiguration.yaml"
+                "middlewareConfiguration.yaml",
+                "configuration.yaml"
             ]
         }
         },
@@ -57,7 +58,8 @@
                 "Areas/**/Views",
                 "appsettings.json",
                 "web.config",
-                "middlewareConfiguration.yaml"
+                "middlewareConfiguration.yaml",
+                "configuration.yaml"
             ]
         },
 

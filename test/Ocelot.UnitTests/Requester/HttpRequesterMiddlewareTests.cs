@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.RequestBuilder;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
 using Ocelot.Responses;
-using Ocelot.ScopedData;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Requester
     public class HttpRequesterMiddlewareTests : IDisposable
     {
         private readonly Mock<IHttpRequester> _requester;
-        private readonly Mock<IScopedRequestDataRepository> _scopedRepository;
+        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _url = "http://localhost:51879";
             _requester = new Mock<IHttpRequester>();
-            _scopedRepository = new Mock<IScopedRequestDataRepository>();
+            _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>

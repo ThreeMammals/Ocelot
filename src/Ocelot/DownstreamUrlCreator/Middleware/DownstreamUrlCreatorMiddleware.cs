@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
-using Ocelot.ScopedData;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -11,21 +11,21 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
-        private readonly IScopedRequestDataRepository _scopedRequestDataRepository;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
             IDownstreamUrlTemplateVariableReplacer urlReplacer,
-            IScopedRequestDataRepository scopedRequestDataRepository)
-            :base(scopedRequestDataRepository)
+            IRequestScopedDataRepository requestScopedDataRepository)
+            :base(requestScopedDataRepository)
         {
             _next = next;
             _urlReplacer = urlReplacer;
-            _scopedRequestDataRepository = scopedRequestDataRepository;
+            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _scopedRequestDataRepository.Get<DownstreamRoute>("DownstreamRoute");
+            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
 
             if (downstreamRoute.IsError)
             {
@@ -41,7 +41,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            _scopedRequestDataRepository.Add("DownstreamUrl", downstreamUrl.Data);
+            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl.Data);
                 
             await _next.Invoke(context);
         }
