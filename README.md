@@ -21,6 +21,8 @@ to do this.
 
 # How to use
 
+Using nuget `Install-Package Ocelot -Version 0.0.1`
+
 # Configuration
 
 An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml ) 
