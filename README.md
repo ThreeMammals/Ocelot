@@ -19,14 +19,10 @@ to handle the IdentityServer reference tokens. We would
 rather use the IdentityServer code that already exists
 to do this.
 
-Priorities
-
 # How to use
 
 # Configuration
 
 An example configuration can be found here https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml 
-
-TBC really but example configuration for a route below.
 
 
