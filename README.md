@@ -19,7 +19,7 @@ to handle the IdentityServer reference tokens. We would
 rather use the IdentityServer code that already exists
 to do this.
 
-# How to install
+## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently built to .NET Standard 1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
 
@@ -29,7 +29,9 @@ Install Ocelot and it's dependecies using nuget. At the moment all we have is th
 
 All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
-# Configuration
+## Configuration
+
+An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml). More detailed instructions to come on how to configure this.
 
 ## Startup
 
@@ -71,8 +73,6 @@ An example startup using a yaml file for configuration can be seen below. Curren
         }
     }
 
-
-An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml)
 
 This is pretty much all you need to get going.......more to come! 
 
