@@ -21,7 +21,7 @@ to do this.
 
 # How to use
 
-Using nuget `Install-Package Ocelot -Version 0.0.1`
+Using nuget `Install-Package Ocelot -Pre`
 
 # Configuration
 

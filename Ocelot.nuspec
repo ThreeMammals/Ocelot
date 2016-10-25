@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Ocelot</id>
+    <version>1.0.0</version>
+    <authors>Tom Pallister</authors>
+    <owners>Tom Pallister</owners>
+    <licenseUrl>https://github.com/TomPallister/Ocelot/blob/develop/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/TomPallister/Ocelot</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Ocelot Api Gateway</description>
+    <releaseNotes>Latest Ocelot</releaseNotes>
+    <copyright></copyright>
+    <tags></tags>
+    <dependencies>
+		<dependency id="Microsoft.AspNetCore.Mvc" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Server.IISIntegration" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Server.Kestrel" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Configuration.EnvironmentVariables" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Configuration.FileExtensions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Configuration.Json" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Console" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Debug" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Options.ConfigurationExtensions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Http" version="1.0.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.1.0" />
+        <dependency id="YamlDotNet" version="3.9.0" />
+        <dependency id="NetEscapades.Configuration.Yaml" version="1.2.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.OAuth" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.JwtBearer" version="1.0.0" /> 
+        <dependency id="Microsoft.AspNetCore.Authentication.OpenIdConnect" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.Cookies" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.Google" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.Facebook" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.Twitter" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication.MicrosoftAccount" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Authentication" version="1.0.0" />
+        <dependency id="IdentityServer4.AccessTokenValidation" version="1.0.1-rc2" />
+    </dependencies>
+  </metadata>
+  <files>
+        <file src=".\src\Ocelot\bin\Release\netcoreapp1.4\Ocelot.*" target="lib\dotnet" />
+    </files>
+</package>

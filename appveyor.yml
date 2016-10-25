@@ -6,7 +6,7 @@ build_script:
 - build.bat
 test_script:
 - run-tests.bat
-artifacts:
-- path: artifacts\**\*.*
+after_build:
+- push-to-nuget.bat 1.0.{build}-rc1
 cache:
 - '%USERPROFILE%\.nuget\packages'
