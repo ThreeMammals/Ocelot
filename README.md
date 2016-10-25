@@ -36,6 +36,7 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 An example startup using a yaml file for configuration can be seen below. Currently this is the only way to get configuration into Ocelot.
 
 `
+
 	public class Startup
     {
         public IConfigurationRoot Configuration { get; }
