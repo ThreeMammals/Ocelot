@@ -36,17 +36,7 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 An example startup using a yaml file for configuration can be seen below. Currently this is the only way to get configuration into Ocelot.
 
 `
-namespace TestOcelot
-{
-	using Microsoft.AspNetCore.Builder;
-	using Microsoft.AspNetCore.Hosting;
-	using Microsoft.Extensions.Configuration;
-	using Microsoft.Extensions.DependencyInjection;
-	using Microsoft.Extensions.Logging;
-	using Ocelot.DependencyInjection;
-	using Ocelot.Middleware;
-
-    public class Startup
+public class Startup
     {
         public IConfigurationRoot Configuration { get; }
 
@@ -81,8 +71,6 @@ namespace TestOcelot
             app.UseOcelot();
         }
     }
-}
-
 `
 
 An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml)
