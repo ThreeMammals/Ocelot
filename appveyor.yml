@@ -7,6 +7,6 @@ build_script:
 test_script:
 - run-tests.bat
 after_build:
-- push-to-nuget.bat 1.0.{build}-rc1
+- push-to-nuget.bat 1.0.{build}-rc1 {nugetApiKey}
 cache:
 - '%USERPROFILE%\.nuget\packages'
