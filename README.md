@@ -27,6 +27,8 @@ Install Ocelot and it's dependecies using nuget.
 
 `Install-Package Ocelot -Pre`
 
+All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
+
 # Configuration
 
 An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.yaml ) 
