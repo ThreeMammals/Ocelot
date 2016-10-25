@@ -40,6 +40,7 @@
     </dependencies>
   </metadata>
   <files>
-        <file src=".\src\Ocelot\bin\Release\netcoreapp1.4\Ocelot.*" target="lib\dotnet" />
-    </files>
+        <file src="src\Ocelot\bin\Release\netcoreapp1.4\Ocelot.dll" target="lib\netstandard1.4" />
+        <file src="src\Ocelot\bin\Release\netcoreapp1.4\Ocelot.pdb" target="lib\netstandard1.4" />
+  </files>
 </package>
