@@ -6,7 +6,7 @@ build_script:
 - build.bat
 test_script:
 - run-tests.bat
-after_build:
-- push-to-nuget.bat 1.0.{build}-rc1 {nugetApiKey}
+after_test:
+- push-to-nuget.bat 1.0.%envappveyor_build_version%-rc1 %nugetApiKey%
 cache:
 - '%USERPROFILE%\.nuget\packages'
