@@ -19,6 +19,7 @@
         "Microsoft.AspNetCore.Http": "1.0.0",
         "System.Text.RegularExpressions": "4.1.0",
         "YamlDotNet": "3.9.0",
+        "NetEscapades.Configuration.Yaml": "1.2.0",
         "Microsoft.AspNetCore.Authentication.OAuth": "1.0.0",
         "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
         "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0",
