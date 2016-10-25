@@ -21,7 +21,11 @@ to do this.
 
 # How to use
 
-Using nuget `Install-Package Ocelot -Version 0.0.1`
+Ocelot is designed to work with ASP.NET core only and is currently built to .NET Standard 1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
+
+Install Ocelot and it's dependecies using nuget.
+
+`Install-Package Ocelot -Version 0.0.1`
 
 # Configuration
 
