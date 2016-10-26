@@ -3,31 +3,31 @@
 
     "testRunner": "xunit",
 
-  "dependencies": {
-    "Microsoft.NETCore.App": {
-      "version": "1.0.0",
-      "type": "platform"
+    "dependencies": {
+        "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
+        "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0",
+        "Microsoft.Extensions.Logging": "1.0.0",
+        "Microsoft.Extensions.Logging.Console": "1.0.0",
+        "Microsoft.Extensions.Logging.Debug": "1.0.0",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
+        "Microsoft.AspNetCore.Http": "1.0.0",
+        "Ocelot": "1.0.0-*",
+        "xunit": "2.1.0",
+        "dotnet-test-xunit": "2.2.0-preview2-build1029",
+        "Moq": "4.6.38-alpha",
+        "Microsoft.AspNetCore.TestHost": "1.0.0",
+        "Microsoft.AspNetCore.Mvc": "1.0.1",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
+        "Microsoft.NETCore.App": {
+            "version": "1.0.1",
+            "type": "platform"
+        },
+        "Shouldly": "2.8.2",
+        "TestStack.BDDfy": "4.3.2",
+        "YamlDotNet": "4.0.0"
     },
-    "Microsoft.AspNetCore.Mvc": "1.0.0",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
-    "Microsoft.AspNetCore.Http": "1.0.0",
-    "Ocelot": "1.0.0-*",
-    "xunit": "2.1.0",
-    "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "Shouldly": "2.8.0",
-    "TestStack.BDDfy": "4.3.1",
-    "YamlDotNet": "3.9.0",
-    "Moq": "4.6.38-alpha",
-    "Microsoft.AspNetCore.TestHost": "1.0.0" 
-  },
 
     "frameworks": {
         "netcoreapp1.4": {

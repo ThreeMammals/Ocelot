@@ -5,11 +5,11 @@
     },
 
     "dependencies": {
+        "BenchmarkDotNet": "0.9.9",
         "Microsoft.NETCore.App": {
-            "version": "1.0.0",
+            "version": "1.0.1",
             "type": "platform"
         },
-        "BenchmarkDotNet": "0.9.8",
         "Ocelot": "1.0.0-*"
     },
 
