@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Responses;
 
 namespace Ocelot.Responder
 {
@@ -10,7 +11,7 @@ namespace Ocelot.Responder
     /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
-        public async Task<HttpContext> CreateResponse(HttpContext context, HttpResponseMessage response)
+        public async Task<Response> SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
         {
             context.Response.OnStarting(x =>
             {
@@ -19,17 +20,17 @@ namespace Ocelot.Responder
             }, context);
 
             await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
-            return context;       
+            return new OkResponse();       
         }
 
-        public async Task<HttpContext> CreateErrorResponse(HttpContext context, int statusCode)
+        public async Task<Response> SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
             context.Response.OnStarting(x =>
             {
                 context.Response.StatusCode = statusCode;
                 return Task.CompletedTask;
             }, context);
-            return context;
+            return new OkResponse();
         }
     }
 }

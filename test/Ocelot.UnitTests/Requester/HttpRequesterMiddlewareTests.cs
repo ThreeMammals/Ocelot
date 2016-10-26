@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -10,6 +11,7 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.RequestBuilder;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
+using Ocelot.Responder;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -26,16 +28,19 @@ namespace Ocelot.UnitTests.Requester
         private HttpResponseMessage _result;
         private OkResponse<HttpResponseMessage> _response;
         private OkResponse<Request> _request;
+        private readonly Mock<IHttpResponder> _responder;
 
         public HttpRequesterMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _requester = new Mock<IHttpRequester>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
+            _responder = new Mock<IHttpResponder>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton(_responder.Object);
                   x.AddSingleton(_requester.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -58,8 +63,9 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenTheRequestIs(new Request(new HttpRequestMessage(),new CookieContainer())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
+                .And(x => x.GivenTheResponderReturns())
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
+                .Then(x => x.ThenTheResponderIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -71,10 +77,17 @@ namespace Ocelot.UnitTests.Requester
                 .ReturnsAsync(_response);
         }
 
-        private void ThenTheScopedDataRepositoryIsCalledCorrectly()
+        private void GivenTheResponderReturns()
         {
-            _scopedRepository
-                .Verify(x => x.Add("Response", _response.Data), Times.Once());
+            _responder
+                .Setup(x => x.SetResponseOnHttpContext(It.IsAny<HttpContext>(), _response.Data))
+                .ReturnsAsync(new OkResponse());
+        }
+
+        private void ThenTheResponderIsCalledCorrectly()
+        {
+            _responder
+                .Verify(x => x.SetResponseOnHttpContext(It.IsAny<HttpContext>(), _response.Data), Times.Once());
         }
 
         private void WhenICallTheMiddleware()

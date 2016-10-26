@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {
-    public class HttpResponderMiddlewareTests : IDisposable
+    public class HttpErrorResponderMiddlewareTests : IDisposable
     {
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Responder
         private HttpResponseMessage _result;
         private OkResponse<HttpResponseMessage> _response;
 
-        public HttpResponderMiddlewareTests()
+        public HttpErrorResponderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _responder = new Mock<IHttpResponder>();
@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.Responder
               .UseUrls(_url)
               .Configure(app =>
               {
-                  app.UseHttpResponderMiddleware();
+                  app.UseHttpErrorResponderMiddleware();
               });
 
             _server = new TestServer(builder);
@@ -60,7 +60,7 @@ namespace Ocelot.UnitTests.Responder
             this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
                 .And(x => x.GivenThereAreNoPipelineErrors())
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.TheResponderIsCalledCorrectly())
+                .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
         }
 
@@ -71,10 +71,9 @@ namespace Ocelot.UnitTests.Responder
                 .Returns(new OkResponse<bool>(false));
         }
 
-        private void TheResponderIsCalledCorrectly()
+        private void ThenThereAreNoErrors()
         {
-            _responder
-                .Verify(x => x.CreateResponse(It.IsAny<HttpContext>(), _response.Data), Times.Once);
+            //todo a better assert?
         }
 
         private void WhenICallTheMiddleware()

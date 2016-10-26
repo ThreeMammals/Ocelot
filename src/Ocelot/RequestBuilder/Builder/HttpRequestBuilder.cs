@@ -22,18 +22,13 @@ namespace Ocelot.RequestBuilder.Builder
 
             if (content != null)
             {
-                using (var reader = new StreamReader(content))
-                {
-                    var body = await reader.ReadToEndAsync();
-                    httpRequestMessage.Content = new StringContent(body);
-                }
+                httpRequestMessage.Content = new StreamContent(content);
             }
 
             if (!string.IsNullOrEmpty(contentType))
             {
-                var splitCt = contentType.Split(';');
-                var cT = splitCt[0];
-                httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(cT);
+                httpRequestMessage.Content.Headers.Remove("Content-Type");
+                httpRequestMessage.Content.Headers.TryAddWithoutValidation("Content-Type", contentType); 
             }
 
             //todo get rid of if
@@ -50,7 +45,7 @@ namespace Ocelot.RequestBuilder.Builder
                     //todo get rid of if..
                     if (header.Key.ToLower() != "host")
                     {
-                        httpRequestMessage.Headers.Add(header.Key, header.Value.ToArray());
+                        httpRequestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                     }
                 }
             }

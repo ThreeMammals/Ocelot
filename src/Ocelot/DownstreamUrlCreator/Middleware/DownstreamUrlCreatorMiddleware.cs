@@ -10,11 +10,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IDownstreamUrlTemplateVariableReplacer _urlReplacer;
+        private readonly IDownstreamUrlPathPlaceholderReplacer _urlReplacer;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
-            IDownstreamUrlTemplateVariableReplacer urlReplacer,
+            IDownstreamUrlPathPlaceholderReplacer urlReplacer,
             IRequestScopedDataRepository requestScopedDataRepository)
             :base(requestScopedDataRepository)
         {
@@ -33,7 +33,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            var downstreamUrl = _urlReplacer.ReplaceTemplateVariables(downstreamRoute.Data);
+            var downstreamUrl = _urlReplacer.Replace(downstreamRoute.Data.ReRoute.DownstreamTemplate, downstreamRoute.Data.TemplatePlaceholderNameAndValues);
 
             if (downstreamUrl.IsError)
             {
@@ -41,7 +41,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl.Data);
+            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl.Data.Value);
                 
             await _next.Invoke(context);
         }

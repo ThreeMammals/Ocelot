@@ -54,8 +54,8 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             services.AddSingleton<IClaimsParser, ClaimsParser>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
-            services.AddSingleton<ITemplateVariableNameAndValueFinder, TemplateVariableNameAndValueFinder>();
-            services.AddSingleton<IDownstreamUrlTemplateVariableReplacer, DownstreamUrlTemplateVariableReplacer>();
+            services.AddSingleton<IUrlPathPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
+            services.AddSingleton<IDownstreamUrlPathPlaceholderReplacer, DownstreamUrlPathPlaceholderReplacer>();
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();

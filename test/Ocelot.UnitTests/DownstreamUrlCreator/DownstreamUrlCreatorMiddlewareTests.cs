@@ -20,19 +20,19 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
     public class DownstreamUrlCreatorMiddlewareTests : IDisposable
     {
-        private readonly Mock<IDownstreamUrlTemplateVariableReplacer> _downstreamUrlTemplateVariableReplacer;
+        private readonly Mock<IDownstreamUrlPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
-        private OkResponse<string> _downstreamUrl;
+        private OkResponse<DownstreamUrl> _downstreamUrl;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamUrlTemplateVariableReplacer>();
+            _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamUrlPathPlaceholderReplacer>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             var builder = new WebHostBuilder()
@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
                 .And(x => x.TheUrlReplacerReturns("any old string"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
@@ -67,16 +67,16 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void TheUrlReplacerReturns(string downstreamUrl)
         {
-            _downstreamUrl = new OkResponse<string>(downstreamUrl);
+            _downstreamUrl = new OkResponse<DownstreamUrl>(new DownstreamUrl(downstreamUrl));
             _downstreamUrlTemplateVariableReplacer
-                .Setup(x => x.ReplaceTemplateVariables(It.IsAny<DownstreamRoute>()))
+                .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<UrlPathPlaceholderNameAndValue>>()))
                 .Returns(_downstreamUrl);
         }
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
             _scopedRepository
-                .Verify(x => x.Add("DownstreamUrl", _downstreamUrl.Data), Times.Once());
+                .Verify(x => x.Add("DownstreamUrl", _downstreamUrl.Data.Value), Times.Once());
         }
 
         private void WhenICallTheMiddleware()

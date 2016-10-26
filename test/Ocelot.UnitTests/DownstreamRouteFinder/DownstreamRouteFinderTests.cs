@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
         private readonly Mock<IOcelotConfigurationProvider> _mockConfig;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
-        private readonly Mock<ITemplateVariableNameAndValueFinder> _finder;
+        private readonly Mock<IUrlPathPlaceholderNameAndValueFinder> _finder;
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
         private List<ReRoute> _reRoutesConfig;
@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _mockConfig = new Mock<IOcelotConfigurationProvider>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
-            _finder = new Mock<ITemplateVariableNameAndValueFinder>();
+            _finder = new Mock<IUrlPathPlaceholderNameAndValueFinder>();
             _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
         }
 
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
-                            new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                            new OkResponse<List<UrlPathPlaceholderNameAndValue>>(new List<UrlPathPlaceholderNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
-                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                         new ReRouteBuilder()
                             .WithDownstreamTemplate("someDownstreamPath")
                             .Build()
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
-                            new OkResponse<List<TemplateVariableNameAndValue>>(new List<TemplateVariableNameAndValue>())))
+                            new OkResponse<List<UrlPathPlaceholderNameAndValue>>(new List<UrlPathPlaceholderNameAndValue>())))
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
@@ -92,7 +92,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
                 .When(x => x.WhenICallTheFinder())
                 .Then(
-                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                         new ReRouteBuilder()
                             .WithDownstreamTemplate("someDownstreamPathForAPost")
                             .Build()
@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                  .BDDfy();
         }
 
-        private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<TemplateVariableNameAndValue>> response)
+        private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<UrlPathPlaceholderNameAndValue>> response)
         {
             _finder
                 .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>()))
@@ -176,13 +176,13 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _result.Data.ReRoute.DownstreamTemplate.ShouldBe(expected.ReRoute.DownstreamTemplate);
 
-            for (int i = 0; i < _result.Data.TemplateVariableNameAndValues.Count; i++)
+            for (int i = 0; i < _result.Data.TemplatePlaceholderNameAndValues.Count; i++)
             {
-                _result.Data.TemplateVariableNameAndValues[i].TemplateVariableName.ShouldBe(
-                    expected.TemplateVariableNameAndValues[i].TemplateVariableName);
+                _result.Data.TemplatePlaceholderNameAndValues[i].TemplateVariableName.ShouldBe(
+                    expected.TemplatePlaceholderNameAndValues[i].TemplateVariableName);
 
-                _result.Data.TemplateVariableNameAndValues[i].TemplateVariableValue.ShouldBe(
-                    expected.TemplateVariableNameAndValues[i].TemplateVariableValue);
+                _result.Data.TemplatePlaceholderNameAndValues[i].TemplateVariableValue.ShouldBe(
+                    expected.TemplatePlaceholderNameAndValues[i].TemplateVariableValue);
             }
             
             _result.IsError.ShouldBeFalse();

@@ -6,14 +6,14 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Responder.Middleware
 {
-    public class HttpResponderMiddleware : OcelotMiddleware
+    public class HttpErrorResponderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
-        public HttpResponderMiddleware(RequestDelegate next, 
+        public HttpErrorResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
             IRequestScopedDataRepository requestScopedDataRepository, 
             IErrorsToHttpStatusCodeMapper codeMapper)
@@ -37,18 +37,12 @@ namespace Ocelot.Responder.Middleware
 
                 if (!statusCode.IsError)
                 {
-                    await _responder.CreateErrorResponse(context, statusCode.Data);
+                    await _responder.SetErrorResponseOnContext(context, statusCode.Data);
                 }
                 else
                 {
-                    await _responder.CreateErrorResponse(context, 500);
+                    await _responder.SetErrorResponseOnContext(context, 500);
                 }
-            }
-            else
-            {
-                var response = _requestScopedDataRepository.Get<HttpResponseMessage>("Response");
-
-                await _responder.CreateResponse(context, response.Data);
             }
         }
     }

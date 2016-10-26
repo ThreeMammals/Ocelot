@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.HeaderBuilder
         [Fact]
         public void happy_path()
         {
-            var downstreamRoute = new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamTemplate("any old string")
                     .WithClaimsToHeaders(new List<ClaimToThing>

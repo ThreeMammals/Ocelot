@@ -24,3 +24,6 @@ ReRoutes:
 - DownstreamTemplate: http://www.bbc.co.uk
   UpstreamTemplate: /
   UpstreamHttpMethod: Get
+- DownstreamTemplate: http://localhost:51879/api/products/{productId}
+  UpstreamTemplate: /products/{productId}
+  UpstreamHttpMethod: Get

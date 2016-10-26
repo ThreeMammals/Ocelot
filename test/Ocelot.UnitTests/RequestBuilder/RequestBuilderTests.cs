@@ -82,6 +82,23 @@ namespace Ocelot.UnitTests.RequestBuilder
         }
 
         [Fact]
+        public void should_use_unvalidated_http_content_headers()
+        {
+            this.Given(x => x.GivenIHaveHttpMethod("POST"))
+                .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
+                .And(x => x.GivenTheContentTypeIs("application/json; charset=utf-8"))
+               .When(x => x.WhenICreateARequest())
+               .And(x => x.ThenTheCorrectContentHeadersAreUsed(new HeaderDictionary
+                {
+                    {
+                        "Content-Type", "application/json; charset=utf-8"
+                    }
+                }))
+               .BDDfy();
+        }
+
+        [Fact]
         public void should_use_headers()
         {
             this.Given(x => x.GivenIHaveHttpMethod("GET"))

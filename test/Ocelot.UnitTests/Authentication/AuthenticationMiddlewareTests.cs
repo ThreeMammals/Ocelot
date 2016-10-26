@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Authentication
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenNoExceptionsAreThrown())
                 .BDDfy();

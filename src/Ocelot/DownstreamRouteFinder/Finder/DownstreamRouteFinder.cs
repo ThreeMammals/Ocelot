@@ -12,29 +12,28 @@ namespace Ocelot.DownstreamRouteFinder.Finder
     {
         private readonly IOcelotConfigurationProvider _configProvider;
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
-        private readonly ITemplateVariableNameAndValueFinder _templateVariableNameAndValueFinder;
+        private readonly IUrlPathPlaceholderNameAndValueFinder _urlPathPlaceholderNameAndValueFinder;
 
-        public DownstreamRouteFinder(IOcelotConfigurationProvider configProvider, IUrlPathToUrlTemplateMatcher urlMatcher, ITemplateVariableNameAndValueFinder templateVariableNameAndValueFinder)
+        public DownstreamRouteFinder(IOcelotConfigurationProvider configProvider, IUrlPathToUrlTemplateMatcher urlMatcher, IUrlPathPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
         {
             _configProvider = configProvider;
             _urlMatcher = urlMatcher;
-            _templateVariableNameAndValueFinder = templateVariableNameAndValueFinder;
+            _urlPathPlaceholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
         public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
         {
             var configuration = _configProvider.Get();
 
-            foreach (var template in configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase)))
+            foreach (var reRoute in configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase)))
             {
-                var urlMatch = _urlMatcher.Match(upstreamUrlPath, template.UpstreamTemplatePattern);
+                var urlMatch = _urlMatcher.Match(upstreamUrlPath, reRoute.UpstreamTemplatePattern);
 
                 if (urlMatch.Data.Match)
                 {
-                    var templateVariableNameAndValues = _templateVariableNameAndValueFinder.Find(upstreamUrlPath,
-                        template.UpstreamTemplate);
+                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamTemplate);
 
-                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, template));
+                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, reRoute));
                 }
             }
         

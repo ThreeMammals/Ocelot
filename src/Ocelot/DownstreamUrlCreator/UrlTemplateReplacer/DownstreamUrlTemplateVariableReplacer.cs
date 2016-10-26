@@ -1,23 +1,25 @@
+using System.Collections.Generic;
 using System.Text;
 using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
-    public class DownstreamUrlTemplateVariableReplacer : IDownstreamUrlTemplateVariableReplacer
+    public class DownstreamUrlPathPlaceholderReplacer : IDownstreamUrlPathPlaceholderReplacer
     {
-        public Response<string> ReplaceTemplateVariables(DownstreamRoute downstreamRoute)
+        public Response<DownstreamUrl> Replace(string downstreamTemplate, List<UrlPathPlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
         {
             var upstreamUrl = new StringBuilder();
 
-            upstreamUrl.Append(downstreamRoute.ReRoute.DownstreamTemplate);
+            upstreamUrl.Append(downstreamTemplate);
 
-            foreach (var templateVarAndValue in downstreamRoute.TemplateVariableNameAndValues)
+            foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
             {
-                upstreamUrl.Replace(templateVarAndValue.TemplateVariableName, templateVarAndValue.TemplateVariableValue);
+                upstreamUrl.Replace(placeholderVariableAndValue.TemplateVariableName, placeholderVariableAndValue.TemplateVariableValue);
             }
 
-            return new OkResponse<string>(upstreamUrl.ToString());
+            return new OkResponse<DownstreamUrl>(new DownstreamUrl(upstreamUrl.ToString()));
         }
     }
 }

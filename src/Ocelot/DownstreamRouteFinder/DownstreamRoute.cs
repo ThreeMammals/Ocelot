@@ -6,12 +6,12 @@ namespace Ocelot.DownstreamRouteFinder
 {
     public class DownstreamRoute
     {
-        public DownstreamRoute(List<TemplateVariableNameAndValue> templateVariableNameAndValues, ReRoute reRoute)
+        public DownstreamRoute(List<UrlPathPlaceholderNameAndValue> templatePlaceholderNameAndValues, ReRoute reRoute)
         {
-            TemplateVariableNameAndValues = templateVariableNameAndValues;
+            TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;
             ReRoute = reRoute;
         }
-        public List<TemplateVariableNameAndValue> TemplateVariableNameAndValues { get; private set; }
+        public List<UrlPathPlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; private set; }
         public ReRoute ReRoute { get; private set; }
     }
 }

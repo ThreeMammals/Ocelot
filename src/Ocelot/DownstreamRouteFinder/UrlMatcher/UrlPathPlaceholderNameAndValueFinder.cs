@@ -3,11 +3,11 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
-    public class TemplateVariableNameAndValueFinder : ITemplateVariableNameAndValueFinder
+    public class UrlPathPlaceholderNameAndValueFinder : IUrlPathPlaceholderNameAndValueFinder
     {
-        public Response<List<TemplateVariableNameAndValue>> Find(string upstreamUrlPath, string upstreamUrlPathTemplate)
+        public Response<List<UrlPathPlaceholderNameAndValue>> Find(string upstreamUrlPath, string upstreamUrlPathTemplate)
         {
-            var templateKeysAndValues = new List<TemplateVariableNameAndValue>();
+            var templateKeysAndValues = new List<UrlPathPlaceholderNameAndValue>();
 
             int counterForUrl = 0;
          
@@ -21,7 +21,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                         
                         var variableValue = GetPlaceholderVariableValue(upstreamUrlPath, counterForUrl);
 
-                        var templateVariableNameAndValue = new TemplateVariableNameAndValue(variableName, variableValue);
+                        var templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, variableValue);
 
                         templateKeysAndValues.Add(templateVariableNameAndValue);
 
@@ -32,12 +32,12 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                         continue;
                     }
 
-                    return new OkResponse<List<TemplateVariableNameAndValue>>(templateKeysAndValues);
+                    return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
                 }
                 counterForUrl++;
             }
 
-            return new OkResponse<List<TemplateVariableNameAndValue>>(templateKeysAndValues);
+            return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
         }
 
         private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)

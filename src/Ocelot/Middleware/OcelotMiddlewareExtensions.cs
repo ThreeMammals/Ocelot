@@ -19,22 +19,34 @@ namespace Ocelot.Middleware
     {
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
         {
-            builder.UseHttpResponderMiddleware();
+            // This is registered to catch any global exceptions that are not handled
+            builder.UseExceptionHandlerMiddleware();
 
+            // This is registered first so it can catch any errors and issue an appropriate response
+            builder.UseHttpErrorResponderMiddleware();
+
+            // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
 
+            // Now we know where the client is going to go we can authenticate them
             builder.UseAuthenticationMiddleware();
 
+            // The next thing we do is look at any claims transforms in case this is important for authorisation
             builder.UseClaimsBuilderMiddleware();
 
+            // Now we have authenticated and done any claims transformation we can authorise the request
             builder.UseAuthorisationMiddleware();
 
+            // Now we can run any header transformation logic
             builder.UseHttpRequestHeadersBuilderMiddleware();
 
+            // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
 
+            // Everything should now be ready to build or HttpRequest
             builder.UseHttpRequestBuilderMiddleware();
 
+            //We fire off the request and set the response on the context in this middleware
             builder.UseHttpRequesterMiddleware();
 
             return builder;
@@ -44,7 +56,7 @@ namespace Ocelot.Middleware
         {
             builder.UseIfNotNull(middlewareConfiguration.PreHttpResponderMiddleware);
 
-            builder.UseHttpResponderMiddleware();
+            builder.UseHttpErrorResponderMiddleware();
 
             builder.UseIfNotNull(middlewareConfiguration.PostHttpResponderMiddleware);
 

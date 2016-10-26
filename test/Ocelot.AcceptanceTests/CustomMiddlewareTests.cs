@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -67,8 +68,7 @@ namespace Ocelot.AcceptanceTests
             {
                 PreHttpRequesterMiddleware = async (ctx, next) =>
                 {
-                    var service = ctx.RequestServices.GetService<IRequestScopedDataRepository>();
-                    service.Add("Response", new HttpResponseMessage {Content = new StringContent("PreHttpRequesterMiddleware")});
+                    await ctx.Response.WriteAsync("PreHttpRequesterMiddleware");
                 }
             };
 
@@ -104,9 +104,10 @@ namespace Ocelot.AcceptanceTests
                 .UseUrls(url)
                 .Configure(app =>
                 {
-                    app.Run(async context =>
+                    app.Run(context =>
                     {
                         context.Response.StatusCode = statusCode;
+                        return Task.CompletedTask;
                     });
                 })
                 .Build();

@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
+            this.Given(x => x.GivenTheDownStreamRouteFinderReturns(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();

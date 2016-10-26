@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.Authorization
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<TemplateVariableNameAndValue>(), new ReRouteBuilder().WithIsAuthorised(true).Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithIsAuthorised(true).Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())

@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.ClaimsBuilder
         [Fact]
         public void happy_path()
         {
-            var downstreamRoute = new DownstreamRoute(new List<TemplateVariableNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamTemplate("any old string")
                     .WithClaimsToClaims(new List<ClaimToThing>

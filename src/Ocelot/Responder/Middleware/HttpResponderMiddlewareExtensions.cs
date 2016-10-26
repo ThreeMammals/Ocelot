@@ -4,9 +4,9 @@ namespace Ocelot.Responder.Middleware
 {
     public static class HttpResponderMiddlewareExtensions
     {
-        public static IApplicationBuilder UseHttpResponderMiddleware(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseHttpErrorResponderMiddleware(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<HttpResponderMiddleware>();
+            return builder.UseMiddleware<HttpErrorResponderMiddleware>();
         }
     }
 }
