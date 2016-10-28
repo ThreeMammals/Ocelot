@@ -21,9 +21,6 @@ ReRoutes:
     LocationId: Claims[LocationId] > value
     UserType: Claims[sub] > value[0] > |
     UserId: Claims[sub] > value[1] > |
-- DownstreamTemplate: http://www.bbc.co.uk
-  UpstreamTemplate: /
-  UpstreamHttpMethod: Get
-- DownstreamTemplate: http://localhost:51879/api/products/{productId}
-  UpstreamTemplate: /products/{productId}
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts
+  UpstreamTemplate: /posts
   UpstreamHttpMethod: Get

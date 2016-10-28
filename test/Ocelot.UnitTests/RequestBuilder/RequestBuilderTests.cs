@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         private HttpContent _content;
         private IHeaderDictionary _headers;
         private IRequestCookieCollection _cookies;
-        private string _query;
+        private QueryString _query;
         private string _contentType;
         private readonly IRequestBuilder _requestBuilder;
         private Response<Request> _result;
@@ -137,7 +137,7 @@ namespace Ocelot.UnitTests.RequestBuilder
         {
             this.Given(x => x.GivenIHaveHttpMethod("POST"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
-                .And(x => x.GivenTheQueryStringIs("?jeff=1&geoff=2"))
+                .And(x => x.GivenTheQueryStringIs(new QueryString("?jeff=1&geoff=2")))
                 .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectQueryStringIsUsed("?jeff=1&geoff=2"))
                 .BDDfy();
@@ -153,7 +153,7 @@ namespace Ocelot.UnitTests.RequestBuilder
             _result.Data.HttpRequestMessage.RequestUri.Query.ShouldBe(expected);
         }
 
-        private void GivenTheQueryStringIs(string query)
+        private void GivenTheQueryStringIs(QueryString query)
         {
             _query = query;
         }

@@ -12,7 +12,7 @@ namespace Ocelot.RequestBuilder.Builder
             Stream content,
             IHeaderDictionary headers,
             IRequestCookieCollection cookies,
-            string queryString,
+            QueryString queryString,
             string contentType);
     }
 }

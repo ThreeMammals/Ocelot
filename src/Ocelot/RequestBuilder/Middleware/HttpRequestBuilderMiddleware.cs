@@ -34,7 +34,7 @@ namespace Ocelot.RequestBuilder.Middleware
 
             var request = await _requestBuilder
               .Build(context.Request.Method, downstreamUrl.Data, context.Request.Body,
-              context.Request.Headers, context.Request.Cookies, context.Request.QueryString.Value, context.Request.ContentType);
+              context.Request.Headers, context.Request.Cookies, context.Request.QueryString, context.Request.ContentType);
 
             if (request.IsError)
             {

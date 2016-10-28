@@ -12,17 +12,18 @@ namespace Ocelot.RequestBuilder.Builder
     public class HttpRequestBuilder : IRequestBuilder
     {
         public async Task<Response<Request>> Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
-            IRequestCookieCollection cookies, string queryString, string contentType)
+            IRequestCookieCollection cookies, QueryString queryString, string contentType)
         {
             var method = new HttpMethod(httpMethod);
 
-            var uri = new Uri(string.Format("{0}{1}", downstreamUrl, queryString));
+            var uri = new Uri(string.Format("{0}{1}", downstreamUrl, queryString.ToUriComponent()));
+
 
             var httpRequestMessage = new HttpRequestMessage(method, uri);
 
             if (content != null)
             {
-                httpRequestMessage.Content = new StreamContent(content);
+                httpRequestMessage.Content = new ByteArrayContent(ToByteArray(content));
             }
 
             if (!string.IsNullOrEmpty(contentType))
@@ -35,11 +36,7 @@ namespace Ocelot.RequestBuilder.Builder
             if (headers != null)
             {
                 headers.Remove("Content-Type");
-            }
 
-            //todo get rid of if
-            if (headers != null)
-            {
                 foreach (var header in headers)
                 {
                     //todo get rid of if..
@@ -62,6 +59,18 @@ namespace Ocelot.RequestBuilder.Builder
             }
             
             return new OkResponse<Request>(new Request(httpRequestMessage, cookieContainer));
+        }
+
+        private byte[] ToByteArray(Stream stream)
+        {
+            using (stream)
+            {
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    stream.CopyTo(memStream);
+                    return memStream.ToArray();
+                }
+            }
         }
     }
 }

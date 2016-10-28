@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.RequestBuilder
             _request = new OkResponse<Request>(request);
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(),
-                It.IsAny<IRequestCookieCollection>(), It.IsAny<string>(), It.IsAny<string>()))
+                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>()))
                 .ReturnsAsync(_request);
         }
 
