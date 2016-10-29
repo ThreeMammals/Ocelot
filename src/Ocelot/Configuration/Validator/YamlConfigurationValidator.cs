@@ -8,7 +8,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Validator
 {
-    public class ConfigurationValidator : IConfigurationValidator
+    public class YamlConfigurationValidator : IConfigurationValidator
     {
         public Response<ConfigurationValidationResult> IsValid(YamlConfiguration configuration)
         {

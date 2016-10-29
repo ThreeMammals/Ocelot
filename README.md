@@ -76,4 +76,8 @@ An example startup using a yaml file for configuration can be seen below. Curren
 
 This is pretty much all you need to get going.......more to come! 
 
+## Logging
+
+Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> as such you can use any logging provider you like such as default, nlog, serilog. 
+
 

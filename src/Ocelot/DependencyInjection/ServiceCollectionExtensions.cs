@@ -35,10 +35,8 @@ namespace Ocelot.DependencyInjection
 
             // ocelot services.
             services.AddSingleton<IOcelotConfigurationCreator, YamlOcelotConfigurationCreator>();
-            services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
-            services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
-            services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
+            services.AddSingleton<IConfigurationValidator, YamlConfigurationValidator>();
 
             return services;
         }
@@ -50,6 +48,8 @@ namespace Ocelot.DependencyInjection
             services.AddLogging();
 
             // ocelot services.
+            services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
+            services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();
             services.AddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();

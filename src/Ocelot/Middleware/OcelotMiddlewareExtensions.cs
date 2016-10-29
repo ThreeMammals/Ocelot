@@ -18,16 +18,30 @@ namespace Ocelot.Middleware
 
     public static class OcelotMiddlewareExtensions
     {
+        /// <summary>
+        /// Registers the Ocelot default middlewares
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
         {
             builder.UseOcelot(new OcelotMiddlewareConfiguration());
             return builder;
         }
 
+        /// <summary>
+        /// Registers Ocelot with a combination of default middlewares and optional middlewares in the configuration
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="middlewareConfiguration"></param>
+        /// <returns></returns>
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
+
+            // Allow the user to respond with absolutely anything they want.
+            builder.UseIfNotNull(middlewareConfiguration.PreErrorResponderMiddleware);
 
             // This is registered first so it can catch any errors and issue an appropriate response
             builder.UseHttpErrorResponderMiddleware();

@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
 
         public ConfigurationValidationTests()
         {
-            _configurationValidator = new ConfigurationValidator();
+            _configurationValidator = new YamlConfigurationValidator();
         }
 
         [Fact]
