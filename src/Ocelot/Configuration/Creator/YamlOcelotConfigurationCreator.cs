@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Parser;
@@ -48,18 +49,26 @@ namespace Ocelot.Configuration.Creator
         {
             var response = _configurationValidator.IsValid(_options.Value);
 
-            var reRoutes = new List<ReRoute>();
-
-            if (!response.IsError && !response.Data.IsError)
+            if (response.Data.IsError)
             {
+                var errorBuilder = new StringBuilder();
 
-                foreach (var yamlReRoute in _options.Value.ReRoutes)
+                foreach (var error in response.Errors)
                 {
-                    var ocelotReRoute = SetUpReRoute(yamlReRoute);
-                    reRoutes.Add(ocelotReRoute);
+                    errorBuilder.AppendLine(error.Message);
                 }
+
+                throw new Exception($"Unable to start Ocelot..configuration, errors were {errorBuilder}");
             }
 
+            var reRoutes = new List<ReRoute>();
+
+            foreach (var yamlReRoute in _options.Value.ReRoutes)
+            {
+                var ocelotReRoute = SetUpReRoute(yamlReRoute);
+                reRoutes.Add(ocelotReRoute);
+            }
+            
             return new OcelotConfiguration(reRoutes);
         }
 

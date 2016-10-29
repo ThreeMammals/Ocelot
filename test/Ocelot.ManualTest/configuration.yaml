@@ -30,7 +30,7 @@ ReRoutes:
 # it as a claim with the given key before the colon (:). The index selection on value 
 # means that Ocelot will use the delimiter specified after the next > to split the 
 # claim value and return the index specified.
-AddClaimsToRequest:
+  AddClaimsToRequest:
     CustomerId: Claims[CustomerId] > value
     LocationId: Claims[LocationId] > value
     UserType: Claims[sub] > value[0] > |
@@ -40,7 +40,7 @@ AddClaimsToRequest:
 # it as a query string with the given key before the colon (:). The index selection on value 
 # means that Ocelot will use the delimiter specified after the next > to split the 
 # claim value and return the index specified.
-AddQueriesToRequest:
+  AddQueriesToRequest:
     CustomerId: Claims[CustomerId] > value
     LocationId: Claims[LocationId] > value
     UserType: Claims[sub] > value[0] > |
@@ -48,9 +48,37 @@ AddQueriesToRequest:
 # This specifies any claims that are required for the user to access this re route.
 # In this example the user must have the claim type UserType and 
 # the value must be registered
-RouteClaimsRequirement:
+  RouteClaimsRequirement:
     UserType: registered
 # The next re route...
 - DownstreamTemplate: http://jsonplaceholder.typicode.com/posts
   UpstreamTemplate: /posts
   UpstreamHttpMethod: Get
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts/{postId}
+  UpstreamTemplate: /posts/{postId}
+  UpstreamHttpMethod: Get
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts/{postId}/comments
+  UpstreamTemplate: /posts/{postId}/comments
+  UpstreamHttpMethod: Get
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/comments
+  UpstreamTemplate: /comments
+  UpstreamHttpMethod: Get
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts
+  UpstreamTemplate: /posts
+  UpstreamHttpMethod: Post
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts/{postId}
+  UpstreamTemplate: /posts/{postId}
+  UpstreamHttpMethod: Put
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts/{postId}
+  UpstreamTemplate: /posts/{postId}
+  UpstreamHttpMethod: Patch
+# The next re route...
+- DownstreamTemplate: http://jsonplaceholder.typicode.com/posts/{postId}
+  UpstreamTemplate: /posts/{postId}
+  UpstreamHttpMethod: Delete
