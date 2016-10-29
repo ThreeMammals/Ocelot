@@ -10,7 +10,6 @@ namespace Ocelot.Responder.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
         public HttpErrorResponderMiddleware(RequestDelegate next, 
@@ -21,7 +20,6 @@ namespace Ocelot.Responder.Middleware
         {
             _next = next;
             _responder = responder;
-            _requestScopedDataRepository = requestScopedDataRepository;
             _codeMapper = codeMapper;
         }
 

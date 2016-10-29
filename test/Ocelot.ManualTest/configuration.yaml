@@ -1,11 +1,11 @@
 ReRoutes:
-# the url we are forwarding the request to
+# The url we are forwarding the request to
 - DownstreamTemplate: http://localhost:52876/
-# the path we are listening on for this re route
+# The path we are listening on for this re route
   UpstreamTemplate: /identityserverexample
-# the method we are listening for on this re route
+# The method we are listening for on this re route
   UpstreamHttpMethod: Get
-# only support identity server at the moment
+# Only support identity server at the moment
   AuthenticationOptions:
     Provider: IdentityServer
     ProviderRootUrl: http://localhost:52888
@@ -13,14 +13,44 @@ ReRoutes:
     AdditionalScopes:
     - openid
     - offline_access
-#require if using reference tokens
+# Required if using reference tokens
     ScopeSecret: secret
-# WARNING - will overwrite any headers already in the request with these values
+# WARNING - will overwrite any headers already in the request with these values.
+# Ocelot will look in the user claims for the key in [] then return the value and save
+# it as a header with the given key before the colon (:). The index selection on value 
+# means that Ocelot will use the delimiter specified after the next > to split the 
+# claim value and return the index specified.
   AddHeadersToRequest:
     CustomerId: Claims[CustomerId] > value
     LocationId: Claims[LocationId] > value
     UserType: Claims[sub] > value[0] > |
     UserId: Claims[sub] > value[1] > |
+# WARNING - will overwrite any claims already in the request with these values.
+# Ocelot will look in the user claims for the key in [] then return the value and save
+# it as a claim with the given key before the colon (:). The index selection on value 
+# means that Ocelot will use the delimiter specified after the next > to split the 
+# claim value and return the index specified.
+AddClaimsToRequest:
+    CustomerId: Claims[CustomerId] > value
+    LocationId: Claims[LocationId] > value
+    UserType: Claims[sub] > value[0] > |
+    UserId: Claims[sub] > value[1] > |
+# WARNING - will overwrite any query string entries already in the request with these values.
+# Ocelot will look in the user claims for the key in [] then return the value and save
+# it as a query string with the given key before the colon (:). The index selection on value 
+# means that Ocelot will use the delimiter specified after the next > to split the 
+# claim value and return the index specified.
+AddQueriesToRequest:
+    CustomerId: Claims[CustomerId] > value
+    LocationId: Claims[LocationId] > value
+    UserType: Claims[sub] > value[0] > |
+    UserId: Claims[sub] > value[1] > |
+# This specifies any claims that are required for the user to access this re route.
+# In this example the user must have the claim type UserType and 
+# the value must be registered
+RouteClaimsRequirement:
+    UserType: registered
+# The next re route...
 - DownstreamTemplate: http://jsonplaceholder.typicode.com/posts
   UpstreamTemplate: /posts
   UpstreamHttpMethod: Get

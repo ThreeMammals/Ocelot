@@ -11,7 +11,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamUrlPathPlaceholderReplacer _urlReplacer;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next, 
             IDownstreamUrlPathPlaceholderReplacer urlReplacer,
@@ -20,20 +19,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             _next = next;
             _urlReplacer = urlReplacer;
-            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
-
-            if (downstreamRoute.IsError)
-            {
-                SetPipelineError(downstreamRoute.Errors);
-                return;
-            }
-
-            var downstreamUrl = _urlReplacer.Replace(downstreamRoute.Data.ReRoute.DownstreamTemplate, downstreamRoute.Data.TemplatePlaceholderNameAndValues);
+            var downstreamUrl = _urlReplacer.Replace(DownstreamRoute.ReRoute.DownstreamTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
 
             if (downstreamUrl.IsError)
             {
@@ -41,8 +31,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl.Data.Value);
-                
+            SetDownstreamUrlForThisRequest(downstreamUrl.Data.Value);
+
             await _next.Invoke(context);
         }
     }

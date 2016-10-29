@@ -1,10 +1,10 @@
 ﻿using Ocelot.Infrastructure.RequestData;
+using Ocelot.Responses;
 
 namespace Ocelot.Authorisation.Middleware
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DownstreamRouteFinder;
     using Errors;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Middleware;
@@ -12,7 +12,6 @@ namespace Ocelot.Authorisation.Middleware
     public class AuthorisationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IAuthoriser _authoriser;
 
         public AuthorisationMiddleware(RequestDelegate next,
@@ -21,23 +20,14 @@ namespace Ocelot.Authorisation.Middleware
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _requestScopedDataRepository = requestScopedDataRepository;
             _authoriser = authoriser;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
-
-            if (downstreamRoute.IsError)
+            if (DownstreamRoute.ReRoute.IsAuthorised)
             {
-                SetPipelineError(downstreamRoute.Errors);
-                return;
-            }
-
-            if (downstreamRoute.Data.ReRoute.IsAuthorised)
-            {
-                var authorised = _authoriser.Authorise(context.User, downstreamRoute.Data.ReRoute.RouteClaimsRequirement);
+                var authorised = _authoriser.Authorise(context.User, DownstreamRoute.ReRoute.RouteClaimsRequirement);
 
                 if (authorised.IsError)
                 {
@@ -45,7 +35,7 @@ namespace Ocelot.Authorisation.Middleware
                     return;
                 }
 
-                if (authorised.Data)
+                if (IsAuthorised(authorised))
                 {
                     await _next.Invoke(context);
                 }
@@ -54,7 +44,7 @@ namespace Ocelot.Authorisation.Middleware
                     SetPipelineError(new List<Error>
                     {
                         new UnauthorisedError(
-                            $"{context.User.Identity.Name} unable to access {downstreamRoute.Data.ReRoute.UpstreamTemplate}")
+                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamTemplate}")
                     });
                 }
             }
@@ -62,6 +52,11 @@ namespace Ocelot.Authorisation.Middleware
             {
                 await _next.Invoke(context);
             }
+        }
+
+        private static bool IsAuthorised(Response<bool> authorised)
+        {
+            return authorised.Data;
         }
     }
 }

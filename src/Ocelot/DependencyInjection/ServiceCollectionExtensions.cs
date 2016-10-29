@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
+using Ocelot.Claims;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
@@ -14,15 +15,15 @@ using Ocelot.Configuration.Yaml;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.HeaderBuilder;
+using Ocelot.Headers;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.RequestBuilder.Builder;
+using Ocelot.QueryStrings;
+using Ocelot.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Responder;
 
 namespace Ocelot.DependencyInjection
 {
-    using ClaimsBuilder;
     using Infrastructure.Claims.Parser;
 
     public static class ServiceCollectionExtensions
@@ -52,6 +53,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();
             services.AddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
             services.AddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
+            services.AddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
             services.AddSingleton<IClaimsParser, ClaimsParser>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<IUrlPathPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();

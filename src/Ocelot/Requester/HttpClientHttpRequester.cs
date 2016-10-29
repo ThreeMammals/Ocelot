@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Ocelot.Errors;
-using Ocelot.RequestBuilder;
 using Ocelot.Responses;
 
 namespace Ocelot.Requester
 {
     public class HttpClientHttpRequester : IHttpRequester
     {
-        public async Task<Response<HttpResponseMessage>> GetResponse(Request request)
+        public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
             using (var handler = new HttpClientHandler { CookieContainer = request.CookieContainer })
             using (var httpClient = new HttpClient(handler))

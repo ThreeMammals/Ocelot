@@ -29,11 +29,11 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void response_should_come_from_pre_http_responder_middleware()
+        public void response_should_come_from_pre_authorisation_middleware()
         {
             var configuration = new OcelotMiddlewareConfiguration
             {
-                PreHttpResponderMiddleware = async (ctx, next) =>
+                PreAuthorisationMiddleware = async (ctx, next) =>
                 {
                     await ctx.Response.WriteAsync("PreHttpResponderMiddleware");
                 }
@@ -62,11 +62,11 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void response_should_come_from_pre_http_requester_middleware()
+        public void response_should_come_from_pre_http_authentication_middleware()
         {
             var configuration = new OcelotMiddlewareConfiguration
             {
-                PreHttpRequesterMiddleware = async (ctx, next) =>
+                PreAuthenticationMiddleware = async (ctx, next) =>
                 {
                     await ctx.Response.WriteAsync("PreHttpRequesterMiddleware");
                 }

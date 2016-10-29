@@ -5,3 +5,4 @@ ReRoutes:
   AddHeadersToRequest: {}
   AddClaimsToRequest: {}
   RouteClaimsRequirement: {}
+  AddQueriesToRequest: {}

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
@@ -14,7 +13,6 @@ namespace Ocelot.Authentication.Middleware
     public class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IApplicationBuilder _app;
         private readonly IAuthenticationHandlerFactory _authHandlerFactory;
 
@@ -25,32 +23,23 @@ namespace Ocelot.Authentication.Middleware
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _requestScopedDataRepository = requestScopedDataRepository;
             _authHandlerFactory = authHandlerFactory;
             _app = app;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
-
-            if (downstreamRoute.IsError)
+            if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
-                SetPipelineError(downstreamRoute.Errors);
-                return;
-            }
+                var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
 
-            if (IsAuthenticatedRoute(downstreamRoute.Data.ReRoute))
-            {
-                var authenticationNext = _authHandlerFactory.Get(_app, downstreamRoute.Data.ReRoute.AuthenticationOptions);
-
-                if (!authenticationNext.IsError)
+                if (!authenticationHandler.IsError)
                 {
-                    await authenticationNext.Data.Handler.Invoke(context);
+                    await authenticationHandler.Data.Handler.Invoke(context);
                 }
                 else
                 {
-                    SetPipelineError(authenticationNext.Errors);
+                    SetPipelineError(authenticationHandler.Errors);
                 }
 
                 if (context.User.Identity.IsAuthenticated)

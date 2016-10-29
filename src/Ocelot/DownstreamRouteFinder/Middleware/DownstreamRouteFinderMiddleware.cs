@@ -34,7 +34,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute.Data);
+            SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 
             await _next.Invoke(context);
         }

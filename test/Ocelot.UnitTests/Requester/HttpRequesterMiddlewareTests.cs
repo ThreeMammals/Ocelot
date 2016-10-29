@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.RequestBuilder;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
 using Ocelot.Responder;
@@ -27,7 +26,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private OkResponse<HttpResponseMessage> _response;
-        private OkResponse<Request> _request;
+        private OkResponse<Ocelot.Request.Request> _request;
         private readonly Mock<IHttpResponder> _responder;
 
         public HttpRequesterMiddlewareTests()
@@ -61,7 +60,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void happy_path()
         {
-            this.Given(x => x.GivenTheRequestIs(new Request(new HttpRequestMessage(),new CookieContainer())))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheResponderReturns())
                 .When(x => x.WhenICallTheMiddleware())
@@ -73,7 +72,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _response = new OkResponse<HttpResponseMessage>(response);
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<Request>()))
+                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Request.Request>()))
                 .ReturnsAsync(_response);
         }
 
@@ -95,11 +94,11 @@ namespace Ocelot.UnitTests.Requester
             _result = _client.GetAsync(_url).Result;
         }
 
-        private void GivenTheRequestIs(Request request)
+        private void GivenTheRequestIs(Ocelot.Request.Request request)
         {
-            _request = new OkResponse<Request>(request);
+            _request = new OkResponse<Ocelot.Request.Request>(request);
             _scopedRepository
-                .Setup(x => x.Get<Request>(It.IsAny<string>()))
+                .Setup(x => x.Get<Ocelot.Request.Request>(It.IsAny<string>()))
                 .Returns(_request);
         }
 

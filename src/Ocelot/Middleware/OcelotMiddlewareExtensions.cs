@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
+using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.HeaderBuilder.Middleware;
-using Ocelot.RequestBuilder.Middleware;
+using Ocelot.Headers.Middleware;
+using Ocelot.QueryStrings.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.Responder.Middleware;
 
@@ -12,12 +14,17 @@ namespace Ocelot.Middleware
     using System;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
-    using ClaimsBuilder.Middleware;
     using Microsoft.AspNetCore.Http;
 
     public static class OcelotMiddlewareExtensions
     {
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
+        {
+            builder.UseOcelot(new OcelotMiddlewareConfiguration());
+            return builder;
+        }
+
+        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
@@ -28,17 +35,45 @@ namespace Ocelot.Middleware
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
 
-            // Now we know where the client is going to go we can authenticate them
-            builder.UseAuthenticationMiddleware();
+            // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
+            builder.UseIfNotNull(middlewareConfiguration.PreAuthenticationMiddleware);
+
+            // Now we know where the client is going to go we can authenticate them.
+            // We allow the ocelot middleware to be overriden by whatever the
+            // user wants
+            if (middlewareConfiguration.AuthenticationMiddleware == null)
+            {
+                builder.UseAuthenticationMiddleware();
+            }
+            else
+            {
+                builder.Use(middlewareConfiguration.AuthenticationMiddleware);
+            }
 
             // The next thing we do is look at any claims transforms in case this is important for authorisation
             builder.UseClaimsBuilderMiddleware();
 
-            // Now we have authenticated and done any claims transformation we can authorise the request
-            builder.UseAuthorisationMiddleware();
+            // Allow pre authorisation logic. The idea being people might want to run something custom before what is built in.
+            builder.UseIfNotNull(middlewareConfiguration.PreAuthorisationMiddleware);
+
+            // Now we have authenticated and done any claims transformation we 
+            // can authorise the request
+            // We allow the ocelot middleware to be overriden by whatever the
+            // user wants
+            if (middlewareConfiguration.AuthorisationMiddleware == null)
+            {
+                builder.UseAuthorisationMiddleware();
+            }
+            else
+            {
+                builder.Use(middlewareConfiguration.AuthorisationMiddleware);
+            }
 
             // Now we can run any header transformation logic
             builder.UseHttpRequestHeadersBuilderMiddleware();
+
+            // Now we can run any query string transformation logic
+            builder.UseQueryStringBuilderMiddleware();
 
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
@@ -47,63 +82,6 @@ namespace Ocelot.Middleware
             builder.UseHttpRequestBuilderMiddleware();
 
             //We fire off the request and set the response on the context in this middleware
-            builder.UseHttpRequesterMiddleware();
-
-            return builder;
-        }
-
-        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
-        {
-            builder.UseIfNotNull(middlewareConfiguration.PreHttpResponderMiddleware);
-
-            builder.UseHttpErrorResponderMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostHttpResponderMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreDownstreamRouteFinderMiddleware);
-
-            builder.UseDownstreamRouteFinderMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostDownstreamRouteFinderMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreAuthenticationMiddleware);
-
-            builder.UseAuthenticationMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostAuthenticationMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreClaimsBuilderMiddleware);
-
-            builder.UseClaimsBuilderMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostClaimsBuilderMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreAuthorisationMiddleware);
-
-            builder.UseAuthorisationMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostAuthorisationMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreHttpRequestHeadersBuilderMiddleware);
-
-            builder.UseHttpRequestHeadersBuilderMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostHttpRequestHeadersBuilderMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreDownstreamUrlCreatorMiddleware);
-
-            builder.UseDownstreamUrlCreatorMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostDownstreamUrlCreatorMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreHttpRequestBuilderMiddleware);
-
-            builder.UseHttpRequestBuilderMiddleware();
-
-            builder.UseIfNotNull(middlewareConfiguration.PostHttpRequestBuilderMiddleware);
-
-            builder.UseIfNotNull(middlewareConfiguration.PreHttpRequesterMiddleware);
-
             builder.UseHttpRequesterMiddleware();
 
             return builder;

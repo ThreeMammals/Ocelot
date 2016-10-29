@@ -9,6 +9,7 @@ namespace Ocelot.Configuration.Yaml
             AddHeadersToRequest = new Dictionary<string, string>();
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
+            AddQueriesToRequest = new Dictionary<string, string>();
         }
 
         public string DownstreamTemplate { get; set; }
@@ -18,5 +19,6 @@ namespace Ocelot.Configuration.Yaml
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
+        public Dictionary<string, string> AddQueriesToRequest { get; set; } 
     }
 }
