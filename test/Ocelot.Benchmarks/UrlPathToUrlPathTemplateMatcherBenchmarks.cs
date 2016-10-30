@@ -14,9 +14,9 @@ namespace Ocelot.Benchmarks
 
         public UrlPathToUrlPathTemplateMatcherBenchmarks()
         {
-             Add(StatisticColumn.AllStatistics);
+            Add(StatisticColumn.AllStatistics);
         }
-        
+
         [Setup]
         public void SetUp()
         {

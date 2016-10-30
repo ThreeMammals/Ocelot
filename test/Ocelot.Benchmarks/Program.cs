@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 
 namespace Ocelot.Benchmarks
 {
@@ -10,7 +6,12 @@ namespace Ocelot.Benchmarks
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<UrlPathToUrlPathTemplateMatcherBenchmarks>();
+            var switcher = new BenchmarkSwitcher(new[] {
+                   typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
+
+               });
+
+            switcher.Run(args);
         }
     }
 }

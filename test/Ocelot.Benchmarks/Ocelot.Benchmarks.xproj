@@ -7,7 +7,7 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>ab3e458c-fd76-4dee-8dce-eeb5ba840af6</ProjectGuid>
+    <ProjectGuid>106b49e6-95f6-4a7b-b81c-96bfa74af035</ProjectGuid>
     <RootNamespace>Ocelot.Benchmarks</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
