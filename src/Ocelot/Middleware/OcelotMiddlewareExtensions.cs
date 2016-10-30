@@ -7,6 +7,7 @@ using Ocelot.Headers.Middleware;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
+using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
 
 namespace Ocelot.Middleware
@@ -48,6 +49,9 @@ namespace Ocelot.Middleware
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
+
+            // Now we can look for the requestId
+            builder.UseRequestIdMiddleware();
 
             // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
             builder.UseIfNotNull(middlewareConfiguration.PreAuthenticationMiddleware);

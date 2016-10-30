@@ -4,7 +4,7 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(string downstreamTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries)
+        public ReRoute(string downstreamTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, string requestIdKey)
         {
             DownstreamTemplate = downstreamTemplate;
             UpstreamTemplate = upstreamTemplate;
@@ -14,6 +14,7 @@ namespace Ocelot.Configuration
             AuthenticationOptions = authenticationOptions;
             RouteClaimsRequirement = routeClaimsRequirement;
             IsAuthorised = isAuthorised;
+            RequestIdKey = requestIdKey;
             ClaimsToQueries = claimsToQueries
                 ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims 
@@ -33,6 +34,6 @@ namespace Ocelot.Configuration
         public List<ClaimToThing> ClaimsToHeaders { get; private set; }
         public List<ClaimToThing> ClaimsToClaims { get; private set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
-
+        public string RequestIdKey { get; private set; }
     }
 }

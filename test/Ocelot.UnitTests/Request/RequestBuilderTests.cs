@@ -24,6 +24,7 @@ namespace Ocelot.UnitTests.Request
         private string _contentType;
         private readonly IRequestBuilder _requestBuilder;
         private Response<Ocelot.Request.Request> _result;
+        private Ocelot.RequestId.RequestId _requestId;
 
         public RequestBuilderTests()
         {
@@ -115,6 +116,62 @@ namespace Ocelot.UnitTests.Request
         }
 
         [Fact]
+        public void should_use_request_id()
+        {
+            var requestId = Guid.NewGuid().ToString();
+
+            this.Given(x => x.GivenIHaveHttpMethod("GET"))
+                .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", requestId)))
+                .When(x => x.WhenICreateARequest())
+                .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
+                {
+                    {"RequestId", requestId }
+                }))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_use_request_if_if_already_in_headers()
+        {
+            this.Given(x => x.GivenIHaveHttpMethod("GET"))
+                .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary
+                {
+                    {"RequestId", "534534gv54gv45g" }
+                }))
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", Guid.NewGuid().ToString())))
+                .When(x => x.WhenICreateARequest())
+                .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
+                {
+                    {"RequestId", "534534gv54gv45g" }
+                }))
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData(null, "blahh")]
+        [InlineData("", "blahh")]
+        [InlineData("RequestId", "")]
+        [InlineData("RequestId", null)]
+        public void should_not_use_request_id(string requestIdKey, string requestIdValue)
+        {
+            this.Given(x => x.GivenIHaveHttpMethod("GET"))
+                .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId(requestIdKey, requestIdValue)))
+                .When(x => x.WhenICreateARequest())
+                .And(x => x.ThenTheRequestIdIsNotInTheHeaders())
+                .BDDfy();
+        }
+
+        private void GivenTheRequestIdIs(Ocelot.RequestId.RequestId requestId)
+        {
+            _requestId = requestId;
+        }
+
+        [Fact]
         public void should_use_cookies()
         {
             this.Given(x => x.GivenIHaveHttpMethod("GET"))
@@ -174,6 +231,11 @@ namespace Ocelot.UnitTests.Request
             _cookies = cookies;
         }
 
+        private void ThenTheRequestIdIsNotInTheHeaders()
+        {
+            _result.Data.HttpRequestMessage.Headers.ShouldNotContain(x => x.Key == "RequestId");
+        }
+
         private void ThenTheCorrectHeadersAreUsed(IHeaderDictionary expected)
         {
             var expectedHeaders = expected.Select(x => new KeyValuePair<string, string[]>(x.Key, x.Value));
@@ -219,7 +281,7 @@ namespace Ocelot.UnitTests.Request
         private void WhenICreateARequest()
         {
             _result = _requestBuilder.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
-                _cookies, _query, _contentType).Result;
+                _cookies, _query, _contentType, _requestId).Result;
         }
 
 

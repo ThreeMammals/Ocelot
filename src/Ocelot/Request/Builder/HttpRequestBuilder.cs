@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
@@ -10,8 +12,15 @@ namespace Ocelot.Request.Builder
 {
     public class HttpRequestBuilder : IRequestBuilder
     {
-        public async Task<Response<Request>> Build(string httpMethod, string downstreamUrl, Stream content, IHeaderDictionary headers,
-            IRequestCookieCollection cookies, Microsoft.AspNetCore.Http.QueryString queryString, string contentType)
+        public async Task<Response<Request>> Build(
+            string httpMethod, 
+            string downstreamUrl, 
+            Stream content, 
+            IHeaderDictionary headers,
+            IRequestCookieCollection cookies, 
+            QueryString queryString, 
+            string contentType, 
+            RequestId.RequestId requestId)
         {
             var method = new HttpMethod(httpMethod);
 
@@ -21,7 +30,7 @@ namespace Ocelot.Request.Builder
 
             if (content != null)
             {
-                httpRequestMessage.Content = new ByteArrayContent(ToByteArray(content));
+                httpRequestMessage.Content = new ByteArrayContent(await ToByteArray(content));
             }
 
             if (!string.IsNullOrEmpty(contentType))
@@ -45,6 +54,11 @@ namespace Ocelot.Request.Builder
                 }
             }
 
+            if (RequestKeyIsNotNull(requestId) && !RequestIdInHeaders(requestId, httpRequestMessage.Headers))
+            {
+                ForwardRequestIdToDownstreamService(requestId, httpRequestMessage);
+            }
+
             var cookieContainer = new CookieContainer();
 
             //todo get rid of if
@@ -59,13 +73,34 @@ namespace Ocelot.Request.Builder
             return new OkResponse<Request>(new Request(httpRequestMessage, cookieContainer));
         }
 
-        private byte[] ToByteArray(Stream stream)
+        private void ForwardRequestIdToDownstreamService(RequestId.RequestId requestId, HttpRequestMessage httpRequestMessage)
+        {
+            httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
+        }
+
+        private bool RequestIdInHeaders(RequestId.RequestId requestId, HttpRequestHeaders headers)
+        {
+            IEnumerable<string> value;
+            if (headers.TryGetValues(requestId.RequestIdKey, out value))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool RequestKeyIsNotNull(RequestId.RequestId requestId)
+        {
+            return !string.IsNullOrEmpty(requestId?.RequestIdKey) && !string.IsNullOrEmpty(requestId.RequestIdValue);
+        }
+
+        private async Task<byte[]> ToByteArray(Stream stream)
         {
             using (stream)
             {
-                using (MemoryStream memStream = new MemoryStream())
+                using (var memStream = new MemoryStream())
                 {
-                    stream.CopyTo(memStream);
+                    await stream.CopyToAsync(memStream);
                     return memStream.ToArray();
                 }
             }

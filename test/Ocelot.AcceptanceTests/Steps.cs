@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -26,6 +27,7 @@ namespace Ocelot.AcceptanceTests
         private HttpContent _postContent;
         private BearerToken _token;
         public HttpClient OcelotClient => _ocelotClient;
+        public string RequestIdKey = "OcRequestId";
 
         public void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
         {
@@ -146,6 +148,13 @@ namespace Ocelot.AcceptanceTests
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
+        {
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
+
+            _response = _ocelotClient.GetAsync(url).Result;
+        }
+
         public void WhenIPostUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.PostAsync(url, _postContent).Result;
@@ -170,6 +179,16 @@ namespace Ocelot.AcceptanceTests
         {
             _ocelotClient?.Dispose();
             _ocelotServer?.Dispose();
+        }
+
+        public void ThenTheRequestIdIsReturned()
+        {
+            _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
+        }
+
+        public void ThenTheRequestIdIsReturned(string expected)
+        {
+            _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
         }
     }
 }

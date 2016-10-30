@@ -10,7 +10,8 @@ namespace Ocelot.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
 
-        public ExceptionHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
+        public ExceptionHandlerMiddleware(RequestDelegate next, 
+            ILoggerFactory loggerFactory)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
@@ -24,20 +25,25 @@ namespace Ocelot.Middleware
             }
             catch (Exception e)
             {
-                var message =
-                    $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";
-
-                if (e.InnerException != null)
-                {
-                    message = $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
-                }
-
+                var message = CreateMessage(context, e);
                 _logger.LogError(new EventId(1, "Ocelot Global Error"), message, e);
-
                 context.Response.StatusCode = 500;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsync("Internal Server Error");
             }
+        }
+
+        private static string CreateMessage(HttpContext context, Exception e)
+        {
+            var message =
+                $"RequestId: {context.TraceIdentifier}, Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";
+
+            if (e.InnerException != null)
+            {
+                message =
+                    $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
+            }
+            return message;
         }
     }
 }

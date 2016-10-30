@@ -22,17 +22,18 @@ namespace Ocelot.Request.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var request = await _requestBuilder
-              .Build(context.Request.Method, DownstreamUrl, context.Request.Body,
-              context.Request.Headers, context.Request.Cookies, context.Request.QueryString, context.Request.ContentType);
+            var buildResult = await _requestBuilder
+                .Build(context.Request.Method, DownstreamUrl, context.Request.Body,
+                    context.Request.Headers, context.Request.Cookies, context.Request.QueryString,
+                    context.Request.ContentType, new RequestId.RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier));
 
-            if (request.IsError)
+            if (buildResult.IsError)
             {
-                SetPipelineError(request.Errors);
+                SetPipelineError(buildResult.Errors);
                 return;
             }
 
-            SetUpstreamRequestForThisRequest(request.Data);
+            SetUpstreamRequestForThisRequest(buildResult.Data);
 
             await _next.Invoke(context);
         }

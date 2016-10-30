@@ -113,12 +113,17 @@ namespace Ocelot.Configuration.Creator
 
                 return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate,
                     reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
-                    authOptionsForRoute, claimsToHeaders, claimsToClaims, reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries
+                    authOptionsForRoute, claimsToHeaders, claimsToClaims, 
+                    reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
+                    reRoute.RequestIdKey
                     );
             }
 
-            return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, reRoute.UpstreamHttpMethod,
-                upstreamTemplate, isAuthenticated, null, new List<ClaimToThing>(), new List<ClaimToThing>(), reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>());
+            return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, 
+                reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
+                null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
+                reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
+                    reRoute.RequestIdKey);
         }
 
         private List<ClaimToThing> GetAddThingsToRequest(Dictionary<string,string> thingBeingAdded)

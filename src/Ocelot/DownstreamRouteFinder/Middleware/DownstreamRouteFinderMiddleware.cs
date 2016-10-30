@@ -10,7 +10,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public DownstreamRouteFinderMiddleware(RequestDelegate next, 
             IDownstreamRouteFinder downstreamRouteFinder, 
@@ -19,7 +18,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
-            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext context)

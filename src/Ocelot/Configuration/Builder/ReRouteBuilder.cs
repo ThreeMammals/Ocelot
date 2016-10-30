@@ -20,6 +20,7 @@ namespace Ocelot.Configuration.Builder
         private Dictionary<string, string> _routeClaimRequirement;
         private bool _isAuthorised;
         private List<ClaimToThing> _claimToQueries;
+        private string _requestIdHeaderKey;
 
         public ReRouteBuilder()
         {
@@ -96,6 +97,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithRequestIdKey(string input)
+        {
+            _requestIdHeaderKey = input;
+            return this;
+        }
+
         public ReRouteBuilder WithClaimsToHeaders(List<ClaimToThing> input)
         {
             _configHeaderExtractorProperties = input;
@@ -122,7 +129,7 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, _isAuthorised, _claimToQueries);
+            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, _isAuthorised, _claimToQueries, _requestIdHeaderKey);
         }
     }
 }

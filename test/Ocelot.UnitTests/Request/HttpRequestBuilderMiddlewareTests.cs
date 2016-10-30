@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Request.Builder;
 using Ocelot.Request.Middleware;
@@ -26,6 +30,7 @@ namespace Ocelot.UnitTests.Request
         private HttpResponseMessage _result;
         private OkResponse<Ocelot.Request.Request> _request;
         private OkResponse<string> _downstreamUrl;
+        private OkResponse<DownstreamRoute> _downstreamRoute;
 
         public HttpRequestBuilderMiddlewareTests()
         {
@@ -56,11 +61,26 @@ namespace Ocelot.UnitTests.Request
         [Fact]
         public void happy_path()
         {
+
+            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithRequestIdKey("LSRequestId").Build());
+
+
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+                .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), new CookieContainer())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        {
+            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
+            _scopedRepository
+                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
+                .Returns(_downstreamRoute);
         }
 
         private void GivenTheRequestBuilderReturns(Ocelot.Request.Request request)
@@ -68,7 +88,7 @@ namespace Ocelot.UnitTests.Request
             _request = new OkResponse<Ocelot.Request.Request>(request);
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(),
-                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>()))
+                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>()))
                 .ReturnsAsync(_request);
         }
 

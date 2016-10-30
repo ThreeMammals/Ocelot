@@ -1,6 +1,10 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Ocelot.Headers;
 using Ocelot.Responses;
 
 namespace Ocelot.Responder
@@ -11,15 +15,42 @@ namespace Ocelot.Responder
     /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
+        private readonly IRemoveHeaders _removeHeaders;
+
+        public HttpContextResponder(IRemoveHeaders removeHeaders)
+        {
+            _removeHeaders = removeHeaders;
+        }
+
         public async Task<Response> SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
         {
-            context.Response.OnStarting(x =>
+            _removeHeaders.Remove(response.Headers);
+
+            foreach (var httpResponseHeader in response.Headers)
             {
-                context.Response.StatusCode = (int)response.StatusCode;
+                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
+            }
+
+            var content = await response.Content.ReadAsStreamAsync();
+
+            context.Response.Headers.Add("Content-Length", new[] { content.Length.ToString() });
+
+            context.Response.OnStarting(state =>
+            {
+                var httpContext = (HttpContext)state;
+
+                httpContext.Response.StatusCode = (int)response.StatusCode;
+
                 return Task.CompletedTask;
+
             }, context);
 
-            await context.Response.WriteAsync(await response.Content.ReadAsStringAsync());
+            using (var reader = new StreamReader(content))
+            {
+                var responseContent = reader.ReadToEnd();
+                await context.Response.WriteAsync(responseContent);
+            }
+
             return new OkResponse();       
         }
 

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using Ocelot.Responder;
@@ -25,7 +27,6 @@ namespace Ocelot.Requester.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-
             var response = await _requester.GetResponse(Request);
 
             if (response.IsError)

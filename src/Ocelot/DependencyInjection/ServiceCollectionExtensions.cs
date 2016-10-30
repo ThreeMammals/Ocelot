@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Handler.Creator;
@@ -16,6 +15,7 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Headers;
+using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
@@ -24,8 +24,6 @@ using Ocelot.Responder;
 
 namespace Ocelot.DependencyInjection
 {
-    using Infrastructure.Claims.Parser;
-
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddOcelotYamlConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
@@ -48,6 +46,7 @@ namespace Ocelot.DependencyInjection
             services.AddLogging();
 
             // ocelot services.
+            services.AddSingleton<IRemoveHeaders, RemoveHeaders>();
             services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();

@@ -19,6 +19,7 @@ namespace Ocelot.Configuration.Yaml
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
-        public Dictionary<string, string> AddQueriesToRequest { get; set; } 
+        public Dictionary<string, string> AddQueriesToRequest { get; set; }
+        public string RequestIdKey { get; set; }
     }
 }

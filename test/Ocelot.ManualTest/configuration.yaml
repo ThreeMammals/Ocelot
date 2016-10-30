@@ -50,6 +50,10 @@ ReRoutes:
 # the value must be registered
   RouteClaimsRequirement:
     UserType: registered
+# This tells Ocelot to look for a header and use its value as a request/correlation id. 
+# If it is set here then the id will be forwarded to the downstream service. If it
+# does not then it will not be forwarded
+  RequestIdKey: OcRequestId
 # The next re route...
 - DownstreamTemplate: http://jsonplaceholder.typicode.com/posts
   UpstreamTemplate: /posts

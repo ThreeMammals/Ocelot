@@ -12,7 +12,8 @@ namespace Ocelot.Request.Builder
             Stream content,
             IHeaderDictionary headers,
             IRequestCookieCollection cookies,
-            Microsoft.AspNetCore.Http.QueryString queryString,
-            string contentType);
+            QueryString queryString,
+            string contentType, 
+            RequestId.RequestId requestId);
     }
 }
