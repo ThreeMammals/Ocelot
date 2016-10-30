@@ -73,7 +73,7 @@ namespace Ocelot.Request.Builder
 
         public async Task<Request> Build()
         {
-            var uri = new Uri(string.Format("{0}{1}", _downstreamUrl, _queryString.ToUriComponent()));
+            var uri = CreateUri();
 
             var httpRequestMessage = new HttpRequestMessage(_method, uri);
 
@@ -83,7 +83,7 @@ namespace Ocelot.Request.Builder
 
             AddHeadersToRequest(httpRequestMessage);
 
-            if (RequestIdKeyIsNotNull(_requestId) && !RequestIdInHeaders(_requestId, httpRequestMessage.Headers))
+            if (ShouldAddRequestId(_requestId, httpRequestMessage.Headers))
             {
                 AddRequestIdHeader(_requestId, httpRequestMessage);
             }
@@ -91,6 +91,12 @@ namespace Ocelot.Request.Builder
             var cookieContainer = CreateCookieContainer(uri);
 
             return new Request(httpRequestMessage, cookieContainer);
+        }
+
+        private Uri CreateUri()
+        {
+            var uri = new Uri(string.Format("{0}{1}", _downstreamUrl, _queryString.ToUriComponent()));
+            return uri;
         }
 
         private async Task AddContentToRequest(HttpRequestMessage httpRequestMessage)
@@ -155,17 +161,14 @@ namespace Ocelot.Request.Builder
         private bool RequestIdInHeaders(RequestId.RequestId requestId, HttpRequestHeaders headers)
         {
             IEnumerable<string> value;
-            if (headers.TryGetValues(requestId.RequestIdKey, out value))
-            {
-                return true;
-            }
-
-            return false;
+            return headers.TryGetValues(requestId.RequestIdKey, out value);
         }
 
-        private bool RequestIdKeyIsNotNull(RequestId.RequestId requestId)
+        private bool ShouldAddRequestId(RequestId.RequestId requestId, HttpRequestHeaders headers)
         {
-            return !string.IsNullOrEmpty(requestId?.RequestIdKey) && !string.IsNullOrEmpty(requestId.RequestIdValue);
+            return !string.IsNullOrEmpty(requestId?.RequestIdKey)
+                   && !string.IsNullOrEmpty(requestId.RequestIdValue)
+                   && !RequestIdInHeaders(requestId, headers);
         }
 
         private async Task<byte[]> ToByteArray(Stream stream)
