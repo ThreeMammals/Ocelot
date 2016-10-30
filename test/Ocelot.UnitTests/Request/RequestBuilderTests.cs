@@ -22,14 +22,14 @@ namespace Ocelot.UnitTests.Request
         private IRequestCookieCollection _cookies;
         private QueryString _query;
         private string _contentType;
-        private readonly IRequestBuilder _requestBuilder;
+        private readonly IRequestCreator _requestCreator;
         private Response<Ocelot.Request.Request> _result;
         private Ocelot.RequestId.RequestId _requestId;
 
         public RequestBuilderTests()
         {
             _content = new StringContent(string.Empty);
-            _requestBuilder = new HttpRequestBuilder();
+            _requestCreator = new HttpRequestCreator();
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace Ocelot.UnitTests.Request
 
         private void WhenICreateARequest()
         {
-            _result = _requestBuilder.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
+            _result = _requestCreator.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
                 _cookies, _query, _contentType, _requestId).Result;
         }
 

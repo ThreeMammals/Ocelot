@@ -15,16 +15,16 @@ namespace Ocelot.Responder
     /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
-        private readonly IRemoveHeaders _removeHeaders;
+        private readonly IRemoveOutputHeaders _removeOutputHeaders;
 
-        public HttpContextResponder(IRemoveHeaders removeHeaders)
+        public HttpContextResponder(IRemoveOutputHeaders removeOutputHeaders)
         {
-            _removeHeaders = removeHeaders;
+            _removeOutputHeaders = removeOutputHeaders;
         }
 
         public async Task<Response> SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
         {
-            _removeHeaders.Remove(response.Headers);
+            _removeOutputHeaders.Remove(response.Headers);
 
             foreach (var httpResponseHeader in response.Headers)
             {

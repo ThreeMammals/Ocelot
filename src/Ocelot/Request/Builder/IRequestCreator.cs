@@ -5,7 +5,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.Request.Builder
 {
-    public interface IRequestBuilder
+    public interface IRequestCreator
     {
         Task<Response<Request>> Build(string httpMethod,
             string downstreamUrl,

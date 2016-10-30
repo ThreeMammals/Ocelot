@@ -10,12 +10,12 @@ namespace Ocelot.UnitTests.Headers
     public class RemoveHeaders
     {
         private HttpResponseHeaders _headers;
-        private readonly Ocelot.Headers.RemoveHeaders _removeHeaders;
+        private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
         private Response _result;
 
         public RemoveHeaders()
         {
-            _removeHeaders = new Ocelot.Headers.RemoveHeaders();
+            _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenIRemoveTheHeaders()
         {
-            _result = _removeHeaders.Remove(_headers);
+            _result = _removeOutputHeaders.Remove(_headers);
         }
 
         private void TheHeaderIsNoLongerInTheContext()

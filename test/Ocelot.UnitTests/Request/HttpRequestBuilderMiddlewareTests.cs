@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Request
 {
     public class HttpRequestBuilderMiddlewareTests : IDisposable
     {
-        private readonly Mock<IRequestBuilder> _requestBuilder;
+        private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly string _url;
         private readonly TestServer _server;
@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Request
         public HttpRequestBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _requestBuilder = new Mock<IRequestBuilder>();
+            _requestBuilder = new Mock<IRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             var builder = new WebHostBuilder()

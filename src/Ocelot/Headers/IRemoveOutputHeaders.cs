@@ -3,7 +3,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
-    public interface IRemoveHeaders
+    public interface IRemoveOutputHeaders
     {
         Response Remove(HttpResponseHeaders headers);
     }

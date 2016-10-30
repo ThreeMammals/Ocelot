@@ -46,7 +46,7 @@ namespace Ocelot.DependencyInjection
             services.AddLogging();
 
             // ocelot services.
-            services.AddSingleton<IRemoveHeaders, RemoveHeaders>();
+            services.AddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             services.AddSingleton<IAuthoriser, ClaimsAuthoriser>();
@@ -60,7 +60,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.AddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.AddSingleton<IHttpResponder, HttpContextResponder>();
-            services.AddSingleton<IRequestBuilder, HttpRequestBuilder>();
+            services.AddSingleton<IRequestCreator, HttpRequestCreator>();
             services.AddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             services.AddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
             services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
