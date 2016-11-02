@@ -31,72 +31,8 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 ## Configuration
 
-An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.json). More detailed instructions to come on how to configure this.
-
-"ReRoutes": [
-	{
-		# The url we are forwarding the request to
-		"UpstreamTemplate": "/identityserverexample",
-		# The path we are listening on for this re route
-		"UpstreamTemplate": "/identityserverexample",
-		# The method we are listening for on this re route
-		"UpstreamHttpMethod": "Get",
-		# Only support identity server at the moment
-		"AuthenticationOptions": {
-			"Provider": "IdentityServer",
-			"ProviderRootUrl": "http://localhost:52888",
-			"ScopeName": "api",
-			"AdditionalScopes": [
-				"openid",
-				"offline_access"
-			],
-		# Required if using reference tokens
-			"ScopeSecret": "secret"
-		},
-		# WARNING - will overwrite any headers already in the request with these values.
-		# Ocelot will look in the user claims for the key in [] then return the value and save
-		# it as a header with the given key before the colon (:). The index selection on value 
-		# means that Ocelot will use the delimiter specified after the next > to split the 
-		# claim value and return the index specified.
-		"AddHeadersToRequest": {
-			"CustomerId": "Claims[CustomerId] > value",
-			"LocationId": "Claims[LocationId] > value",
-			"UserType": "Claims[sub] > value[0] > |",
-			"UserId": "Claims[sub] > value[1] > |"
-		},
-		# WARNING - will overwrite any claims already in the request with these values.
-		# Ocelot will look in the user claims for the key in [] then return the value and save
-		# it as a claim with the given key before the colon (:). The index selection on value 
-		# means that Ocelot will use the delimiter specified after the next > to split the 
-		# claim value and return the index specified.
-		"AddClaimsToRequest": {
-			"CustomerId": "Claims[CustomerId] > value",
-			"LocationId": "Claims[LocationId] > value",
-			"UserType": "Claims[sub] > value[0] > |",
-			"UserId": "Claims[sub] > value[1] > |"
-		},
-		# WARNING - will overwrite any query string entries already in the request with these values.
-		# Ocelot will look in the user claims for the key in [] then return the value and save
-		# it as a query string with the given key before the colon (:). The index selection on value 
-		# means that Ocelot will use the delimiter specified after the next > to split the 
-		# claim value and return the index specified.
-		"AddQueriesToRequest": {
-			"CustomerId": "Claims[CustomerId] > value",
-			"LocationId": "Claims[LocationId] > value",
-			"UserType": "Claims[sub] > value[0] > |",
-			"UserId": "Claims[sub] > value[1] > |"
-		},
-		# This specifies any claims that are required for the user to access this re route.
-		# In this example the user must have the claim type UserType and 
-		# the value must be registered
-		"RouteClaimsRequirement": {
-			"UserType": "registered"
-		},
-		# This tells Ocelot to look for a header and use its value as a request/correlation id. 
-		# If it is set here then the id will be forwarded to the downstream service. If it
-		# does not then it will not be forwarded
-		"RequestIdKey": "OcRequestId"
-	}
+An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.json) 
+and an explained configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/configuration-explanation.txt). More detailed instructions to come on how to configure this.
 
 ## Startup
 

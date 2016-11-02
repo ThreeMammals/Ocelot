@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		build-and-run-tests.bat = build-and-run-tests.bat
 		build.bat = build.bat
+		configuration-explanation.txt = configuration-explanation.txt
 		global.json = global.json
 		LICENSE.md = LICENSE.md
 		Ocelot.nuspec = Ocelot.nuspec
