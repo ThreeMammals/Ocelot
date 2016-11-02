@@ -25,8 +25,6 @@
         <dependency id="Microsoft.Extensions.Options.ConfigurationExtensions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http" version="1.0.0" />
         <dependency id="System.Text.RegularExpressions" version="4.1.0" />
-        <dependency id="YamlDotNet" version="3.9.0" />
-        <dependency id="NetEscapades.Configuration.Yaml" version="1.2.0" />
         <dependency id="Microsoft.AspNetCore.Authentication.OAuth" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Authentication.JwtBearer" version="1.0.0" /> 
         <dependency id="Microsoft.AspNetCore.Authentication.OpenIdConnect" version="1.0.0" />

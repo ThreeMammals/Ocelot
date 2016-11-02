@@ -10,12 +10,11 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.ManualTest;
 using Ocelot.Middleware;
 using Shouldly;
-using YamlDotNet.Serialization;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -29,40 +28,34 @@ namespace Ocelot.AcceptanceTests
         public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
 
-        public void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration)
+        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = TestConfiguration.ConfigurationPath;
 
-            var serializer = new Serializer();
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
             if (File.Exists(configurationPath))
             {
                 File.Delete(configurationPath);
             }
 
-            using (TextWriter writer = File.CreateText(configurationPath))
-            {
-                serializer.Serialize(writer, yamlConfiguration);
-            }
+            File.WriteAllText(configurationPath, jsonConfiguration);
         }
 
-        public void GivenThereIsAConfiguration(YamlConfiguration yamlConfiguration, string configurationPath)
+        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration, string configurationPath)
         {
-            var serializer = new Serializer();
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
             if (File.Exists(configurationPath))
             {
                 File.Delete(configurationPath);
             }
 
-            using (TextWriter writer = File.CreateText(configurationPath))
-            {
-                serializer.Serialize(writer, yamlConfiguration);
-            }
+            File.WriteAllText(configurationPath, jsonConfiguration);
         }
 
         /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
         public void GivenOcelotIsRunning()
         {
@@ -73,14 +66,14 @@ namespace Ocelot.AcceptanceTests
         }
 
         /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the yaml file before calling startup so its a step.
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
         public void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddYamlFile("configuration.yaml")
+                .AddJsonFile("configuration.json")
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
@@ -89,7 +82,7 @@ namespace Ocelot.AcceptanceTests
                 .UseConfiguration(configuration)
                 .ConfigureServices(s =>
                 {
-                    s.AddOcelotYamlConfiguration(configuration);
+                    s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();
                 })
                 .ConfigureLogging(l =>

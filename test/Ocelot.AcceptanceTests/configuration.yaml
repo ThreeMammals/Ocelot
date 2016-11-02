@@ -1,8 +1,0 @@
-ReRoutes:
-- DownstreamTemplate: http://localhost:41879/
-  UpstreamTemplate: /
-  UpstreamHttpMethod: Get
-  AddHeadersToRequest: {}
-  AddClaimsToRequest: {}
-  RouteClaimsRequirement: {}
-  AddQueriesToRequest: {}

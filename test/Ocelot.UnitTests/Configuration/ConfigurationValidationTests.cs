@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.Configuration.Yaml;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -10,23 +10,23 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ConfigurationValidationTests
     {
-        private YamlConfiguration _yamlConfiguration;
+        private FileConfiguration _fileConfiguration;
         private readonly IConfigurationValidator _configurationValidator;
         private Response<ConfigurationValidationResult> _result;
 
         public ConfigurationValidationTests()
         {
-            _configurationValidator = new YamlConfigurationValidator();
+            _configurationValidator = new FileConfigurationValidator();
         }
 
         [Fact]
         public void configuration_is_valid_with_one_reroute()
         {
-            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
@@ -41,15 +41,15 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_valid_with_valid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com",
-                        AuthenticationOptions = new YamlAuthenticationOptions
+                        AuthenticationOptions = new FileAuthenticationOptions
                         {
                             Provider = "IdentityServer"
                         }
@@ -64,15 +64,15 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_invalid_with_invalid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com",
-                        AuthenticationOptions = new YamlAuthenticationOptions
+                        AuthenticationOptions = new FileAuthenticationOptions
                         {
                             Provider = "BootyBootyBottyRockinEverywhere"
                         }
@@ -88,16 +88,16 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes()
         {
-            this.Given(x => x.GivenAConfiguration(new YamlConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
                     },
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         DownstreamTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
@@ -110,14 +110,14 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenAConfiguration(YamlConfiguration yamlConfiguration)
+        private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
-            _yamlConfiguration = yamlConfiguration;
+            _fileConfiguration = fileConfiguration;
         }
 
         private void WhenIValidateTheConfiguration()
         {
-            _result = _configurationValidator.IsValid(_yamlConfiguration);
+            _result = _configurationValidator.IsValid(_fileConfiguration);
         }
 
         private void ThenTheResultIsValid()

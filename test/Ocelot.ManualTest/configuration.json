@@ -1,0 +1,81 @@
+﻿{
+    "ReRoutes": [
+        {
+            "DownstreamTemplate": "http://localhost:52876/",
+            "UpstreamTemplate": "/identityserverexample",
+            "UpstreamHttpMethod": "Get",
+            "AuthenticationOptions": {
+                "Provider": "IdentityServer",
+                "ProviderRootUrl": "http://localhost:52888",
+                "ScopeName": "api",
+                "AdditionalScopes": [
+                    "openid",
+                    "offline_access"
+                ],
+                "ScopeSecret": "secret"
+            },
+            "AddHeadersToRequest": {
+                "CustomerId": "Claims[CustomerId] > value",
+                "LocationId": "Claims[LocationId] > value",
+                "UserType": "Claims[sub] > value[0] > |",
+                "UserId": "Claims[sub] > value[1] > |"
+            },
+            "AddClaimsToRequest": {
+                "CustomerId": "Claims[CustomerId] > value",
+                "LocationId": "Claims[LocationId] > value",
+                "UserType": "Claims[sub] > value[0] > |",
+                "UserId": "Claims[sub] > value[1] > |"
+            },
+            "AddQueriesToRequest": {
+                "CustomerId": "Claims[CustomerId] > value",
+                "LocationId": "Claims[LocationId] > value",
+                "UserType": "Claims[sub] > value[0] > |",
+                "UserId": "Claims[sub] > value[1] > |"
+            },
+            "RouteClaimsRequirement": {
+                "UserType": "registered"
+            },
+            "RequestIdKey": "OcRequestId"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts",
+            "UpstreamTemplate": "/posts",
+            "UpstreamHttpMethod": "Get"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
+            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamHttpMethod": "Get"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}/comments",
+            "UpstreamTemplate": "/posts/{postId}/comments",
+            "UpstreamHttpMethod": "Get"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/comments",
+            "UpstreamTemplate": "/comments",
+            "UpstreamHttpMethod": "Get"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts",
+            "UpstreamTemplate": "/posts",
+            "UpstreamHttpMethod": "Post"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
+            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamHttpMethod": "Put"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
+            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamHttpMethod": "Patch"
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
+            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamHttpMethod": "Delete"
+        }
+    ]
+}

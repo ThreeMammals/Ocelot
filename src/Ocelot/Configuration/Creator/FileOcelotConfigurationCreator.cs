@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
-using Ocelot.Configuration.Yaml;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Creator
@@ -13,20 +13,20 @@ namespace Ocelot.Configuration.Creator
     /// <summary>
     /// Register as singleton
     /// </summary>
-    public class YamlOcelotConfigurationCreator : IOcelotConfigurationCreator
+    public class FileOcelotConfigurationCreator : IOcelotConfigurationCreator
     {
-        private readonly IOptions<YamlConfiguration> _options;
+        private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
         private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
-        private readonly ILogger<YamlOcelotConfigurationCreator> _logger;
+        private readonly ILogger<FileOcelotConfigurationCreator> _logger;
 
-        public YamlOcelotConfigurationCreator(
-            IOptions<YamlConfiguration> options, 
+        public FileOcelotConfigurationCreator(
+            IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator, 
             IClaimToThingConfigurationParser claimToThingConfigurationParser, 
-            ILogger<YamlOcelotConfigurationCreator> logger)
+            ILogger<FileOcelotConfigurationCreator> logger)
         {
             _options = options;
             _configurationValidator = configurationValidator;
@@ -42,7 +42,7 @@ namespace Ocelot.Configuration.Creator
         }
 
         /// <summary>
-        /// This method is meant to be tempoary to convert a yaml config to an ocelot config...probably wont keep this but we will see
+        /// This method is meant to be tempoary to convert a config to an ocelot config...probably wont keep this but we will see
         /// will need a refactor at some point as its crap
         /// </summary>
         private IOcelotConfiguration SetUpConfiguration()
@@ -63,16 +63,16 @@ namespace Ocelot.Configuration.Creator
 
             var reRoutes = new List<ReRoute>();
 
-            foreach (var yamlReRoute in _options.Value.ReRoutes)
+            foreach (var reRoute in _options.Value.ReRoutes)
             {
-                var ocelotReRoute = SetUpReRoute(yamlReRoute);
+                var ocelotReRoute = SetUpReRoute(reRoute);
                 reRoutes.Add(ocelotReRoute);
             }
             
             return new OcelotConfiguration(reRoutes);
         }
 
-        private ReRoute SetUpReRoute(YamlReRoute reRoute)
+        private ReRoute SetUpReRoute(FileReRoute reRoute)
         {
             var upstreamTemplate = reRoute.UpstreamTemplate;
 

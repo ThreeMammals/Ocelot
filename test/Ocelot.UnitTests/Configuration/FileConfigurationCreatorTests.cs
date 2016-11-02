@@ -5,9 +5,9 @@ using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
-using Ocelot.Configuration.Yaml;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -15,34 +15,34 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class YamlConfigurationCreatorTests
+    public class FileConfigurationCreatorTests
     {
-        private readonly Mock<IOptions<YamlConfiguration>> _yamlConfig;
+        private readonly Mock<IOptions<FileConfiguration>> _fileConfig;
         private readonly Mock<IConfigurationValidator> _validator;
         private Response<IOcelotConfiguration> _config;
-        private YamlConfiguration _yamlConfiguration;
+        private FileConfiguration _fileConfiguration;
         private readonly Mock<IClaimToThingConfigurationParser> _configParser;
-        private readonly Mock<ILogger<YamlOcelotConfigurationCreator>> _logger;
-        private readonly YamlOcelotConfigurationCreator _ocelotConfigurationCreator;
+        private readonly Mock<ILogger<FileOcelotConfigurationCreator>> _logger;
+        private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
 
-        public YamlConfigurationCreatorTests()
+        public FileConfigurationCreatorTests()
         {
-            _logger = new Mock<ILogger<YamlOcelotConfigurationCreator>>();
+            _logger = new Mock<ILogger<FileOcelotConfigurationCreator>>();
             _configParser = new Mock<IClaimToThingConfigurationParser>();
             _validator = new Mock<IConfigurationValidator>();
-            _yamlConfig = new Mock<IOptions<YamlConfiguration>>();
-            _ocelotConfigurationCreator = new YamlOcelotConfigurationCreator( 
-                _yamlConfig.Object, _validator.Object, _configParser.Object, _logger.Object);
+            _fileConfig = new Mock<IOptions<FileConfiguration>>();
+            _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
+                _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object);
         }
 
         [Fact]
         public void should_create_template_pattern_that_matches_anything_to_end_of_string()
         {
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/api/products/{productId}",
                         DownstreamTemplate = "/products/{productId}",
@@ -50,7 +50,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
@@ -86,16 +86,16 @@ namespace Ocelot.UnitTests.Configuration
                     .Build()
             };
 
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/api/products/{productId}",
                         DownstreamTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
-                        AuthenticationOptions = new YamlAuthenticationOptions
+                        AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
                                 Provider = "IdentityServer",
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheConfigHeaderExtractorReturns(new ClaimToThing("CustomerId", "CustomerId", "", 0)))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
@@ -144,16 +144,16 @@ namespace Ocelot.UnitTests.Configuration
                     .Build()
             };
 
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/api/products/{productId}",
                         DownstreamTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
-                        AuthenticationOptions = new YamlAuthenticationOptions
+                        AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
                                 Provider = "IdentityServer",
@@ -165,7 +165,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -175,11 +175,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_template_pattern_that_matches_more_than_one_placeholder()
         {
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/api/products/{productId}/variants/{variantId}",
                         DownstreamTemplate = "/products/{productId}",
@@ -187,7 +187,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
@@ -204,11 +204,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
         {
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/api/products/{productId}/variants/{variantId}/",
                         DownstreamTemplate = "/products/{productId}",
@@ -216,7 +216,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
@@ -233,11 +233,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_template_pattern_that_matches_to_end_of_string()
         {
-            this.Given(x => x.GivenTheYamlConfigIs(new YamlConfiguration
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new YamlReRoute
+                    new FileReRoute
                     {
                         UpstreamTemplate = "/",
                         DownstreamTemplate = "/api/products/",
@@ -245,7 +245,7 @@ namespace Ocelot.UnitTests.Configuration
                     }
                 }
             }))
-                .And(x => x.GivenTheYamlConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
@@ -259,19 +259,19 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheYamlConfigIsValid()
+        private void GivenTheConfigIsValid()
         {
             _validator
-                .Setup(x => x.IsValid(It.IsAny<YamlConfiguration>()))
+                .Setup(x => x.IsValid(It.IsAny<FileConfiguration>()))
                 .Returns(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false)));
         }
 
-        private void GivenTheYamlConfigIs(YamlConfiguration yamlConfiguration)
+        private void GivenTheConfigIs(FileConfiguration fileConfiguration)
         {
-            _yamlConfiguration = yamlConfiguration;
-            _yamlConfig
+            _fileConfiguration = fileConfiguration;
+            _fileConfig
                 .Setup(x => x.Value)
-                .Returns(_yamlConfiguration);
+                .Returns(_fileConfiguration);
         }
 
         private void WhenICreateTheConfig()

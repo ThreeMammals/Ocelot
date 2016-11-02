@@ -16,7 +16,7 @@ namespace Ocelot.ManualTest
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddYamlFile("configuration.yaml")
+                .AddJsonFile("configuration.json")
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
@@ -27,7 +27,7 @@ namespace Ocelot.ManualTest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOcelotYamlConfiguration(Configuration);
+            services.AddOcelotFileConfiguration(Configuration);
             services.AddOcelot();
         }
 

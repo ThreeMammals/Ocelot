@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using TestStack.BDDfy;
@@ -25,7 +25,7 @@ namespace Ocelot.AcceptanceTests
         public CustomMiddlewareTests()
         {
             _steps = new Steps();;
-            _configurationPath = "configuration.yaml";
+            _configurationPath = "configuration.json";
         }
 
         [Fact]
@@ -39,11 +39,11 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            var yamlConfiguration = new YamlConfiguration
+            var fileConfiguration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:41879/",
                             UpstreamTemplate = "/",
@@ -53,7 +53,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration, _configurationPath))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -72,11 +72,11 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            var yamlConfiguration = new YamlConfiguration
+            var fileConfiguration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:41879/",
                             UpstreamTemplate = "/",
@@ -86,7 +86,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration, _configurationPath))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))

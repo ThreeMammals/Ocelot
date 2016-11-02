@@ -1,9 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace Ocelot.Configuration.Yaml
+namespace Ocelot.Configuration.File
 {
-    public class YamlAuthenticationOptions
+    public class FileAuthenticationOptions
     {
+        public FileAuthenticationOptions()
+        {
+            AdditionalScopes = new List<string>();
+        }
+
         public string Provider { get; set; }
         public string ProviderRootUrl { get; set; }
         public string ScopeName { get; set; }

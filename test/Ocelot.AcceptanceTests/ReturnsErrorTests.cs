@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -23,21 +23,21 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_and_foward_claim_as_header()
         {
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:53876/",
                             UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = "Get"
                         }
                     }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:53876"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))

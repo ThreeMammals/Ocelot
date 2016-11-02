@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -44,16 +44,16 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:57876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            AuthenticationOptions = new YamlAuthenticationOptions
+                            AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes = new List<string>
                                 {
@@ -79,7 +79,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:57888", "api", AccessTokenType.Jwt, user))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
                 .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

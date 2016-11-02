@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -29,16 +29,16 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_authorising_route()
         {
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:51876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            AuthenticationOptions = new YamlAuthenticationOptions
+                            AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
                                 Provider = "IdentityServer",
@@ -71,7 +71,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                 .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -83,16 +83,16 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_authorising_route()
         {
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:51876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            AuthenticationOptions = new YamlAuthenticationOptions
+                            AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
                                 Provider = "IdentityServer",
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                 .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

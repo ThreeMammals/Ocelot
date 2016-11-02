@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -27,11 +27,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_default_request_id_and_forward()
         {
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
                             UpstreamTemplate = "/",
@@ -42,7 +42,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheRequestIdIsReturned())
@@ -52,11 +52,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_request_id_and_forward()
         {
-            var yamlConfiguration = new YamlConfiguration
+            var configuration = new FileConfiguration
             {
-                ReRoutes = new List<YamlReRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new YamlReRoute
+                        new FileReRoute
                         {
                             DownstreamTemplate = "http://localhost:51879/",
                             UpstreamTemplate = "/",
@@ -69,7 +69,7 @@ namespace Ocelot.AcceptanceTests
             var requestId = Guid.NewGuid().ToString();
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
-                .And(x => _steps.GivenThereIsAConfiguration(yamlConfiguration))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
                 .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))

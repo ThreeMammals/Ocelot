@@ -27,16 +27,12 @@
         "Microsoft.NETCore.App": {
             "version": "1.0.1",
             "type": "platform"
-        },
-        "NetEscapades.Configuration.Yaml": "1.2.0",
-        "YamlDotNet": "4.0.0"
+        }
     },
 
     "frameworks": {
         "netcoreapp1.4": {
             "imports": [
-                "dotnet5.6",
-                "portable-net45+win8"
             ]
         }
     }

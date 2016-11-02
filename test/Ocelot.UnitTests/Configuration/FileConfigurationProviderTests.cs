@@ -15,14 +15,14 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class YamlConfigurationProviderTests
+    public class FileConfigurationProviderTests
     {
         private readonly IOcelotConfigurationProvider _ocelotConfigurationProvider;
         private readonly Mock<IOcelotConfigurationRepository> _configurationRepository;
         private readonly Mock<IOcelotConfigurationCreator> _creator;
         private Response<IOcelotConfiguration> _result;
 
-        public YamlConfigurationProviderTests()
+        public FileConfigurationProviderTests()
         {
             _creator = new Mock<IOcelotConfigurationCreator>();
             _configurationRepository = new Mock<IOcelotConfigurationRepository>();

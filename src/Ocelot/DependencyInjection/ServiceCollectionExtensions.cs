@@ -6,11 +6,11 @@ using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Claims;
 using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Validator;
-using Ocelot.Configuration.Yaml;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
@@ -26,15 +26,14 @@ namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddOcelotYamlConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
+        public static IServiceCollection AddOcelotFileConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
-            // initial configuration from yaml
-            services.Configure<YamlConfiguration>(configurationRoot);
+            services.Configure<FileConfiguration>(configurationRoot);
 
             // ocelot services.
-            services.AddSingleton<IOcelotConfigurationCreator, YamlOcelotConfigurationCreator>();
+            services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
-            services.AddSingleton<IConfigurationValidator, YamlConfigurationValidator>();
+            services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
 
             return services;
         }

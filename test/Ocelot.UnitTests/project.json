@@ -14,7 +14,7 @@
         "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
         "Microsoft.AspNetCore.Http": "1.0.0",
         "Ocelot": "1.0.0-*",
-        "xunit": "2.1.0",
+        "xunit": "2.2.0-beta2-build3300",
         "dotnet-test-xunit": "2.2.0-preview2-build1029",
         "Moq": "4.6.38-alpha",
         "Microsoft.AspNetCore.TestHost": "1.0.0",
@@ -25,15 +25,12 @@
             "type": "platform"
         },
         "Shouldly": "2.8.2",
-        "TestStack.BDDfy": "4.3.2",
-        "YamlDotNet": "4.0.0"
+        "TestStack.BDDfy": "4.3.2"
     },
 
     "frameworks": {
         "netcoreapp1.4": {
             "imports": [
-                "dotnet5.6",
-                "portable-net45+win8"
             ]
         }
     }

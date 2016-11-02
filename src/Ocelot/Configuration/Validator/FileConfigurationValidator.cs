@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Authentication.Handler;
-using Ocelot.Configuration.Yaml;
+using Ocelot.Configuration.File;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Validator
 {
-    public class YamlConfigurationValidator : IConfigurationValidator
+    public class FileConfigurationValidator : IConfigurationValidator
     {
-        public Response<ConfigurationValidationResult> IsValid(YamlConfiguration configuration)
+        public Response<ConfigurationValidationResult> IsValid(FileConfiguration configuration)
         {
             var result = CheckForDupliateReRoutes(configuration);
 
@@ -29,25 +29,25 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
-        private ConfigurationValidationResult CheckForUnsupportedAuthenticationProviders(YamlConfiguration configuration)
+        private ConfigurationValidationResult CheckForUnsupportedAuthenticationProviders(FileConfiguration configuration)
         {
             var errors = new List<Error>();
 
-            foreach (var yamlReRoute in configuration.ReRoutes)
+            foreach (var reRoute in configuration.ReRoutes)
             {
-                var isAuthenticated = !string.IsNullOrEmpty(yamlReRoute.AuthenticationOptions?.Provider);
+                var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
 
                 if (!isAuthenticated)
                 {
                     continue;
                 }
 
-                if (IsSupportedAuthenticationProvider(yamlReRoute.AuthenticationOptions?.Provider))
+                if (IsSupportedAuthenticationProvider(reRoute.AuthenticationOptions?.Provider))
                 {
                     continue;
                 }
 
-                var error = new UnsupportedAuthenticationProviderError($"{yamlReRoute.AuthenticationOptions?.Provider} is unsupported authentication provider, upstream template is {yamlReRoute.UpstreamTemplate}, upstream method is {yamlReRoute.UpstreamHttpMethod}");
+                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationOptions?.Provider} is unsupported authentication provider, upstream template is {reRoute.UpstreamTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
                 errors.Add(error);
             }
 
@@ -63,7 +63,7 @@ namespace Ocelot.Configuration.Validator
             return Enum.TryParse(provider, true, out supportedProvider);
         }
 
-        private ConfigurationValidationResult CheckForDupliateReRoutes(YamlConfiguration configuration)
+        private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)
         {
             var hasDupes = configuration.ReRoutes
                    .GroupBy(x => new { x.UpstreamTemplate, x.UpstreamHttpMethod }).Any(x => x.Skip(1).Any());

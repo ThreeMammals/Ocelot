@@ -17,8 +17,7 @@
         "Microsoft.NETCore.App": {
             "version": "1.0.1",
             "type": "platform"
-        },
-        "NetEscapades.Configuration.Yaml": "1.2.0"
+        }
     },
 
     "tools": {
@@ -28,8 +27,6 @@
     "frameworks": {
         "netcoreapp1.4": {
             "imports": [
-                "dotnet5.6",
-                "portable-net45+win8"
             ]
         }
     },
@@ -39,8 +36,7 @@
         "preserveCompilationContext": true,
         "copyToOutput": {
             "include": [
-                "middlewareConfiguration.yaml",
-                "configuration.yaml"
+                "configuration.json"
             ]
         }
         },
@@ -58,8 +54,7 @@
                 "Areas/**/Views",
                 "appsettings.json",
                 "web.config",
-                "middlewareConfiguration.yaml",
-                "configuration.yaml"
+                "configuration.json"
             ]
         },
 
