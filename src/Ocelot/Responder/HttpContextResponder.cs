@@ -9,6 +9,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.Responder
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Cannot unit test things in this class due to methods not being implemented
     /// on .net concretes used for testing
@@ -28,12 +30,17 @@ namespace Ocelot.Responder
 
             foreach (var httpResponseHeader in response.Headers)
             {
-                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
+                AddHeaderIfDoesntExist(context, httpResponseHeader);
+            }
+
+            foreach (var httpResponseHeader in response.Content.Headers)
+            {
+                AddHeaderIfDoesntExist(context, httpResponseHeader);
             }
 
             var content = await response.Content.ReadAsStreamAsync();
 
-            context.Response.Headers.Add("Content-Length", new[] { content.Length.ToString() });
+            AddHeaderIfDoesntExist(context, new KeyValuePair<string, IEnumerable<string>>("Content-Length", new []{ content.Length.ToString() }) );
 
             context.Response.OnStarting(state =>
             {
@@ -52,6 +59,14 @@ namespace Ocelot.Responder
             }
 
             return new OkResponse();       
+        }
+
+        private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
+        {
+            if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
+            {
+                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
+            }
         }
 
         public async Task<Response> SetErrorResponseOnContext(HttpContext context, int statusCode)

@@ -3,6 +3,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
+    using System;
+
     public class RemoveOutputHeaders : IRemoveOutputHeaders
     {
         /// <summary>
@@ -10,14 +12,13 @@ namespace Ocelot.Headers
         /// in a given context such as transfer encoding chunked when ASP.NET is not
         /// returning the response in this manner
         /// </summary>
-        private readonly string[] _unsupportedHeaders = 
+        private readonly string[] _unsupportedRequestHeaders = 
         {
             "Transfer-Encoding"
         };
-
         public Response Remove(HttpResponseHeaders headers)
         {
-            foreach (var unsupported in _unsupportedHeaders)
+            foreach (var unsupported in _unsupportedRequestHeaders)
             {
                 headers.Remove(unsupported);
             }

@@ -21,7 +21,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {   
+        {
             var upstreamUrlPath = context.Request.Path.ToString();
 
             var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);

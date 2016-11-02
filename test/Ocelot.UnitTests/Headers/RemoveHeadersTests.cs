@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class RemoveHeaders
+    public class RemoveHeadersTests
     {
         private HttpResponseHeaders _headers;
         private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
         private Response _result;
 
-        public RemoveHeaders()
+        public RemoveHeadersTests()
         {
             _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
         }
