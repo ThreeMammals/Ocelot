@@ -34,5 +34,11 @@
         /// This allows the user to completely override the ocelot authorisation middleware
         /// </summary>
         public Func<HttpContext, Func<Task>, Task> AuthorisationMiddleware { get; set; }
+
+        /// <summary>
+        /// This allows the user to implement there own query string manipulation logic
+        /// </summary>
+        public Func<HttpContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
+        
     }
 }

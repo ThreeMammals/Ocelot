@@ -90,6 +90,9 @@ namespace Ocelot.Middleware
             // Now we can run any header transformation logic
             builder.UseHttpRequestHeadersBuilderMiddleware();
 
+            // Allow the user to implement their own query string manipulation logic
+            builder.UseIfNotNull(middlewareConfiguration.PreQueryStringBuilderMiddleware);
+
             // Now we can run any query string transformation logic
             builder.UseQueryStringBuilderMiddleware();
 
