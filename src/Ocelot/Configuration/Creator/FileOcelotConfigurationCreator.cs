@@ -100,6 +100,8 @@ namespace Ocelot.Configuration.Creator
 
             var isAuthorised = reRoute.RouteClaimsRequirement?.Count > 0;
 
+            var isCached = reRoute.FileCacheOptions.TtlSeconds > 0;
+
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
@@ -115,7 +117,7 @@ namespace Ocelot.Configuration.Creator
                     reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims, 
                     reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
-                    reRoute.RequestIdKey
+                    reRoute.RequestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds)
                     );
             }
 
@@ -123,7 +125,7 @@ namespace Ocelot.Configuration.Creator
                 reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
                 null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
                 reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
-                    reRoute.RequestIdKey);
+                    reRoute.RequestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
         }
 
         private List<ClaimToThing> GetAddThingsToRequest(Dictionary<string,string> thingBeingAdded)

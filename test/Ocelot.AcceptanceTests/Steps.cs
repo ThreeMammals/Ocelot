@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.ManualTest;
 using Ocelot.Middleware;
 using Shouldly;
+using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -82,6 +84,16 @@ namespace Ocelot.AcceptanceTests
                 .UseConfiguration(configuration)
                 .ConfigureServices(s =>
                 {
+                    Action<ConfigurationBuilderCachePart> settings = (x) =>
+                    {
+                        x.WithMicrosoftLogging(log =>
+                        {
+                            log.AddConsole(LogLevel.Debug);
+                        })
+                        .WithDictionaryHandle();
+                    };
+
+                    s.AddOcelotOutputCaching(settings);
                     s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();
                 })

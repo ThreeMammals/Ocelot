@@ -40,7 +40,8 @@
         {
             "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts",
             "UpstreamTemplate": "/posts",
-            "UpstreamHttpMethod": "Get"
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
         },
         {
             "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",

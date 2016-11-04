@@ -27,7 +27,10 @@
         "Microsoft.NETCore.App": {
             "version": "1.0.1",
             "type": "platform"
-        }
+        },
+        "CacheManager.Core": "0.9.1",
+        "CacheManager.Microsoft.Extensions.Configuration": "0.9.1",
+        "CacheManager.Microsoft.Extensions.Logging": "0.9.1"
     },
 
     "frameworks": {

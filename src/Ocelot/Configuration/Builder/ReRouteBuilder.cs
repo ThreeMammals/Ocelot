@@ -21,6 +21,8 @@ namespace Ocelot.Configuration.Builder
         private bool _isAuthorised;
         private List<ClaimToThing> _claimToQueries;
         private string _requestIdHeaderKey;
+        private bool _isCached;
+        private CacheOptions _fileCacheOptions;
 
         public ReRouteBuilder()
         {
@@ -127,9 +129,24 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithIsCached(bool input)
+        {
+            _isCached = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithCacheOptions(CacheOptions input)
+        {
+            _fileCacheOptions = input;
+            return this;
+        }
+
         public ReRoute Build()
         {
-            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, _isAuthorised, _claimToQueries, _requestIdHeaderKey);
+            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
+                _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
+                _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
+                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions);
         }
     }
 }

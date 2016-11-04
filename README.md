@@ -81,12 +81,21 @@ This is pretty much all you need to get going.......more to come!
 
 Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> as such you can use any logging provider you like such as default, nlog, serilog or whatever you want.
 
+## Caching 
+
+Ocelot supports some very rudimentary caching at the moment provider by the [CacheManager](http://cachemanager.net/) project. This is an amazing project
+that is solving a lot of caching problems. I would reccomend using this package to cache with Ocelot. If you look at the example [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/Startup.cs)
+you can see how the cache manager is setup and then passed into the Ocelot AddOcelotOutputCaching configuration method. You can 
+use any settings supported by the CacheManager package and just pass them in.
+
+Anyway Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache. More to come!
+
 ## Not supported
 
 Ocelot does not support...
-	- Chunked Encoding - Ocelot will always get the body size and return Content-Length header. Sorry
+	* Chunked Encoding - Ocelot will always get the body size and return Content-Length header. Sorry
 	if this doesn't work for your use case! 
-	- Fowarding a host header - The host header that you send to Ocelot will not be forwarded to
+	* Fowarding a host header - The host header that you send to Ocelot will not be forwarded to
 	the downstream service. Obviously this would break everything :(
 
 

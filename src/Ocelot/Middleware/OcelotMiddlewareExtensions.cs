@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
+using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
@@ -98,6 +99,10 @@ namespace Ocelot.Middleware
 
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
+
+            // Not sure if this is the best place for this but we use the downstream url 
+            // as the basis for our cache key.
+            builder.UseOutputCacheMiddleware();
 
             // Everything should now be ready to build or HttpRequest
             builder.UseHttpRequestBuilderMiddleware();

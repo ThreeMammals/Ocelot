@@ -60,5 +60,11 @@
 		# This tells Ocelot to look for a header and use its value as a request/correlation id. 
 		# If it is set here then the id will be forwarded to the downstream service. If it
 		# does not then it will not be forwarded
-		"RequestIdKey": "OcRequestId"
+		"RequestIdKey": "OcRequestId",
+		# If this is set the response from the downstream service will be cached using the key that called it.
+		# This gives the user a chance to influence the key by adding some random query string paramter for 
+		# a user id or something that would get ignored by the downstream service. This is a hack and I 
+		# intend to provide a mechanism the user can specify for the ttl caching. Also want to expand 
+		# the caching a lot.
+		"FileCacheOptions": { "TtlSeconds": 15 }
 	}

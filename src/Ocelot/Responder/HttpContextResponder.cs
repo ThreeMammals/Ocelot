@@ -38,7 +38,7 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, httpResponseHeader);
             }
 
-            var content = await response.Content.ReadAsStreamAsync();
+            var content = await response.Content.ReadAsByteArrayAsync();
 
             AddHeaderIfDoesntExist(context, new KeyValuePair<string, IEnumerable<string>>("Content-Length", new []{ content.Length.ToString() }) );
 
@@ -52,12 +52,10 @@ namespace Ocelot.Responder
 
             }, context);
 
-            using (var reader = new StreamReader(content))
+            using (Stream stream = new MemoryStream(content))
             {
-                var responseContent = reader.ReadToEnd();
-                await context.Response.WriteAsync(responseContent);
+                await stream.CopyToAsync(context.Response.Body);
             }
-
             return new OkResponse();       
         }
 

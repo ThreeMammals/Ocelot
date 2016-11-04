@@ -4,7 +4,6 @@ namespace Ocelot.UnitTests.Infrastructure
 {
     using System.Collections.Generic;
     using System.Security.Claims;
-    using Errors;
     using Ocelot.Infrastructure.Claims.Parser;
     using Responses;
     using Shouldly;

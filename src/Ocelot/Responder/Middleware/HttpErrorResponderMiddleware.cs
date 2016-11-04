@@ -1,6 +1,7 @@
-using System.Net.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 
@@ -30,17 +31,31 @@ namespace Ocelot.Responder.Middleware
             if (PipelineError())
             {
                 var errors = GetPipelineErrors();
-                
-                var statusCode = _codeMapper.Map(errors);
 
-                if (!statusCode.IsError)
+                await SetErrorResponse(context, errors);
+            }
+            else
+            {
+                var setResponse = await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
+
+                if (setResponse.IsError)
                 {
-                    await _responder.SetErrorResponseOnContext(context, statusCode.Data);
+                    await SetErrorResponse(context, setResponse.Errors);
                 }
-                else
-                {
-                    await _responder.SetErrorResponseOnContext(context, 500);
-                }
+            }
+        }
+
+        private async Task SetErrorResponse(HttpContext context, List<Error> errors)
+        {
+            var statusCode = _codeMapper.Map(errors);
+
+            if (!statusCode.IsError)
+            {
+                await _responder.SetErrorResponseOnContext(context, statusCode.Data);
+            }
+            else
+            {
+                await _responder.SetErrorResponseOnContext(context, 500);
             }
         }
     }

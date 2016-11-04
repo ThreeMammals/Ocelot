@@ -1,9 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Net.Http;
+using CacheManager.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
+using Ocelot.Cache;
 using Ocelot.Claims;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -26,11 +31,21 @@ namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+
+        public static IServiceCollection AddOcelotOutputCaching(this IServiceCollection services, Action<ConfigurationBuilderCachePart> settings)
+        {
+            var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
+            var ocelotCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
+
+            services.AddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
+            services.AddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotCacheManager);
+
+            return services;
+        }
         public static IServiceCollection AddOcelotFileConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
             services.Configure<FileConfiguration>(configurationRoot);
 
-            // ocelot services.
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
@@ -40,11 +55,9 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services)
         {
-            // framework services dependency for the identity server middleware
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
 
-            // ocelot services.
             services.AddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();

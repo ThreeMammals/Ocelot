@@ -11,6 +11,7 @@ namespace Ocelot.Configuration.File
             RouteClaimsRequirement = new Dictionary<string, string>();
             AddQueriesToRequest = new Dictionary<string, string>();
             AuthenticationOptions = new FileAuthenticationOptions();
+            FileCacheOptions = new FileCacheOptions();
         }
 
         public string DownstreamTemplate { get; set; }
@@ -22,5 +23,6 @@ namespace Ocelot.Configuration.File
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
         public string RequestIdKey { get; set; }
+        public FileCacheOptions FileCacheOptions { get; set; }
     }
 }
