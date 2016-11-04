@@ -4,6 +4,7 @@ using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;

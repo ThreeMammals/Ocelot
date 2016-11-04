@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
@@ -10,31 +11,47 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
+        private readonly IOcelotLogger _logger;
 
-        public DownstreamRouteFinderMiddleware(RequestDelegate next, 
+        public DownstreamRouteFinderMiddleware(RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder, 
             IRequestScopedDataRepository requestScopedDataRepository)
             :base(requestScopedDataRepository)
         {
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
+            _logger = loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>();
         }
 
         public async Task Invoke(HttpContext context)
         {
+            _logger.LogDebug("started calling downstream route finder middleware");
+
             var upstreamUrlPath = context.Request.Path.ToString();
+
+            _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
             var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
 
             if (downstreamRoute.IsError)
             {
+                _logger.LogDebug("IDownstreamRouteFinder returned an error, setting pipeline error");
+
                 SetPipelineError(downstreamRoute.Errors);
                 return;
             }
 
+            _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamTemplate}", downstreamRoute.Data.ReRoute.DownstreamTemplate);
+
             SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 
+            _logger.LogDebug("calling next middleware");
+
             await _next.Invoke(context);
+
+            _logger.LogDebug("succesfully called next middleware");
+
         }
     }
 }

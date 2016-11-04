@@ -22,6 +22,7 @@ using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Headers;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
 using Ocelot.Requester;
@@ -57,7 +58,7 @@ namespace Ocelot.DependencyInjection
         {
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
-
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             services.AddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.AddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();

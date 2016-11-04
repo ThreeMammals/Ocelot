@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Claims.Middleware;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -27,16 +29,19 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
+        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _downstreamRouteFinder = new Mock<IDownstreamRouteFinder>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
+            SetUpLogger();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton(_mockLoggerFactory.Object);
                   x.AddSingleton(_downstreamRouteFinder.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -61,6 +66,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void SetUpLogger()
+        {
+            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
+
+            var logger = new Mock<IOcelotLogger>();
+
+            _mockLoggerFactory
+                .Setup(x => x.CreateLogger<DownstreamRouteFinderMiddleware>())
+                .Returns(logger.Object);
         }
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()

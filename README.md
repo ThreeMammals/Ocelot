@@ -21,7 +21,7 @@ to do this.
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET core only and is currently built to .NET Standard 1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
+Ocelot is designed to work with ASP.NET core only and is currently built to netcoreapp1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
 
 Install Ocelot and it's dependecies using nuget. At the moment all we have is the pre version. Once we have something working in a half decent way we will drop a version.
 
@@ -79,7 +79,8 @@ This is pretty much all you need to get going.......more to come!
 
 ## Logging
 
-Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> as such you can use any logging provider you like such as default, nlog, serilog or whatever you want.
+Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> at the moment. This is encapsulated in  IOcelotLogger with 
+an implementation for the standard asp.net core logging stuff at the moment.
 
 ## Caching 
 

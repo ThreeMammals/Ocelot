@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Ocelot.Cache.Middleware;
 using Ocelot.Claims;
 using Ocelot.Claims.Middleware;
 using Ocelot.Configuration;
@@ -14,6 +15,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -29,15 +31,19 @@ namespace Ocelot.UnitTests.Claims
         private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
+        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public ClaimsBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addHeaders = new Mock<IAddClaimsToRequest>();
+            SetUpLogger();
+
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton(_mockLoggerFactory.Object);
                   x.AddSingleton(_addHeaders.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -72,6 +78,17 @@ namespace Ocelot.UnitTests.Claims
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void SetUpLogger()
+        {
+            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
+
+            var logger = new Mock<IOcelotLogger>();
+
+            _mockLoggerFactory
+                .Setup(x => x.CreateLogger<ClaimsBuilderMiddleware>())
+                .Returns(logger.Object);
         }
 
         private void GivenTheAddClaimsToRequestReturns()

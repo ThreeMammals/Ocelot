@@ -8,10 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authentication.Middleware;
+using Ocelot.Cache.Middleware;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -27,15 +29,19 @@ namespace Ocelot.UnitTests.Authentication
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private OkResponse<DownstreamRoute> _downstreamRoute;
+        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public AuthenticationMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _authFactory = new Mock<IAuthenticationHandlerFactory>();
+            SetUpLogger();
+
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton(_mockLoggerFactory.Object);
                   x.AddSingleton(_authFactory.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -60,6 +66,17 @@ namespace Ocelot.UnitTests.Authentication
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenNoExceptionsAreThrown())
                 .BDDfy();
+        }
+
+        private void SetUpLogger()
+        {
+            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
+
+            var logger = new Mock<IOcelotLogger>();
+
+            _mockLoggerFactory
+                .Setup(x => x.CreateLogger<AuthenticationMiddleware>())
+                .Returns(logger.Object);
         }
 
         private void ThenNoExceptionsAreThrown()
