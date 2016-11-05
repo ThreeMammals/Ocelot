@@ -22,9 +22,6 @@ to do this.
 This is not ready for production yet as uses a lot of rc and beta .net core packages.
 Hopefully by the start of 2017 it will be in use.
 
-[Contributing](##Contributing)
-[Routing](##Routing)
-
 ## Contributing
 
 Pull requests, issues and commentary welcome! No special process just create a request and get in 
