@@ -19,6 +19,11 @@ to handle the IdentityServer reference tokens. We would
 rather use the IdentityServer code that already exists
 to do this.
 
+## Contributing
+
+Pull requests, issues and commentary welcome! No special process just create a request and get in 
+touch either via gitter or create an issue. 
+
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
@@ -122,23 +127,108 @@ in the future with an options to make Ocelot case sensitive per ReRoute.
 
 ## Authentication
 
-TBC...
+Ocelot currently supports the use of bearer tokens with Identity Server (more providers to
+come if required). In order to identity a ReRoute as authenticated it needs the following
+configuration added.
+
+		"AuthenticationOptions": {
+            "Provider": "IdentityServer",
+            "ProviderRootUrl": "http://localhost:52888",
+            "ScopeName": "api",
+            "AdditionalScopes": [
+                "openid",
+                "offline_access"
+            ],
+            "ScopeSecret": "secret"
+        }
+
+In this example the Provider is specified as IdentityServer. This string is important 
+because it is used to identity the authentication provider (as previously mentioned in
+the future there might be more providers). Identity server requires that the client
+talk to it so we need to provide the root url of the IdentityServer as ProviderRootUrl.
+IdentityServer requires at least one scope and you can also provider additional scopes.
+Finally if you are using IdentityServer reference tokens you need to provide the scope
+secret. 
+
+Ocelot will use this configuration to build an authentication handler and if 
+authentication is succefull the next middleware will be called else the response
+is 401 unauthorised.
 
 ## Authorisation
 
-TBC...
+Ocelot supports claims based authorisation which is run post authentication. This means if
+you have a route you want to authorise you can add the following to you ReRoute configuration.
 
-## Claims to Headers Tranformation
+		"RouteClaimsRequirement": {
+            "UserType": "registered"
+        },
 
-TBC...
+In this example when the authorisation middleware is called Ocelot will check to see
+if the user has the claim type UserType and if the value of that claim is registered. 
+If it isn't then the user will not be authorised and the response will be 403 forbidden.
 
-## Claims to Claims Tranformation
+## Claims Tranformation
 
-TBC...
+Ocelot allows the user to access claims and transform them into headers, query string 
+parameters and other claims. This is only available once a user has been authenticated.
 
-## Claims to Query String Parameters Tranformation
+After the user is authenticated we run the claims to claims transformation middleware.
+This allows the user to transform claims before the authorisation middleware is called.
+After the user is authorised first we call the claims to headers middleware and Finally
+the claims to query strig parameters middleware.
 
-TBC...
+The syntax for performing the transforms is the same for each proces. In the ReRoute
+configuration a json dictionary is added with a specific name either AddClaimsToRequest,
+AddHeadersToRequest, AddQueriesToRequest. 
+
+Note I'm not a hotshot programmer so have no idea if this syntax is good..
+
+Within this dictionary the entries specify how Ocelot should transform things! 
+The key to the dictionary is going to become the key of either a claim, header 
+or query parameter.
+
+The value of the entry is parsed to logic that will perform the transform. First of
+all a dictionary accessor is specified e.g. Claims[CustomerId]. This means we want
+to access the claims and get the CustomerId claim type. Next is a greater than (>)
+symbol which is just used to split the string. The next entry is either value or value with
+and indexer. If value is specifed Ocelot will just take the value and add it to the 
+transform. If the value has an indexer Ocelot will look for a delimiter which is provided
+after another greater than symbol. Ocelot will then split the value on the delimiter 
+and add whatever was at the index requested to the transform.
+
+#### Claims to Claims Tranformation
+
+Below is an example configuration that will transforms claims to claims
+
+		 "AddClaimsToRequest": {
+			"UserType": "Claims[sub] > value[0] > |",
+			"UserId": "Claims[sub] > value[1] > |"
+		},
+
+This shows a transforms where Ocelot looks at the users sub claim and transforms it into
+UserType and UserId claims. Assuming the sub looks like this "usertypevalue|useridvalue".
+
+#### Claims to Headers Tranformation
+
+Below is an example configuration that will transforms claims to headers
+
+	   "AddHeadersToRequest": {
+			"CustomerId": "Claims[sub] > value[1] > |"
+		},
+
+This shows a transform where Ocelot looks at the users sub claim and trasnforms it into a 
+CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
+
+#### Claims to Query String Parameters Tranformation
+
+Below is an example configuration that will transforms claims to query string parameters
+
+		"AddQueriesToRequest": {
+            "LocationId": "Claims[LocationId] > value",
+        },
+
+This shows a transform where Ocelot looks at the users LocationId claim and add its as
+a query string parameter to be forwarded onto the downstream service.
 
 ## Logging
 
@@ -199,6 +289,13 @@ header. Sorry if this doesn't work for your use case!
 + Fowarding a host header - The host header that you send to Ocelot will not be 
 forwarded to the downstream service. Obviously this would break everything :(
 
+## Things that are currently annoying means
+
++ The ReRoute configuration object is too large.
+
++ The base OcelotMiddleware lets you access things that are going to be null
+and doesnt check the response is OK. I think the fact you can even call stuff
+that isnt available is annoying. Let alone it be null.
 
 ## Coming up
 
