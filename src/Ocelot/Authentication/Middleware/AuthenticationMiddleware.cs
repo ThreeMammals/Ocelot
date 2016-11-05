@@ -44,7 +44,7 @@ namespace Ocelot.Authentication.Middleware
                 {
                     _logger.LogDebug("calling authentication handler for ReRoute");
 
-                    await authenticationHandler.Data.Handler.Invoke(context);
+                    await authenticationHandler.Data.Handler.Handle(context);
                 }
                 else
                 {

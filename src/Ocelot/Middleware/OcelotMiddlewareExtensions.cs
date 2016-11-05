@@ -47,7 +47,7 @@ namespace Ocelot.Middleware
             builder.UseIfNotNull(middlewareConfiguration.PreErrorResponderMiddleware);
 
             // This is registered first so it can catch any errors and issue an appropriate response
-            builder.UseHttpErrorResponderMiddleware();
+            builder.UseResponderMiddleware();
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
@@ -108,7 +108,7 @@ namespace Ocelot.Middleware
             // Everything should now be ready to build or HttpRequest
             builder.UseHttpRequestBuilderMiddleware();
 
-            //We fire off the request and set the response on the context in this middleware
+            //We fire off the request and set the response on the scoped data repo
             builder.UseHttpRequesterMiddleware();
 
             return builder;

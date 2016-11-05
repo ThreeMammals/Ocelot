@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Request.Builder;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -37,10 +39,11 @@ namespace Ocelot.UnitTests.Request
             _url = "http://localhost:51879";
             _requestBuilder = new Mock<IRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_requestBuilder.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -59,7 +62,7 @@ namespace Ocelot.UnitTests.Request
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_scoped_data_repository_correctly()
         {
 
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),

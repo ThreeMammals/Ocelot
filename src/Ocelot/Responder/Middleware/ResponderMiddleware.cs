@@ -1,20 +1,24 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.Responder.Middleware
 {
-    public class HttpErrorResponderMiddleware : OcelotMiddleware
+    public class ResponderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
+        private readonly IOcelotLogger _logger;
 
-        public HttpErrorResponderMiddleware(RequestDelegate next, 
+        public ResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
+            IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
             IErrorsToHttpStatusCodeMapper codeMapper)
             :base(requestScopedDataRepository)
@@ -22,24 +26,38 @@ namespace Ocelot.Responder.Middleware
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
+            _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
+
         }
 
         public async Task Invoke(HttpContext context)
         {
+            _logger.LogDebug("started error responder middleware");
+
             await _next.Invoke(context);
 
-            if (PipelineError())
+            _logger.LogDebug("calling next middleware");
+
+            if (PipelineError)
             {
-                var errors = GetPipelineErrors();
+                _logger.LogDebug("there is a pipeline error, getting errors");
+
+                var errors = PipelineErrors;
+
+                _logger.LogDebug("received errors setting error response");
 
                 await SetErrorResponse(context, errors);
             }
             else
             {
+                _logger.LogDebug("no pipeline error, setting response");
+
                 var setResponse = await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
 
                 if (setResponse.IsError)
                 {
+                    _logger.LogDebug("error setting response, returning error to client");
+
                     await SetErrorResponse(context, setResponse.Errors);
                 }
             }

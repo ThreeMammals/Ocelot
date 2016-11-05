@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.QueryStrings.Middleware;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
 using Ocelot.Responder;
@@ -33,10 +36,11 @@ namespace Ocelot.UnitTests.Requester
             _url = "http://localhost:51879";
             _requester = new Mock<IHttpRequester>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_requester.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -55,7 +59,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_scoped_data_repository_correctly()
         {
             this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))

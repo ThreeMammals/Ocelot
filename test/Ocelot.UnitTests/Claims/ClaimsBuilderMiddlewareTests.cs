@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims;
@@ -31,19 +32,19 @@ namespace Ocelot.UnitTests.Claims
         private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
-        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public ClaimsBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addHeaders = new Mock<IAddClaimsToRequest>();
-            SetUpLogger();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_mockLoggerFactory.Object);
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+
+                  x.AddLogging();
                   x.AddSingleton(_addHeaders.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -62,7 +63,7 @@ namespace Ocelot.UnitTests.Claims
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_claims_to_request_correctly()
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
@@ -78,17 +79,6 @@ namespace Ocelot.UnitTests.Claims
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
                 .BDDfy();
-        }
-
-        private void SetUpLogger()
-        {
-            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
-
-            var logger = new Mock<IOcelotLogger>();
-
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger<ClaimsBuilderMiddleware>())
-                .Returns(logger.Object);
         }
 
         private void GivenTheAddClaimsToRequestReturns()

@@ -23,7 +23,8 @@ namespace Ocelot.Authentication.Handler.Factory
 
             if (!handler.IsError)
             {
-                return new OkResponse<AuthenticationHandler>(new AuthenticationHandler(authOptions.Provider, handler.Data));
+                return new OkResponse<AuthenticationHandler>(
+                    new AuthenticationHandler(authOptions.Provider, new RequestDelegateHandler(handler.Data)));
             }
 
             return new ErrorResponse<AuthenticationHandler>(new List<Error>

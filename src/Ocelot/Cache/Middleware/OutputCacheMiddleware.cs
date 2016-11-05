@@ -57,7 +57,7 @@ namespace Ocelot.Cache.Middleware
 
             _logger.LogDebug("succesfully called next middleware");
 
-            if (PipelineError())
+            if (PipelineError)
             {
                 _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
 

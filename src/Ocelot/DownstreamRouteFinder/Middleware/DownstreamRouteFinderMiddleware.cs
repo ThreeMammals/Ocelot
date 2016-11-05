@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;

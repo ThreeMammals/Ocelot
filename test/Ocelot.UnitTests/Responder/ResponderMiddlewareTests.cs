@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Responder;
 using Ocelot.Responder.Middleware;
 using Ocelot.Responses;
@@ -15,7 +17,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {
-    public class HttpErrorResponderMiddlewareTests : IDisposable
+    public class ResponderMiddlewareTests : IDisposable
     {
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
@@ -26,16 +28,17 @@ namespace Ocelot.UnitTests.Responder
         private HttpResponseMessage _result;
         private OkResponse<HttpResponseMessage> _response;
 
-        public HttpErrorResponderMiddlewareTests()
+        public ResponderMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _responder = new Mock<IHttpResponder>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _codeMapper = new Mock<IErrorsToHttpStatusCodeMapper>();
-
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_codeMapper.Object);
                   x.AddSingleton(_responder.Object);
                   x.AddSingleton(_scopedRepository.Object);
@@ -47,7 +50,7 @@ namespace Ocelot.UnitTests.Responder
               .UseUrls(_url)
               .Configure(app =>
               {
-                  app.UseHttpErrorResponderMiddleware();
+                  app.UseResponderMiddleware();
               });
 
             _server = new TestServer(builder);
@@ -55,7 +58,7 @@ namespace Ocelot.UnitTests.Responder
         }
 
         [Fact]
-        public void happy_path()
+        public void should_not_return_any_errors()
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
                 .And(x => x.GivenThereAreNoPipelineErrors())

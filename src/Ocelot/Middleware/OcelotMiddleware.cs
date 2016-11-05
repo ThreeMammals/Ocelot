@@ -15,22 +15,22 @@ namespace Ocelot.Middleware
             _requestScopedDataRepository = requestScopedDataRepository;
         }
 
-        public void SetPipelineError(List<Error> errors)
+        public bool PipelineError
         {
-            _requestScopedDataRepository.Add("OcelotMiddlewareError", true);
-            _requestScopedDataRepository.Add("OcelotMiddlewareErrors", errors);
+            get
+            {
+                var response = _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError");
+                return response.Data;
+            }
         }
 
-        public bool PipelineError()
+        public List<Error> PipelineErrors
         {
-            var response = _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError");
-            return response.Data;
-        }
-
-        public List<Error> GetPipelineErrors()
-        {
-            var response = _requestScopedDataRepository.Get<List<Error>>("OcelotMiddlewareErrors");
-            return response.Data;
+            get
+            {
+                var response = _requestScopedDataRepository.Get<List<Error>>("OcelotMiddlewareErrors");
+                return response.Data;
+            }
         }
 
         public DownstreamRoute DownstreamRoute
@@ -87,7 +87,12 @@ namespace Ocelot.Middleware
         public void SetHttpResponseMessageThisRequest(HttpResponseMessage responseMessage)
         {
             _requestScopedDataRepository.Add("HttpResponseMessage", responseMessage);
+        }
 
+        public void SetPipelineError(List<Error> errors)
+        {
+            _requestScopedDataRepository.Add("OcelotMiddlewareError", true);
+            _requestScopedDataRepository.Add("OcelotMiddlewareErrors", errors);
         }
     }
 }

@@ -8,11 +8,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Request.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responses;
 using Shouldly;
@@ -36,10 +39,11 @@ namespace Ocelot.UnitTests.RequestId
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_scopedRepository.Object);
               })
               .UseUrls(_url)

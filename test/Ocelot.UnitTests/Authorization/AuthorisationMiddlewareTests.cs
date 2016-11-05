@@ -6,9 +6,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Authorisation;
-using Ocelot.Cache.Middleware;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -31,19 +31,18 @@ namespace Ocelot.UnitTests.Authorization
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private OkResponse<DownstreamRoute> _downstreamRoute;
-        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public AuthorisationMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _authService = new Mock<IAuthoriser>();
-            SetUpLogger();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_mockLoggerFactory.Object);
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_authService.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -62,24 +61,13 @@ namespace Ocelot.UnitTests.Authorization
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_authorisation_service()
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithIsAuthorised(true).Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
                 .BDDfy();
-        }
-
-        private void SetUpLogger()
-        {
-            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
-
-            var logger = new Mock<IOcelotLogger>();
-
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger<AuthorisationMiddleware>())
-                .Returns(logger.Object);
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

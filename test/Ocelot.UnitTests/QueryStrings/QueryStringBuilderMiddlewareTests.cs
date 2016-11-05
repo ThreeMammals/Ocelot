@@ -6,12 +6,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Headers.Middleware;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.QueryStrings;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Responses;
@@ -38,6 +41,8 @@ namespace Ocelot.UnitTests.QueryStrings
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_addQueries.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -56,7 +61,7 @@ namespace Ocelot.UnitTests.QueryStrings
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_add_queries_correctly()
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
@@ -70,7 +75,7 @@ namespace Ocelot.UnitTests.QueryStrings
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheAddHeadersToRequestReturns())
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheAddHeadersToRequestIsCalledCorrectly())
+                .Then(x => x.ThenTheAddQueriesToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -82,7 +87,7 @@ namespace Ocelot.UnitTests.QueryStrings
                 .Returns(new OkResponse());
         }
 
-        private void ThenTheAddHeadersToRequestIsCalledCorrectly()
+        private void ThenTheAddQueriesToRequestIsCalledCorrectly()
         {
             _addQueries
                 .Verify(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(),

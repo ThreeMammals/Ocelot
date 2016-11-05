@@ -2,19 +2,25 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
+using Ocelot.Authentication.Handler;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -29,19 +35,17 @@ namespace Ocelot.UnitTests.Authentication
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private OkResponse<DownstreamRoute> _downstreamRoute;
-        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public AuthenticationMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _authFactory = new Mock<IAuthenticationHandlerFactory>();
-            SetUpLogger();
-
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_mockLoggerFactory.Object);
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_authFactory.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -53,6 +57,11 @@ namespace Ocelot.UnitTests.Authentication
               .Configure(app =>
               {
                   app.UseAuthenticationMiddleware();
+
+                  app.Run(async x =>
+                  {
+                      await x.Response.WriteAsync("The user is authenticated");
+                  });
               });
 
             _server = new TestServer(builder);
@@ -60,28 +69,18 @@ namespace Ocelot.UnitTests.Authentication
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_next_middleware_if_route_is_not_authenticated()
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().Build())))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenNoExceptionsAreThrown())
+                .Then(x => x.ThenTheUserIsAuthenticated())
                 .BDDfy();
         }
 
-        private void SetUpLogger()
+        private void ThenTheUserIsAuthenticated()
         {
-            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
-
-            var logger = new Mock<IOcelotLogger>();
-
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger<AuthenticationMiddleware>())
-                .Returns(logger.Object);
-        }
-
-        private void ThenNoExceptionsAreThrown()
-        {
-            //todo not suck
+            var content = _result.Content.ReadAsStringAsync().Result;
+            content.ShouldBe("The user is authenticated");
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

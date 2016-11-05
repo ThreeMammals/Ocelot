@@ -6,14 +6,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Headers;
 using Ocelot.Headers.Middleware;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -35,9 +38,13 @@ namespace Ocelot.UnitTests.Headers
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addHeaders = new Mock<IAddHeadersToRequest>();
+
+
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_addHeaders.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -56,7 +63,7 @@ namespace Ocelot.UnitTests.Headers
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_add_headers_to_request_correctly()
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
@@ -68,13 +75,13 @@ namespace Ocelot.UnitTests.Headers
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheAddHeadersToRequestReturns("123"))
+                .And(x => x.GivenTheAddHeadersToRequestReturns())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAddHeadersToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void GivenTheAddHeadersToRequestReturns(string claimValue)
+        private void GivenTheAddHeadersToRequestReturns()
         {
             _addHeaders
                 .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(), 

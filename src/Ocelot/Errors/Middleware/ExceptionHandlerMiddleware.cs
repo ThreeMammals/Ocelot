@@ -25,10 +25,10 @@ namespace Ocelot.Errors.Middleware
         public async Task Invoke(HttpContext context)
         {
             try
-            {   
-                _logger.LogDebug("calling middleware");
+            {
+                _logger.LogDebug("ocelot pipeline started");
 
-                _requestScopedDataRepository.Add("RequestId", context.TraceIdentifier);
+                _logger.LogDebug("calling next middleware");
 
                 await _next.Invoke(context);
 
@@ -42,6 +42,8 @@ namespace Ocelot.Errors.Middleware
                 _logger.LogError(message, e);
                 await SetInternalServerErrorOnResponse(context);
             }
+
+            _logger.LogDebug("ocelot pipeline finished");
         }
 
         private static async Task SetInternalServerErrorOnResponse(HttpContext context)

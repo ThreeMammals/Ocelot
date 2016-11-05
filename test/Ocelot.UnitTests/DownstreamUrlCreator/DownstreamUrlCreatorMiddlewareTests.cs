@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -30,19 +31,18 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
         private OkResponse<DownstreamUrl> _downstreamUrl;
-        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
             _url = "http://localhost:51879";
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamUrlPathPlaceholderReplacer>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-            SetUpLogger();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
-                  x.AddSingleton(_mockLoggerFactory.Object);
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
                   x.AddSingleton(_downstreamUrlTemplateVariableReplacer.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -61,25 +61,13 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void happy_path()
+        public void should_call_scoped_data_repository_correctly()
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithDownstreamTemplate("any old string").Build())))
                 .And(x => x.TheUrlReplacerReturns("any old string"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
-        }
-
-
-        private void SetUpLogger()
-        {
-            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
-
-            var logger = new Mock<IOcelotLogger>();
-
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>())
-                .Returns(logger.Object);
         }
 
         private void TheUrlReplacerReturns(string downstreamUrl)

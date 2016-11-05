@@ -46,21 +46,24 @@ namespace Ocelot.Logging
 
         public void LogDebug(string message, params object[] args)
         {
-            _logger.LogDebug(GetMessageWithRequestId(message), args);
+            _logger.LogDebug(GetMessageWithOcelotRequestId(message), args);
         }
 
         public void LogError(string message, Exception exception)
         {
-            _logger.LogError(GetMessageWithRequestId(message), exception);
+            _logger.LogError(GetMessageWithOcelotRequestId(message), exception);
         }
 
-        private string GetMessageWithRequestId(string message)
+        private string GetMessageWithOcelotRequestId(string message)
         {
             var requestId = _scopedDataRepository.Get<string>("RequestId");
 
-            return requestId.IsError 
-                ? $"{message} : RequestId: Error" 
-                : $"{message} : RequestId: {requestId.Data}";
+            if (requestId != null && !requestId.IsError)
+            {
+                return $"{message} : OcelotRequestId - {requestId.Data}";
+                
+            }
+            return $"{message} : OcelotRequestId - not set";
         }
     }
 }

@@ -6,6 +6,7 @@ using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Cache;
 using Ocelot.Cache.Middleware;
@@ -25,7 +26,6 @@ namespace Ocelot.UnitTests.Cache
     {
         private readonly Mock<IOcelotCache<HttpResponseMessage>> _cacheManager;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepo;
-        private Mock<IOcelotLoggerFactory> _mockLoggerFactory;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -37,14 +37,13 @@ namespace Ocelot.UnitTests.Cache
             _cacheManager = new Mock<IOcelotCache<HttpResponseMessage>>();
             _scopedRepo = new Mock<IRequestScopedDataRepository>();
 
-            SetUpLogger();
 
             _url = "http://localhost:51879";
             var builder = new WebHostBuilder()
                 .ConfigureServices(x =>
                 {
+                    x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
                     x.AddLogging();
-                    x.AddSingleton(_mockLoggerFactory.Object);
                     x.AddSingleton(_cacheManager.Object);
                     x.AddSingleton(_scopedRepo.Object);
                 })
@@ -85,16 +84,6 @@ namespace Ocelot.UnitTests.Cache
                 .BDDfy();
         }
 
-        private void SetUpLogger()
-        {
-            _mockLoggerFactory = new Mock<IOcelotLoggerFactory>();
-
-            var logger = new Mock<IOcelotLogger>();
-
-            _mockLoggerFactory
-                .Setup(x => x.CreateLogger<OutputCacheMiddleware>())
-                .Returns(logger.Object);
-        }
 
         private void GivenTheDownstreamRouteIs()
         {
