@@ -41,8 +41,7 @@
             "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts",
             "UpstreamTemplate": "/posts",
             "UpstreamHttpMethod": "Get",
-            "FileCacheOptions": { "TtlSeconds": 15 },
-            "RequestIdKey": "OcRequestId"
+            "FileCacheOptions": { "TtlSeconds": 15 }
         },
         {
             "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
@@ -79,5 +78,8 @@
             "UpstreamTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Delete"
         }
-    ]
+    ],
+    "GlobalConfiguration": {
+        "RequestIdKey": "OcRequestId"
+    }
 }

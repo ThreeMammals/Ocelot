@@ -270,10 +270,11 @@ to true for logging settings. Nicely onto the next feature.
 Ocelot supports a client sending a request id in the form of a header. If set Ocelot will
 use the requestid for logging as soon as it becomes available in the middleware pipeline. 
 Ocelot will also forward the request id with the specified header to the downstream service.
-I'm not sure if have this spot on yet in terms of the pipeline order becasue there are a few 
+I'm not sure if have this spot on yet in terms of the pipeline order becasue there are a few logs
 that don't get the users request id at the moment and ocelot just logs not set for request id
 which sucks. You can still get the framework request id in the logs if you set 
-IncludeScopes true in your logging config.
+IncludeScopes true in your logging config. This can then be used to match up later logs that do
+have an OcelotRequestId.
 
 In order to use the requestid feature in your ReRoute configuration add this setting
 
@@ -324,8 +325,6 @@ forwarded to the downstream service. Obviously this would break everything :(
 + The base OcelotMiddleware lets you access things that are going to be null
 and doesnt check the response is OK. I think the fact you can even call stuff
 that isnt available is annoying. Let alone it be null.
-
-+ The Ocelot Request Id starts getting logged too late in the pipeline.
 
 ## Coming up
 
