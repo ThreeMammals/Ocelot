@@ -371,7 +371,7 @@ header. Sorry if this doesn't work for your use case!
 + Fowarding a host header - The host header that you send to Ocelot will not be 
 forwarded to the downstream service. Obviously this would break everything :(
 
-## Things that are currently annoying means
+## Things that are currently annoying me
 
 + The ReRoute configuration object is too large.
 
