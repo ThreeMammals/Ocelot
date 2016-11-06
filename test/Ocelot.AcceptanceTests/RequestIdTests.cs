@@ -76,6 +76,36 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_use_global_request_id_and_forward()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamTemplate = "http://localhost:51879/",
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Get",
+                        }
+                    },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    RequestIdKey = _steps.RequestIdKey
+                }
+            };
+
+            var requestId = Guid.NewGuid().ToString();
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
+                .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string url)
         {
             _builder = new WebHostBuilder()

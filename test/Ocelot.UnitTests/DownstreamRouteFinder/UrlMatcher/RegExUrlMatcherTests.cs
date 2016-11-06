@@ -128,6 +128,27 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                  .BDDfy();
         }
 
+        [Fact]
+        public void should_ignore_case_sensitivity()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("API/product/products/1/categories/2/variant/"))
+               .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("(?i)api/product/products/.*/categories/.*/variant/$"))
+               .When(x => x.WhenIMatchThePaths())
+               .Then(x => x.ThenTheResultIsTrue())
+               .BDDfy();
+        }
+
+        [Fact]
+        public void should_respect_case_sensitivity()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("API/product/products/1/categories/2/variant/"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("api/product/products/.*/categories/.*/variant/$"))
+              .When(x => x.WhenIMatchThePaths())
+              .Then(x => x.ThenTheResultIsFalse())
+              .BDDfy();
+        }
+
+
         private void GivenIHaveAUpstreamPath(string downstreamPath)
         {
             _downstreamUrlPath = downstreamPath;

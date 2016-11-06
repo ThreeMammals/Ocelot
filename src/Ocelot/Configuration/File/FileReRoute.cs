@@ -24,5 +24,6 @@ namespace Ocelot.Configuration.File
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
         public string RequestIdKey { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
+        public bool ReRouteIsCaseSensitive { get; set; }
     }
 }

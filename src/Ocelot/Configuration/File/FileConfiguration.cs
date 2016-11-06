@@ -7,8 +7,10 @@ namespace Ocelot.Configuration.File
         public FileConfiguration()
         {
             ReRoutes = new List<FileReRoute>();
+            GlobalConfiguration = new FileGlobalConfiguration();
         }
 
         public List<FileReRoute> ReRoutes { get; set; }
+        public FileGlobalConfiguration GlobalConfiguration { get; set; }
     }
 }

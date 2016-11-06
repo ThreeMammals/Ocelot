@@ -45,6 +45,18 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 An example configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.json) 
 and an explained configuration can be found [here](https://github.com/TomPallister/Ocelot/blob/develop/configuration-explanation.txt). More detailed instructions to come on how to configure this.
 
+There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
+The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
+configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
+if you don't want to manage lots of ReRoute specific settings.
+
+		{
+			"ReRoutes": [],
+			"GlobalConfiguration": {}
+		}
+
+More information on how to use these options is below..
+
 ## Startup
 
 An example startup using a json file for configuration can be seen below. 
@@ -125,8 +137,14 @@ The placeholder needs to be in both the DownstreamTemplate and UpstreamTemplate.
 Ocelot will attempt to replace the placeholder with the correct variable value from the 
 Upstream URL when the request comes in.
 
-At the moment all Ocelot routing is case sensitive. I think I will turn this off by default 
-in the future with an options to make Ocelot case sensitive per ReRoute.
+At the moment without any configuration Ocelot will default to all ReRoutes being case insensitive.
+In order to change this you can specify on a per ReRoute basis the following setting.
+
+		"ReRouteIsCaseSensitive": true
+
+This means that when Ocelot tries to match the incoming upstream url with an upstream template the
+evaluation will be case sensitive. This setting defaults to false so only set it if you want 
+the ReRoute to be case sensitive is my advice!
 
 ## Authentication
 
@@ -263,6 +281,13 @@ In order to use the requestid feature in your ReRoute configuration add this set
 
 In this example OcRequestId is the request header that contains the clients request id.
 
+There is also a setting in the GlobalConfiguration section which will override whatever has been
+set at ReRoute level for the request id. The setting is as fllows.
+
+		"RequestIdKey": "OcRequestId",
+
+It behaves in exactly the same way as the ReRoute level RequestIdKey settings.
+
 ## Caching 
 
 Ocelot supports some very rudimentary caching at the moment provider by 
@@ -299,6 +324,8 @@ forwarded to the downstream service. Obviously this would break everything :(
 + The base OcelotMiddleware lets you access things that are going to be null
 and doesnt check the response is OK. I think the fact you can even call stuff
 that isnt available is annoying. Let alone it be null.
+
++ The Ocelot Request Id starts getting logged too late in the pipeline.
 
 ## Coming up
 

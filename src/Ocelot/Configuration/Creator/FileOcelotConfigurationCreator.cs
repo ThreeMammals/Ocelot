@@ -19,6 +19,8 @@ namespace Ocelot.Configuration.Creator
         private readonly IConfigurationValidator _configurationValidator;
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
+        private const string RegExIgnoreCase = "(?i)";
+
         private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
 
@@ -65,14 +67,56 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var reRoute in _options.Value.ReRoutes)
             {
-                var ocelotReRoute = SetUpReRoute(reRoute);
+                var ocelotReRoute = SetUpReRoute(reRoute, _options.Value.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
             
             return new OcelotConfiguration(reRoutes);
         }
 
-        private ReRoute SetUpReRoute(FileReRoute reRoute)
+        private ReRoute SetUpReRoute(FileReRoute reRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
+
+            var upstreamTemplate = BuildUpstreamTemplate(reRoute);
+
+            var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
+
+            var isAuthorised = reRoute.RouteClaimsRequirement?.Count > 0;
+
+            var isCached = reRoute.FileCacheOptions.TtlSeconds > 0;
+
+            var requestIdKey = globalRequestIdConfiguration
+                ? globalConfiguration.RequestIdKey
+                : reRoute.RequestIdKey;
+
+
+            if (isAuthenticated)
+            {
+                var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
+                    reRoute.AuthenticationOptions.ProviderRootUrl, reRoute.AuthenticationOptions.ScopeName,
+                    reRoute.AuthenticationOptions.RequireHttps, reRoute.AuthenticationOptions.AdditionalScopes,
+                    reRoute.AuthenticationOptions.ScopeSecret);
+
+                var claimsToHeaders = GetAddThingsToRequest(reRoute.AddHeadersToRequest);
+                var claimsToClaims = GetAddThingsToRequest(reRoute.AddClaimsToRequest);
+                var claimsToQueries = GetAddThingsToRequest(reRoute.AddQueriesToRequest);
+
+                return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate,
+                    reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                    authOptionsForRoute, claimsToHeaders, claimsToClaims,
+                    reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
+                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
+            }
+
+            return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, 
+                reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
+                null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
+                reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
+                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
+        }
+
+        private string BuildUpstreamTemplate(FileReRoute reRoute)
         {
             var upstreamTemplate = reRoute.UpstreamTemplate;
 
@@ -94,38 +138,9 @@ namespace Ocelot.Configuration.Creator
                 upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
             }
 
-            upstreamTemplate = $"{upstreamTemplate}{RegExMatchEndString}";
-
-            var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
-
-            var isAuthorised = reRoute.RouteClaimsRequirement?.Count > 0;
-
-            var isCached = reRoute.FileCacheOptions.TtlSeconds > 0;
-
-            if (isAuthenticated)
-            {
-                var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
-                    reRoute.AuthenticationOptions.ProviderRootUrl, reRoute.AuthenticationOptions.ScopeName,
-                    reRoute.AuthenticationOptions.RequireHttps, reRoute.AuthenticationOptions.AdditionalScopes,
-                    reRoute.AuthenticationOptions.ScopeSecret);
-
-                var claimsToHeaders = GetAddThingsToRequest(reRoute.AddHeadersToRequest);
-                var claimsToClaims = GetAddThingsToRequest(reRoute.AddClaimsToRequest);
-                var claimsToQueries = GetAddThingsToRequest(reRoute.AddQueriesToRequest);
-
-                return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate,
-                    reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
-                    authOptionsForRoute, claimsToHeaders, claimsToClaims, 
-                    reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
-                    reRoute.RequestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds)
-                    );
-            }
-
-            return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, 
-                reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
-                null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
-                reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
-                    reRoute.RequestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
+            return reRoute.ReRouteIsCaseSensitive 
+                ? $"{upstreamTemplate}{RegExMatchEndString}" 
+                : $"{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
         }
 
         private List<ClaimToThing> GetAddThingsToRequest(Dictionary<string,string> thingBeingAdded)
