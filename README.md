@@ -19,6 +19,17 @@ to handle the IdentityServer reference tokens. We would
 rather use the IdentityServer code that already exists
 to do this.
 
+Ocelot is a bunch of middlewares in a specific order.
+
+Ocelot manipulates the HttpRequest object into a state specified by its configuration until 
+it reaches a request builder middleware where it creates a HttpRequestMessage object which is 
+used to make a request to a downstream service. The middleware that makes the request is 
+the last thing in the Ocelot pipeline. It does not call the next middleware. 
+The response from the downstream service is stored in a per request scoped repository 
+and retrived as the requests goes back up the Ocelot pipeline. There is a piece of middleware 
+that maps the HttpResponseMessage onto the HttpResponse object and that is returned to the client.
+That is basically it with a bunch of other features.
+
 This is not ready for production yet as uses a lot of rc and beta .net core packages.
 Hopefully by the start of 2017 it will be in use.
 
@@ -307,6 +318,48 @@ In orde to use caching on a route in your ReRoute configuration add this setting
 		"FileCacheOptions": { "TtlSeconds": 15 }
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
+
+## Ocelot Middleware injection and overrides
+
+Warning use with caution. If you are seeing any exceptions or strange behavior in your middleware 
+pipeline and you are using any of the following. Remove them and try again!
+
+When setting up Ocelot in your Startup.cs you can provide some additonal middleware 
+and override middleware. This is done as follos.
+
+		var configuration = new OcelotMiddlewareConfiguration
+		{
+			PreErrorResponderMiddleware = async (ctx, next) =>
+			{
+				await next.Invoke();
+			}
+		};
+
+		app.UseOcelot(configuration);
+
+In the example above the provided function will run before the first piece of Ocelot middleware. 
+This allows a user to supply any behaviours they want before and after the Ocelot pipeline has run.
+This means you can break everything so use at your own pleasure!
+
+The user can set functions against the following.
+
++ PreErrorResponderMiddleware - Already explained above.
+
++ PreAuthenticationMiddleware - This allows the user to run pre authentication logic and then call
+Ocelot's authentication middleware.
+
++ AuthenticationMiddleware - This overrides Ocelots authentication middleware.
+
++ PreAuthorisationMiddleware - This allows the user to run pre authorisation logic and then call
+Ocelot's authorisation middleware.
+
++ AuthorisationMiddleware - This overrides Ocelots authorisation middleware.
+
++ PreQueryStringBuilderMiddleware - This alows the user to manipulate the query string on the 
+http request before it is passed to Ocelots request creator.
+
+Obviously you can just add middleware as normal before the call to app.UseOcelot() It cannot be added
+after as Ocelot does not call the next middleware.
 
 ## Not supported
 
