@@ -5,6 +5,7 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Utilities;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
@@ -29,7 +30,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             _logger.LogDebug("started calling downstream route finder middleware");
 
-            var upstreamUrlPath = context.Request.Path.ToString();
+            var upstreamUrlPath = context.Request.Path.ToString().SetLastCharacterAs('/');
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 

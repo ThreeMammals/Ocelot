@@ -148,7 +148,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
               .BDDfy();
         }
 
-
         private void GivenIHaveAUpstreamPath(string downstreamPath)
         {
             _downstreamUrlPath = downstreamPath;

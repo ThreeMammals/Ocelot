@@ -7,6 +7,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.Responses;
+using Ocelot.Utilities;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -90,7 +91,6 @@ namespace Ocelot.Configuration.Creator
                 ? globalConfiguration.RequestIdKey
                 : reRoute.RequestIdKey;
 
-
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
@@ -120,6 +120,8 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplate = reRoute.UpstreamTemplate;
 
+            upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
+
             var placeholders = new List<string>();
 
             for (var i = 0; i < upstreamTemplate.Length; i++)
@@ -138,9 +140,11 @@ namespace Ocelot.Configuration.Creator
                 upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
             }
 
-            return reRoute.ReRouteIsCaseSensitive 
+            var route = reRoute.ReRouteIsCaseSensitive 
                 ? $"{upstreamTemplate}{RegExMatchEndString}" 
                 : $"{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
+
+            return route;
         }
 
         private List<ClaimToThing> GetAddThingsToRequest(Dictionary<string,string> thingBeingAdded)

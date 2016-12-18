@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -46,14 +47,16 @@ namespace Ocelot.Errors.Middleware
             _logger.LogDebug("ocelot pipeline finished");
         }
 
-        private static async Task SetInternalServerErrorOnResponse(HttpContext context)
+        private async Task SetInternalServerErrorOnResponse(HttpContext context)
         {
-            context.Response.StatusCode = 500;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync("Internal Server Error");
+            context.Response.OnStarting(x =>
+            {
+                context.Response.StatusCode = 500;
+                return Task.CompletedTask;
+            }, context);
         }
 
-        private static string CreateMessage(HttpContext context, Exception e)
+        private string CreateMessage(HttpContext context, Exception e)
         {
             var message =
                 $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";

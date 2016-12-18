@@ -77,6 +77,72 @@
             "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
             "UpstreamTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Delete"
+        },
+        {
+            "DownstreamTemplate": "http://products20161126090340.azurewebsites.net/api/products",
+            "UpstreamTemplate": "/products",
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://products20161126090340.azurewebsites.net/api/products/{productId}",
+            "UpstreamTemplate": "/products/{productId}",
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://products20161126090340.azurewebsites.net/api/products",
+            "UpstreamTemplate": "/products",
+            "UpstreamHttpMethod": "Post",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://products20161126090340.azurewebsites.net/api/products/{productId}",
+            "UpstreamTemplate": "/products/{productId}",
+            "UpstreamHttpMethod": "Put",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://products20161126090340.azurewebsites.net/api/products/{productId}",
+            "UpstreamTemplate": "/products/{productId}",
+            "UpstreamHttpMethod": "Delete",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://customers20161126090811.azurewebsites.net/api/customers",
+            "UpstreamTemplate": "/customers",
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://customers20161126090811.azurewebsites.net/api/customers/{customerId}",
+            "UpstreamTemplate": "/customers/{customerId}",
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://customers20161126090811.azurewebsites.net/api/customers",
+            "UpstreamTemplate": "/customers",
+            "UpstreamHttpMethod": "Post",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://customers20161126090811.azurewebsites.net/api/customers/{customerId}",
+            "UpstreamTemplate": "/customers/{customerId}",
+            "UpstreamHttpMethod": "Put",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://customers20161126090811.azurewebsites.net/api/customers/{customerId}",
+            "UpstreamTemplate": "/customers/{customerId}",
+            "UpstreamHttpMethod": "Delete",
+            "FileCacheOptions": { "TtlSeconds": 15 }
+        },
+        {
+            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts",
+            "UpstreamTemplate": "/posts/",
+            "UpstreamHttpMethod": "Get",
+            "FileCacheOptions": { "TtlSeconds": 15 }
         }
     ],
     "GlobalConfiguration": {

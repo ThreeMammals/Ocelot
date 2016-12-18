@@ -1,9 +1,11 @@
 {
 	"ReRoutes": [
 		{
-			# The url we are forwarding the request to
-			"UpstreamTemplate": "/identityserverexample",
-			# The path we are listening on for this re route
+			# The url we are forwarding the request to, ocelot will not add a trailing slash
+			"DownstreamTemplate": "http://somehost.com/identityserverexample",
+			# The path we are listening on for this re route, Ocelot will add a trailing slash to
+			# this property. Then when a request is made Ocelot makes sure a trailing slash is added
+			# to that so everything matches
 			"UpstreamTemplate": "/identityserverexample",
 			# The method we are listening for on this re route
 			"UpstreamHttpMethod": "Get",
