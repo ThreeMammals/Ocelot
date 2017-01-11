@@ -1,64 +1,61 @@
 {
-    "version": "1.0.0-*",
+  "version": "1.0.0-*",
 
-    "dependencies": {
-        "Microsoft.AspNetCore.Http": "1.0.0",
-        "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
-        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
-        "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0",
-        "Microsoft.Extensions.Logging": "1.0.0",
-        "Microsoft.Extensions.Logging.Console": "1.0.0",
-        "Microsoft.Extensions.Logging.Debug": "1.0.0",
-        "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
-        "Ocelot": "1.0.0-*",
-        "Microsoft.AspNetCore.Mvc": "1.0.1",
-        "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
-        "Microsoft.NETCore.App": {
-            "version": "1.0.1",
-            "type": "platform"
-        }
-    },
+  "dependencies": {
+    "Microsoft.AspNetCore.Http": "1.1.0",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0",
+    "Microsoft.Extensions.Logging": "1.1.0",
+    "Microsoft.Extensions.Logging.Console": "1.1.0",
+    "Microsoft.Extensions.Logging.Debug": "1.1.0",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
+    "Ocelot": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
+    "Microsoft.NETCore.App": "1.1.0"
+  },
 
-    "tools": {
-        "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
-    },
-
-    "frameworks": {
-        "netcoreapp1.4": {
-            "imports": [
-            ]
-        }
-    },
-
-    "buildOptions": {
-        "emitEntryPoint": true,
-        "preserveCompilationContext": true,
-        "copyToOutput": {
-            "include": [
-                "configuration.json"
-            ]
-        }
-        },
-
-        "runtimeOptions": {
-            "configProperties": {
-                "System.GC.Server": true
-            }
-        },
-
-        "publishOptions": {
-            "include": [
-                "wwwroot",
-                "Views",
-                "Areas/**/Views",
-                "appsettings.json",
-                "web.config",
-                "configuration.json"
-            ]
-        },
-
-        "scripts": {
-            "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
-        }
+  "tools": {
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
+  },
+  "runtimes": {
+    "win10-x64": {}
+  },
+  "frameworks": {
+    "netcoreapp1.4": {
+      "imports": [
+      ]
     }
+  },
+
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true,
+    "copyToOutput": {
+      "include": [
+        "configuration.json"
+      ]
+    }
+  },
+
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  },
+
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "Views",
+      "Areas/**/Views",
+      "appsettings.json",
+      "web.config",
+      "configuration.json"
+    ]
+  },
+
+  "scripts": {
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+  }
+}

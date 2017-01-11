@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Security.Claims;
 using IdentityServer4.Models;
-using IdentityServer4.Services.InMemory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +14,9 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
+    using IdentityServer4;
+    using IdentityServer4.Test;
+
     public class AuthenticationTests : IDisposable
     {
         private IWebHost _servicebuilder;
@@ -241,26 +243,34 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();
-                    services.AddDeveloperIdentityServer()
-                        .AddInMemoryScopes(new List<Scope>
+                    services.AddIdentityServer()
+                    .AddTemporarySigningCredential()
+                        .AddInMemoryApiResources(new List<ApiResource>
                         {
-                            new Scope
+                            new ApiResource
                             {
                                 Name = scopeName,
                                 Description = "My API",
                                 Enabled = true,
-                                AllowUnrestrictedIntrospection = true,
-                                ScopeSecrets = new List<Secret>()
+                                DisplayName = "test",
+                                Scopes = new List<Scope>()
+                                {
+                                    new Scope("api"),
+                                    new Scope("openid"),
+                                    new Scope("offline_access")
+                                },
+                                ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
                                         Value = "secret".Sha256()
                                     }
+                                },
+                                UserClaims = new List<string>()
+                                {
+                                    "CustomerId", "LocationId"
                                 }
                             },
-
-                            StandardScopes.OpenId,
-                            StandardScopes.OfflineAccess
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -275,14 +285,13 @@ namespace Ocelot.AcceptanceTests
                                 RequireClientSecret = false
                             }
                         })
-                        .AddInMemoryUsers(new List<InMemoryUser>
+                        .AddTestUsers(new List<TestUser>
                         {
-                            new InMemoryUser
+                            new TestUser
                             {
                                 Username = "test",
                                 Password = "test",
-                                Enabled = true,
-                                Subject = "registered|1231231",
+                                SubjectId = "registered|1231231",
                                 Claims = new List<Claim>
                                 {
                                    new Claim("CustomerId", "123"),

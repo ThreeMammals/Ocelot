@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using IdentityServer4.Models;
-using IdentityServer4.Services.InMemory;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +16,9 @@ using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
 {
+    using IdentityServer4;
+    using IdentityServer4.Test;
+
     public class ClaimsToHeadersForwardingTests : IDisposable
     {
         private IWebHost _servicebuilder;
@@ -31,12 +33,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_and_foward_claim_as_header()
         {
-            var user = new InMemoryUser
+            var user = new TestUser()
             {
                 Username = "test",
                 Password = "test",
-                Enabled = true,
-                Subject = "registered|1231231",
+                SubjectId = "registered|1231231",
                 Claims = new List<Claim>
                 {
                     new Claim("CustomerId", "123"),
@@ -115,7 +116,7 @@ namespace Ocelot.AcceptanceTests
             _servicebuilder.Start();
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string scopeName, AccessTokenType tokenType, InMemoryUser user)
+        private void GivenThereIsAnIdentityServerOn(string url, string scopeName, AccessTokenType tokenType, TestUser user)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -126,27 +127,34 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();
-                    services.AddDeveloperIdentityServer()
-                        .AddInMemoryScopes(new List<Scope>
+                    services.AddIdentityServer()
+                    .AddTemporarySigningCredential()
+                        .AddInMemoryApiResources(new List<ApiResource>
                         {
-                            new Scope
+                            new ApiResource
                             {
                                 Name = scopeName,
                                 Description = "My API",
                                 Enabled = true,
-                                AllowUnrestrictedIntrospection = true,
-                                ScopeSecrets = new List<Secret>()
+                                DisplayName = "test",
+                                Scopes = new List<Scope>()
+                                {
+                                    new Scope("api"),
+                                    new Scope("openid"),
+                                    new Scope("offline_access")
+                                },
+                                ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
                                         Value = "secret".Sha256()
                                     }
                                 },
-                                IncludeAllClaimsForUser = true
-                            },
-
-                            StandardScopes.OpenId,
-                            StandardScopes.OfflineAccess
+                                UserClaims = new List<string>()
+                                {
+                                    "CustomerId", "LocationId", "UserType", "UserId"
+                                }
+                            }
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -161,7 +169,7 @@ namespace Ocelot.AcceptanceTests
                                 RequireClientSecret = false
                             }
                         })
-                        .AddInMemoryUsers(new List<InMemoryUser>
+                        .AddTestUsers(new List<TestUser>
                         {
                             user
                         });

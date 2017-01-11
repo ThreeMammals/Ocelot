@@ -132,8 +132,8 @@ namespace Ocelot.AcceptanceTests
             using (var httpClient = new HttpClient())
             {
                 var response = httpClient.PostAsync(tokenUrl, content).Result;
-                response.EnsureSuccessStatusCode();
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
                 _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             }
         }
