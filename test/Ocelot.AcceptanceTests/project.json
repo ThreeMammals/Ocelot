@@ -35,7 +35,8 @@
     "TestStack.BDDfy": "4.3.2"
   },
   "runtimes": {
-    "win10-x64": {}
+    "win10-x64": {},
+    "osx.10.11-x64":{}
   },
   "frameworks": {
     "netcoreapp1.4": {
