@@ -5,7 +5,6 @@
     public static class TestConfiguration
     {
         public static double Version => 1.4;
-        //public static string Runtime => "win10-x64";
         public static string ConfigurationPath => GetConfigurationPath();
 
         public static string GetConfigurationPath()
