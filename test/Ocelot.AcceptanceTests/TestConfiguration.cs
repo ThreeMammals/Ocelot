@@ -16,14 +16,19 @@
 
             if(RuntimeInformation.OSDescription.ToLower().Contains("darwin"))
             {
-                oSDescription = "osx.10.11";
+                return FormatConfigurationPath("osx.10.11", osArchitecture);
             }
 
-            if(RuntimeInformation.OSDescription.ToLower().Contains("windows"))
-            {
-                oSDescription = "win10";
+            if(RuntimeInformation.OSDescription.ToLower().Contains("microsoft windows 10"))
+            {                
+                return FormatConfigurationPath("win10", osArchitecture);
             }
+            
+            return FormatConfigurationPath("win7", osArchitecture);
+        }
 
+        private static string FormatConfigurationPath(string oSDescription, string osArchitecture)
+        {
             var runTime = $"{oSDescription}-{osArchitecture}".ToLower();
 
             var configPath = $"./bin/Debug/netcoreapp{Version}/{runTime}/configuration.json";
