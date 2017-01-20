@@ -36,6 +36,143 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void should_use_downstream_host()
+        {
+                this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                            {
+                                ReRoutes = new List<FileReRoute>
+                                {
+                                    new FileReRoute
+                                    {
+                                        DownstreamHost = "127.0.0.1",
+                                        UpstreamTemplate = "/api/products/{productId}",
+                                        DownstreamTemplate = "/products/{productId}",
+                                        UpstreamHttpMethod = "Get",
+                                    }
+                                },
+                            }))
+                                .And(x => x.GivenTheConfigIsValid())
+                                .When(x => x.WhenICreateTheConfig())
+                                .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                                {
+                                    new ReRouteBuilder()
+                                        .WithDownstreamHost("127.0.0.1")
+                                        .WithDownstreamTemplate("/products/{productId}")
+                                        .WithUpstreamTemplate("/api/products/{productId}")
+                                        .WithUpstreamHttpMethod("Get")
+                                        .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                                        .Build()
+                                }))
+                    .BDDfy();
+        }
+
+        public void should_use_downstream_scheme()
+        {
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                                        {
+                                            ReRoutes = new List<FileReRoute>
+                                            {
+                                                new FileReRoute
+                                                {
+                                                    DownstreamScheme = "https",
+                                                    UpstreamTemplate = "/api/products/{productId}",
+                                                    DownstreamTemplate = "/products/{productId}",
+                                                    UpstreamHttpMethod = "Get",
+                                                }
+                                            },
+                                        }))
+                                            .And(x => x.GivenTheConfigIsValid())
+                                            .When(x => x.WhenICreateTheConfig())
+                                            .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                                            {
+                                                new ReRouteBuilder()
+                                                    .WithDownstreamScheme("https")
+                                                    .WithDownstreamTemplate("/products/{productId}")
+                                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                                    .WithUpstreamHttpMethod("Get")
+                                                    .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                                                    .Build()
+                                            }))
+                                .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_service_discovery_for_downstream_service_host()
+        {
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                        {
+                            ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    UpstreamTemplate = "/api/products/{productId}",
+                                    DownstreamTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = "Get",
+                                    ReRouteIsCaseSensitive = false,
+                                    ServiceName = "ProductService"
+                                }
+                            },
+                            GlobalConfiguration = new FileGlobalConfiguration
+                            {
+                                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                                {
+                                     Provider = "consul",
+                                     Address = "127.0.0.1"
+                                }
+                            }
+                        }))
+                            .And(x => x.GivenTheConfigIsValid())
+                            .When(x => x.WhenICreateTheConfig())
+                            .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                            {
+                                new ReRouteBuilder()
+                                    .WithDownstreamTemplate("/products/{productId}")
+                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                                    .WithServiceName("ProductService")
+                                    .WithUseServiceDiscovery(true)
+                                    .WithServiceDiscoveryProvider("consul")
+                                    .WithServiceDiscoveryAddress("127.0.01")
+                                    .Build()
+                            }))
+                            .BDDfy();
+        }
+
+         [Fact]
+        public void should_not_use_service_discovery_for_downstream_host_url_when_no_service_name()
+        {
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                        {
+                            ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    UpstreamTemplate = "/api/products/{productId}",
+                                    DownstreamTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = "Get",
+                                    ReRouteIsCaseSensitive = false,
+                                }
+                            }
+                        }))
+                            .And(x => x.GivenTheConfigIsValid())
+                            .When(x => x.WhenICreateTheConfig())
+                            .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                            {
+                                new ReRouteBuilder()
+                                    .WithDownstreamTemplate("/products/{productId}")
+                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                                    .WithUseServiceDiscovery(false)
+                                    .WithServiceDiscoveryProvider(null)
+                                    .WithServiceDiscoveryAddress(null)
+                                    .Build()
+                            }))
+                            .BDDfy();
+        }
+
+        [Fact]
         public void should_use_reroute_case_sensitivity_value()
         {
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration

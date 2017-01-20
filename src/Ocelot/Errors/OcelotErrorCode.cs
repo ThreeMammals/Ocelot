@@ -17,6 +17,8 @@
         InstructionNotForClaimsError,
         UnauthorizedError,
         ClaimValueNotAuthorisedError,
-        UserDoesNotHaveClaimError
+        UserDoesNotHaveClaimError,
+        DownstreamTemplateContainsSchemeError,
+        DownstreamTemplateContainsHostError
     }
 }

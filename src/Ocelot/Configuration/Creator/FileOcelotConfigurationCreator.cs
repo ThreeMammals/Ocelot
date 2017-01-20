@@ -91,6 +91,13 @@ namespace Ocelot.Configuration.Creator
                 ? globalConfiguration.RequestIdKey
                 : reRoute.RequestIdKey;
 
+            var useServiceDiscovery = !string.IsNullOrEmpty(reRoute.ServiceName)
+                && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Address)
+                && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
+
+
+            Func<string> downstreamHostFunc = () => { return reRoute.DownstreamHost; };
+
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
@@ -106,14 +113,18 @@ namespace Ocelot.Configuration.Creator
                     reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims,
                     reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
-                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
+                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
+                    reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostFunc, reRoute.DownstreamScheme);
             }
 
             return new ReRoute(reRoute.DownstreamTemplate, reRoute.UpstreamTemplate, 
                 reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
                 null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
                 reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
-                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds));
+                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
+                    reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostFunc, reRoute.DownstreamScheme);
         }
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)

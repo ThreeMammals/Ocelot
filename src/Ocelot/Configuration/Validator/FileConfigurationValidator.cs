@@ -26,6 +26,13 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
 
+            result = CheckForReRoutesContainingDownstreamScheme(configuration);
+
+            if (result.IsError)
+            {
+                return new OkResponse<ConfigurationValidationResult>(result);
+            }
+
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
@@ -61,6 +68,27 @@ namespace Ocelot.Configuration.Validator
             SupportedAuthenticationProviders supportedProvider;
 
             return Enum.TryParse(provider, true, out supportedProvider);
+        }
+
+        private ConfigurationValidationResult CheckForReRoutesContainingDownstreamScheme(FileConfiguration configuration)
+        {   
+            var errors = new List<Error>();
+
+            foreach(var reRoute in configuration.ReRoutes)
+            {
+                if(reRoute.DownstreamTemplate.Contains("https://")
+                || reRoute.DownstreamTemplate.Contains("http://"))
+                {
+                    errors.Add(new DownstreamTemplateContainsSchemeError($"{reRoute.DownstreamTemplate} contains scheme"));
+                }
+            }
+
+            if(errors.Any())
+            {
+                return new ConfigurationValidationResult(false, errors);
+            }
+
+            return new ConfigurationValidationResult(true, errors);
         }
 
         private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)

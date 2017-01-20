@@ -20,6 +20,44 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void configuration_is_invalid_if_scheme_in_downstream_template()
+        {
+                this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamTemplate = "http://www.bbc.co.uk/api/products/{productId}",
+                        UpstreamTemplate = "http://asdf.com"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .BDDfy();
+        }
+
+           [Fact]
+        public void configuration_is_invalid_if_host_in_downstream_template()
+        {
+                this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamTemplate = "www.bbc.co.uk/api/products/{productId}",
+                        UpstreamTemplate = "http://asdf.com"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .BDDfy();
+        }
+
+        [Fact]
         public void configuration_is_valid_with_one_reroute()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration()
@@ -28,7 +66,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com"
                     }
                 }
@@ -47,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
@@ -70,7 +108,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
@@ -94,7 +132,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com"
                     },
                     new FileReRoute

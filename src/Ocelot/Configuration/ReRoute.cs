@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration
 {
@@ -7,7 +8,8 @@ namespace Ocelot.Configuration
         public ReRoute(string downstreamTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, 
             bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, bool isCached, CacheOptions fileCacheOptions)
+            string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
+            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<string> downstreamHost, string downstreamScheme)
         {
             DownstreamTemplate = downstreamTemplate;
             UpstreamTemplate = upstreamTemplate;
@@ -26,6 +28,12 @@ namespace Ocelot.Configuration
                 ?? new List<ClaimToThing>();
             ClaimsToHeaders = configurationHeaderExtractorProperties 
                 ?? new List<ClaimToThing>();
+                ServiceName = serviceName;
+                UseServiceDiscovery = useServiceDiscovery;
+                ServiceDiscoveryProvider = serviceDiscoveryProvider;
+                ServiceDiscoveryAddress = serviceDiscoveryAddress;
+                DownstreamHost = downstreamHost;
+                DownstreamScheme = downstreamScheme;
         }
 
         public string DownstreamTemplate { get; private set; }
@@ -42,5 +50,11 @@ namespace Ocelot.Configuration
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
         public CacheOptions FileCacheOptions { get; private set; }
+        public string ServiceName { get; private set;}
+        public bool UseServiceDiscovery { get; private set;}
+        public string ServiceDiscoveryProvider { get; private set;}
+        public string ServiceDiscoveryAddress { get; private set;}
+        public Func<string> DownstreamHost {get;private set;}
+        public string DownstreamScheme {get;private set;}
     }
 }
