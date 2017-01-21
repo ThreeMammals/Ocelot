@@ -136,17 +136,20 @@ In order to set up a ReRoute you need to add one to the json array called ReRout
 the following.
 
 		{
-            "DownstreamTemplate": "http://jsonplaceholder.typicode.com/posts/{postId}",
+            "DownstreamPathTemplate": "/api/posts/{postId}",
+			"DownstreamScheme": "https",
+			"DownstreamPort": 80,
+			"DownstreamHost" "localhost"
             "UpstreamTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Put"
         }
 
-The DownstreamTemplate is the URL that this request will be forwarded to.
+The DownstreamPathTemplate,Scheme, Port and Host make the URL that this request will be forwarded to.
 The UpstreamTemplate is the URL that Ocelot will use to identity which 
-DownstreamTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
+DownstreamPathTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
 Ocelot can distinguish between requests to the same URL and is obviously needed to work :)
 In Ocelot you can add placeholders for variables to your Templates in the form of {something}.
-The placeholder needs to be in both the DownstreamTemplate and UpstreamTemplate. If it is
+The placeholder needs to be in both the DownstreamPathTemplate and UpstreamTemplate. If it is
 Ocelot will attempt to replace the placeholder with the correct variable value from the 
 Upstream URL when the request comes in.
 

@@ -26,7 +26,7 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
 
-            result = CheckForReRoutesContainingDownstreamScheme(configuration);
+            result = CheckForReRoutesContainingDownstreamSchemeInDownstreamPathTemplate(configuration);
 
             if (result.IsError)
             {
@@ -70,25 +70,25 @@ namespace Ocelot.Configuration.Validator
             return Enum.TryParse(provider, true, out supportedProvider);
         }
 
-        private ConfigurationValidationResult CheckForReRoutesContainingDownstreamScheme(FileConfiguration configuration)
+        private ConfigurationValidationResult CheckForReRoutesContainingDownstreamSchemeInDownstreamPathTemplate(FileConfiguration configuration)
         {   
             var errors = new List<Error>();
 
             foreach(var reRoute in configuration.ReRoutes)
             {
-                if(reRoute.DownstreamTemplate.Contains("https://")
-                || reRoute.DownstreamTemplate.Contains("http://"))
+                if(reRoute.DownstreamPathTemplate.Contains("https://")
+                || reRoute.DownstreamPathTemplate.Contains("http://"))
                 {
-                    errors.Add(new DownstreamTemplateContainsSchemeError($"{reRoute.DownstreamTemplate} contains scheme"));
+                    errors.Add(new DownstreamPathTemplateContainsSchemeError($"{reRoute.DownstreamPathTemplate} contains scheme"));
                 }
             }
 
             if(errors.Any())
             {
-                return new ConfigurationValidationResult(false, errors);
+                return new ConfigurationValidationResult(true, errors);
             }
 
-            return new ConfigurationValidationResult(true, errors);
+            return new ConfigurationValidationResult(false, errors);
         }
 
         private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)
@@ -105,7 +105,7 @@ namespace Ocelot.Configuration.Validator
                                .Where(x => x.Skip(1).Any());
 
             var errors = dupes
-                .Select(d => new DownstreamTemplateAlreadyUsedError(string.Format("Duplicate DownstreamTemplate: {0}", d.Key.UpstreamTemplate)))
+                .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d.Key.UpstreamTemplate)))
                 .Cast<Error>()
                 .ToList();
 
