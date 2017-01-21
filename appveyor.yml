@@ -7,6 +7,6 @@ build_script:
 test_script:
 - run-tests.bat
 after_test:
-- push-to-nuget.bat %appveyor_build_version%-rc1 %nugetApiKey%
+- push-to-nuget.bat %appveyor_build_version% %nugetApiKey%
 cache:
 - '%USERPROFILE%\.nuget\packages'

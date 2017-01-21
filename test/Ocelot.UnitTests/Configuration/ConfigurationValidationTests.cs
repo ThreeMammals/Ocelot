@@ -10,8 +10,8 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ConfigurationValidationTests
     {
-        private FileConfiguration _fileConfiguration;
         private readonly IConfigurationValidator _configurationValidator;
+        private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
 
         public ConfigurationValidationTests()
@@ -20,15 +20,34 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void configuration_is_valid_with_one_reroute()
+        public void configuration_is_invalid_if_scheme_in_downstream_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
+                        UpstreamTemplate = "http://asdf.com"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_with_one_reroute()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com"
                     }
                 }
@@ -41,13 +60,13 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_valid_with_valid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamPathTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
@@ -64,13 +83,13 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_invalid_with_invalid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamPathTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
@@ -88,25 +107,25 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration()
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamPathTemplate = "/api/products/",
                         UpstreamTemplate = "http://asdf.com"
                     },
                     new FileReRoute
                     {
-                        DownstreamTemplate = "http://www.bbc.co.uk",
+                        DownstreamPathTemplate = "http://www.bbc.co.uk",
                         UpstreamTemplate = "http://asdf.com"
                     }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorIs<DownstreamTemplateAlreadyUsedError>())
+                .And(x => x.ThenTheErrorIs<DownstreamPathTemplateAlreadyUsedError>())
                 .BDDfy();
         }
 

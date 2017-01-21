@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.File
             FileCacheOptions = new FileCacheOptions();
         }
 
-        public string DownstreamTemplate { get; set; }
+        public string DownstreamPathTemplate { get; set; }
         public string UpstreamTemplate { get; set; }
         public string UpstreamHttpMethod { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
@@ -25,5 +25,9 @@ namespace Ocelot.Configuration.File
         public string RequestIdKey { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public bool ReRouteIsCaseSensitive { get; set; }
+        public string ServiceName { get; set; }
+        public string DownstreamScheme {get;set;}
+        public string DownstreamHost {get;set;}
+        public int DownstreamPort { get; set; }
     }
 }

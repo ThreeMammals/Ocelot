@@ -4,7 +4,7 @@
     {
         UnauthenticatedError, 
         UnknownError,
-        DownstreamTemplateAlreadyUsedError,
+        DownstreampathTemplateAlreadyUsedError,
         UnableToFindDownstreamRouteError,
         CannotAddDataError,
         CannotFindDataError,
@@ -17,6 +17,10 @@
         InstructionNotForClaimsError,
         UnauthorizedError,
         ClaimValueNotAuthorisedError,
-        UserDoesNotHaveClaimError
+        UserDoesNotHaveClaimError,
+        DownstreamPathTemplateContainsSchemeError,
+        DownstreamPathNullOrEmptyError,
+        DownstreamSchemeNullOrEmptyError,
+        DownstreamHostNullOrEmptyError
     }
 }

@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Ocelot.Values;
 
 namespace Ocelot.Configuration.Builder
 {
     public class ReRouteBuilder
     {
-        private string _downstreamTemplate;
+        private string _downstreamPathTemplate;
         private string _upstreamTemplate;
         private string _upstreamTemplatePattern;
         private string _upstreamHttpMethod;
@@ -23,15 +25,58 @@ namespace Ocelot.Configuration.Builder
         private string _requestIdHeaderKey;
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
+        private bool _useServiceDiscovery;
+        private string _serviceName;
+        private string _serviceDiscoveryProvider;
+        private string _serviceDiscoveryAddress;
+        private string _downstreamScheme;
+        private string _downstreamHost;
+        private int _dsPort;
 
         public ReRouteBuilder()
         {
             _additionalScopes = new List<string>();
         }
 
-        public ReRouteBuilder WithDownstreamTemplate(string input)
+        public ReRouteBuilder WithDownstreamScheme(string downstreamScheme)
         {
-            _downstreamTemplate = input;
+            _downstreamScheme = downstreamScheme;
+            return this;
+        }
+
+        public ReRouteBuilder WithDownstreamHost(string downstreamHost)
+        {
+            _downstreamHost = downstreamHost;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceDiscoveryAddress(string serviceDiscoveryAddress)
+        {
+            _serviceDiscoveryAddress = serviceDiscoveryAddress;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceDiscoveryProvider(string serviceDiscoveryProvider)
+        {
+            _serviceDiscoveryProvider = serviceDiscoveryProvider;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceName(string serviceName)
+        {
+            _serviceName = serviceName;
+            return this;
+        }
+
+        public ReRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
+        {
+            _useServiceDiscovery = useServiceDiscovery;
+            return this;
+        }
+
+        public ReRouteBuilder WithDownstreamPathTemplate(string input)
+        {
+            _downstreamPathTemplate = input;
             return this;
         }
 
@@ -141,12 +186,21 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithDownstreamPort(int port)
+        {
+            _dsPort = port;
+            return this;
+        }
+
         public ReRoute Build()
         {
-            return new ReRoute(_downstreamTemplate, _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
+            Func<HostAndPort> downstreamHostFunc = () => new HostAndPort(_downstreamHost, _dsPort);
+
+            return new ReRoute(new DownstreamPathTemplate(_downstreamPathTemplate), _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
-                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions);
+                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
+                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme);
         }
     }
 }

@@ -30,7 +30,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get"
                         }
@@ -54,7 +57,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = false
@@ -79,7 +85,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true
@@ -104,7 +113,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true
@@ -129,7 +141,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true
@@ -154,7 +169,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true

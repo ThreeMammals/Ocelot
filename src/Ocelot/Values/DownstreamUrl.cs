@@ -1,4 +1,4 @@
-﻿namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
+﻿namespace Ocelot.Values
 {
     public class DownstreamUrl
     {

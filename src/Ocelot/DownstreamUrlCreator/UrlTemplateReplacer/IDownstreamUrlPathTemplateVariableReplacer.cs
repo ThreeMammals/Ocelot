@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
-    public interface IDownstreamUrlPathPlaceholderReplacer
+    public interface IDownstreamPathPlaceholderReplacer
     {
-        Response<DownstreamUrl> Replace(string downstreamTemplate, List<UrlPathPlaceholderNameAndValue> urlPathPlaceholderNameAndValues);   
+        Response<DownstreamPath> Replace(DownstreamPathTemplate downstreamPathTemplate, List<UrlPathPlaceholderNameAndValue> urlPathPlaceholderNameAndValues);   
     }
 }

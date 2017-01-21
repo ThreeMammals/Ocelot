@@ -29,7 +29,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:53876/",
+                            DownstreamPathTemplate = "http://localhost:53876/",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get"
                         }

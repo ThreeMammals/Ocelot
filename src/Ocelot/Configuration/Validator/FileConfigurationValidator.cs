@@ -26,6 +26,13 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
 
+            result = CheckForReRoutesContainingDownstreamSchemeInDownstreamPathTemplate(configuration);
+
+            if (result.IsError)
+            {
+                return new OkResponse<ConfigurationValidationResult>(result);
+            }
+
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
@@ -63,6 +70,27 @@ namespace Ocelot.Configuration.Validator
             return Enum.TryParse(provider, true, out supportedProvider);
         }
 
+        private ConfigurationValidationResult CheckForReRoutesContainingDownstreamSchemeInDownstreamPathTemplate(FileConfiguration configuration)
+        {   
+            var errors = new List<Error>();
+
+            foreach(var reRoute in configuration.ReRoutes)
+            {
+                if(reRoute.DownstreamPathTemplate.Contains("https://")
+                || reRoute.DownstreamPathTemplate.Contains("http://"))
+                {
+                    errors.Add(new DownstreamPathTemplateContainsSchemeError($"{reRoute.DownstreamPathTemplate} contains scheme"));
+                }
+            }
+
+            if(errors.Any())
+            {
+                return new ConfigurationValidationResult(true, errors);
+            }
+
+            return new ConfigurationValidationResult(false, errors);
+        }
+
         private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)
         {
             var hasDupes = configuration.ReRoutes
@@ -77,7 +105,7 @@ namespace Ocelot.Configuration.Validator
                                .Where(x => x.Skip(1).Any());
 
             var errors = dupes
-                .Select(d => new DownstreamTemplateAlreadyUsedError(string.Format("Duplicate DownstreamTemplate: {0}", d.Key.UpstreamTemplate)))
+                .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d.Key.UpstreamTemplate)))
                 .Cast<Error>()
                 .ToList();
 
