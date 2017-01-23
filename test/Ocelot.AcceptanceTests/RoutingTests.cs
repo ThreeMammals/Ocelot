@@ -40,7 +40,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
@@ -48,6 +51,62 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_when_path_missing_forward_slash_as_first_char()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "api/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Get",
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_when_host_has_trailing_slash()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost/",
+                            DownstreamPort = 51879,
+                            UpstreamTemplate = "/",
+                            UpstreamHttpMethod = "Get",
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -65,7 +124,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/products",
+                            DownstreamPathTemplate = "/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamTemplate = "/products/",
                             UpstreamHttpMethod = "Get",
                         }
@@ -90,7 +152,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/products",
+                            DownstreamPathTemplate = "/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamTemplate = "/products",
                             UpstreamHttpMethod = "Get",
                         }
@@ -115,7 +180,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/products",
+                            DownstreamPathTemplate = "/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                         }
@@ -139,7 +207,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get"
                         }
@@ -164,7 +235,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Post"
                         }
@@ -189,8 +263,11 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/newThing",
+                            DownstreamPathTemplate = "/newThing",
                             UpstreamTemplate = "/newThing",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
                             UpstreamHttpMethod = "Get",
                         }
                     }

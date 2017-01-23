@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.ReRoutes[0].DownstreamTemplate.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()
@@ -75,16 +75,16 @@ namespace Ocelot.UnitTests.Configuration
 
         class FakeConfig : IOcelotConfiguration
         {
-            private readonly string _downstreamTemplate;
+            private readonly string _downstreamTemplatePath;
 
-            public FakeConfig(string downstreamTemplate)
+            public FakeConfig(string downstreamTemplatePath)
             {
-                _downstreamTemplate = downstreamTemplate;
+                _downstreamTemplatePath = downstreamTemplatePath;
             }
 
             public List<ReRoute> ReRoutes => new List<ReRoute>
             {
-                new ReRouteBuilder().WithDownstreamTemplate(_downstreamTemplate).Build()
+                new ReRouteBuilder().WithDownstreamPathTemplate(_downstreamTemplatePath).Build()
             };
         }
     }

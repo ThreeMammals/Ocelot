@@ -31,7 +31,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             FileCacheOptions = new FileCacheOptions
@@ -64,7 +67,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             FileCacheOptions = new FileCacheOptions
