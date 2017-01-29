@@ -43,6 +43,7 @@ var nugetFeedUnstableUploadUrl = "https://www.myget.org/F/ocelot-unstable/api/v2
 var nugetFeedUnstableSymbolsUploadUrl = "https://www.myget.org/F/ocelot-unstable/symbols/api/v2/package";
 
 //stable releases
+var tagsUrl = "https://api.github.com/repos/binarymash/ocelot/releases/tags/";
 var releaseTag = "";
 var nugetFeedStableKey = EnvironmentVariable("nuget-apikey-stable");
 var nugetFeedStableUploadUrl = "https://www.myget.org/F/ocelot-stable/api/v2/package";
@@ -219,7 +220,8 @@ Task("DownloadGitHubReleaseArtifacts")
     {
         EnsureDirectoryExists(packagesDir);
 
-        var assets_url = ParseJson(GetResource("https://api.github.com/repos/binarymash/pipelinetesting/releases/tags/" + releaseTag))
+		var releaseUrl = tagsUrl + releaseTag;
+        var assets_url = ParseJson(GetResource(releaseUrl))
             .GetValue("assets_url")
 			.Value<string>();
 
