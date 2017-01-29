@@ -46,12 +46,18 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
 
+            //here we could have a lb factory that takes stuff or we could just get the load balancer from the reRoute?
+            //returns the lb for this request
+            
+            //lease the next address from the lb
+
             var dsHostAndPort = DownstreamRoute.ReRoute.DownstreamHostAndPort();
 
             var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
 
             if (dsUrl.IsError)
             {
+                //todo - release the lb connection?
                 _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
 
                 SetPipelineError(dsUrl.Errors);
@@ -65,6 +71,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             _logger.LogDebug("calling next middleware");
 
             await _next.Invoke(context);
+
+            //todo - release the lb connection?
 
             _logger.LogDebug("succesfully called next middleware");
         }

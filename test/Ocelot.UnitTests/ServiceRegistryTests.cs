@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_register_service()
         {
-            this.Given(x => x.GivenAServiceToRegister("product", "localhost:5000"))
+            this.Given(x => x.GivenAServiceToRegister("product", "localhost:5000", 80))
             .When(x => x.WhenIRegisterTheService())
             .Then(x => x.ThenTheServiceIsRegistered())
             .BDDfy();
@@ -29,7 +30,7 @@ namespace Ocelot.UnitTests
 
         public void should_lookup_service()
         {
-            this.Given(x => x.GivenAServiceIsRegistered("product", "localhost:600"))
+            this.Given(x => x.GivenAServiceIsRegistered("product", "localhost:600", 80))
             .When(x => x.WhenILookupTheService("product"))
             .Then(x => x.ThenTheServiceDetailsAreReturned())
             .BDDfy();
@@ -37,7 +38,8 @@ namespace Ocelot.UnitTests
 
         private void ThenTheServiceDetailsAreReturned()
         {
-            _services[0].Address.ShouldBe(_service.Address);
+            _services[0].HostAndPort.DownstreamHost.ShouldBe(_service.HostAndPort.DownstreamHost);
+            _services[0].HostAndPort.DownstreamPort.ShouldBe(_service.HostAndPort.DownstreamPort);
             _services[0].Name.ShouldBe(_service.Name);
         }
 
@@ -46,15 +48,15 @@ namespace Ocelot.UnitTests
             _services = _serviceRegistry.Lookup(name);
         }
 
-        private void GivenAServiceIsRegistered(string name, string address)
+        private void GivenAServiceIsRegistered(string name, string address, int port)
         {
-            _service = new Service(name, address);
+            _service = new Service(name, new HostAndPort(address, port));
             _serviceRepository.Set(_service);
         }
 
-        private void GivenAServiceToRegister(string name, string address)
+        private void GivenAServiceToRegister(string name, string address, int port)
         {
-            _service = new Service(name, address);
+            _service = new Service(name, new HostAndPort(address, port));
         }
 
         private void WhenIRegisterTheService()
@@ -65,7 +67,8 @@ namespace Ocelot.UnitTests
         private void ThenTheServiceIsRegistered()
         {
             var serviceNameAndAddress = _serviceRepository.Get(_service.Name);
-            serviceNameAndAddress[0].Address.ShouldBe(_service.Address);
+            serviceNameAndAddress[0].HostAndPort.DownstreamHost.ShouldBe(_service.HostAndPort.DownstreamHost);
+            serviceNameAndAddress[0].HostAndPort.DownstreamPort.ShouldBe(_service.HostAndPort.DownstreamPort);
             serviceNameAndAddress[0].Name.ShouldBe(_service.Name);
         }
     }
@@ -96,13 +99,13 @@ namespace Ocelot.UnitTests
 
     public class Service
     {
-        public Service(string name, string address)
+        public Service(string name, HostAndPort hostAndPort)
         {
             Name = name;
-            Address = address;
+            HostAndPort = hostAndPort;
         }
         public string Name {get; private set;}
-        public string Address {get; private set;}
+        public HostAndPort HostAndPort {get; private set;}
     }
 
     public interface IServiceRepository

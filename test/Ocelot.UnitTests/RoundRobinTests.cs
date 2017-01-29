@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
+using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests
@@ -10,6 +12,7 @@ namespace Ocelot.UnitTests
     {
         private readonly RoundRobin _roundRobin;
         private readonly List<HostAndPort> _hostAndPorts;
+        private Response<HostAndPort> _hostAndPort;
 
         public RoundRobinTests()
         {
@@ -26,12 +29,13 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_get_next_address()
         {
-            var address = _roundRobin.Next();
-            address.ShouldBe(_hostAndPorts[0]);
-            address = _roundRobin.Next();
-            address.ShouldBe(_hostAndPorts[1]);
-            address = _roundRobin.Next();
-            address.ShouldBe(_hostAndPorts[2]);
+            this.Given(x => x.GivenIGetTheNextAddress())
+                .Then(x => x.ThenTheNextAddressIndexIs(0))
+                .Given(x => x.GivenIGetTheNextAddress())
+                .Then(x => x.ThenTheNextAddressIndexIs(1))
+                .Given(x => x.GivenIGetTheNextAddress())
+                .Then(x => x.ThenTheNextAddressIndexIs(2))
+                .BDDfy();
         }
 
         [Fact]
@@ -41,19 +45,30 @@ namespace Ocelot.UnitTests
 
             while (stopWatch.ElapsedMilliseconds < 1000)
             {
-                var address = _roundRobin.Next();
-                address.ShouldBe(_hostAndPorts[0]);
-                address = _roundRobin.Next();
-                address.ShouldBe(_hostAndPorts[1]);
-                address = _roundRobin.Next();
-                address.ShouldBe(_hostAndPorts[2]);
+                var address = _roundRobin.Lease();
+                address.Data.ShouldBe(_hostAndPorts[0]);
+                address = _roundRobin.Lease();
+                address.Data.ShouldBe(_hostAndPorts[1]);
+                address = _roundRobin.Lease();
+                address.Data.ShouldBe(_hostAndPorts[2]);
             }
+        }
+
+        private void GivenIGetTheNextAddress()
+        {
+            _hostAndPort = _roundRobin.Lease();
+        }
+
+        private void ThenTheNextAddressIndexIs(int index)
+        {
+            _hostAndPort.Data.ShouldBe(_hostAndPorts[index]);
         }
     }
 
     public interface ILoadBalancer
     {
-        HostAndPort Next();
+        Response<HostAndPort> Lease();
+        Response Release(HostAndPort hostAndPort);
     }
 
     public class RoundRobin : ILoadBalancer
@@ -66,7 +81,7 @@ namespace Ocelot.UnitTests
             _hostAndPorts = hostAndPorts;
         }
 
-        public HostAndPort Next()
+        public Response<HostAndPort> Lease()
         {
             if (_last >= _hostAndPorts.Count)
             {
@@ -75,7 +90,12 @@ namespace Ocelot.UnitTests
 
             var next = _hostAndPorts[_last];
             _last++;
-            return next;
+            return new OkResponse<HostAndPort>(next);
+        }
+
+        public Response Release(HostAndPort hostAndPort)
+        {
+            return new OkResponse();
         }
     }
 }

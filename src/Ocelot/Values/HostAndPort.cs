@@ -10,5 +10,10 @@
 
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
+
+        public override string ToString()
+        {
+            return $"{DownstreamHost}:{DownstreamPort}";
+        }
     }
 }
