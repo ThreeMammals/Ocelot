@@ -2,21 +2,15 @@
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=GitReleaseNotes"
-#addin nuget:?package=Cake.DoInDirectory
-#addin "Cake.Json"
+#addin "nuget:?package=Cake.DoInDirectory"
+#addin "nuget:?package=Cake.Json"
 
-var target = Argument("target", "Default");
-var artifactsDir = Directory("artifacts");
-
-Information("target is " +target);
-
-// versioning
-var committedVersion = "0.0.0-dev";
-var buildVersion = committedVersion;
-
-//compile
+// compile
 var compileConfig = Argument("configuration", "Release");
-Information("Build configuration is " + compileConfig);	
+var projectJson = "./src/Ocelot/project.json";
+
+// build artifacts
+var artifactsDir = Directory("artifacts");
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
@@ -31,32 +25,42 @@ var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
 var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
 // packaging
-var projectJson = "./src/Ocelot/project.json";
 var packagesDir = artifactsDir + Directory("Packages");
 var releaseNotesFile = packagesDir + File("releasenotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
-//unstable releases
-var publishUnstableBuilds = true;
+// unstable releases
 var nugetFeedUnstableKey = EnvironmentVariable("nuget-apikey-unstable");
 var nugetFeedUnstableUploadUrl = "https://www.myget.org/F/ocelot-unstable/api/v2/package";
 var nugetFeedUnstableSymbolsUploadUrl = "https://www.myget.org/F/ocelot-unstable/symbols/api/v2/package";
 
-//stable releases
+// stable releases
 var tagsUrl = "https://api.github.com/repos/binarymash/ocelot/releases/tags/";
-var releaseTag = "";
 var nugetFeedStableKey = EnvironmentVariable("nuget-apikey-stable");
 var nugetFeedStableUploadUrl = "https://www.myget.org/F/ocelot-stable/api/v2/package";
 var nugetFeedStableSymbolsUploadUrl = "https://www.myget.org/F/ocelot-stable/symbols/api/v2/package";
 
-Task("Default")
-	.IsDependentOn("RunTests")
-	.IsDependentOn("CreatePackages")
-	.IsDependentOn("ReleasePackagesToUnstableFeed")
-	.Does(() =>
-	{
-	});
+// internal build variables - don't change these.
+var releaseTag = "";
+var buildVersion = committedVersion;
+var committedVersion = "0.0.0-dev";
 
+var target = Argument("target", "Default");
+
+Information("target is " +target);
+Information("Build configuration is " + compileConfig);	
+
+Task("Default")
+	.IsDependentOn("Build");
+
+Task("Build")
+	.IsDependentOn("RunTests")
+	.IsDependentOn("CreatePackages");
+
+Task("BuildAndReleaseUnstable")
+	.IsDependentOn("Build")
+	.IsDependentOn("ReleasePackagesToUnstableFeed");
+	
 Task("Clean")
 	.Does(() =>
 	{
@@ -138,7 +142,7 @@ Task("RunBenchmarkTests")
 
 		DoInDirectory(benchmarkTestAssemblies, () =>
 		{
-			DotNetCoreRun(".", "--args", buildSettings);
+			DotNetCoreRun(".", "", buildSettings);
 		});
 	});
 
