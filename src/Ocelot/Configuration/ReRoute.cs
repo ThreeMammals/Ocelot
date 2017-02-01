@@ -10,8 +10,10 @@ namespace Ocelot.Configuration
             bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
-            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<HostAndPort> downstreamHostAndPort, string downstreamScheme)
+            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<HostAndPort> downstreamHostAndPort, 
+            string downstreamScheme, string loadBalancer)
         {
+            LoadBalancer = loadBalancer;
             DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamTemplate = upstreamTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
@@ -36,7 +38,6 @@ namespace Ocelot.Configuration
                 DownstreamHostAndPort = downstreamHostAndPort;
                 DownstreamScheme = downstreamScheme;
         }
-
         public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
         public string UpstreamTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }
@@ -57,5 +58,6 @@ namespace Ocelot.Configuration
         public string ServiceDiscoveryAddress { get; private set;}
         public Func<HostAndPort> DownstreamHostAndPort {get;private set;}
         public string DownstreamScheme {get;private set;}
+        public string LoadBalancer {get;private set;}
     }
 }

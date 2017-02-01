@@ -97,6 +97,13 @@ namespace Ocelot.Configuration.Creator
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
 
+            //can we do the logic in this func to get the host and port from the load balancer?
+            //lBfactory.GetLbForThisDownstreamTemplate
+            //use it in the func to get the next host and port?
+            //how do we release it? cant callback, could access the lb and release later? 
+
+            //ideal world we would get the host and port, then make the request using it, then release the connection to the lb
+
             Func<HostAndPort> downstreamHostAndPortFunc = () => new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
 
             if (isAuthenticated)
@@ -116,7 +123,8 @@ namespace Ocelot.Configuration.Creator
                     reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme, 
+                    reRoute.LoadBalancer);
             }
 
             return new ReRoute(new DownstreamPathTemplate(reRoute.DownstreamPathTemplate), reRoute.UpstreamTemplate, 
@@ -125,7 +133,8 @@ namespace Ocelot.Configuration.Creator
                 reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme,
+                    reRoute.LoadBalancer);
         }
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)

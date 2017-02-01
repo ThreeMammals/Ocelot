@@ -32,10 +32,17 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamScheme;
         private string _downstreamHost;
         private int _dsPort;
+        private string _loadBalancer;
 
         public ReRouteBuilder()
         {
             _additionalScopes = new List<string>();
+        }
+
+        public ReRouteBuilder WithLoadBalancer(string loadBalancer)
+        {
+            _loadBalancer = loadBalancer;
+            return this;
         }
 
         public ReRouteBuilder WithDownstreamScheme(string downstreamScheme)
@@ -200,7 +207,7 @@ namespace Ocelot.Configuration.Builder
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
-                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme);
+                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme, _loadBalancer);
         }
     }
 }

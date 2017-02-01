@@ -10,7 +10,7 @@ namespace Ocelot.UnitTests
 {
     public class RoundRobinTests
     {
-        private readonly RoundRobin _roundRobin;
+        private readonly RoundRobinLoadBalancer _roundRobin;
         private readonly List<HostAndPort> _hostAndPorts;
         private Response<HostAndPort> _hostAndPort;
 
@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests
                 new HostAndPort("127.0.0.1", 5001)
             };
 
-            _roundRobin = new RoundRobin(_hostAndPorts);
+            _roundRobin = new RoundRobinLoadBalancer(_hostAndPorts);
         }
 
         [Fact]
@@ -71,12 +71,12 @@ namespace Ocelot.UnitTests
         Response Release(HostAndPort hostAndPort);
     }
 
-    public class RoundRobin : ILoadBalancer
+    public class RoundRobinLoadBalancer : ILoadBalancer
     {
         private readonly List<HostAndPort> _hostAndPorts;
         private int _last;
 
-        public RoundRobin(List<HostAndPort> hostAndPorts)
+        public RoundRobinLoadBalancer(List<HostAndPort> hostAndPorts)
         {
             _hostAndPorts = hostAndPorts;
         }

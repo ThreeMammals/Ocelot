@@ -51,6 +51,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             
             //lease the next address from the lb
 
+            //this could return the load balancer which you call next on, that gives you the host and port then you can call release in a try catch 
+            //and if the call works?
             var dsHostAndPort = DownstreamRoute.ReRoute.DownstreamHostAndPort();
 
             var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
