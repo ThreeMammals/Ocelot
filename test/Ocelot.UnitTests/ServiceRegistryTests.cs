@@ -3,6 +3,8 @@ using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using System;
+using System.Linq;
 
 namespace Ocelot.UnitTests
 {
@@ -50,13 +52,13 @@ namespace Ocelot.UnitTests
 
         private void GivenAServiceIsRegistered(string name, string address, int port)
         {
-            _service = new Service(name, new HostAndPort(address, port));
+            _service = new Service( Guid.NewGuid().ToString(), name,"", Enumerable.Empty<string>(), new HostAndPort(address, port));
             _serviceRepository.Set(_service);
         }
 
         private void GivenAServiceToRegister(string name, string address, int port)
         {
-            _service = new Service(name, new HostAndPort(address, port));
+            _service = new Service(Guid.NewGuid().ToString(), name, "", Enumerable.Empty<string>(), new HostAndPort(address, port));
         }
 
         private void WhenIRegisterTheService()
@@ -77,6 +79,12 @@ namespace Ocelot.UnitTests
     {
         void Register(Service serviceNameAndAddress);
         List<Service> Lookup(string name);
+        List<Service> Lookup();
+        List<Service> Lookup(Predicate<KeyValuePair<string, string[]>> nameTagsPredicate,
+            Predicate<Service> registryInformationPredicate);
+        List<Service> Lookup(Predicate<KeyValuePair<string, string[]>> predicate);
+        List<Service> Lookup(Predicate<Service> predicate);
+        List<Service> LookupAllServices();
     }
 
     public class ServiceRegistry : IServiceRegistry
@@ -95,22 +103,68 @@ namespace Ocelot.UnitTests
         {
             return _repository.Get(name);
         }
+
+      
+        public List<Service> Lookup()
+        {
+            return _repository.GetAll();
+        }
+
+    
+        public List<Service> Lookup(Predicate<KeyValuePair<string, string[]>> nameTagsPredicate, Predicate<Service> registryInformationPredicate)
+        {
+            return _repository.GetServicesCatalog()
+               .Where(kvp => nameTagsPredicate(kvp))
+               .Select(kvp => kvp.Key)
+               .Select(Lookup)
+               .SelectMany(task => task)
+               .Where(x => registryInformationPredicate(x))
+               .ToList();
+        }
+
+        public List<Service> Lookup(Predicate<KeyValuePair<string, string[]>> predicate)
+        {
+            return Lookup(nameTagsPredicate: predicate, registryInformationPredicate: x => true);
+        }
+
+        public List<Service> Lookup(Predicate<Service> predicate)
+        {
+            return Lookup(nameTagsPredicate: x => true, registryInformationPredicate:predicate);
+        }
+
+        public List<Service> LookupAllServices()
+        {
+            return _repository.GetAll();
+        }
     }
 
     public class Service
     {
-        public Service(string name, HostAndPort hostAndPort)
+        public Service(string id, string name, string version, IEnumerable<string> tags, HostAndPort hostAndPort)
         {
             Name = name;
+            Id = id;
+            Version = version;
+            Tags = tags;
             HostAndPort = hostAndPort;
         }
+
+        public string Id { get;  private set; }
+
         public string Name {get; private set;}
+
+        public string Version { get; private set; }
+
+        public IEnumerable<string> Tags { get; private set; }
+
         public HostAndPort HostAndPort {get; private set;}
     }
 
     public interface IServiceRepository
     {
         List<Service> Get(string serviceName);
+        List<Service> GetAll();
+        Dictionary<string, string[]> GetServicesCatalog();
         void Set(Service serviceNameAndAddress);
     }
 
@@ -126,6 +180,27 @@ namespace Ocelot.UnitTests
         public List<Service> Get(string serviceName)
         {
             return _registeredServices[serviceName];
+        }
+
+        public List<Service> GetAll()
+        {
+            List<Service> serviceInstances = new List<Service>();
+            foreach (var servcies in _registeredServices.Values)
+            {
+                serviceInstances.AddRange(servcies);
+            }
+            return serviceInstances;
+        }
+
+        public Dictionary<string, string[]> GetServicesCatalog()
+        {
+            var results = GetAll();
+            
+            Dictionary<string, string[]> result = results
+               .GroupBy(x => x.Name, x => x.Tags)
+               .ToDictionary(g => g.Key, g => g.SelectMany(x => x ?? Enumerable.Empty<string>()).ToArray());
+
+            return result;
         }
 
         public void Set(Service serviceNameAndAddress)

@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, hostAndPort)
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), hostAndPort)
             };
 
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
@@ -47,23 +47,23 @@ namespace Ocelot.UnitTests
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80)),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80)),
-                new Service(serviceName, new HostAndPort("127.0.0.3", 80))
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.1", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.2", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.3", 80))
             };
 
             _services = availableServices;
             _leastConnection = new LeastConnection(() => _services, serviceName);
 
-            var response = _leastConnection.Lease();
+            var response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[2].HostAndPort.DownstreamHost);
         }
@@ -75,26 +75,26 @@ namespace Ocelot.UnitTests
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80)),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.1", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(),new HostAndPort("127.0.0.2", 80)),
             };
 
             _services = availableServices;
             _leastConnection = new LeastConnection(() => _services, serviceName);
 
-            var response = _leastConnection.Lease();
+            var response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
         }
@@ -106,33 +106,33 @@ namespace Ocelot.UnitTests
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80)),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.1", 80)),
+                new Service(Guid.NewGuid().ToString(), serviceName,"", Enumerable.Empty<string>().ToList(), new HostAndPort("127.0.0.2", 80)),
             };
 
             _services = availableServices;
             _leastConnection = new LeastConnection(() => _services, serviceName);
 
-            var response = _leastConnection.Lease();
+            var response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
             //release this so 2 should have 1 connection and we should get 2 back as our next host and port
             _leastConnection.Release(availableServices[1].HostAndPort);
 
-            response = _leastConnection.Lease();
+            response = _leastConnection.Lease(availableServices);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
         }
@@ -193,7 +193,7 @@ namespace Ocelot.UnitTests
 
         private void WhenIGetTheNextHostAndPort()
         {
-            _result = _leastConnection.Lease();
+            _result = _leastConnection.Lease(_services);
         }
 
         private void ThenTheNextHostAndPortIsReturned()
@@ -216,9 +216,8 @@ namespace Ocelot.UnitTests
             _leases = new List<Lease>();
         }
 
-        public Response<HostAndPort> Lease()
+        public Response<HostAndPort> Lease(IList<Service> services)
         {
-            var services = _services();
 
             if(services == null)
             {
@@ -289,7 +288,7 @@ namespace Ocelot.UnitTests
             return leaseWithLeastConnections;
         }
 
-        private Response UpdateServices(List<Service> services)
+        private Response UpdateServices(IList<Service> services)
         { 
             if(_leases.Count > 0)
             {
