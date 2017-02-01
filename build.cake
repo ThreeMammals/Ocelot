@@ -31,14 +31,14 @@ var artifactsFile = packagesDir + File("artifacts.txt");
 
 // unstable releases
 var nugetFeedUnstableKey = EnvironmentVariable("nuget-apikey-unstable");
-var nugetFeedUnstableUploadUrl = "https://www.myget.org/F/ocelot-unstable/api/v2/package";
-var nugetFeedUnstableSymbolsUploadUrl = "https://www.myget.org/F/ocelot-unstable/symbols/api/v2/package";
+var nugetFeedUnstableUploadUrl = "https://www.nuget.org/api/v2/package";
+var nugetFeedUnstableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
 // stable releases
-var tagsUrl = "https://api.github.com/repos/binarymash/ocelot/releases/tags/";
+var tagsUrl = "https://api.github.com/repos/tompallister/ocelot/releases/tags/";
 var nugetFeedStableKey = EnvironmentVariable("nuget-apikey-stable");
-var nugetFeedStableUploadUrl = "https://www.myget.org/F/ocelot-stable/api/v2/package";
-var nugetFeedStableSymbolsUploadUrl = "https://www.myget.org/F/ocelot-stable/symbols/api/v2/package";
+var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
+var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
 // internal build variables - don't change these.
 var releaseTag = "";
