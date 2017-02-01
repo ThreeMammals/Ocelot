@@ -201,13 +201,12 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-            Func<HostAndPort> downstreamHostFunc = () => new HostAndPort(_downstreamHost, _dsPort);
-
             return new ReRoute(new DownstreamPathTemplate(_downstreamPathTemplate), _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
-                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme, _loadBalancer);
+                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, _downstreamScheme, _loadBalancer,
+                _downstreamHost, _dsPort);
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.LoadBalancer
 {
     public class RoundRobinTests
     {
@@ -62,40 +63,6 @@ namespace Ocelot.UnitTests
         private void ThenTheNextAddressIndexIs(int index)
         {
             _hostAndPort.Data.ShouldBe(_services[index].HostAndPort);
-        }
-    }
-
-    public interface ILoadBalancer
-    {
-        Response<HostAndPort> Lease();
-        Response Release(HostAndPort hostAndPort);
-    }
-
-    public class RoundRobinLoadBalancer : ILoadBalancer
-    {
-        private readonly List<Service> _services;
-        private int _last;
-
-        public RoundRobinLoadBalancer(List<Service> services)
-        {
-            _services = services;
-        }
-
-        public Response<HostAndPort> Lease()
-        {
-            if (_last >= _services.Count)
-            {
-                _last = 0;
-            }
-
-            var next = _services[_last];
-            _last++;
-            return new OkResponse<HostAndPort>(next.HostAndPort);
-        }
-
-        public Response Release(HostAndPort hostAndPort)
-        {
-            return new OkResponse();
         }
     }
 }

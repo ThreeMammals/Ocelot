@@ -4,7 +4,7 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceRegistryTests
     {

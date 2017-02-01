@@ -10,10 +10,12 @@ namespace Ocelot.Configuration
             bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
-            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<HostAndPort> downstreamHostAndPort, 
-            string downstreamScheme, string loadBalancer)
+            string serviceDiscoveryProvider, string serviceDiscoveryAddress,
+            string downstreamScheme, string loadBalancer, string downstreamHost, int downstreamPort)
         {
             LoadBalancer = loadBalancer;
+            DownstreamHost = downstreamHost;
+            DownstreamPort = downstreamPort;
             DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamTemplate = upstreamTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
@@ -35,7 +37,6 @@ namespace Ocelot.Configuration
                 UseServiceDiscovery = useServiceDiscovery;
                 ServiceDiscoveryProvider = serviceDiscoveryProvider;
                 ServiceDiscoveryAddress = serviceDiscoveryAddress;
-                DownstreamHostAndPort = downstreamHostAndPort;
                 DownstreamScheme = downstreamScheme;
         }
         public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
@@ -56,8 +57,9 @@ namespace Ocelot.Configuration
         public bool UseServiceDiscovery { get; private set;}
         public string ServiceDiscoveryProvider { get; private set;}
         public string ServiceDiscoveryAddress { get; private set;}
-        public Func<HostAndPort> DownstreamHostAndPort {get;private set;}
         public string DownstreamScheme {get;private set;}
         public string LoadBalancer {get;private set;}
+        public string DownstreamHost { get; private set; }
+        public int DownstreamPort { get; private set; }
     }
 }

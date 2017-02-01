@@ -3,11 +3,11 @@ using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
 {
-    public class NoServiceProvider : IServiceProvider
+    public class ConfigurationServiceProvider : IServiceProvider
     {
         private List<Service> _services;
 
-        public NoServiceProvider(List<Service> services)
+        public ConfigurationServiceProvider(List<Service> services)
         {
             _services = services;
         }

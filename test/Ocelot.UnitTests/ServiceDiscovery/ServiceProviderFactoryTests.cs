@@ -1,17 +1,15 @@
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests
+namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceProviderFactoryTests
     {
-        private ReRoute _reRote;
+        private ServiceConfiguraion _serviceConfig;
         private IServiceProvider _result;
-        private ServiceProviderFactory _factory;
+        private readonly ServiceProviderFactory _factory;
 
         public ServiceProviderFactoryTests()
         {
@@ -21,25 +19,22 @@ namespace Ocelot.UnitTests
         [Fact]
         public void should_return_no_service_provider()
         {
-            var reRoute = new ReRouteBuilder()
-            .WithDownstreamHost("127.0.0.1")
-            .WithDownstreamPort(80)
-            .Build();
+            var serviceConfig = new ServiceConfiguraion("product", "127.0.0.1", 80, false);
 
-            this.Given(x => x.GivenTheReRoute(reRoute))
+            this.Given(x => x.GivenTheReRoute(serviceConfig))
                 .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<NoServiceProvider>())
+                .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
                 .BDDfy();
         }
 
-        private void GivenTheReRoute(ReRoute reRoute)
+        private void GivenTheReRoute(ServiceConfiguraion serviceConfig)
         {
-            _reRote = reRoute;
+            _serviceConfig = serviceConfig;
         }
 
         private void WhenIGetTheServiceProvider()
         {
-            _result = _factory.Get(_reRote);
+            _result = _factory.Get(_serviceConfig);
         }
 
         private void ThenTheServiceProviderIs<T>()

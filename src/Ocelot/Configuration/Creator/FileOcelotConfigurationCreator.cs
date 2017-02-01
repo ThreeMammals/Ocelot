@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.Utilities;
@@ -97,31 +98,6 @@ namespace Ocelot.Configuration.Creator
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Address)
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
-
-            //can we do the logic in this func to get the host and port from the load balancer?
-            //lBfactory.GetLbForThisDownstreamTemplate
-            //use it in the func to get the next host and port?
-            //how do we release it? cant callback, could access the lb and release later? 
-
-            //ideal world we would get the host and port, then make the request using it, then release the connection to the lb
-
-            Func<HostAndPort> downstreamHostAndPortFunc = () => {
-
-                //service provider factory takes the reRoute
-                    //can return no service provider (just use ocelot config)
-                    //can return consol service provider
-                //returns a service provider
-                //we call get on the service provider
-                    //could reutrn services from consol or just configuration.json
-                //this returns a list of services and we take the first one
-                var hostAndPort = new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
-                var services = new List<Service>();
-                var serviceProvider = new NoServiceProvider(services);
-                var service = serviceProvider.Get();
-                var firstHostAndPort = service[0].HostAndPort;
-                return firstHostAndPort;
-            };
-
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
@@ -139,8 +115,8 @@ namespace Ocelot.Configuration.Creator
                     reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme, 
-                    reRoute.LoadBalancer);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, reRoute.DownstreamScheme, 
+                    reRoute.LoadBalancer, reRoute.DownstreamHost, reRoute.DownstreamPort);
             }
 
             return new ReRoute(new DownstreamPathTemplate(reRoute.DownstreamPathTemplate), reRoute.UpstreamTemplate, 
@@ -149,8 +125,8 @@ namespace Ocelot.Configuration.Creator
                 reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme,
-                    reRoute.LoadBalancer);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, reRoute.DownstreamScheme,
+                    reRoute.LoadBalancer, reRoute.DownstreamHost, reRoute.DownstreamPort);
         }
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)

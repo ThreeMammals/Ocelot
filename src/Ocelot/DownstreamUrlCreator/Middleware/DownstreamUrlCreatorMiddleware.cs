@@ -6,6 +6,7 @@ using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -45,15 +46,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
 
             var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
-
-            //here we could have a lb factory that takes stuff or we could just get the load balancer from the reRoute?
-            //returns the lb for this request
             
-            //lease the next address from the lb
-
-            //this could return the load balancer which you call next on, that gives you the host and port then you can call release in a try catch 
-            //and if the call works?
-            var dsHostAndPort = DownstreamRoute.ReRoute.DownstreamHostAndPort();
+            //todo - get this out of scoped data repo?
+            var dsHostAndPort = new HostAndPort(DownstreamRoute.ReRoute.DownstreamHost,
+                DownstreamRoute.ReRoute.DownstreamPort);
 
             var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
 
