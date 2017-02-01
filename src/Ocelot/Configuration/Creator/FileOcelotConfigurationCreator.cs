@@ -7,6 +7,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Utilities;
 using Ocelot.Values;
 
@@ -104,7 +105,22 @@ namespace Ocelot.Configuration.Creator
 
             //ideal world we would get the host and port, then make the request using it, then release the connection to the lb
 
-            Func<HostAndPort> downstreamHostAndPortFunc = () => new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
+            Func<HostAndPort> downstreamHostAndPortFunc = () => {
+
+                //service provider factory takes the reRoute
+                    //can return no service provider (just use ocelot config)
+                    //can return consol service provider
+                //returns a service provider
+                //we call get on the service provider
+                    //could reutrn services from consol or just configuration.json
+                //this returns a list of services and we take the first one
+                var hostAndPort = new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
+                var services = new List<Service>();
+                var serviceProvider = new NoServiceProvider(services);
+                var service = serviceProvider.Get();
+                var firstHostAndPort = service[0].HostAndPort;
+                return firstHostAndPort;
+            };
 
             if (isAuthenticated)
             {

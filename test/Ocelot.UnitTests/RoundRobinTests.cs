@@ -11,19 +11,19 @@ namespace Ocelot.UnitTests
     public class RoundRobinTests
     {
         private readonly RoundRobinLoadBalancer _roundRobin;
-        private readonly List<HostAndPort> _hostAndPorts;
+        private readonly List<Service> _services;
         private Response<HostAndPort> _hostAndPort;
 
         public RoundRobinTests()
         {
-            _hostAndPorts = new List<HostAndPort>
+            _services = new List<Service>
             {
-                new HostAndPort("127.0.0.1", 5000),
-                new HostAndPort("127.0.0.1", 5001),
-                new HostAndPort("127.0.0.1", 5001)
+                new Service("product", new HostAndPort("127.0.0.1", 5000)),
+                new Service("product", new HostAndPort("127.0.0.1", 5001)),
+                new Service("product", new HostAndPort("127.0.0.1", 5001))
             };
 
-            _roundRobin = new RoundRobinLoadBalancer(_hostAndPorts);
+            _roundRobin = new RoundRobinLoadBalancer(_services);
         }
 
         [Fact]
@@ -46,11 +46,11 @@ namespace Ocelot.UnitTests
             while (stopWatch.ElapsedMilliseconds < 1000)
             {
                 var address = _roundRobin.Lease();
-                address.Data.ShouldBe(_hostAndPorts[0]);
+                address.Data.ShouldBe(_services[0].HostAndPort);
                 address = _roundRobin.Lease();
-                address.Data.ShouldBe(_hostAndPorts[1]);
+                address.Data.ShouldBe(_services[1].HostAndPort);
                 address = _roundRobin.Lease();
-                address.Data.ShouldBe(_hostAndPorts[2]);
+                address.Data.ShouldBe(_services[2].HostAndPort);
             }
         }
 
@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests
 
         private void ThenTheNextAddressIndexIs(int index)
         {
-            _hostAndPort.Data.ShouldBe(_hostAndPorts[index]);
+            _hostAndPort.Data.ShouldBe(_services[index].HostAndPort);
         }
     }
 
@@ -73,24 +73,24 @@ namespace Ocelot.UnitTests
 
     public class RoundRobinLoadBalancer : ILoadBalancer
     {
-        private readonly List<HostAndPort> _hostAndPorts;
+        private readonly List<Service> _services;
         private int _last;
 
-        public RoundRobinLoadBalancer(List<HostAndPort> hostAndPorts)
+        public RoundRobinLoadBalancer(List<Service> services)
         {
-            _hostAndPorts = hostAndPorts;
+            _services = services;
         }
 
         public Response<HostAndPort> Lease()
         {
-            if (_last >= _hostAndPorts.Count)
+            if (_last >= _services.Count)
             {
                 _last = 0;
             }
 
-            var next = _hostAndPorts[_last];
+            var next = _services[_last];
             _last++;
-            return new OkResponse<HostAndPort>(next);
+            return new OkResponse<HostAndPort>(next.HostAndPort);
         }
 
         public Response Release(HostAndPort hostAndPort)

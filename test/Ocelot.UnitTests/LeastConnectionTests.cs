@@ -14,7 +14,7 @@ namespace Ocelot.UnitTests
     {
         private HostAndPort _hostAndPort;
         private Response<HostAndPort> _result;
-        private LeastConnection _leastConnection;
+        private LeastConnectionLoadBalancer _leastConnection;
         private List<Service> _services;
 
         public LeastConnectionTests()
@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnection(() => _services, serviceName);
+            _leastConnection = new LeastConnectionLoadBalancer(() => _services, serviceName);
 
             var response = _leastConnection.Lease();
 
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnection(() => _services, serviceName);
+            _leastConnection = new LeastConnectionLoadBalancer(() => _services, serviceName);
 
             var response = _leastConnection.Lease();
 
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnection(() => _services, serviceName);
+            _leastConnection = new LeastConnectionLoadBalancer(() => _services, serviceName);
 
             var response = _leastConnection.Lease();
 
@@ -178,7 +178,7 @@ namespace Ocelot.UnitTests
         private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
         {
             _services = services;
-            _leastConnection = new LeastConnection(() => _services, serviceName);
+            _leastConnection = new LeastConnectionLoadBalancer(() => _services, serviceName);
         }
 
         private void WhenTheLoadBalancerStarts(List<Service> services, string serviceName)
@@ -203,13 +203,13 @@ namespace Ocelot.UnitTests
         }
     }
 
-    public class LeastConnection : ILoadBalancer
+    public class LeastConnectionLoadBalancer : ILoadBalancer
     {
         private Func<List<Service>> _services;
         private List<Lease> _leases;
         private string _serviceName;
 
-        public LeastConnection(Func<List<Service>> services, string serviceName)
+        public LeastConnectionLoadBalancer(Func<List<Service>> services, string serviceName)
         {
             _services = services;
             _serviceName = serviceName;

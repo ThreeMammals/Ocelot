@@ -86,6 +86,7 @@ namespace Ocelot.UnitTests
         {
             _repository = repository;
         }   
+
         public void Register(Service serviceNameAndAddress)
         {
             _repository.Set(serviceNameAndAddress);
@@ -95,17 +96,6 @@ namespace Ocelot.UnitTests
         {
             return _repository.Get(name);
         }
-    }
-
-    public class Service
-    {
-        public Service(string name, HostAndPort hostAndPort)
-        {
-            Name = name;
-            HostAndPort = hostAndPort;
-        }
-        public string Name {get; private set;}
-        public HostAndPort HostAndPort {get; private set;}
     }
 
     public interface IServiceRepository
