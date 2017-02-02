@@ -23,6 +23,8 @@
         DownstreamSchemeNullOrEmptyError,
         DownstreamHostNullOrEmptyError,
         ServicesAreNullError,
-        ServicesAreEmptyError
+        ServicesAreEmptyError,
+        UnableToFindServiceProviderError,
+        UnableToFindLoadBalancerError
     }
 }

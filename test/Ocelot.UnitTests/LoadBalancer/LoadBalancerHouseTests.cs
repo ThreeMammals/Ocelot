@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             var key = "test";
 
             this.Given(x => x.GivenThereIsALoadBalancer(key, new FakeLoadBalancer()))
-                .When(x => x.WhenWeGetThatLoadBalancer(key))
+                .When(x => x.WhenWeGetTheLoadBalancer(key))
                 .Then(x => x.ThenItIsReturned())
                 .BDDfy();
         }
@@ -51,11 +51,25 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             this.Given(x => x.GivenThereIsALoadBalancer(key, new FakeLoadBalancer()))
                 .And(x => x.GivenThereIsALoadBalancer(keyTwo, new FakeRoundRobinLoadBalancer()))
-                .When(x => x.WhenWeGetThatLoadBalancer(key))
+                .When(x => x.WhenWeGetTheLoadBalancer(key))
                 .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
-                .When(x => x.WhenWeGetThatLoadBalancer(keyTwo))
+                .When(x => x.WhenWeGetTheLoadBalancer(keyTwo))
                 .Then(x => x.ThenTheLoadBalancerIs<FakeRoundRobinLoadBalancer>())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_no_load_balancer_with_key()
+        {
+            this.When(x => x.WhenWeGetTheLoadBalancer("test"))
+            .Then(x => x.ThenAnErrorIsReturned())
+            .BDDfy();
+        }
+
+         private void ThenAnErrorIsReturned()
+        {
+            _getResult.IsError.ShouldBeTrue();
+            _getResult.Errors[0].ShouldBeOfType<UnableToFindLoadBalancerError>();
         }
 
         private void ThenTheLoadBalancerIs<T>()
@@ -82,7 +96,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             WhenIAddTheLoadBalancer();
         }
 
-        private void WhenWeGetThatLoadBalancer(string key)
+        private void WhenWeGetTheLoadBalancer(string key)
         {
             _getResult = _loadBalancerHouse.Get(key);
         }

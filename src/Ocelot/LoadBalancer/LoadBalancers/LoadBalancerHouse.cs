@@ -6,7 +6,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    public class LoadBalancerHouse
+    public class LoadBalancerHouse : ILoadBalancerHouse
     {
         private readonly Dictionary<string, ILoadBalancer> _loadBalancers;
 
@@ -17,7 +17,17 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public Response<ILoadBalancer> Get(string key)
         {
-            return new OkResponse<ILoadBalancer>(_loadBalancers[key]);
+            ILoadBalancer loadBalancer;
+
+            if(_loadBalancers.TryGetValue(key, out loadBalancer))
+            {
+                return new OkResponse<ILoadBalancer>(_loadBalancers[key]);
+            }
+
+                return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+            {
+                new UnableToFindLoadBalancerError($"unabe to find load balancer for {key}")
+            });
         }
 
         public Response Add(string key, ILoadBalancer loadBalancer)
