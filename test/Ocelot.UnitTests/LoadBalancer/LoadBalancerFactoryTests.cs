@@ -14,12 +14,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         private ReRoute _reRoute;
         private LoadBalancerFactory _factory;
         private ILoadBalancer _result;
-        private Mock<IServiceProvider> _serviceProvider;
+        private Mock<IServiceProviderFactory> _serviceProviderFactory;
         
         public LoadBalancerFactoryTests()
         {
-            _serviceProvider = new Mock<IServiceProvider>();
-            _factory = new LoadBalancerFactory(_serviceProvider.Object);
+            _serviceProviderFactory = new Mock<IServiceProviderFactory>();
+            _factory = new LoadBalancerFactory(_serviceProviderFactory.Object);
         }
 
         [Fact]
@@ -75,8 +75,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenTheServiceProviderIsCalledCorrectly()
         {
-            _serviceProvider
-                .Verify(x => x.Get(), Times.Once);
+            _serviceProviderFactory
+                .Verify(x => x.Get(It.IsAny<ServiceConfiguraion>()), Times.Once);
         }
 
         private void GivenAReRoute(ReRoute reRoute)
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheLoadBalancer()
         {
-            _result = _factory.Get(_reRoute.ServiceName, _reRoute.LoadBalancer);
+            _result = _factory.Get(_reRoute);
         }
 
         private void ThenTheLoadBalancerIsReturned<T>()

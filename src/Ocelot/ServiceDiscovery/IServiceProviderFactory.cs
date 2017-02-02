@@ -1,3 +1,5 @@
+using System;
+
 namespace Ocelot.ServiceDiscovery
 {
     public interface IServiceProviderFactory

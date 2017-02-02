@@ -8,6 +8,7 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -24,6 +25,8 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IClaimToThingConfigurationParser> _configParser;
         private readonly Mock<ILogger<FileOcelotConfigurationCreator>> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
+        private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
+        private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
 
         public FileConfigurationCreatorTests()
         {
@@ -32,7 +35,8 @@ namespace Ocelot.UnitTests.Configuration
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
-                _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object);
+                _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object,
+                _loadBalancerFactory.Object, _loadBalancerHouse.Object);
         }
 
         [Fact]

@@ -14,37 +14,30 @@ namespace Ocelot.LoadBalancer.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
+        private readonly ILoadBalancerHouse _loadBalancerHouse;
 
         public LoadBalancingMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository requestScopedDataRepository) 
+            IRequestScopedDataRepository requestScopedDataRepository,
+            ILoadBalancerHouse loadBalancerHouse) 
             : base(requestScopedDataRepository)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
+            _loadBalancerHouse = loadBalancerHouse;
         }
 
         public async Task Invoke(HttpContext context)
         {
             _logger.LogDebug("started calling query string builder middleware");
 
-            //todo - get out of di? or do this when we bootstrap?
-            var serviceProviderFactory = new ServiceProviderFactory();
-            var serviceConfig = new ServiceConfiguraion(
-                DownstreamRoute.ReRoute.ServiceName,
-                DownstreamRoute.ReRoute.DownstreamHost,
-                DownstreamRoute.ReRoute.DownstreamPort,
-                DownstreamRoute.ReRoute.UseServiceDiscovery);
-            //todo - get this out of some kind of service provider house?
-            var serviceProvider = serviceProviderFactory.Get(serviceConfig);
-
-            //todo - get out of di? or do this when we bootstrap?
-            var loadBalancerFactory = new LoadBalancerFactory(serviceProvider);
-            //todo - currently instanciates a load balancer per request which is wrong, 
-            //need some kind of load balance house! :)
-            var loadBalancer = loadBalancerFactory.Get(DownstreamRoute.ReRoute.ServiceName, DownstreamRoute.ReRoute.LoadBalancer);
-            var response = loadBalancer.Lease();
-
+            var loadBalancer = _loadBalancerHouse.Get($"{DownstreamRoute.ReRoute.UpstreamTemplate}{DownstreamRoute.ReRoute.UpstreamHttpMethod}");
+            //todo check reponse and return error
+            
+            var response = loadBalancer.Data.Lease();
+            //todo check reponse and return error
+            
+            SetHostAndPortForThisRequest(response.Data);
             _logger.LogDebug("calling next middleware");
 
             //todo - try next middleware if we get an exception make sure we release 
@@ -53,11 +46,11 @@ namespace Ocelot.LoadBalancer.Middleware
             {
                 await _next.Invoke(context);
 
-                loadBalancer.Release(response.Data);
+                loadBalancer.Data.Release(response.Data);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                loadBalancer.Release(response.Data);
+                loadBalancer.Data.Release(response.Data);
                 throw;
             }
 

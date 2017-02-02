@@ -23,11 +23,13 @@ using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Headers;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Responder;
+using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.DependencyInjection
 {
@@ -59,6 +61,10 @@ namespace Ocelot.DependencyInjection
         {
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
+            services.AddSingleton<Ocelot.ServiceDiscovery.IServiceProviderFactory, Ocelot.ServiceDiscovery.IServiceProviderFactory>();
+            services.AddSingleton<ILoadBalancerFactory, ILoadBalancerFactory>();
+            services.AddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
+            services.AddSingleton<IServiceProviderHouse, ServiceProviderHouse>();
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddSingleton<IUrlBuilder, UrlBuilder>();
             services.AddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
