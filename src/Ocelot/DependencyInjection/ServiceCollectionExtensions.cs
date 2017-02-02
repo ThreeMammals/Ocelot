@@ -64,7 +64,6 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<Ocelot.ServiceDiscovery.IServiceProviderFactory, Ocelot.ServiceDiscovery.IServiceProviderFactory>();
             services.AddSingleton<ILoadBalancerFactory, ILoadBalancerFactory>();
             services.AddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-            services.AddSingleton<IServiceProviderHouse, ServiceProviderHouse>();
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddSingleton<IUrlBuilder, UrlBuilder>();
             services.AddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();

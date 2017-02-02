@@ -29,7 +29,7 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling query string builder middleware");
+            _logger.LogDebug("started calling load balancing middleware");
 
             var loadBalancer = _loadBalancerHouse.Get($"{DownstreamRoute.ReRoute.UpstreamTemplate}{DownstreamRoute.ReRoute.UpstreamHttpMethod}");
             //todo check reponse and return error

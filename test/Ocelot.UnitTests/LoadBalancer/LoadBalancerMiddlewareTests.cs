@@ -27,6 +27,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
+        private HostAndPort _hostAndPort;
         private OkResponse<Ocelot.Request.Request> _request;
         private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
@@ -36,6 +37,8 @@ namespace Ocelot.UnitTests.LoadBalancer
             _url = "http://localhost:51879";
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
+            _loadBalancer = new Mock<ILoadBalancer>();
+            _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
               {
@@ -76,9 +79,10 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheLoadBalancerReturns()
         {
+            _hostAndPort = new HostAndPort("127.0.0.1", 80);
             _loadBalancer
                 .Setup(x => x.Lease())
-                .Returns(new OkResponse<HostAndPort>(new HostAndPort("127.0.0.1", 80)));
+                .Returns(new OkResponse<HostAndPort>(_hostAndPort));
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
@@ -99,7 +103,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
             _scopedRepository
-                .Verify(x => x.Add("Request", _request.Data), Times.Once());
+                .Verify(x => x.Add("HostAndPort", _hostAndPort), Times.Once());
         }
 
         private void WhenICallTheMiddleware()
