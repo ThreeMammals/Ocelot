@@ -7,19 +7,19 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceProviderFactoryTests
     {
-        private ServiceConfiguraion _serviceConfig;
-        private IServiceProvider _result;
-        private readonly ServiceProviderFactory _factory;
+        private ServiceProviderConfiguraion _serviceConfig;
+        private IServiceDiscoveryProvider _result;
+        private readonly ServiceDiscoveryProviderFactory _factory;
 
         public ServiceProviderFactoryTests()
         {
-            _factory = new ServiceProviderFactory();
+            _factory = new ServiceDiscoveryProviderFactory();
         }
         
         [Fact]
         public void should_return_no_service_provider()
         {
-            var serviceConfig = new ServiceConfiguraion("product", "127.0.0.1", 80, false);
+            var serviceConfig = new ServiceProviderConfiguraion("product", "127.0.0.1", 80, false, "Does not matter");
 
             this.Given(x => x.GivenTheReRoute(serviceConfig))
                 .When(x => x.WhenIGetTheServiceProvider())
@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        private void GivenTheReRoute(ServiceConfiguraion serviceConfig)
+        private void GivenTheReRoute(ServiceProviderConfiguraion serviceConfig)
         {
             _serviceConfig = serviceConfig;
         }

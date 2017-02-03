@@ -3,7 +3,7 @@ using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
 {
-    public interface IServiceProvider
+    public interface IServiceDiscoveryProvider
     {
          List<Service> Get();
     }

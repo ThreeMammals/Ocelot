@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Ocelot.Values;
-
+    
 namespace Ocelot.ServiceDiscovery
 {
-    public class ConfigurationServiceProvider : IServiceProvider
+    public class ConfigurationServiceProvider : IServiceDiscoveryProvider
     {
         private List<Service> _services;
 

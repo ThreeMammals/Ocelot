@@ -24,7 +24,7 @@
         DownstreamHostNullOrEmptyError,
         ServicesAreNullError,
         ServicesAreEmptyError,
-        UnableToFindServiceProviderError,
+        UnableToFindServiceDiscoveryProviderError,
         UnableToFindLoadBalancerError
     }
 }

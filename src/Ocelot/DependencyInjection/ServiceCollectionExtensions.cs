@@ -61,7 +61,7 @@ namespace Ocelot.DependencyInjection
         {
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
-            services.AddSingleton<IServiceProviderFactory, ServiceProviderFactory>();
+            services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
             services.AddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             services.AddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();

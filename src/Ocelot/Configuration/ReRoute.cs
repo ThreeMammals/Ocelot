@@ -11,7 +11,8 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
             string serviceDiscoveryProvider, string serviceDiscoveryAddress,
-            string downstreamScheme, string loadBalancer, string downstreamHost, int downstreamPort, string loadBalancerKey)
+            string downstreamScheme, string loadBalancer, string downstreamHost, int downstreamPort, 
+            string loadBalancerKey)
         {
             LoadBalancerKey = loadBalancerKey;
             LoadBalancer = loadBalancer;

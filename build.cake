@@ -42,8 +42,8 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
 // internal build variables - don't change these.
 var releaseTag = "";
-var buildVersion = committedVersion;
 var committedVersion = "0.0.0-dev";
+var buildVersion = committedVersion;
 
 var target = Argument("target", "Default");
 
@@ -264,7 +264,7 @@ private string GetNuGetVersionForCommit()
 /// Updates project version in all of our projects
 private void PersistVersion(string version)
 {
-	Information(string.Format("We'll search all project.json files for {0} and replace with {1}...", committedVersion, version));
+	//Information(string.Format("We'll search all project.json files for {0} and replace with {1}...", committedVersion, version));
 
 	var projectJsonFiles = GetFiles("./**/project.json");
 

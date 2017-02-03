@@ -5,19 +5,20 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public class LoadBalancerFactory : ILoadBalancerFactory
     {
-        private readonly IServiceProviderFactory _serviceProviderFactory;
-        public LoadBalancerFactory(IServiceProviderFactory serviceProviderFactory)
+        private readonly IServiceDiscoveryProviderFactory _serviceProviderFactory;
+        public LoadBalancerFactory(IServiceDiscoveryProviderFactory serviceProviderFactory)
         {
             _serviceProviderFactory = serviceProviderFactory;
         }
 
         public ILoadBalancer Get(ReRoute reRoute)
         {
-            var serviceConfig = new ServiceConfiguraion(
+            var serviceConfig = new ServiceProviderConfiguraion(
                 reRoute.ServiceName,
                 reRoute.DownstreamHost,
                 reRoute.DownstreamPort,
-                reRoute.UseServiceDiscovery);
+                reRoute.UseServiceDiscovery,
+                reRoute.ServiceDiscoveryProvider);
             
             var serviceProvider = _serviceProviderFactory.Get(serviceConfig);
 

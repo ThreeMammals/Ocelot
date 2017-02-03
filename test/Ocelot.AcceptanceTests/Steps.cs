@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -151,6 +152,18 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
+        {
+            var tasks = new Task[times];
+            
+            for (int i = 0; i < times; i++)
+            {
+                tasks[i] = _ocelotClient.GetAsync(url);
+            }
+
+            Task.WaitAll(tasks);
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
