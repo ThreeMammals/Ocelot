@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer())))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer(), new Values.QoS(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic))))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())

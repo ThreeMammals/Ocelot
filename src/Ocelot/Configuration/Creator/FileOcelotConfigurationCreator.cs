@@ -96,7 +96,6 @@ namespace Ocelot.Configuration.Creator
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Address)
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
-
             Func<HostAndPort> downstreamHostAndPortFunc = () => new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
 
             if (isAuthenticated)
@@ -116,7 +115,8 @@ namespace Ocelot.Configuration.Creator
                     reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme,
+                    reRoute.ExceptionsAllowedBeforeBreaking, reRoute.DurationOfBreak, reRoute.TimeoutValue);
             }
 
             return new ReRoute(new DownstreamPathTemplate(reRoute.DownstreamPathTemplate), reRoute.UpstreamTemplate, 
@@ -125,7 +125,8 @@ namespace Ocelot.Configuration.Creator
                 reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
                     requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
                     reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme,
+                    reRoute.ExceptionsAllowedBeforeBreaking, reRoute.DurationOfBreak, reRoute.TimeoutValue);
         }
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)

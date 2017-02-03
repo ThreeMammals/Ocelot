@@ -15,7 +15,8 @@ namespace Ocelot.Request.Builder
             IRequestCookieCollection cookies, 
             QueryString queryString, 
             string contentType, 
-            RequestId.RequestId requestId)
+            RequestId.RequestId requestId,
+            Values.QoS qos)
         {
             var request = await new RequestBuilder()
                 .WithHttpMethod(httpMethod)
@@ -26,6 +27,7 @@ namespace Ocelot.Request.Builder
                 .WithHeaders(headers)
                 .WithRequestId(requestId)
                 .WithCookies(cookies)
+                .WithQos(qos)
                 .Build();
 
             return new OkResponse<Request>(request);

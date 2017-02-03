@@ -32,6 +32,9 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamScheme;
         private string _downstreamHost;
         private int _dsPort;
+        private int _exceptionsAllowedBeforeBreaking;
+        private int _durationOfBreak;
+        private int _timeoutValue;
 
         public ReRouteBuilder()
         {
@@ -192,6 +195,24 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
+        {
+            _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            return this;
+        }
+
+        public ReRouteBuilder WithDurationOfBreak(int durationOfBreak)
+        {
+            _durationOfBreak = durationOfBreak;
+            return this;
+        }
+
+        public ReRouteBuilder WithTimeoutValue(int timeoutValue)
+        {
+            _timeoutValue = timeoutValue;
+            return this;
+        }
+
         public ReRoute Build()
         {
             Func<HostAndPort> downstreamHostFunc = () => new HostAndPort(_downstreamHost, _dsPort);
@@ -200,7 +221,8 @@ namespace Ocelot.Configuration.Builder
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
-                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme);
+                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme,
+                _exceptionsAllowedBeforeBreaking,_durationOfBreak, _timeoutValue);
         }
     }
 }

@@ -29,5 +29,8 @@ namespace Ocelot.Configuration.File
         public string DownstreamScheme {get;set;}
         public string DownstreamHost {get;set;}
         public int DownstreamPort { get; set; }
+        public int ExceptionsAllowedBeforeBreaking { get; set; }
+        public int DurationOfBreak { get; set; }
+        public int TimeoutValue { get; set; }
     }
 }

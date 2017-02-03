@@ -22,6 +22,7 @@ namespace Ocelot.Request.Builder
         private RequestId.RequestId _requestId;
         private IRequestCookieCollection _cookies;
         private readonly string[] _unsupportedHeaders = {"host"};
+        private Values.QoS _qos;
 
         public RequestBuilder WithHttpMethod(string httpMethod)
         {
@@ -71,6 +72,12 @@ namespace Ocelot.Request.Builder
             return this;
         }
 
+        public RequestBuilder WithQos(Values.QoS qos)
+        {
+            _qos = qos;
+            return this;
+        }
+
         public async Task<Request> Build()
         {
             var uri = CreateUri();
@@ -90,7 +97,7 @@ namespace Ocelot.Request.Builder
 
             var cookieContainer = CreateCookieContainer(uri);
 
-            return new Request(httpRequestMessage, cookieContainer);
+            return new Request(httpRequestMessage, cookieContainer, _qos);
         }
 
         private Uri CreateUri()

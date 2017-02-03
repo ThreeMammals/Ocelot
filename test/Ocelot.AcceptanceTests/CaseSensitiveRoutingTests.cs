@@ -35,7 +35,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get"
+                            UpstreamHttpMethod = "Get",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000
                         }
                     }
             };
@@ -63,7 +66,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = false
+                            ReRouteIsCaseSensitive = false,
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -91,7 +97,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000
                         }
                     }
             };
@@ -119,7 +128,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -147,7 +159,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -175,7 +190,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000
                         }
                     }
             };

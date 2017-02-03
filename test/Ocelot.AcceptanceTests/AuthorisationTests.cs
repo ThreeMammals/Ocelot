@@ -43,6 +43,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),

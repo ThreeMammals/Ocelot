@@ -14,6 +14,7 @@ namespace Ocelot.Request.Builder
             IRequestCookieCollection cookies,
             QueryString queryString,
             string contentType, 
-            RequestId.RequestId requestId);
+            RequestId.RequestId requestId,
+            Values.QoS qos);
     }
 }

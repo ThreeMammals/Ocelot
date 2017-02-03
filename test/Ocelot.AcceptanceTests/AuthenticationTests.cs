@@ -125,6 +125,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
@@ -165,6 +168,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Post",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes =  new List<string>(),
@@ -205,6 +211,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Post",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak =5,
+                            TimeoutValue = 5000,
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
                                 AdditionalScopes = new List<string>(),

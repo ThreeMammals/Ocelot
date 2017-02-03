@@ -10,7 +10,8 @@ namespace Ocelot.Configuration
             bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
-            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<HostAndPort> downstreamHostAndPort, string downstreamScheme)
+            string serviceDiscoveryProvider, string serviceDiscoveryAddress, Func<HostAndPort> downstreamHostAndPort, string downstreamScheme,
+            int exceptionsAllowedBeforeBreaking =3, int durationofBreak =8, int timeoutValue = 5000)
         {
             DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamTemplate = upstreamTemplate;
@@ -35,6 +36,9 @@ namespace Ocelot.Configuration
                 ServiceDiscoveryAddress = serviceDiscoveryAddress;
                 DownstreamHostAndPort = downstreamHostAndPort;
                 DownstreamScheme = downstreamScheme;
+            ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            DurationOfBreak = durationofBreak;
+            TimeoutValue = timeoutValue;
         }
 
         public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
@@ -57,5 +61,8 @@ namespace Ocelot.Configuration
         public string ServiceDiscoveryAddress { get; private set;}
         public Func<HostAndPort> DownstreamHostAndPort {get;private set;}
         public string DownstreamScheme {get;private set;}
+        public int ExceptionsAllowedBeforeBreaking { get; private set; }
+        public int DurationOfBreak { get; private set; }
+        public int TimeoutValue { get; private set; }
     }
 }
