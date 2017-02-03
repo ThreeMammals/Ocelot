@@ -27,8 +27,8 @@ namespace Ocelot.AcceptanceTests
         public void should_use_service_discovery_and_load_balance_request()
         {
             var serviceName = "product";
-            var downstreamServiceOneUrl = "http://localhost:51879";
-            var downstreamServiceTwoUrl = "http://localhost:51880";
+            var downstreamServiceOneUrl = "http://localhost:50879";
+            var downstreamServiceTwoUrl = "http://localhost:50880";
             var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
             var downstreamServiceOneCounter = 0;
             var downstreamServiceTwoCounter = 0;
