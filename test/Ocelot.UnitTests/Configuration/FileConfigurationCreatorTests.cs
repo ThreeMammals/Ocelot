@@ -410,6 +410,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheConfigHeaderExtractorReturns(new ClaimToThing("CustomerId", "CustomerId", "", 0)))
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -464,6 +465,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))

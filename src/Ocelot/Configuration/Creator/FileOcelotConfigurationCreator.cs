@@ -108,7 +108,7 @@ namespace Ocelot.Configuration.Creator
             var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
 
             ReRoute reRoute;
-            
+
             if (isAuthenticated)
             {
                 var authOptionsForRoute = new AuthenticationOptions(fileReRoute.AuthenticationOptions.Provider,
@@ -120,24 +120,30 @@ namespace Ocelot.Configuration.Creator
                 var claimsToClaims = GetAddThingsToRequest(fileReRoute.AddClaimsToRequest);
                 var claimsToQueries = GetAddThingsToRequest(fileReRoute.AddQueriesToRequest);
 
-                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate), fileReRoute.UpstreamTemplate,
+                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
+                    fileReRoute.UpstreamTemplate,
                     fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims,
                     fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
-                    fileReRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, fileReRoute.DownstreamScheme, 
-                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort,loadBalancerKey);
-            }
-
-            reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate), fileReRoute.UpstreamTemplate, 
-                fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
-                null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
-                fileReRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
-                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
-                    fileReRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
+                    fileReRoute.ServiceName, useServiceDiscovery,
+                    globalConfiguration?.ServiceDiscoveryProvider?.Provider,
                     globalConfiguration?.ServiceDiscoveryProvider?.Address, fileReRoute.DownstreamScheme,
-                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort,loadBalancerKey);
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey);
+            }
+            else
+            {
+                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
+                    fileReRoute.UpstreamTemplate,
+                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                    null, new List<ClaimToThing>(), new List<ClaimToThing>(),
+                    fileReRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
+                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
+                    fileReRoute.ServiceName, useServiceDiscovery,
+                    globalConfiguration?.ServiceDiscoveryProvider?.Provider,
+                    globalConfiguration?.ServiceDiscoveryProvider?.Address, fileReRoute.DownstreamScheme,
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey);
+            }
 
             var loadBalancer = _loadBalanceFactory.Get(reRoute);
             _loadBalancerHouse.Add(reRoute.LoadBalancerKey, loadBalancer);
