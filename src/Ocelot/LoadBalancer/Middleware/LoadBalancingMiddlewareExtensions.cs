@@ -4,7 +4,7 @@ namespace Ocelot.LoadBalancer.Middleware
 {
  public static class LoadBalancingMiddlewareExtensions
     {
-        public static IApplicationBuilder UseLoadBalancingMiddlewareExtensions(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseLoadBalancingMiddleware(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<LoadBalancingMiddleware>();
         }

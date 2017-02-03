@@ -104,6 +104,9 @@ namespace Ocelot.Configuration.Creator
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Address)
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
+            //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
+            var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
+
             ReRoute reRoute;
             
             if (isAuthenticated)
@@ -124,7 +127,7 @@ namespace Ocelot.Configuration.Creator
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
                     fileReRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
                     globalConfiguration?.ServiceDiscoveryProvider?.Address, fileReRoute.DownstreamScheme, 
-                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort);
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort,loadBalancerKey);
             }
 
             reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate), fileReRoute.UpstreamTemplate, 
@@ -134,11 +137,10 @@ namespace Ocelot.Configuration.Creator
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
                     fileReRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
                     globalConfiguration?.ServiceDiscoveryProvider?.Address, fileReRoute.DownstreamScheme,
-                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort);
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort,loadBalancerKey);
 
             var loadBalancer = _loadBalanceFactory.Get(reRoute);
-            //todo - not sure if this is the correct key, but this is probably the only unique key i can think of
-            _loadBalancerHouse.Add($"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}", loadBalancer);
+            _loadBalancerHouse.Add(reRoute.LoadBalancerKey, loadBalancer);
             return reRoute;
         }
 

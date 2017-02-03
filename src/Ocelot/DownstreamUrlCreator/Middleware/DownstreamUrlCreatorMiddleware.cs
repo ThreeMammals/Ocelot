@@ -47,15 +47,12 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
             
-            //todo - get this out of scoped data repo?
-            var dsHostAndPort = new HostAndPort(DownstreamRoute.ReRoute.DownstreamHost,
-                DownstreamRoute.ReRoute.DownstreamPort);
+            var dsHostAndPort = HostAndPort;
 
             var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
 
             if (dsUrl.IsError)
             {
-                //todo - release the lb connection?
                 _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
 
                 SetPipelineError(dsUrl.Errors);
@@ -69,8 +66,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             _logger.LogDebug("calling next middleware");
 
             await _next.Invoke(context);
-
-            //todo - release the lb connection?
 
             _logger.LogDebug("succesfully called next middleware");
         }

@@ -18,6 +18,7 @@ namespace Ocelot.Middleware
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.LoadBalancer.Middleware;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -97,6 +98,9 @@ namespace Ocelot.Middleware
 
             // Now we can run any query string transformation logic
             builder.UseQueryStringBuilderMiddleware();
+
+            // Get the load balancer for this request
+            builder.UseLoadBalancingMiddleware();
 
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();

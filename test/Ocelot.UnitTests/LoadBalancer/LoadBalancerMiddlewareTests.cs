@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.LoadBalancer
               .UseUrls(_url)
               .Configure(app =>
               {
-                  app.UseLoadBalancingMiddlewareExtensions();
+                  app.UseLoadBalancingMiddleware();
               });
 
             _server = new TestServer(builder);

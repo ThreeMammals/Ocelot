@@ -31,26 +31,32 @@ namespace Ocelot.LoadBalancer.Middleware
         {
             _logger.LogDebug("started calling load balancing middleware");
 
-            var loadBalancer = _loadBalancerHouse.Get($"{DownstreamRoute.ReRoute.UpstreamTemplate}{DownstreamRoute.ReRoute.UpstreamHttpMethod}");
-            //todo check reponse and return error
-            
-            var response = loadBalancer.Data.Lease();
-            //todo check reponse and return error
-            
-            SetHostAndPortForThisRequest(response.Data);
+            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.LoadBalancerKey);
+            if(loadBalancer.IsError)
+            {
+                //set errors and return
+            }
+
+            var hostAndPort = loadBalancer.Data.Lease();
+            if(hostAndPort.IsError)
+            {
+                //set errors and return
+            }
+
+            SetHostAndPortForThisRequest(hostAndPort.Data);
+
             _logger.LogDebug("calling next middleware");
 
-            //todo - try next middleware if we get an exception make sure we release 
-            //the host and port? Not sure if this is the way to go but we shall see!
             try
             {
                 await _next.Invoke(context);
 
-                loadBalancer.Data.Release(response.Data);
+                loadBalancer.Data.Release(hostAndPort.Data);
             }
             catch (Exception)
             {
-                loadBalancer.Data.Release(response.Data);
+                loadBalancer.Data.Release(hostAndPort.Data);
+                 _logger.LogDebug("error calling next middleware, exception will be thrown to global handler");
                 throw;
             }
 
