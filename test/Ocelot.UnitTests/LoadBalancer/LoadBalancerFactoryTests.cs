@@ -15,11 +15,20 @@ namespace Ocelot.UnitTests.LoadBalancer
         private LoadBalancerFactory _factory;
         private ILoadBalancer _result;
         private Mock<IServiceProviderFactory> _serviceProviderFactory;
+        private Mock<IServiceProvider> _serviceProvider;
         
         public LoadBalancerFactoryTests()
         {
             _serviceProviderFactory = new Mock<IServiceProviderFactory>();
+            _serviceProvider = new Mock<IServiceProvider>();
             _factory = new LoadBalancerFactory(_serviceProviderFactory.Object);
+        }
+
+        private void GivenTheServiceProviderFactoryReturns()
+        {
+            _serviceProviderFactory
+                .Setup(x => x.Get(It.IsAny<ServiceConfiguraion>()))
+                .Returns(_serviceProvider.Object);
         }
 
         [Fact]
@@ -29,6 +38,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheLoadBalancerIsReturned<NoLoadBalancer>())
                 .BDDfy();
@@ -42,6 +52,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobinLoadBalancer>())
                 .BDDfy();
@@ -55,6 +66,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnectionLoadBalancer>())
                 .BDDfy();
@@ -68,6 +80,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
                 .BDDfy();
