@@ -6,15 +6,20 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(DownstreamPathTemplate downstreamPathTemplate, string upstreamTemplate, string upstreamHttpMethod, string upstreamTemplatePattern, 
-            bool isAuthenticated, AuthenticationOptions authenticationOptions, List<ClaimToThing> configurationHeaderExtractorProperties, 
-            List<ClaimToThing> claimsToClaims, Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, bool isCached, CacheOptions fileCacheOptions, string serviceName, bool useServiceDiscovery,
-            string serviceDiscoveryProvider, string serviceDiscoveryAddress,
-            string downstreamScheme, string loadBalancer, string downstreamHost, int downstreamPort, 
-            string loadBalancerKey)
+        public ReRoute(DownstreamPathTemplate downstreamPathTemplate, 
+            string upstreamTemplate, string upstreamHttpMethod, 
+            string upstreamTemplatePattern, 
+            bool isAuthenticated, AuthenticationOptions authenticationOptions, 
+            List<ClaimToThing> configurationHeaderExtractorProperties, 
+            List<ClaimToThing> claimsToClaims, 
+            Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, 
+            List<ClaimToThing> claimsToQueries, 
+            string requestIdKey, bool isCached, CacheOptions fileCacheOptions, 
+            string downstreamScheme, string loadBalancer, string downstreamHost, 
+            int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion)
         {
             LoadBalancerKey = loadBalancerKey;
+            ServiceProviderConfiguraion = serviceProviderConfiguraion;
             LoadBalancer = loadBalancer;
             DownstreamHost = downstreamHost;
             DownstreamPort = downstreamPort;
@@ -35,12 +40,9 @@ namespace Ocelot.Configuration
                 ?? new List<ClaimToThing>();
             ClaimsToHeaders = configurationHeaderExtractorProperties 
                 ?? new List<ClaimToThing>();
-                ServiceName = serviceName;
-                UseServiceDiscovery = useServiceDiscovery;
-                ServiceDiscoveryProvider = serviceDiscoveryProvider;
-                ServiceDiscoveryAddress = serviceDiscoveryAddress;
                 DownstreamScheme = downstreamScheme;
         }
+
         public string LoadBalancerKey {get;private set;}
         public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
         public string UpstreamTemplate { get; private set; }
@@ -56,13 +58,10 @@ namespace Ocelot.Configuration
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
         public CacheOptions FileCacheOptions { get; private set; }
-        public string ServiceName { get; private set;}
-        public bool UseServiceDiscovery { get; private set;}
-        public string ServiceDiscoveryProvider { get; private set;}
-        public string ServiceDiscoveryAddress { get; private set;}
         public string DownstreamScheme {get;private set;}
         public string LoadBalancer {get;private set;}
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
+        public ServiceProviderConfiguraion ServiceProviderConfiguraion { get; private set; }
     }
 }

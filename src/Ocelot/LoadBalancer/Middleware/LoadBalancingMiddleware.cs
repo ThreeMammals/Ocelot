@@ -37,7 +37,7 @@ namespace Ocelot.LoadBalancer.Middleware
                 //set errors and return
             }
 
-            var hostAndPort = loadBalancer.Data.Lease();
+            var hostAndPort = await loadBalancer.Data.Lease();
             if(hostAndPort.IsError)
             {
                 //set errors and return

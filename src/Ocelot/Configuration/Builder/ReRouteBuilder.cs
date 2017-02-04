@@ -34,6 +34,8 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamHost;
         private int _dsPort;
         private string _loadBalancer;
+        private string _serviceProviderHost;
+        private int _serviceProviderPort;
 
         public ReRouteBuilder()
         {
@@ -206,14 +208,25 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithServiceProviderHost(string serviceProviderHost)
+        {
+            _serviceProviderHost = serviceProviderHost;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceProviderPort(int serviceProviderPort)
+        {
+            _serviceProviderPort = serviceProviderPort;
+            return this;
+        }
+
         public ReRoute Build()
         {
             return new ReRoute(new DownstreamPathTemplate(_downstreamPathTemplate), _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
-                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
-                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, _downstreamScheme, _loadBalancer,
-                _downstreamHost, _dsPort, _loadBalancerKey);
+                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,
+                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery, _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort));
         }
     }
 }

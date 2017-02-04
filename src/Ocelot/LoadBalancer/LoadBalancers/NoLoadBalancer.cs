@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Ocelot.Responses;
 using Ocelot.Values;
 
@@ -14,7 +15,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _services = services;
         }
 
-        public Response<HostAndPort> Lease()
+        public async Task<Response<HostAndPort>> Lease()
         {
             var service = _services.FirstOrDefault();
             return new OkResponse<HostAndPort>(service.HostAndPort);

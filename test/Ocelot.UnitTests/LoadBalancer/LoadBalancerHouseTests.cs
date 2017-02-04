@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -108,7 +109,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         class FakeLoadBalancer : ILoadBalancer
         {
-            public Response<HostAndPort> Lease()
+            public Task<Response<HostAndPort>> Lease()
             {
                 throw new NotImplementedException();
             }
@@ -121,7 +122,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         class FakeRoundRobinLoadBalancer : ILoadBalancer
         {
-            public Response<HostAndPort> Lease()
+            public Task<Response<HostAndPort>> Lease()
             {
                 throw new NotImplementedException();
             }

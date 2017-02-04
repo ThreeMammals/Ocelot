@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var services = new List<Service>
             {
-                new Service("product", hostAndPort)
+                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
             };
             this.Given(x => x.GivenServices(services))
                 .When(x => x.WhenIGetTheNextHostAndPort())
@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void WhenIGetTheNextHostAndPort()
         {
             _loadBalancer = new NoLoadBalancer(_services);
-            _result = _loadBalancer.Lease();
+            _result = _loadBalancer.Lease().Result;
         }
 
         private void ThenTheHostAndPortIs(HostAndPort expected)

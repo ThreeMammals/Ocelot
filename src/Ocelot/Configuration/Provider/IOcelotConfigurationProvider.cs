@@ -1,9 +1,10 @@
-﻿using Ocelot.Responses;
+﻿using System.Threading.Tasks;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Provider
 {
     public interface IOcelotConfigurationProvider
     {
-        Response<IOcelotConfiguration> Get();
+        Task<Response<IOcelotConfiguration>> Get();
     }
 }

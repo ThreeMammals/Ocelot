@@ -29,7 +29,7 @@ namespace Ocelot.AcceptanceTests
             var serviceName = "product";
             var downstreamServiceOneUrl = "http://localhost:50879";
             var downstreamServiceTwoUrl = "http://localhost:50880";
-            var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
+            var fakeConsulServiceDiscoveryUrl = "http://localhost:8500";
             var downstreamServiceOneCounter = 0;
             var downstreamServiceTwoCounter = 0;
 
@@ -51,7 +51,8 @@ namespace Ocelot.AcceptanceTests
                     {
                         ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                         {
-                            Provider = "Consul"
+                            Provider = "Consul",
+                            Host = "localhost"
                         }
                     }
             };

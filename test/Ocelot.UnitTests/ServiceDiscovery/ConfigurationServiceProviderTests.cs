@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
             var services = new List<Service>
             {
-                new Service("product", hostAndPort)
+                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
             };
 
             this.Given(x => x.GivenServices(services))
@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void WhenIGetTheService()
         {
             _serviceProvider = new ConfigurationServiceProvider(_expected);
-            _result = _serviceProvider.Get();
+            _result = _serviceProvider.Get().Result;
         }
 
         private void ThenTheFollowingIsReturned(List<Service> services)

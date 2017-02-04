@@ -19,9 +19,9 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _services = new List<Service>
             {
-                new Service("product", new HostAndPort("127.0.0.1", 5000)),
-                new Service("product", new HostAndPort("127.0.0.1", 5001)),
-                new Service("product", new HostAndPort("127.0.0.1", 5001))
+                new Service("product", new HostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, new string[0]),
+                new Service("product", new HostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, new string[0]),
+                new Service("product", new HostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, new string[0])
             };
 
             _roundRobin = new RoundRobinLoadBalancer(_services);
@@ -46,18 +46,18 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             while (stopWatch.ElapsedMilliseconds < 1000)
             {
-                var address = _roundRobin.Lease();
+                var address = _roundRobin.Lease().Result;
                 address.Data.ShouldBe(_services[0].HostAndPort);
-                address = _roundRobin.Lease();
+                address = _roundRobin.Lease().Result;
                 address.Data.ShouldBe(_services[1].HostAndPort);
-                address = _roundRobin.Lease();
+                address = _roundRobin.Lease().Result;
                 address.Data.ShouldBe(_services[2].HostAndPort);
             }
         }
 
         private void GivenIGetTheNextAddress()
         {
-            _hostAndPort = _roundRobin.Lease();
+            _hostAndPort = _roundRobin.Lease().Result;
         }
 
         private void ThenTheNextAddressIndexIs(int index)

@@ -82,7 +82,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _hostAndPort = new HostAndPort("127.0.0.1", 80);
             _loadBalancer
                 .Setup(x => x.Lease())
-                .Returns(new OkResponse<HostAndPort>(_hostAndPort));
+                .ReturnsAsync(new OkResponse<HostAndPort>(_hostAndPort));
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

@@ -1,18 +1,19 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Ocelot.Values;
     
 namespace Ocelot.ServiceDiscovery
 {
     public class ConfigurationServiceProvider : IServiceDiscoveryProvider
     {
-        private List<Service> _services;
+        private readonly List<Service> _services;
 
         public ConfigurationServiceProvider(List<Service> services)
         {
             _services = services;
         }
 
-        public List<Service> Get()
+        public async Task<List<Service>> Get()
         {
             return _services;
         }

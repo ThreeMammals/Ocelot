@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Ocelot.Errors;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -9,20 +10,20 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public class LeastConnectionLoadBalancer : ILoadBalancer
     {
-        private Func<List<Service>> _services;
-        private List<Lease> _leases;
-        private string _serviceName;
+        private readonly Func<Task<List<Service>>> _services;
+        private readonly List<Lease> _leases;
+        private readonly string _serviceName;
 
-        public LeastConnectionLoadBalancer(Func<List<Service>> services, string serviceName)
+        public LeastConnectionLoadBalancer(Func<Task<List<Service>>> services, string serviceName)
         {
             _services = services;
             _serviceName = serviceName;
             _leases = new List<Lease>();
         }
 
-        public Response<HostAndPort> Lease()
+        public async Task<Response<HostAndPort>> Lease()
         {
-            var services = _services();
+            var services = await _services.Invoke();
 
             if (services == null)
             {

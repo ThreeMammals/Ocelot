@@ -1,9 +1,10 @@
-﻿using Ocelot.Configuration;
+﻿using System.Threading.Tasks;
+using Ocelot.Configuration;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public interface ILoadBalancerFactory
     {
-        ILoadBalancer Get(ReRoute reRoute);
+        Task<ILoadBalancer> Get(ReRoute reRoute);
     }
 }

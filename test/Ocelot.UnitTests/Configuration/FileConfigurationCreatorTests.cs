@@ -151,7 +151,7 @@ namespace Ocelot.UnitTests.Configuration
                                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                                 {
                                      Provider = "consul",
-                                     Address = "127.0.0.1"
+                                     Host = "127.0.0.1"
                                 }
                             }
                         }))
@@ -579,7 +579,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create();
+            _config = _ocelotConfigurationCreator.Create().Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -617,7 +617,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _loadBalancerFactory
                 .Setup(x => x.Get(It.IsAny<ReRoute>()))
-                .Returns(_loadBalancer.Object);
+                .ReturnsAsync(_loadBalancer.Object);
         }
 
         private void TheLoadBalancerFactoryIsCalledCorrectly()
