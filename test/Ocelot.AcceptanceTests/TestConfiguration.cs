@@ -4,14 +4,12 @@
 
     public static class TestConfiguration
     {
-        public static double Version => 1.4;
+        public static double Version => 1.1;
         public static string ConfigurationPath => GetConfigurationPath();
 
         public static string GetConfigurationPath()
         {
             var osArchitecture = RuntimeInformation.OSArchitecture.ToString();
-            
-            var oSDescription = string.Empty;
 
             if(RuntimeInformation.OSDescription.ToLower().Contains("darwin"))
             {

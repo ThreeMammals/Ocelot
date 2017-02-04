@@ -27,6 +27,17 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_consul_service_provider()
+        {
+            var serviceConfig = new ServiceProviderConfiguraion("product", string.Empty, 0, true, "Consul");
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
         private void GivenTheReRoute(ServiceProviderConfiguraion serviceConfig)
         {
             _serviceConfig = serviceConfig;
