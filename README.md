@@ -47,7 +47,7 @@ Install Ocelot and it's dependecies using nuget. At the moment
 all we have is the pre version. Once we have something working in 
 a half decent way we will drop a version.
 
-`Install-Package Ocelot -Pre`
+`Install-Package Ocelot`
 
 All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
