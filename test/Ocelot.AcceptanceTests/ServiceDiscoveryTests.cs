@@ -22,6 +22,7 @@ namespace Ocelot.AcceptanceTests
         private readonly List<ServiceEntry> _serviceEntries;
         private int _counterOne;
         private int _counterTwo;
+        private static readonly object _syncLock = new object();
 
         public ServiceDiscoveryTests()
         {
@@ -152,9 +153,15 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.Run(async context =>
-                    {   
-                        _counterOne++;
+                    {
+                        var response = string.Empty;
+                        lock (_syncLock)
+                        {
+                            _counterOne++;
+                            response = _counterOne.ToString();
+                        }
                         context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync(response);
                     });
                 })
                 .Build();
@@ -173,9 +180,15 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.Run(async context =>
-                    {   
-                        _counterTwo++;
+                    {
+                        var response = string.Empty;
+                        lock (_syncLock)
+                        {
+                            _counterTwo++;
+                            response = _counterTwo.ToString();
+                        }
                         context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync(response);
                     });
                 })
                 .Build();

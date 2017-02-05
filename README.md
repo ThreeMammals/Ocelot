@@ -41,7 +41,7 @@ touch either via gitter or create an issue.
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
-built to netcoreapp1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
+built to netcoreapp1.1 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
 
 Install Ocelot and it's dependecies using nuget. At the moment 
 all we have is the pre version. Once we have something working in 

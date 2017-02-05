@@ -160,10 +160,19 @@ namespace Ocelot.AcceptanceTests
             
             for (int i = 0; i < times; i++)
             {
-                tasks[i] = _ocelotClient.GetAsync(url);
+                var urlCopy = url;
+                tasks[i] = GetForServiceDiscoveryTest(urlCopy);
             }
 
             Task.WaitAll(tasks);
+        }
+
+        private async Task GetForServiceDiscoveryTest(string url)
+        {
+            var response = await _ocelotClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            var count = int.Parse(content);
+            count.ShouldBeGreaterThan(0);
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
