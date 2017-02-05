@@ -37,8 +37,6 @@ namespace Ocelot.AcceptanceTests
             var downstreamServiceOneUrl = "http://localhost:50879";
             var downstreamServiceTwoUrl = "http://localhost:50880";
             var fakeConsulServiceDiscoveryUrl = "http://localhost:8500";
-            var downstreamServiceOneCounter = 0;
-            var downstreamServiceTwoCounter = 0;
             var serviceEntryOne = new ServiceEntry()
             {
                 Service = new AgentService()
@@ -154,14 +152,21 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.Run(async context =>
                     {
-                        var response = string.Empty;
-                        lock (_syncLock)
+                        try
                         {
-                            _counterOne++;
-                            response = _counterOne.ToString();
+                            var response = string.Empty;
+                            lock (_syncLock)
+                            {
+                                _counterOne++;
+                                response = _counterOne.ToString();
+                            }
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(response);
                         }
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(response);
+                        catch (System.Exception exception)
+                        {
+                            await context.Response.WriteAsync(exception.StackTrace);
+                        }
                     });
                 })
                 .Build();
@@ -181,14 +186,23 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.Run(async context =>
                     {
-                        var response = string.Empty;
-                        lock (_syncLock)
+                        try
                         {
-                            _counterTwo++;
-                            response = _counterTwo.ToString();
+                            var response = string.Empty;
+                            lock (_syncLock)
+                            {
+                                _counterTwo++;
+                                response = _counterTwo.ToString();
+                            }
+                            
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(response);
                         }
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(response);
+                        catch (System.Exception exception)
+                        {
+                            await context.Response.WriteAsync(exception.StackTrace);
+                        }
+                   
                     });
                 })
                 .Build();

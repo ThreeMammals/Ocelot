@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
@@ -30,6 +31,12 @@ namespace Ocelot.AcceptanceTests
         private BearerToken _token;
         public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
+        private Random _random;
+
+        public Steps()
+        {
+            _random = new Random();
+        }
 
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
@@ -162,6 +169,7 @@ namespace Ocelot.AcceptanceTests
             {
                 var urlCopy = url;
                 tasks[i] = GetForServiceDiscoveryTest(urlCopy);
+                Thread.Sleep(_random.Next(40,60));
             }
 
             Task.WaitAll(tasks);
@@ -171,7 +179,7 @@ namespace Ocelot.AcceptanceTests
         {
             var response = await _ocelotClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
-            var count = int.Parse(content);
+            int count = int.Parse(content);
             count.ShouldBeGreaterThan(0);
         }
 
