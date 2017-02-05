@@ -13,6 +13,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private readonly Func<Task<List<Service>>> _services;
         private readonly List<Lease> _leases;
         private readonly string _serviceName;
+        private static readonly object _syncLock = new object();
 
         public LeastConnectionLoadBalancer(Func<Task<List<Service>>> services, string serviceName)
         {
@@ -35,32 +36,38 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 return new ErrorResponse<HostAndPort>(new List<Error>() { new ServicesAreEmptyError($"services were empty for {_serviceName}") });
             }
 
-            //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
-            UpdateServices(services);
+            lock(_syncLock)
+            {        
+                //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
+                UpdateServices(services);
 
-            var leaseWithLeastConnections = GetLeaseWithLeastConnections();
+                var leaseWithLeastConnections = GetLeaseWithLeastConnections();
 
-            _leases.Remove(leaseWithLeastConnections);
+                _leases.Remove(leaseWithLeastConnections);
 
-            leaseWithLeastConnections = AddConnection(leaseWithLeastConnections);
+                leaseWithLeastConnections = AddConnection(leaseWithLeastConnections);
 
-            _leases.Add(leaseWithLeastConnections);
-
-            return new OkResponse<HostAndPort>(new HostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
+                _leases.Add(leaseWithLeastConnections);
+            
+                return new OkResponse<HostAndPort>(new HostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
+            }
         }
 
         public Response Release(HostAndPort hostAndPort)
         {
-            var matchingLease = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == hostAndPort.DownstreamHost
-                && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort);
-
-            if (matchingLease != null)
+            lock(_syncLock)
             {
-                var replacementLease = new Lease(hostAndPort, matchingLease.Connections - 1);
+                var matchingLease = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == hostAndPort.DownstreamHost
+                    && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort);
 
-                _leases.Remove(matchingLease);
+                if (matchingLease != null)
+                {
+                    var replacementLease = new Lease(hostAndPort, matchingLease.Connections - 1);
 
-                _leases.Add(replacementLease);
+                    _leases.Remove(matchingLease);
+
+                    _leases.Add(replacementLease);
+                }
             }
 
             return new OkResponse();

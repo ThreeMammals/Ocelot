@@ -32,8 +32,16 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public Response Add(string key, ILoadBalancer loadBalancer)
         {
-            _loadBalancers[key] = loadBalancer;
-            return new OkResponse();
+            try
+            {
+                _loadBalancers.Add(key, loadBalancer);
+                return new OkResponse();
+            }
+            catch (System.Exception exception)
+            {
+                Console.WriteLine(exception.StackTrace);
+                throw;
+            }
         }
     }
 }

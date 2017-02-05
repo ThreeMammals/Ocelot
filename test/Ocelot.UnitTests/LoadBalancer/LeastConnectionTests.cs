@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.LoadBalancer.LoadBalancers;
@@ -15,6 +16,50 @@ namespace Ocelot.UnitTests.LoadBalancer
         private Response<HostAndPort> _result;
         private LeastConnectionLoadBalancer _leastConnection;
         private List<Service> _services;
+        private Random _random;
+
+        public LeastConnectionTests()
+        {
+            _random = new Random();
+        }
+
+        [Fact]
+        public void should_be_able_to_lease_and_release_concurrently()
+        {
+            var serviceName = "products";
+
+            var availableServices = new List<Service>
+            {
+                new Service(serviceName, new HostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new HostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+            };
+
+            _services = availableServices;
+            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+
+            var tasks = new Task[100];
+            try
+            {
+                for(var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = LeaseDelayAndRelease();
+                }
+
+                Task.WaitAll(tasks);
+            }
+            catch (System.Exception exception)
+            {
+                Console.WriteLine(exception.StackTrace);
+                throw;
+            }
+        }
+
+        private async Task LeaseDelayAndRelease()
+        {
+            var hostAndPort = await _leastConnection.Lease();
+            await Task.Delay(_random.Next(1, 100));
+            var response = _leastConnection.Release(hostAndPort.Data);
+        }
 
         [Fact]
         public void should_get_next_url()
