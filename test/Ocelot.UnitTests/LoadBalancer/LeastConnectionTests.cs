@@ -38,20 +38,13 @@ namespace Ocelot.UnitTests.LoadBalancer
             _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
 
             var tasks = new Task[100];
-            try
+           
+            for(var i = 0; i < tasks.Length; i++)
             {
-                for(var i = 0; i < tasks.Length; i++)
-                {
-                    tasks[i] = LeaseDelayAndRelease();
-                }
+                tasks[i] = LeaseDelayAndRelease();
+            }
 
-                Task.WaitAll(tasks);
-            }
-            catch (System.Exception exception)
-            {
-                Console.WriteLine(exception.StackTrace);
-                throw;
-            }
+            Task.WaitAll(tasks);
         }
 
         private async Task LeaseDelayAndRelease()

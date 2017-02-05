@@ -19,10 +19,9 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _builderTwo;
         private IWebHost _fakeConsulBuilder;
         private readonly Steps _steps;
-        private List<ServiceEntry> _serviceEntries;
+        private readonly List<ServiceEntry> _serviceEntries;
         private int _counterOne;
         private int _counterTwo;
-        private static readonly object _syncLock = new object();
 
         public ServiceDiscoveryTests()
         {
@@ -101,8 +100,8 @@ namespace Ocelot.AcceptanceTests
 
         private void ThenBothServicesCalledRealisticAmountOfTimes()
         {
-            _counterOne.ShouldBeGreaterThan(25);
-            _counterTwo.ShouldBeGreaterThan(25);
+            _counterOne.ShouldBe(25);
+            _counterTwo.ShouldBe(25);
         }
 
         private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
