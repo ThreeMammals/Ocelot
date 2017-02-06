@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
+using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.LoadBalancer.Middleware;
@@ -31,6 +32,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private OkResponse<Ocelot.Request.Request> _request;
         private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
+        private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
+        private ErrorResponse<HostAndPort> _getHostAndPortError;
 
         public LoadBalancerMiddlewareTests()
         {
@@ -77,6 +80,45 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_pipeline_error_if_cannot_get_load_balancer()
+        {         
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .Build());
+
+            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+                .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => x.GivenTheLoadBalancerHouseReturnsAnError())
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_pipeline_error_if_cannot_get_least()
+        {
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .Build());
+
+            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+                .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => x.GivenTheLoadBalancerHouseReturns())
+                .And(x => x.GivenTheLoadBalancerReturnsAnError())
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline())
+                .BDDfy();
+        }
+
+        private void GivenTheLoadBalancerReturnsAnError()
+        {
+            _getHostAndPortError = new ErrorResponse<HostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
+             _loadBalancer
+                .Setup(x => x.Lease())
+                .ReturnsAsync(_getHostAndPortError);
+        }
+
         private void GivenTheLoadBalancerReturns()
         {
             _hostAndPort = new HostAndPort("127.0.0.1", 80);
@@ -100,10 +142,41 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Returns(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
         }
 
+
+        private void GivenTheLoadBalancerHouseReturnsAnError()
+        {
+            _getLoadBalancerHouseError = new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+            {
+                new UnableToFindLoadBalancerError($"unabe to find load balancer for bah")
+            });
+
+            _loadBalancerHouse
+                .Setup(x => x.Get(It.IsAny<string>()))
+                .Returns(_getLoadBalancerHouseError);
+        }
+
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
             _scopedRepository
                 .Verify(x => x.Add("HostAndPort", _hostAndPort), Times.Once());
+        }
+
+        private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()
+        {
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
+
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareErrors", _getLoadBalancerHouseError.Errors), Times.Once);
+        }
+
+            private void ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline()
+        {
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
+
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareErrors", _getHostAndPortError.Errors), Times.Once);
         }
 
         private void WhenICallTheMiddleware()
