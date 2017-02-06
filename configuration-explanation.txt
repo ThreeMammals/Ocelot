@@ -80,12 +80,24 @@
 			# the caching a lot.
 			"FileCacheOptions": { "TtlSeconds": 15 },
 			# The value of this is used when matching the upstream template to an upstream url. 
-			"ReRouteIsCaseSensitive": false
+			"ReRouteIsCaseSensitive": false,
+			# Tells Ocelot the name of the service it is looking when making requests to service discovery
+			# for hosts and ports
+			"ServiceName": "product"
+			# Tells Ocelot which load balancer to use when making downstream requests.
+            "LoadBalancer": "RoundRobin"
 		},
 		# This section is meant to be for global configuration settings
 		"GlobalConfiguration": {
 			# If this is set it will override any route specific request id keys, behaves the same
 			# otherwise
 			"RequestIdKey": "OcRequestId",
+			# If set Ocelot will try and use service discovery to locate downstream hosts and ports
+			 "ServiceDiscoveryProvider":
+			{
+				"Provider":"Consul",
+				"Host":"localhost",
+				"Port":8500
+			}
 		}
 	}
