@@ -6,6 +6,7 @@ using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -45,8 +46,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
 
             var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
-
-            var dsHostAndPort = DownstreamRoute.ReRoute.DownstreamHostAndPort();
+            
+            var dsHostAndPort = HostAndPort;
 
             var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
 

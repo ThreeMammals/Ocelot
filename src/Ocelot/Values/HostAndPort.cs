@@ -4,7 +4,7 @@
     {
         public HostAndPort(string downstreamHost, int downstreamPort)
         {
-            DownstreamHost = downstreamHost;
+            DownstreamHost = downstreamHost?.Trim('/');
             DownstreamPort = downstreamPort;
         }
 

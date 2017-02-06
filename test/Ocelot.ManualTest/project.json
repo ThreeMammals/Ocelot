@@ -24,7 +24,7 @@
     "win7-x64": {}
   },
   "frameworks": {
-    "netcoreapp1.4": {
+    "netcoreapp1.1": {
       "imports": [
       ]
     }

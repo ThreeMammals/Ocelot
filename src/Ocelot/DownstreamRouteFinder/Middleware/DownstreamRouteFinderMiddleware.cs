@@ -34,7 +34,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
-            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
+            var downstreamRoute = await _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
 
             if (downstreamRoute.IsError)
             {

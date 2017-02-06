@@ -3,6 +3,6 @@ configuration:
 - Release
 platform: Any CPU
 build_script:
-- ./build.ps1
+- build.ps1
 cache:
 - '%USERPROFILE%\.nuget\packages'

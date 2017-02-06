@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration.Creator;
+﻿using System.Threading.Tasks;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
 
@@ -19,7 +20,7 @@ namespace Ocelot.Configuration.Provider
             _creator = creator;
         }
 
-        public Response<IOcelotConfiguration> Get()
+        public async Task<Response<IOcelotConfiguration>> Get()
         {
             var repoConfig = _repo.Get();
 
@@ -30,7 +31,7 @@ namespace Ocelot.Configuration.Provider
 
             if (repoConfig.Data == null)
             {
-                var creatorConfig = _creator.Create();
+                var creatorConfig = await _creator.Create();
 
                 if (creatorConfig.IsError)
                 {

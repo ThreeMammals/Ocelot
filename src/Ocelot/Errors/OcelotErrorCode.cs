@@ -21,6 +21,10 @@
         DownstreamPathTemplateContainsSchemeError,
         DownstreamPathNullOrEmptyError,
         DownstreamSchemeNullOrEmptyError,
-        DownstreamHostNullOrEmptyError
+        DownstreamHostNullOrEmptyError,
+        ServicesAreNullError,
+        ServicesAreEmptyError,
+        UnableToFindServiceDiscoveryProviderError,
+        UnableToFindLoadBalancerError
     }
 }
