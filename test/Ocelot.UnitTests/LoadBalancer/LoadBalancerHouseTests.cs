@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 throw new NotImplementedException();
             }
 
-            public Response Release(HostAndPort hostAndPort)
+            public void Release(HostAndPort hostAndPort)
             {
                 throw new NotImplementedException();
             }
@@ -127,7 +127,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 throw new NotImplementedException();
             }
 
-            public Response Release(HostAndPort hostAndPort)
+            public void Release(HostAndPort hostAndPort)
             {
                 throw new NotImplementedException();
             }

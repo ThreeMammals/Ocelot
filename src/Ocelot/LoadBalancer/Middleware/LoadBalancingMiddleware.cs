@@ -31,14 +31,14 @@ namespace Ocelot.LoadBalancer.Middleware
         {
             _logger.LogDebug("started calling load balancing middleware");
 
-            var getLoadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.LoadBalancerKey);
-            if(getLoadBalancer.IsError)
+            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.LoadBalancerKey);
+            if(loadBalancer.IsError)
             {
-                SetPipelineError(getLoadBalancer.Errors);
+                SetPipelineError(loadBalancer.Errors);
                 return;
             }
 
-            var hostAndPort = await getLoadBalancer.Data.Lease();
+            var hostAndPort = await loadBalancer.Data.Lease();
             if(hostAndPort.IsError)
             { 
                 SetPipelineError(hostAndPort.Errors);
@@ -53,11 +53,12 @@ namespace Ocelot.LoadBalancer.Middleware
             {
                 await _next.Invoke(context);
 
-                getLoadBalancer.Data.Release(hostAndPort.Data);
+                loadBalancer.Data.Release(hostAndPort.Data);
             }
             catch (Exception)
             {
-                getLoadBalancer.Data.Release(hostAndPort.Data);
+                loadBalancer.Data.Release(hostAndPort.Data);
+                 
                  _logger.LogDebug("error calling next middleware, exception will be thrown to global handler");
                 throw;
             }

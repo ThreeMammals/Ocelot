@@ -15,7 +15,7 @@ namespace Ocelot.ServiceDiscovery
 
         public async Task<List<Service>> Get()
         {
-            return _services;
+            return await Task.FromResult(_services);
         }
     }
 }

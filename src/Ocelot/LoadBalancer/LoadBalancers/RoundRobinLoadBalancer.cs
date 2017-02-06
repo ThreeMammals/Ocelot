@@ -22,14 +22,13 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 _last = 0;
             }
 
-            var next = _services[_last];
+            var next = await Task.FromResult(_services[_last]);
             _last++;
             return new OkResponse<HostAndPort>(next.HostAndPort);
         }
 
-        public Response Release(HostAndPort hostAndPort)
+        public void Release(HostAndPort hostAndPort)
         {
-            return new OkResponse();
         }
     }
 }

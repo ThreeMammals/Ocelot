@@ -53,7 +53,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
         }
 
-        public Response Release(HostAndPort hostAndPort)
+        public void Release(HostAndPort hostAndPort)
         {
             lock(_syncLock)
             {
@@ -69,8 +69,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     _leases.Add(replacementLease);
                 }
             }
-
-            return new OkResponse();
         }
 
         private Lease AddConnection(Lease lease)

@@ -170,6 +170,15 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Verify(x => x.Add("OcelotMiddlewareErrors", _getLoadBalancerHouseError.Errors), Times.Once);
         }
 
+         private void ThenAnErrorSayingReleaseFailedIsSetOnThePipeline()
+        {
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
+
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareErrors", It.IsAny<List<Error>>()), Times.Once);
+        }
+
             private void ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline()
         {
             _scopedRepository

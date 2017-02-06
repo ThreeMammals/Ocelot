@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var hostAndPort = await _leastConnection.Lease();
             await Task.Delay(_random.Next(1, 100));
-            var response = _leastConnection.Release(hostAndPort.Data);
+            _leastConnection.Release(hostAndPort.Data);
         }
 
         [Fact]
