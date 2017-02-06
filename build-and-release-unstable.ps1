@@ -1,1 +1,1 @@
-./build.ps1 -target build-full
+./build.ps1 -target BuildAndReleaseUnstable
