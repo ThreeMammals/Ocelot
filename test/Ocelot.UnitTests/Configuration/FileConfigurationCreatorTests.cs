@@ -8,6 +8,7 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -24,6 +25,9 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IClaimToThingConfigurationParser> _configParser;
         private readonly Mock<ILogger<FileOcelotConfigurationCreator>> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
+        private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
+        private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
+        private readonly Mock<ILoadBalancer> _loadBalancer;
 
         public FileConfigurationCreatorTests()
         {
@@ -31,8 +35,37 @@ namespace Ocelot.UnitTests.Configuration
             _configParser = new Mock<IClaimToThingConfigurationParser>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
+            _loadBalancerFactory = new Mock<ILoadBalancerFactory>();
+            _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
+            _loadBalancer = new Mock<ILoadBalancer>();
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
-                _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object);
+                _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object,
+                _loadBalancerFactory.Object, _loadBalancerHouse.Object);
+        }
+
+        [Fact]
+        public void should_create_load_balancer()
+        {
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                            {
+                                ReRoutes = new List<FileReRoute>
+                                {
+                                    new FileReRoute
+                                    {
+                                        DownstreamHost = "127.0.0.1",
+                                        UpstreamTemplate = "/api/products/{productId}",
+                                        DownstreamPathTemplate = "/products/{productId}",
+                                        UpstreamHttpMethod = "Get",
+                                    }
+                                },
+                            }))
+                                .And(x => x.GivenTheConfigIsValid())
+                                .And(x => x.GivenTheLoadBalancerFactoryReturns())
+                                .When(x => x.WhenICreateTheConfig())
+                                .Then(x => x.TheLoadBalancerFactoryIsCalledCorrectly())
+                                .And(x => x.ThenTheLoadBalancerHouseIsCalledCorrectly())
+                               
+                    .BDDfy();
         }
 
         [Fact]
@@ -66,6 +99,7 @@ namespace Ocelot.UnitTests.Configuration
                     .BDDfy();
         }
 
+        [Fact]
         public void should_use_downstream_scheme()
         {
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -117,7 +151,7 @@ namespace Ocelot.UnitTests.Configuration
                                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                                 {
                                      Provider = "consul",
-                                     Address = "127.0.0.1"
+                                     Host = "127.0.0.1"
                                 }
                             }
                         }))
@@ -376,6 +410,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheConfigHeaderExtractorReturns(new ClaimToThing("CustomerId", "CustomerId", "", 0)))
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -430,6 +465,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -543,7 +579,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create();
+            _config = _ocelotConfigurationCreator.Create().Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -575,6 +611,25 @@ namespace Ocelot.UnitTests.Configuration
                 result.ScopeSecret.ShouldBe(expected.ScopeSecret);
 
             }
+        }
+
+        private void GivenTheLoadBalancerFactoryReturns()
+        {
+            _loadBalancerFactory
+                .Setup(x => x.Get(It.IsAny<ReRoute>()))
+                .ReturnsAsync(_loadBalancer.Object);
+        }
+
+        private void TheLoadBalancerFactoryIsCalledCorrectly()
+        {
+            _loadBalancerFactory
+                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
+        }
+
+        private void ThenTheLoadBalancerHouseIsCalledCorrectly()
+        {
+            _loadBalancerHouse
+                .Verify(x => x.Add(It.IsAny<string>(), _loadBalancer.Object), Times.Once);
         }
     }
 }

@@ -159,7 +159,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _reRoutesConfig = reRoutesConfig;
             _mockConfig
                 .Setup(x => x.Get())
-                .Returns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig)));
+                .ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig)));
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)
@@ -169,7 +169,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod);
+            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod).Result;
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

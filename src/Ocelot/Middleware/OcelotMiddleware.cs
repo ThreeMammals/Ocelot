@@ -3,6 +3,7 @@ using System.Net.Http;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Values;
 
 namespace Ocelot.Middleware
 {
@@ -67,6 +68,20 @@ namespace Ocelot.Middleware
                 var request = _requestScopedDataRepository.Get<HttpResponseMessage>("HttpResponseMessage");
                 return request.Data;
             }
+        }
+
+        public HostAndPort HostAndPort 
+        {
+            get
+            {
+                var hostAndPort = _requestScopedDataRepository.Get<HostAndPort>("HostAndPort");
+                return hostAndPort.Data;
+            }
+        }
+
+        public void SetHostAndPortForThisRequest(HostAndPort hostAndPort)
+        {
+            _requestScopedDataRepository.Add("HostAndPort", hostAndPort);
         }
 
         public void SetDownstreamRouteForThisRequest(DownstreamRoute downstreamRoute)

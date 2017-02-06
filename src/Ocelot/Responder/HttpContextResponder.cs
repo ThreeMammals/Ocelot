@@ -24,7 +24,7 @@ namespace Ocelot.Responder
             _removeOutputHeaders = removeOutputHeaders;
         }
 
-        public async Task<Response> SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
+        public async Task SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
         {
             _removeOutputHeaders.Remove(response.Headers);
 
@@ -56,7 +56,6 @@ namespace Ocelot.Responder
             {
                 await stream.CopyToAsync(context.Response.Body);
             }
-            return new OkResponse();       
         }
 
         private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
@@ -67,14 +66,13 @@ namespace Ocelot.Responder
             }
         }
 
-        public async Task<Response> SetErrorResponseOnContext(HttpContext context, int statusCode)
+        public void SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
             context.Response.OnStarting(x =>
             {
                 context.Response.StatusCode = statusCode;
                 return Task.CompletedTask;
             }, context);
-            return new OkResponse();
         }
     }
 }

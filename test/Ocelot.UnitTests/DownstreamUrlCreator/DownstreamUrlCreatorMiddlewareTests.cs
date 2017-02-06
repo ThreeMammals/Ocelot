@@ -36,6 +36,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private HttpResponseMessage _result;
         private OkResponse<DownstreamPath> _downstreamPath;
         private OkResponse<DownstreamUrl> _downstreamUrl;
+        private HostAndPort _hostAndPort;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -69,12 +70,23 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         [Fact]
         public void should_call_dependencies_correctly()
         {
+            var hostAndPort = new HostAndPort("127.0.0.1", 80);
+
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithDownstreamPathTemplate("any old string").Build())))
+                .And(x => x.GivenTheHostAndPortIs(hostAndPort))
                 .And(x => x.TheUrlReplacerReturns("/api/products/1"))
-                .And(x => x.TheUrlBuilderReturns("http://www.bbc.co.uk/api/products/1"))
+                .And(x => x.TheUrlBuilderReturns("http://127.0.0.1:80/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void GivenTheHostAndPortIs(HostAndPort hostAndPort)
+        {
+            _hostAndPort = hostAndPort;
+            _scopedRepository
+                .Setup(x => x.Get<HostAndPort>("HostAndPort"))
+                .Returns(new OkResponse<HostAndPort>(_hostAndPort));
         }
 
         private void TheUrlBuilderReturns(string dsUrl)

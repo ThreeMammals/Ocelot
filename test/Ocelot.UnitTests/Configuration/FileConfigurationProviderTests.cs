@@ -81,7 +81,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _creator
                 .Setup(x => x.Create())
-                .Returns(config);
+                .ReturnsAsync(config);
         }
 
         private void GivenTheRepoReturns(Response<IOcelotConfiguration> config)
@@ -93,7 +93,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenIGetTheConfig()
         {
-            _result = _ocelotConfigurationProvider.Get();
+            _result = _ocelotConfigurationProvider.Get().Result;
         }
 
         private void TheFollowingIsReturned(Response<IOcelotConfiguration> expected)
