@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.0.0-dev",
 
   "testRunner": "xunit",
 
@@ -13,7 +13,7 @@
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
     "Microsoft.AspNetCore.Http": "1.1.0",
-    "Ocelot": "1.0.0-*",
+    "Ocelot": "0.0.0-dev",
     "xunit": "2.2.0-beta2-build3300",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Moq": "4.6.38-alpha",
@@ -32,7 +32,7 @@
     "win7-x64": {}
   },
   "frameworks": {
-    "netcoreapp1.4": {
+    "netcoreapp1.1": {
       "imports": [
       ]
     }

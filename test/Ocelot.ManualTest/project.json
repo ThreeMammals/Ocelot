@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.0.0-dev",
 
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.1.0",
@@ -10,7 +10,7 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
-    "Ocelot": "1.0.0-*",
+    "Ocelot": "0.0.0-dev",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
     "Microsoft.NETCore.App": "1.1.0"
   },
@@ -24,7 +24,7 @@
     "win7-x64": {}
   },
   "frameworks": {
-    "netcoreapp1.4": {
+    "netcoreapp1.1": {
       "imports": [
       ]
     }

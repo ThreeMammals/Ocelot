@@ -1,0 +1,1 @@
+./build.ps1 -target RunBenchmarkTests

@@ -3,10 +3,6 @@ configuration:
 - Release
 platform: Any CPU
 build_script:
-- build.bat
-test_script:
-- run-tests.bat
-after_test:
-- push-to-nuget.bat %appveyor_build_version% %nugetApiKey%
+- build.ps1
 cache:
 - '%USERPROFILE%\.nuget\packages'

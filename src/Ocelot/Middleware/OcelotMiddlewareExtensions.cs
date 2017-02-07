@@ -18,6 +18,8 @@ namespace Ocelot.Middleware
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.Provider;
+    using Ocelot.LoadBalancer.Middleware;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -28,6 +30,7 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
         {
+            CreateConfiguration(builder);
             builder.UseOcelot(new OcelotMiddlewareConfiguration());
             return builder;
         }
@@ -40,6 +43,8 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
+            CreateConfiguration(builder);
+            
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
 
@@ -98,6 +103,9 @@ namespace Ocelot.Middleware
             // Now we can run any query string transformation logic
             builder.UseQueryStringBuilderMiddleware();
 
+            // Get the load balancer for this request
+            builder.UseLoadBalancingMiddleware();
+
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
 
@@ -112,6 +120,18 @@ namespace Ocelot.Middleware
             builder.UseHttpRequesterMiddleware();
 
             return builder;
+        }
+
+        private static void CreateConfiguration(IApplicationBuilder builder)
+        {
+            var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
+            
+            var config = configProvider.Get();
+            
+            if(config == null)
+            {
+                throw new Exception("Unable to start Ocelot: configuration was null");
+            }
         }
 
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
