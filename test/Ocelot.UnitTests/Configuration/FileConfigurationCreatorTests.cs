@@ -593,7 +593,7 @@ namespace Ocelot.UnitTests.Configuration
 
                 result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
-                result.UpstreamTemplate.ShouldBe(expected.UpstreamTemplate);
+                result.UpstreamTemplate.Value.ShouldBe(expected.UpstreamTemplate.Value);
                 result.UpstreamTemplatePattern.ShouldBe(expected.UpstreamTemplatePattern);
             }
         }
