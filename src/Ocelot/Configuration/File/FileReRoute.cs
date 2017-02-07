@@ -15,7 +15,7 @@ namespace Ocelot.Configuration.File
         }
 
         public string DownstreamPathTemplate { get; set; }
-        public string UpstreamTemplate { get; set; }
+        public string UpstreamPathTemplate { get; set; }
         public string UpstreamHttpMethod { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }

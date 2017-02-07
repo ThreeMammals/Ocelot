@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
@@ -88,7 +90,7 @@ namespace Ocelot.Configuration.Creator
         {
             var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
 
-            var upstreamTemplate = BuildUpstreamTemplate(fileReRoute);
+            var upstreamTemplatePattern = BuildUpstreamTemplate(fileReRoute);
 
             var isAuthenticated = !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
 
@@ -104,7 +106,7 @@ namespace Ocelot.Configuration.Creator
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
-            var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
+            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
 
             ReRoute reRoute;
 
@@ -132,20 +134,29 @@ namespace Ocelot.Configuration.Creator
                 var claimsToQueries = GetAddThingsToRequest(fileReRoute.AddQueriesToRequest);
 
                 reRoute = new ReRoute(new PathTemplate(fileReRoute.DownstreamPathTemplate),
-                    new PathTemplate(fileReRoute.UpstreamTemplate),
-                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                    new PathTemplate(fileReRoute.UpstreamPathTemplate),
+                    new HttpMethod(fileReRoute.UpstreamHttpMethod), upstreamTemplatePattern, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims,
                     fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds)
                     , fileReRoute.DownstreamScheme,
                     fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
                     serviceProviderConfiguration);
+
+                //reRoute = new ReRouteBuilder()
+                  //          .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
+                    //        .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
+                      //      .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
+                        //    .WithUpstreamTemplatePattern(upstreamTemplatePattern)
+                          //  .WithIsAuthenticated(isAuthenticated)
+                            //.Build();
+                
             }
             else
             {
                 reRoute = new ReRoute(new PathTemplate(fileReRoute.DownstreamPathTemplate),
-                    new PathTemplate(fileReRoute.UpstreamTemplate),
-                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                    new PathTemplate(fileReRoute.UpstreamPathTemplate),
+                    new HttpMethod(fileReRoute.UpstreamHttpMethod), upstreamTemplatePattern, isAuthenticated,
                     null, new List<ClaimToThing>(), new List<ClaimToThing>(),
                     fileReRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
@@ -161,7 +172,7 @@ namespace Ocelot.Configuration.Creator
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)
         {
-            var upstreamTemplate = reRoute.UpstreamTemplate;
+            var upstreamTemplate = reRoute.UpstreamPathTemplate;
 
             upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
 

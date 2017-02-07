@@ -1,4 +1,4 @@
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration.Builder
 {
     public class ServiceProviderConfiguraionBuilder
     {

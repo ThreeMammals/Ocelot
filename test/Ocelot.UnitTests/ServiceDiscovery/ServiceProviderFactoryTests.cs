@@ -1,4 +1,5 @@
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;

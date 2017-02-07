@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.Configuration
                                     new FileReRoute
                                     {
                                         DownstreamHost = "127.0.0.1",
-                                        UpstreamTemplate = "/api/products/{productId}",
+                                        UpstreamPathTemplate = "/api/products/{productId}",
                                         DownstreamPathTemplate = "/products/{productId}",
                                         UpstreamHttpMethod = "Get",
                                     }
@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.Configuration
                                     new FileReRoute
                                     {
                                         DownstreamHost = "127.0.0.1",
-                                        UpstreamTemplate = "/api/products/{productId}",
+                                        UpstreamPathTemplate = "/api/products/{productId}",
                                         DownstreamPathTemplate = "/products/{productId}",
                                         UpstreamHttpMethod = "Get",
                                     }
@@ -91,7 +91,7 @@ namespace Ocelot.UnitTests.Configuration
                                     new ReRouteBuilder()
                                         .WithDownstreamHost("127.0.0.1")
                                         .WithDownstreamPathTemplate("/products/{productId}")
-                                        .WithUpstreamTemplate("/api/products/{productId}")
+                                        .WithUpstreamPathTemplate("/api/products/{productId}")
                                         .WithUpstreamHttpMethod("Get")
                                         .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                                         .Build()
@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Configuration
                                                 new FileReRoute
                                                 {
                                                     DownstreamScheme = "https",
-                                                    UpstreamTemplate = "/api/products/{productId}",
+                                                    UpstreamPathTemplate = "/api/products/{productId}",
                                                     DownstreamPathTemplate = "/products/{productId}",
                                                     UpstreamHttpMethod = "Get",
                                                 }
@@ -122,7 +122,7 @@ namespace Ocelot.UnitTests.Configuration
                                                 new ReRouteBuilder()
                                                     .WithDownstreamScheme("https")
                                                     .WithDownstreamPathTemplate("/products/{productId}")
-                                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                                    .WithUpstreamPathTemplate("/api/products/{productId}")
                                                     .WithUpstreamHttpMethod("Get")
                                                     .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                                                     .Build()
@@ -139,7 +139,7 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    UpstreamTemplate = "/api/products/{productId}",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = "Get",
                                     ReRouteIsCaseSensitive = false,
@@ -161,7 +161,7 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
-                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod("Get")
                                     .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                                     .WithServiceName("ProductService")
@@ -184,7 +184,7 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    UpstreamTemplate = "/api/products/{productId}",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = "Get",
                                     ReRouteIsCaseSensitive = false,
@@ -197,7 +197,7 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
-                                    .WithUpstreamTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod("Get")
                                     .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                                     .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder()
@@ -217,7 +217,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = false
@@ -230,7 +230,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                         .Build()
@@ -247,7 +247,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get"
                     }
@@ -259,7 +259,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                         .Build()
@@ -276,7 +276,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -289,7 +289,7 @@ namespace Ocelot.UnitTests.Configuration
               {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/api/products/.*/$")
                         .Build()
@@ -306,7 +306,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -323,7 +323,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/api/products/.*/$")
                         .WithRequestIdKey("blahhhh")
@@ -341,7 +341,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -354,7 +354,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/api/products/.*/$")
                         .Build()
@@ -365,18 +365,23 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_with_headers_to_extract()
         {
+            var authenticationOptions = new AuthenticationOptionsBuilder()
+                    .WithProvider("IdentityServer")
+                    .WithProviderRootUrl("http://localhost:51888")
+                    .WithRequireHttps(false)
+                    .WithScopeSecret("secret")
+                    .WithScopeName("api")
+                    .WithAdditionalScopes(new List<string>())
+                    .Build();
+
             var expected = new List<ReRoute>
             {
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
-                    .WithUpstreamTemplate("/api/products/{productId}")
+                    .WithUpstreamPathTemplate("/api/products/{productId}")
                     .WithUpstreamHttpMethod("Get")
                     .WithUpstreamTemplatePattern("/api/products/.*/$")
-                    .WithAuthenticationProvider("IdentityServer")
-                    .WithAuthenticationProviderUrl("http://localhost:51888")
-                    .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithAuthenticationProviderScopeName("api")
+                    .WithAuthenticationOptions(authenticationOptions)
                     .WithClaimsToHeaders(new List<ClaimToThing>
                     {
                         new ClaimToThing("CustomerId", "CustomerId", "", 0),
@@ -390,7 +395,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true,
@@ -429,18 +434,23 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_with_authentication_properties()
         {
+             var authenticationOptions = new AuthenticationOptionsBuilder()
+                    .WithProvider("IdentityServer")
+                    .WithProviderRootUrl("http://localhost:51888")
+                    .WithRequireHttps(false)
+                    .WithScopeSecret("secret")
+                    .WithScopeName("api")
+                    .WithAdditionalScopes(new List<string>())
+                    .Build();
+
             var expected = new List<ReRoute>
             {
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
-                    .WithUpstreamTemplate("/api/products/{productId}")
+                    .WithUpstreamPathTemplate("/api/products/{productId}")
                     .WithUpstreamHttpMethod("Get")
                     .WithUpstreamTemplatePattern("/api/products/.*/$")
-                    .WithAuthenticationProvider("IdentityServer")
-                    .WithAuthenticationProviderUrl("http://localhost:51888")
-                    .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithAuthenticationProviderScopeName("api")
+                    .WithAuthenticationOptions(authenticationOptions)
                     .Build()
             };
 
@@ -450,7 +460,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true,
@@ -483,7 +493,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}/variants/{variantId}",
+                        UpstreamPathTemplate = "/api/products/{productId}/variants/{variantId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -496,7 +506,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}/variants/{variantId}")
+                        .WithUpstreamPathTemplate("/api/products/{productId}/variants/{variantId}")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/api/products/.*/variants/.*/$")
                         .Build()
@@ -513,7 +523,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/api/products/{productId}/variants/{variantId}/",
+                        UpstreamPathTemplate = "/api/products/{productId}/variants/{variantId}/",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -526,7 +536,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
-                        .WithUpstreamTemplate("/api/products/{productId}/variants/{variantId}/")
+                        .WithUpstreamPathTemplate("/api/products/{productId}/variants/{variantId}/")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/api/products/.*/variants/.*/$")
                         .Build()
@@ -543,7 +553,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        UpstreamTemplate = "/",
+                        UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamHttpMethod = "Get",
                         ReRouteIsCaseSensitive = true
@@ -556,7 +566,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/api/products/")
-                        .WithUpstreamTemplate("/")
+                        .WithUpstreamPathTemplate("/")
                         .WithUpstreamHttpMethod("Get")
                         .WithUpstreamTemplatePattern("/$")
                         .Build()
@@ -593,7 +603,7 @@ namespace Ocelot.UnitTests.Configuration
 
                 result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
-                result.UpstreamTemplate.Value.ShouldBe(expected.UpstreamTemplate.Value);
+                result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
                 result.UpstreamTemplatePattern.ShouldBe(expected.UpstreamTemplatePattern);
             }
         }

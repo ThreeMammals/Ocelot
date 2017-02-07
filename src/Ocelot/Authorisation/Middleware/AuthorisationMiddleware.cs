@@ -61,7 +61,7 @@ namespace Ocelot.Authorisation.Middleware
                     SetPipelineError(new List<Error>
                     {
                         new UnauthorisedError(
-                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamTemplate}")
+                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
                     });
                 }
             }
