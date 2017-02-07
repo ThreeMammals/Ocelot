@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Creator
 {
     public interface IOcelotConfigurationCreator
     {
-        Response<IOcelotConfiguration> Create();
+        Task<Response<IOcelotConfiguration>> Create();
     }
 }

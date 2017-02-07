@@ -1,6 +1,6 @@
 # Ocelot
 
-[![Build status](https://ci.appveyor.com/api/projects/status/roahbe4nl526ysya?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot)
+[![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb)
 
 [![Join the chat at https://gitter.im/Ocelotey/Lobby](https://badges.gitter.im/Ocelotey/Lobby.svg)](https://gitter.im/Ocelotey/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -41,13 +41,13 @@ touch either via gitter or create an issue.
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
-built to netcoreapp1.4 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
+built to netcoreapp1.1 [this](https://docs.microsoft.com/en-us/dotnet/articles/standard/library) documentation may prove helpful when working out if Ocelot would be suitable for you.
 
 Install Ocelot and it's dependecies using nuget. At the moment 
 all we have is the pre version. Once we have something working in 
 a half decent way we will drop a version.
 
-`Install-Package Ocelot -Pre`
+`Install-Package Ocelot`
 
 All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
@@ -161,6 +161,44 @@ In order to change this you can specify on a per ReRoute basis the following set
 This means that when Ocelot tries to match the incoming upstream url with an upstream template the
 evaluation will be case sensitive. This setting defaults to false so only set it if you want 
 the ReRoute to be case sensitive is my advice!
+
+
+## Service Discovery
+
+Ocelot allows you to specify a service discovery provider and will use this to find the host and port 
+for the downstream service Ocelot is forwarding a request to. At the moment this is only supported in the
+GlobalConfiguration section which means the same service discovery provider will be used for all ReRoutes
+you specify a ServiceName for at ReRoute level. 
+
+In the future we can add a feature that allows ReRoute specfic configuration. 
+
+At the moment the only supported service discovery provider is Consul. The following is required in the 
+GlobalConfiguration. The Provider is required and if you do not specify a host and port the Consul default
+will be used.
+
+        "ServiceDiscoveryProvider":
+        {
+            "Provider":"Consul",
+            "Host":"localhost",
+            "Port":8500
+        }
+
+In order to tell Ocelot a ReRoute is to use the service discovery provider for its host and port you must add the 
+ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin
+and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
+
+        {
+            "DownstreamPathTemplate": "/api/posts/{postId}",
+			"DownstreamScheme": "https",
+            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamHttpMethod": "Put",
+            "ServiceName": "product"
+            "LoadBalancer": "LeastConnection"
+        }
+
+When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balancer
+requests across any available services.
+
 
 ## Authentication
 
@@ -387,5 +425,6 @@ that isnt available is annoying. Let alone it be null.
 ## Coming up
 
 You can see what we are working on [here](https://github.com/TomPallister/Ocelot/projects/1)
+
 
 
