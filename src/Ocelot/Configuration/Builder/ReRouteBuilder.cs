@@ -248,7 +248,8 @@ namespace Ocelot.Configuration.Builder
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,
-                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery, _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort)，
+                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery,
+                _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort),
                  _exceptionsAllowedBeforeBreaking,_durationOfBreak, _timeoutValue);
 
         }

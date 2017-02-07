@@ -16,7 +16,7 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries, 
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, 
             string downstreamScheme, string loadBalancer, string downstreamHost, 
-            int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion，
+            int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion,
             int exceptionsAllowedBeforeBreaking =3, int durationofBreak =8, int timeoutValue = 5000)
         {
             LoadBalancerKey = loadBalancerKey;
