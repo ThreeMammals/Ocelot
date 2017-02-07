@@ -67,7 +67,9 @@ namespace Ocelot.UnitTests.Request
 
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithRequestIdKey("LSRequestId").Build());
+                    .WithRequestIdKey("LSRequestId")
+                    .WithUpstreamHttpMethod("Get")
+                    .Build());
 
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))

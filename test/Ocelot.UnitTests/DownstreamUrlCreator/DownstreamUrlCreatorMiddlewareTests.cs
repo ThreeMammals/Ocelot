@@ -72,7 +72,13 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         {
             var hostAndPort = new HostAndPort("127.0.0.1", 80);
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithDownstreamPathTemplate("any old string").Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRoute(
+                    new List<UrlPathPlaceholderNameAndValue>(), 
+                    new ReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithUpstreamHttpMethod("Get")
+                        .Build())))
                 .And(x => x.GivenTheHostAndPortIs(hostAndPort))
                 .And(x => x.TheUrlReplacerReturns("/api/products/1"))
                 .And(x => x.TheUrlBuilderReturns("http://127.0.0.1:80/api/products/1"))

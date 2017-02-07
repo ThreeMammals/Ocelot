@@ -58,6 +58,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                         new ReRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod("Get")
                             .Build()
                         )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
@@ -95,6 +96,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                         new ReRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPathForAPost")
+                            .WithUpstreamHttpMethod("Post")
                             .Build()
                         )))
                 .BDDfy();

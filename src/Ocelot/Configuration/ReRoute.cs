@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration
@@ -25,7 +26,7 @@ namespace Ocelot.Configuration
             DownstreamPort = downstreamPort;
             DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamTemplate = upstreamTemplate;
-            UpstreamHttpMethod = upstreamHttpMethod;
+            UpstreamHttpMethod = new HttpMethod(upstreamHttpMethod);
             UpstreamTemplatePattern = upstreamTemplatePattern;
             IsAuthenticated = isAuthenticated;
             AuthenticationOptions = authenticationOptions;
@@ -47,7 +48,7 @@ namespace Ocelot.Configuration
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }
-        public string UpstreamHttpMethod { get; private set; }
+        public HttpMethod UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
         public bool IsAuthorised { get; private set; }
         public AuthenticationOptions AuthenticationOptions { get; private set; }

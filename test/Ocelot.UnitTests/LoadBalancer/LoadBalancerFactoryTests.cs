@@ -29,6 +29,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new ReRouteBuilder()
                 .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
+                .WithUpstreamHttpMethod("Get")
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -43,6 +44,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
+                .WithUpstreamHttpMethod("Get")
                 .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
@@ -58,6 +60,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("LeastConnection")
+                .WithUpstreamHttpMethod("Get")
                 .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
@@ -73,6 +76,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
+                .WithUpstreamHttpMethod("Get")
                 .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
