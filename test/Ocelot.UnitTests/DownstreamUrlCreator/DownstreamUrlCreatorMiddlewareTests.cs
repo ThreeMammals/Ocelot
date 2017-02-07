@@ -101,7 +101,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         {
             _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(downstreamUrl));
             _downstreamUrlTemplateVariableReplacer
-                .Setup(x => x.Replace(It.IsAny<DownstreamPathTemplate>(), It.IsAny<List<UrlPathPlaceholderNameAndValue>>()))
+                .Setup(x => x.Replace(It.IsAny<PathTemplate>(), It.IsAny<List<UrlPathPlaceholderNameAndValue>>()))
                 .Returns(_downstreamPath);
         }
 

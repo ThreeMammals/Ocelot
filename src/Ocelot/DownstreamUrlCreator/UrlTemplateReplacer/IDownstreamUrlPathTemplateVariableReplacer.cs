@@ -7,6 +7,6 @@ namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
     public interface IDownstreamPathPlaceholderReplacer
     {
-        Response<DownstreamPath> Replace(DownstreamPathTemplate downstreamPathTemplate, List<UrlPathPlaceholderNameAndValue> urlPathPlaceholderNameAndValues);   
+        Response<DownstreamPath> Replace(PathTemplate downstreamPathTemplate, List<UrlPathPlaceholderNameAndValue> urlPathPlaceholderNameAndValues);   
     }
 }
