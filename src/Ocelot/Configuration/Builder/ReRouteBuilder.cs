@@ -194,7 +194,7 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-            return new ReRoute(new DownstreamPathTemplate(_downstreamPathTemplate), _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
+            return new ReRoute(new PathTemplate(_downstreamPathTemplate), new PathTemplate(_upstreamTemplate), _upstreamHttpMethod, _upstreamTemplatePattern, 
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,

@@ -34,7 +34,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
                 if (urlMatch.Data.Match)
                 {
-                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamTemplate);
+                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamTemplate.Value);
 
                     return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, reRoute));
                 }

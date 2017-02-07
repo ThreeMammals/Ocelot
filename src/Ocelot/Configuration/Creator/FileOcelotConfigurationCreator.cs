@@ -131,8 +131,8 @@ namespace Ocelot.Configuration.Creator
                 var claimsToClaims = GetAddThingsToRequest(fileReRoute.AddClaimsToRequest);
                 var claimsToQueries = GetAddThingsToRequest(fileReRoute.AddQueriesToRequest);
 
-                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
-                    fileReRoute.UpstreamTemplate,
+                reRoute = new ReRoute(new PathTemplate(fileReRoute.DownstreamPathTemplate),
+                    new PathTemplate(fileReRoute.UpstreamTemplate),
                     fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims,
                     fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
@@ -143,8 +143,8 @@ namespace Ocelot.Configuration.Creator
             }
             else
             {
-                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
-                    fileReRoute.UpstreamTemplate,
+                reRoute = new ReRoute(new PathTemplate(fileReRoute.DownstreamPathTemplate),
+                    new PathTemplate(fileReRoute.UpstreamTemplate),
                     fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     null, new List<ClaimToThing>(), new List<ClaimToThing>(),
                     fileReRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),

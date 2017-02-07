@@ -6,8 +6,8 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(DownstreamPathTemplate downstreamPathTemplate, 
-            string upstreamTemplate, string upstreamHttpMethod, 
+        public ReRoute(PathTemplate downstreamPathTemplate, 
+            PathTemplate upstreamTemplate, string upstreamHttpMethod, 
             string upstreamTemplatePattern, 
             bool isAuthenticated, AuthenticationOptions authenticationOptions, 
             List<ClaimToThing> configurationHeaderExtractorProperties, 
@@ -44,8 +44,8 @@ namespace Ocelot.Configuration
         }
 
         public string LoadBalancerKey {get;private set;}
-        public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
-        public string UpstreamTemplate { get; private set; }
+        public PathTemplate DownstreamPathTemplate { get; private set; }
+        public PathTemplate UpstreamTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }
         public string UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
