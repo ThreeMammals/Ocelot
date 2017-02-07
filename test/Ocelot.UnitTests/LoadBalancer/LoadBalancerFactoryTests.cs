@@ -24,18 +24,12 @@ namespace Ocelot.UnitTests.LoadBalancer
             _factory = new LoadBalancerFactory(_serviceProviderFactory.Object);
         }
 
-        private void GivenTheServiceProviderFactoryReturns()
-        {
-            _serviceProviderFactory
-                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguraion>()))
-                .Returns(_serviceProvider.Object);
-        }
-
         [Fact]
         public void should_return_no_load_balancer()
         {
             var reRoute = new ReRouteBuilder()
-            .Build();
+                .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
+                .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
@@ -49,6 +43,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
+                .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -63,6 +58,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("LeastConnection")
+                .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -77,6 +73,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
+                .WithServiceProviderConfiguraion(new ServiceProviderConfiguraionBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -84,6 +81,13 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void GivenTheServiceProviderFactoryReturns()
+        {
+            _serviceProviderFactory
+                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguraion>()))
+                .Returns(_serviceProvider.Object);
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()

@@ -110,10 +110,15 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
-            var serviceProviderConfiguration = new ServiceProviderConfiguraion(fileReRoute.ServiceName,
-                fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, useServiceDiscovery,
-                globalConfiguration?.ServiceDiscoveryProvider?.Provider, globalConfiguration?.ServiceDiscoveryProvider?.Host,
-                serviceProviderPort);
+            var serviceProviderConfiguration = new ServiceProviderConfiguraionBuilder()
+                    .WithServiceName(fileReRoute.ServiceName)
+                    .WithDownstreamHost(fileReRoute.DownstreamHost)
+                    .WithDownstreamPort(fileReRoute.DownstreamPort)
+                    .WithUseServiceDiscovery(useServiceDiscovery)
+                    .WithServiceDiscoveryProvider(globalConfiguration?.ServiceDiscoveryProvider?.Provider)
+                    .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
+                    .WithServiceDiscoveryProviderPort(serviceProviderPort)
+                    .Build();
 
             if (isAuthenticated)
             {
