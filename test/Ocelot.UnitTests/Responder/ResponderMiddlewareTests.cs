@@ -62,17 +62,9 @@ namespace Ocelot.UnitTests.Responder
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
                 .And(x => x.GivenThereAreNoPipelineErrors())
-                .And(x => x.GivenTheResponderReturns())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
-        }
-
-        private void GivenTheResponderReturns()
-        {
-            _responder
-                .Setup(x => x.SetResponseOnHttpContext(It.IsAny<HttpContext>(), It.IsAny<HttpResponseMessage>()))
-                .ReturnsAsync(new OkResponse());
         }
 
         private void GivenThereAreNoPipelineErrors()

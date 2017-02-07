@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Utilities;
 using Ocelot.Values;
@@ -25,22 +27,28 @@ namespace Ocelot.Configuration.Creator
 
         private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
+        private readonly ILoadBalancerFactory _loadBalanceFactory;
+        private readonly ILoadBalancerHouse _loadBalancerHouse;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator, 
             IClaimToThingConfigurationParser claimToThingConfigurationParser, 
-            ILogger<FileOcelotConfigurationCreator> logger)
+            ILogger<FileOcelotConfigurationCreator> logger,
+            ILoadBalancerFactory loadBalancerFactory,
+            ILoadBalancerHouse loadBalancerHouse)
         {
+            _loadBalanceFactory = loadBalancerFactory;
+            _loadBalancerHouse = loadBalancerHouse;
             _options = options;
             _configurationValidator = configurationValidator;
             _claimToThingConfigurationParser = claimToThingConfigurationParser;
             _logger = logger;
         }
 
-        public Response<IOcelotConfiguration> Create()
+        public async Task<Response<IOcelotConfiguration>> Create()
         {     
-            var config = SetUpConfiguration();
+            var config = await SetUpConfiguration();
 
             return new OkResponse<IOcelotConfiguration>(config);
         }
@@ -49,7 +57,7 @@ namespace Ocelot.Configuration.Creator
         /// This method is meant to be tempoary to convert a config to an ocelot config...probably wont keep this but we will see
         /// will need a refactor at some point as its crap
         /// </summary>
-        private IOcelotConfiguration SetUpConfiguration()
+        private async Task<IOcelotConfiguration> SetUpConfiguration()
         {
             var response = _configurationValidator.IsValid(_options.Value);
 
@@ -69,63 +77,81 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var reRoute in _options.Value.ReRoutes)
             {
-                var ocelotReRoute = SetUpReRoute(reRoute, _options.Value.GlobalConfiguration);
+                var ocelotReRoute = await SetUpReRoute(reRoute, _options.Value.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
             
             return new OcelotConfiguration(reRoutes);
         }
 
-        private ReRoute SetUpReRoute(FileReRoute reRoute, FileGlobalConfiguration globalConfiguration)
+        private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
 
-            var upstreamTemplate = BuildUpstreamTemplate(reRoute);
+            var upstreamTemplate = BuildUpstreamTemplate(fileReRoute);
 
-            var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
+            var isAuthenticated = !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
 
-            var isAuthorised = reRoute.RouteClaimsRequirement?.Count > 0;
+            var isAuthorised = fileReRoute.RouteClaimsRequirement?.Count > 0;
 
-            var isCached = reRoute.FileCacheOptions.TtlSeconds > 0;
+            var isCached = fileReRoute.FileCacheOptions.TtlSeconds > 0;
 
             var requestIdKey = globalRequestIdConfiguration
                 ? globalConfiguration.RequestIdKey
-                : reRoute.RequestIdKey;
+                : fileReRoute.RequestIdKey;
 
-            var useServiceDiscovery = !string.IsNullOrEmpty(reRoute.ServiceName)
-                && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Address)
+            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName)
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
+            //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
+            var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
 
-            Func<HostAndPort> downstreamHostAndPortFunc = () => new HostAndPort(reRoute.DownstreamHost.Trim('/'), reRoute.DownstreamPort);
+            ReRoute reRoute;
+
+            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+
+            var serviceProviderConfiguration = new ServiceProviderConfiguraion(fileReRoute.ServiceName,
+                fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, useServiceDiscovery,
+                globalConfiguration?.ServiceDiscoveryProvider?.Provider, globalConfiguration?.ServiceDiscoveryProvider?.Host,
+                serviceProviderPort);
 
             if (isAuthenticated)
             {
-                var authOptionsForRoute = new AuthenticationOptions(reRoute.AuthenticationOptions.Provider,
-                    reRoute.AuthenticationOptions.ProviderRootUrl, reRoute.AuthenticationOptions.ScopeName,
-                    reRoute.AuthenticationOptions.RequireHttps, reRoute.AuthenticationOptions.AdditionalScopes,
-                    reRoute.AuthenticationOptions.ScopeSecret);
+                var authOptionsForRoute = new AuthenticationOptions(fileReRoute.AuthenticationOptions.Provider,
+                    fileReRoute.AuthenticationOptions.ProviderRootUrl, fileReRoute.AuthenticationOptions.ScopeName,
+                    fileReRoute.AuthenticationOptions.RequireHttps, fileReRoute.AuthenticationOptions.AdditionalScopes,
+                    fileReRoute.AuthenticationOptions.ScopeSecret);
 
-                var claimsToHeaders = GetAddThingsToRequest(reRoute.AddHeadersToRequest);
-                var claimsToClaims = GetAddThingsToRequest(reRoute.AddClaimsToRequest);
-                var claimsToQueries = GetAddThingsToRequest(reRoute.AddQueriesToRequest);
+                var claimsToHeaders = GetAddThingsToRequest(fileReRoute.AddHeadersToRequest);
+                var claimsToClaims = GetAddThingsToRequest(fileReRoute.AddClaimsToRequest);
+                var claimsToQueries = GetAddThingsToRequest(fileReRoute.AddQueriesToRequest);
 
-                return new ReRoute(new DownstreamPathTemplate(reRoute.DownstreamPathTemplate), reRoute.UpstreamTemplate,
-                    reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
+                    fileReRoute.UpstreamTemplate,
+                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
                     authOptionsForRoute, claimsToHeaders, claimsToClaims,
-                    reRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
-                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
-                    reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+                    fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
+                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds)
+                    , fileReRoute.DownstreamScheme,
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
+                    serviceProviderConfiguration);
+            }
+            else
+            {
+                reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
+                    fileReRoute.UpstreamTemplate,
+                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                    null, new List<ClaimToThing>(), new List<ClaimToThing>(),
+                    fileReRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
+                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
+                    fileReRoute.DownstreamScheme,
+                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
+                    serviceProviderConfiguration);
             }
 
-            return new ReRoute(new DownstreamPathTemplate(reRoute.DownstreamPathTemplate), reRoute.UpstreamTemplate, 
-                reRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated, 
-                null, new List<ClaimToThing>(), new List<ClaimToThing>(), 
-                reRoute.RouteClaimsRequirement, isAuthorised, new List<ClaimToThing>(),
-                    requestIdKey, isCached, new CacheOptions(reRoute.FileCacheOptions.TtlSeconds),
-                    reRoute.ServiceName, useServiceDiscovery, globalConfiguration?.ServiceDiscoveryProvider?.Provider,
-                    globalConfiguration?.ServiceDiscoveryProvider?.Address, downstreamHostAndPortFunc, reRoute.DownstreamScheme);
+            var loadBalancer = await _loadBalanceFactory.Get(reRoute);
+            _loadBalancerHouse.Add(reRoute.LoadBalancerKey, loadBalancer);
+            return reRoute;
         }
 
         private string BuildUpstreamTemplate(FileReRoute reRoute)

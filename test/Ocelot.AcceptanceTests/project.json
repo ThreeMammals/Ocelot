@@ -32,7 +32,8 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
     "Microsoft.NETCore.App": "1.1.0",
     "Shouldly": "2.8.2",
-    "TestStack.BDDfy": "4.3.2"
+    "TestStack.BDDfy": "4.3.2",
+    "Consul": "0.7.2.1"
   },
   "runtimes": {
     "win10-x64": {},
@@ -40,7 +41,7 @@
     "win7-x64": {}
   },
   "frameworks": {
-    "netcoreapp1.4": {
+    "netcoreapp1.1": {
       "imports": [
       ]
     }

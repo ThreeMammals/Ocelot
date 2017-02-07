@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Builder
 {
     public class ReRouteBuilder
     {
+        private string _loadBalancerKey;
         private string _downstreamPathTemplate;
         private string _upstreamTemplate;
         private string _upstreamTemplatePattern;
@@ -32,10 +33,19 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamScheme;
         private string _downstreamHost;
         private int _dsPort;
+        private string _loadBalancer;
+        private string _serviceProviderHost;
+        private int _serviceProviderPort;
 
         public ReRouteBuilder()
         {
             _additionalScopes = new List<string>();
+        }
+
+        public ReRouteBuilder WithLoadBalancer(string loadBalancer)
+        {
+            _loadBalancer = loadBalancer;
+            return this;
         }
 
         public ReRouteBuilder WithDownstreamScheme(string downstreamScheme)
@@ -192,15 +202,31 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
+        {
+            _loadBalancerKey = loadBalancerKey;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceProviderHost(string serviceProviderHost)
+        {
+            _serviceProviderHost = serviceProviderHost;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceProviderPort(int serviceProviderPort)
+        {
+            _serviceProviderPort = serviceProviderPort;
+            return this;
+        }
+
         public ReRoute Build()
         {
-            Func<HostAndPort> downstreamHostFunc = () => new HostAndPort(_downstreamHost, _dsPort);
-
             return new ReRoute(new DownstreamPathTemplate(_downstreamPathTemplate), _upstreamTemplate, _upstreamHttpMethod, _upstreamTemplatePattern, 
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
-                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _serviceName, 
-                _useServiceDiscovery, _serviceDiscoveryAddress, _serviceDiscoveryProvider, downstreamHostFunc, _downstreamScheme);
+                _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,
+                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery, _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort));
         }
     }
 }
