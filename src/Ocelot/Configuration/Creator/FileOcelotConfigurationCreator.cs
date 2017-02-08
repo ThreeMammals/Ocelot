@@ -55,10 +55,6 @@ namespace Ocelot.Configuration.Creator
             return new OkResponse<IOcelotConfiguration>(config);
         }
 
-        /// <summary>
-        /// This method is meant to be tempoary to convert a config to an ocelot config...probably wont keep this but we will see
-        /// will need a refactor at some point as its crap
-        /// </summary>
         private async Task<IOcelotConfiguration> SetUpConfiguration()
         {
             var response = _configurationValidator.IsValid(_options.Value);

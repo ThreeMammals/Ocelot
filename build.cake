@@ -42,7 +42,7 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
 // internal build variables - don't change these.
 var releaseTag = "";
-var committedVersion = "0.0.0-dev";
+string committedVersion = "0.0.0-dev";
 var buildVersion = committedVersion;
 
 var target = Argument("target", "Default");
