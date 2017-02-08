@@ -33,12 +33,11 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamScheme;
         private string _downstreamHost;
         private int _dsPort;
-        private int _exceptionsAllowedBeforeBreaking;
-        private int _durationOfBreak;
-        private int _timeoutValue;
         private string _loadBalancer;
         private string _serviceProviderHost;
         private int _serviceProviderPort;
+        private bool _useQos;
+        private QoSOptions _qosOptions;
 
 
         public ReRouteBuilder()
@@ -206,23 +205,18 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
+        public ReRouteBuilder WithIsQos(bool input)
         {
-            _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            _useQos = input;
             return this;
         }
 
-        public ReRouteBuilder WithDurationOfBreak(int durationOfBreak)
+        public ReRouteBuilder WithQosOptions(QoSOptions input)
         {
-            _durationOfBreak = durationOfBreak;
+            _qosOptions = input;
             return this;
         }
-
-        public ReRouteBuilder WithTimeoutValue(int timeoutValue)
-        {
-            _timeoutValue = timeoutValue;
-            return this;
-        }
+       
 
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
@@ -250,7 +244,7 @@ namespace Ocelot.Configuration.Builder
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,
                 _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery,
                 _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort),
-                 _exceptionsAllowedBeforeBreaking,_durationOfBreak, _timeoutValue);
+                _useQos,_qosOptions);
 
         }
     }

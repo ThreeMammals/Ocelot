@@ -23,8 +23,11 @@ namespace Ocelot.Requester
 
             using (var handler = new HttpClientHandler { CookieContainer = request.CookieContainer })
             {
-                builder.WithCircuitBreaker(request.Qos, _logger, handler);               
-                using (var httpClient = builder.Build())
+                if (request.IsQos)
+                {
+                    builder.WithCircuitBreaker(request.Qos, _logger, handler);
+                }           
+                using (var httpClient = builder.Build(handler))
                 {
                     try
                     {

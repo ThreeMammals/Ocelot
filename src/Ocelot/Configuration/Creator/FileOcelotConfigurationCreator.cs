@@ -96,6 +96,8 @@ namespace Ocelot.Configuration.Creator
 
             var isCached = fileReRoute.FileCacheOptions.TtlSeconds > 0;
 
+            var isQos = fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions.TimeoutValue >0;
+
             var requestIdKey = globalRequestIdConfiguration
                 ? globalConfiguration.RequestIdKey
                 : fileReRoute.RequestIdKey;
@@ -135,8 +137,8 @@ namespace Ocelot.Configuration.Creator
                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds)
                    , fileReRoute.DownstreamScheme,
                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
-                   serviceProviderConfiguration, fileReRoute.ExceptionsAllowedBeforeBreaking,
-                    fileReRoute.DurationOfBreak, fileReRoute.TimeoutValue);
+                   serviceProviderConfiguration, isQos, 
+                   new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
             }
             else
             {
@@ -148,8 +150,8 @@ namespace Ocelot.Configuration.Creator
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
                     fileReRoute.DownstreamScheme,
                     fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
-                    serviceProviderConfiguration, fileReRoute.ExceptionsAllowedBeforeBreaking,
-                    fileReRoute.DurationOfBreak, fileReRoute.TimeoutValue);
+                    serviceProviderConfiguration, isQos,
+                    new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
             }
       
             var loadBalancer = await _loadBalanceFactory.Get(reRoute);

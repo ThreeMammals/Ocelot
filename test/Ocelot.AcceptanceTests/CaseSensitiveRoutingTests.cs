@@ -36,9 +36,6 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000
                         }
                     }
             };
@@ -67,9 +64,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = false,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -98,9 +92,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000
                         }
                     }
             };
@@ -129,9 +120,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -160,9 +148,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
                         }
                     }
             };
@@ -191,9 +176,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000
                         }
                     }
             };

@@ -40,10 +40,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             RequestIdKey = _steps.RequestIdKey,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
-                        }
+                         }
                     }
             };
 
@@ -70,10 +67,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            RequestIdKey = _steps.RequestIdKey,
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
+ 
                         }
                     }
             };
@@ -101,11 +95,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Get",
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak =5,
-                            TimeoutValue = 5000,
+                            UpstreamTemplate = "/",  
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration

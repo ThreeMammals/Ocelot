@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
+using Ocelot.Configuration;
 
 namespace Ocelot.Request.Builder
 {
@@ -13,8 +14,9 @@ namespace Ocelot.Request.Builder
             IHeaderDictionary headers,
             IRequestCookieCollection cookies,
             QueryString queryString,
-            string contentType, 
+            string contentType,
             RequestId.RequestId requestId,
-            Values.QoS qos);
+            bool isQos,
+            QoSOptions qos);
     }
 }

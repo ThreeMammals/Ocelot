@@ -1,4 +1,5 @@
-﻿using Ocelot.Logging;
+﻿using Ocelot.Configuration;
+using Ocelot.Logging;
 using Ocelot.Values;
 using Polly.Timeout;
 using System;
@@ -13,15 +14,15 @@ namespace Ocelot.Requester
     {
         private readonly Dictionary<int, Func<DelegatingHandler>> handlers = new Dictionary<int, Func<DelegatingHandler>>();
 
-        public HttpClientBuilder WithCircuitBreaker(QoS qos, IOcelotLogger logger, HttpMessageHandler innerHandler)
+        public HttpClientBuilder WithCircuitBreaker(QoSOptions qos, IOcelotLogger logger, HttpMessageHandler innerHandler)
         {
             handlers.Add(5000, () => new CircuitBreakingDelegatingHandler(qos.ExceptionsAllowedBeforeBreaking, qos.DurationOfBreak, qos.TimeoutValue, qos.TimeoutStrategy, logger, innerHandler));
             return this;
         }
 
-        internal HttpClient Build()
+        internal HttpClient Build(HttpMessageHandler innerHandler)
         {
-            return handlers.Any() ? new HttpClient(CreateHttpMessageHandler()) : new HttpClient();
+            return handlers.Any() ? new HttpClient(CreateHttpMessageHandler()) : new HttpClient(innerHandler);
         }
 
         private HttpMessageHandler CreateHttpMessageHandler()

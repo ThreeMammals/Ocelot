@@ -12,6 +12,7 @@ namespace Ocelot.Configuration.File
             AddQueriesToRequest = new Dictionary<string, string>();
             AuthenticationOptions = new FileAuthenticationOptions();
             FileCacheOptions = new FileCacheOptions();
+            QoSOptions = new FileQoSOptions();
         }
 
         public string DownstreamPathTemplate { get; set; }
@@ -29,9 +30,7 @@ namespace Ocelot.Configuration.File
         public string DownstreamScheme {get;set;}
         public string DownstreamHost {get;set;}
         public int DownstreamPort { get; set; }
-        public int ExceptionsAllowedBeforeBreaking { get; set; }
-        public int DurationOfBreak { get; set; }
-        public int TimeoutValue { get; set; }
+        public FileQoSOptions QoSOptions { get; set; }
         public string LoadBalancer {get;set;}
     }
 }

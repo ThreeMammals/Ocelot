@@ -33,7 +33,7 @@ namespace Ocelot.Request.Middleware
                 .Build(context.Request.Method, DownstreamUrl, context.Request.Body,
                     context.Request.Headers, context.Request.Cookies, context.Request.QueryString,
                     context.Request.ContentType, new RequestId.RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier),
-                    new Values.QoS(DownstreamRoute.ReRoute.ExceptionsAllowedBeforeBreaking, DownstreamRoute.ReRoute.DurationOfBreak, DownstreamRoute.ReRoute.TimeoutValue));
+                    DownstreamRoute.ReRoute.IsQos,DownstreamRoute.ReRoute.QosOptions);
 
             if (buildResult.IsError)
             {

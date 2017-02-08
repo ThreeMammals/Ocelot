@@ -4,17 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ocelot.Values
+namespace Ocelot.Configuration
 {
-    public class QoS
+    public class QoSOptions
     {
-        public QoS(int exceptionsAllowedBeforeBreaking, int durationofBreak, int timeoutValue, TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
+        public QoSOptions(int exceptionsAllowedBeforeBreaking, int durationofBreak, int timeoutValue, TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             DurationOfBreak = TimeSpan.FromMilliseconds(durationofBreak);
             TimeoutValue = TimeSpan.FromMilliseconds(timeoutValue);
             TimeoutStrategy = timeoutStrategy;
         }
+         
 
         public int ExceptionsAllowedBeforeBreaking { get; private set; }
 
@@ -23,5 +24,6 @@ namespace Ocelot.Values
         public TimeSpan TimeoutValue { get; private set; }
 
         public TimeoutStrategy TimeoutStrategy { get; private set; }
+
     }
 }
