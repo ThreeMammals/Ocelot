@@ -88,17 +88,13 @@ namespace Ocelot.Configuration.Creator
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
+            var isAuthenticated = IsAuthenticated(fileReRoute);
 
-            var isAuthenticated = !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
+            var isAuthorised = IsAuthenticated(fileReRoute);
 
-            var isAuthorised = fileReRoute.RouteClaimsRequirement?.Count > 0;
+            var isCached = IsCached(fileReRoute);
 
-            var isCached = fileReRoute.FileCacheOptions.TtlSeconds > 0;
-
-            var requestIdKey = globalRequestIdConfiguration
-                ? globalConfiguration.RequestIdKey
-                : fileReRoute.RequestIdKey;
+            var requestIdKey = BuildRequestId(fileReRoute, globalConfiguration);
 
             var loadBalancerKey = BuildLoadBalancerKey(fileReRoute);
 
@@ -139,6 +135,32 @@ namespace Ocelot.Configuration.Creator
 
             await SetupLoadBalancer(reRoute);
             return reRoute;
+        }
+
+        private bool IsAuthenticated(FileReRoute fileReRoute)
+        {
+            return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
+        }
+
+        private bool IsAuthorised(FileReRoute fileReRoute)
+        {
+            return fileReRoute.RouteClaimsRequirement?.Count > 0;
+        }
+
+        private bool IsCached(FileReRoute fileReRoute)
+        {
+            return fileReRoute.FileCacheOptions.TtlSeconds > 0;
+        }
+
+        private string BuildRequestId(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
+
+             var requestIdKey = globalRequestIdConfiguration
+                ? globalConfiguration.RequestIdKey
+                : fileReRoute.RequestIdKey;
+
+                return requestIdKey;
         }
 
         private string BuildLoadBalancerKey(FileReRoute fileReRoute)
