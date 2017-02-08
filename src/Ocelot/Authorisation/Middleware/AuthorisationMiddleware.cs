@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Ocelot.Infrastructure.RequestData;
+﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Responses;
 
