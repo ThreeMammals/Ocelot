@@ -36,6 +36,9 @@ namespace Ocelot.Configuration.Builder
         private string _loadBalancer;
         private string _serviceProviderHost;
         private int _serviceProviderPort;
+        private bool _useQos;
+        private QoSOptions _qosOptions;
+
 
         public ReRouteBuilder()
         {
@@ -202,6 +205,19 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithIsQos(bool input)
+        {
+            _useQos = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithQosOptions(QoSOptions input)
+        {
+            _qosOptions = input;
+            return this;
+        }
+       
+
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
@@ -226,7 +242,10 @@ namespace Ocelot.Configuration.Builder
                 _isAuthenticated, new AuthenticationOptions(_authenticationProvider, _authenticationProviderUrl, _scopeName, 
                 _requireHttps, _additionalScopes, _scopeSecret), _configHeaderExtractorProperties, _claimToClaims, _routeClaimRequirement, 
                 _isAuthorised, _claimToQueries, _requestIdHeaderKey, _isCached, _fileCacheOptions, _downstreamScheme, _loadBalancer,
-                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery, _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort));
+                _downstreamHost, _dsPort, _loadBalancerKey, new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _dsPort, _useServiceDiscovery,
+                _serviceDiscoveryProvider, _serviceProviderHost, _serviceProviderPort),
+                _useQos,_qosOptions);
+
         }
     }
 }

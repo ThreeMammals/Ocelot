@@ -10,7 +10,6 @@ namespace Ocelot.UnitTests.ServiceDiscovery
     public class ConfigurationServiceProviderTests
     {
         private ConfigurationServiceProvider _serviceProvider;
-        private HostAndPort _hostAndPort;
         private List<Service> _result;
         private List<Service> _expected;
 

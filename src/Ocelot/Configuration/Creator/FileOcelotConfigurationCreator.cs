@@ -96,6 +96,8 @@ namespace Ocelot.Configuration.Creator
 
             var isCached = fileReRoute.FileCacheOptions.TtlSeconds > 0;
 
+            var isQos = fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions.TimeoutValue >0;
+
             var requestIdKey = globalRequestIdConfiguration
                 ? globalConfiguration.RequestIdKey
                 : fileReRoute.RequestIdKey;
@@ -103,10 +105,11 @@ namespace Ocelot.Configuration.Creator
             var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName)
                 && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
 
-            //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
+             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
             var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
 
             ReRoute reRoute;
+ 
 
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
@@ -127,14 +130,15 @@ namespace Ocelot.Configuration.Creator
                 var claimsToQueries = GetAddThingsToRequest(fileReRoute.AddQueriesToRequest);
 
                 reRoute = new ReRoute(new DownstreamPathTemplate(fileReRoute.DownstreamPathTemplate),
-                    fileReRoute.UpstreamTemplate,
-                    fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
-                    authOptionsForRoute, claimsToHeaders, claimsToClaims,
-                    fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
-                    requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds)
-                    , fileReRoute.DownstreamScheme,
-                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
-                    serviceProviderConfiguration);
+                   fileReRoute.UpstreamTemplate,
+                   fileReRoute.UpstreamHttpMethod, upstreamTemplate, isAuthenticated,
+                   authOptionsForRoute, claimsToHeaders, claimsToClaims,
+                   fileReRoute.RouteClaimsRequirement, isAuthorised, claimsToQueries,
+                   requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds)
+                   , fileReRoute.DownstreamScheme,
+                   fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
+                   serviceProviderConfiguration, isQos, 
+                   new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
             }
             else
             {
@@ -146,9 +150,10 @@ namespace Ocelot.Configuration.Creator
                     requestIdKey, isCached, new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds),
                     fileReRoute.DownstreamScheme,
                     fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
-                    serviceProviderConfiguration);
+                    serviceProviderConfiguration, isQos,
+                    new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
             }
-
+      
             var loadBalancer = await _loadBalanceFactory.Get(reRoute);
             _loadBalancerHouse.Add(reRoute.LoadBalancerKey, loadBalancer);
             return reRoute;

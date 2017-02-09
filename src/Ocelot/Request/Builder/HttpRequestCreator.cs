@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
+using Ocelot.Configuration;
 
 namespace Ocelot.Request.Builder
 {
@@ -15,7 +16,9 @@ namespace Ocelot.Request.Builder
             IRequestCookieCollection cookies, 
             QueryString queryString, 
             string contentType, 
-            RequestId.RequestId requestId)
+            RequestId.RequestId requestId,
+            bool isQos,
+            QoSOptions qos)
         {
             var request = await new RequestBuilder()
                 .WithHttpMethod(httpMethod)
@@ -26,6 +29,8 @@ namespace Ocelot.Request.Builder
                 .WithHeaders(headers)
                 .WithRequestId(requestId)
                 .WithCookies(cookies)
+                .WithIsQos(isQos)
+                .WithQos(qos)
                 .Build();
 
             return new OkResponse<Request>(request);
