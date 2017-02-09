@@ -96,6 +96,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamTemplate = "/",  
+                            UpstreamHttpMethod ="Get"
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
