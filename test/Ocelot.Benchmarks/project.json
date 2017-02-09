@@ -1,0 +1,22 @@
+{
+  "version": "0.0.0-dev",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "Ocelot": "0.0.0-dev",
+    "BenchmarkDotNet": "0.10.2"
+  },
+  "runtimes": {
+    "win10-x64": {},
+    "osx.10.11-x64":{},
+    "win7-x64": {}
+  },
+  "frameworks": {
+    "netcoreapp1.1": {
+      "imports": [
+      ]
+    }
+  }
+}

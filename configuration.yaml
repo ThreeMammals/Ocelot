@@ -1,0 +1,3 @@
+Routes:
+- Downstream: http://localhost:51879/
+  Upstream: /heee
