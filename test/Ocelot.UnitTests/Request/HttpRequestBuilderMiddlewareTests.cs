@@ -20,6 +20,7 @@ using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 using Ocelot.Configuration;
+using Ocelot.Requester.QoS;
 
 namespace Ocelot.UnitTests.Request
 {
@@ -27,6 +28,7 @@ namespace Ocelot.UnitTests.Request
     {
         private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
+        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -38,6 +40,7 @@ namespace Ocelot.UnitTests.Request
         public HttpRequestBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
+            _qosProviderHouse = new Mock<IQosProviderHouse>();
             _requestBuilder = new Mock<IRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             var builder = new WebHostBuilder()
@@ -45,6 +48,7 @@ namespace Ocelot.UnitTests.Request
               {
                   x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
                   x.AddLogging();
+                  x.AddSingleton(_qosProviderHouse.Object);
                   x.AddSingleton(_requestBuilder.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
@@ -72,13 +76,20 @@ namespace Ocelot.UnitTests.Request
                     .WithUpstreamHttpMethod("Get")
                     .Build());
 
-
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+                .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), new CookieContainer(), true, new QoSOptions(3, 8 ,5000, Polly.Timeout.TimeoutStrategy.Pessimistic))))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), new CookieContainer(), true, new NoQoSProvider())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
+        {
+            _qosProviderHouse
+                .Setup(x => x.Get(It.IsAny<string>()))
+                .Returns(qosProvider);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
@@ -94,7 +105,7 @@ namespace Ocelot.UnitTests.Request
             _request = new OkResponse<Ocelot.Request.Request>(request);
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(),
-                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<QoSOptions>()))
+                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
                 .ReturnsAsync(_request);
         }
 

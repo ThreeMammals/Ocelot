@@ -1,14 +1,15 @@
-﻿using Polly.Timeout;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
+using Polly.Timeout;
 
 namespace Ocelot.Configuration
 {
     public class QoSOptions
     {
-        public QoSOptions(int exceptionsAllowedBeforeBreaking, int durationofBreak, int timeoutValue, TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
+        public QoSOptions(
+            int exceptionsAllowedBeforeBreaking, 
+            int durationofBreak, 
+            int timeoutValue, 
+            TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             DurationOfBreak = TimeSpan.FromMilliseconds(durationofBreak);

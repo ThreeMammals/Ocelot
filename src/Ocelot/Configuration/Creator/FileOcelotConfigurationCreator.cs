@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,9 +9,9 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Ocelot.Utilities;
-using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -26,11 +25,14 @@ namespace Ocelot.Configuration.Creator
         private const string RegExMatchEverything = ".*";
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
+        private const string RegExForwardSlashOnly = "^/$";
 
         private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
+        private readonly IQoSProviderFactory _qoSProviderFactory;
+        private readonly IQosProviderHouse _qosProviderHouse;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -38,10 +40,14 @@ namespace Ocelot.Configuration.Creator
             IClaimToThingConfigurationParser claimToThingConfigurationParser, 
             ILogger<FileOcelotConfigurationCreator> logger,
             ILoadBalancerFactory loadBalancerFactory,
-            ILoadBalancerHouse loadBalancerHouse)
+            ILoadBalancerHouse loadBalancerHouse, 
+            IQoSProviderFactory qoSProviderFactory, 
+            IQosProviderHouse qosProviderHouse)
         {
             _loadBalanceFactory = loadBalancerFactory;
             _loadBalancerHouse = loadBalancerHouse;
+            _qoSProviderFactory = qoSProviderFactory;
+            _qosProviderHouse = qosProviderHouse;
             _options = options;
             _configurationValidator = configurationValidator;
             _claimToThingConfigurationParser = claimToThingConfigurationParser;
@@ -86,16 +92,17 @@ namespace Ocelot.Configuration.Creator
         {
             var isAuthenticated = IsAuthenticated(fileReRoute);
 
-            var isAuthorised = IsAuthenticated(fileReRoute);
+            var isAuthorised = IsAuthorised(fileReRoute);
 
             var isCached = IsCached(fileReRoute);
 
             var requestIdKey = BuildRequestId(fileReRoute, globalConfiguration);
 
-            var loadBalancerKey = BuildLoadBalancerKey(fileReRoute);
+            var reRouteKey = BuildReRouteKey(fileReRoute);
 
-            var upstreamTemplatePattern = BuildUpstreamTemplate(fileReRoute);
-            var isQos = fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions.TimeoutValue >0;
+            var upstreamTemplatePattern = BuildUpstreamTemplatePattern(fileReRoute);
+
+            var isQos = IsQoS(fileReRoute);
 
             var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
 
@@ -103,10 +110,11 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToHeaders = BuildAddThingsToRequest(fileReRoute.AddHeadersToRequest);
  
-
             var claimsToClaims = BuildAddThingsToRequest(fileReRoute.AddClaimsToRequest);
 
             var claimsToQueries = BuildAddThingsToRequest(fileReRoute.AddQueriesToRequest);
+
+            var qosOptions = BuildQoSOptions(fileReRoute);
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
@@ -127,12 +135,29 @@ namespace Ocelot.Configuration.Creator
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
                 .WithDownstreamHost(fileReRoute.DownstreamHost)
                 .WithDownstreamPort(fileReRoute.DownstreamPort)
-                .WithLoadBalancerKey(loadBalancerKey)
+                .WithLoadBalancerKey(reRouteKey)
                 .WithServiceProviderConfiguraion(serviceProviderConfiguration)
+                .WithIsQos(isQos)
+                .WithQosOptions(qosOptions)
                 .Build();   
 
             await SetupLoadBalancer(reRoute);
+            SetupQosProvider(reRoute);
             return reRoute;
+        }
+
+        private QoSOptions BuildQoSOptions(FileReRoute fileReRoute)
+        {
+            return new QoSOptionsBuilder()
+                .WithExceptionsAllowedBeforeBreaking(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking)
+                .WithDurationOfBreak(fileReRoute.QoSOptions.DurationOfBreak)
+                .WithTimeoutValue(fileReRoute.QoSOptions.TimeoutValue)
+                .Build();
+        }
+
+        private bool IsQoS(FileReRoute fileReRoute)
+        {
+            return fileReRoute.QoSOptions?.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions?.TimeoutValue > 0;
         }
 
         private bool IsAuthenticated(FileReRoute fileReRoute)
@@ -161,7 +186,7 @@ namespace Ocelot.Configuration.Creator
                 return requestIdKey;
         }
 
-        private string BuildLoadBalancerKey(FileReRoute fileReRoute)
+        private string BuildReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
             var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
@@ -183,7 +208,13 @@ namespace Ocelot.Configuration.Creator
         private async Task SetupLoadBalancer(ReRoute reRoute)
         {
             var loadBalancer = await _loadBalanceFactory.Get(reRoute);
-            _loadBalancerHouse.Add(reRoute.LoadBalancerKey, loadBalancer);
+            _loadBalancerHouse.Add(reRoute.ReRouteKey, loadBalancer);
+        }
+
+        private void SetupQosProvider(ReRoute reRoute)
+        {
+            var loadBalancer = _qoSProviderFactory.Get(reRoute);
+            _qosProviderHouse.Add(reRoute.ReRouteKey, loadBalancer);
         }
 
         private ServiceProviderConfiguraion BuildServiceProviderConfiguration(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
@@ -204,7 +235,7 @@ namespace Ocelot.Configuration.Creator
                     .Build();
         }
 
-        private string BuildUpstreamTemplate(FileReRoute reRoute)
+        private string BuildUpstreamTemplatePattern(FileReRoute reRoute)
         {
             var upstreamTemplate = reRoute.UpstreamPathTemplate;
 
@@ -226,6 +257,11 @@ namespace Ocelot.Configuration.Creator
             foreach (var placeholder in placeholders)
             {
                 upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
+            }
+
+            if (upstreamTemplate == "/")
+            {
+                return RegExForwardSlashOnly;
             }
 
             var route = reRoute.ReRouteIsCaseSensitive 

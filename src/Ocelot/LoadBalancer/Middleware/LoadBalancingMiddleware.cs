@@ -6,7 +6,6 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings.Middleware;
-using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.LoadBalancer.Middleware
 {
@@ -31,7 +30,7 @@ namespace Ocelot.LoadBalancer.Middleware
         {
             _logger.LogDebug("started calling load balancing middleware");
 
-            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.LoadBalancerKey);
+            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.ReRouteKey);
             if(loadBalancer.IsError)
             {
                 SetPipelineError(loadBalancer.Errors);

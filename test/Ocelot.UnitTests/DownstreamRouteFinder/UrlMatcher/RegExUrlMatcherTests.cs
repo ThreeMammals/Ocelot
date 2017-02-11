@@ -19,6 +19,26 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        public void should_not_match_forward_slash_only_regex()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/working/"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^/$"))
+              .When(x => x.WhenIMatchThePaths())
+              .And(x => x.ThenTheResultIsFalse())
+              .BDDfy();
+        }
+
+        [Fact]
+        public void should_match_forward_slash_only_regex()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^/$"))
+              .When(x => x.WhenIMatchThePaths())
+              .And(x => x.ThenTheResultIsTrue())
+              .BDDfy();
+        }
+
+        [Fact]
         public void should_find_match_when_template_smaller_than_valid_path()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("/api/products/2354325435624623464235"))

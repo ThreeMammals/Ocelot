@@ -30,6 +30,13 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             foreach (var reRoute in applicableReRoutes)
             {
+                if (upstreamUrlPath == reRoute.UpstreamTemplatePattern)
+                {
+                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamPathTemplate.Value);
+
+                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, reRoute));
+                }
+
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, reRoute.UpstreamTemplatePattern);
 
                 if (urlMatch.Data.Match)

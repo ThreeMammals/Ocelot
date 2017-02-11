@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Requester.QoS;
 using Ocelot.Responses;
-using Ocelot.Configuration;
 
 namespace Ocelot.Request.Builder
 {
@@ -17,6 +17,6 @@ namespace Ocelot.Request.Builder
             string contentType,
             RequestId.RequestId requestId,
             bool isQos,
-            QoSOptions qos);
+            IQoSProvider qosProvider);
     }
 }
