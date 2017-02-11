@@ -26,7 +26,6 @@ namespace Ocelot.UnitTests.RateLimit
     public class ClientRateLimitMiddlewareTests
     {
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly Mock<IRateLimitCounterHandler> _counterHanlder;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;

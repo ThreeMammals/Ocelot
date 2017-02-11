@@ -22,7 +22,6 @@ namespace Ocelot.Configuration
             RateLimitRule = rateLimitRule;
         }
 
-
         public RateLimitRule RateLimitRule { get;  private set; }
 
         public List<string> ClientWhitelist { get; private set; }
