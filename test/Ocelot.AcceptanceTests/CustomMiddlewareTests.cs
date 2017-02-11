@@ -49,7 +49,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
                     }
@@ -86,7 +86,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
 
                         }
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
 
                         }
@@ -162,7 +162,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
                     }
@@ -199,7 +199,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
                     }
@@ -236,7 +236,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 41879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
                     }

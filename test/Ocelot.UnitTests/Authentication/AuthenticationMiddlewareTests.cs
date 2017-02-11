@@ -71,7 +71,9 @@ namespace Ocelot.UnitTests.Authentication
         [Fact]
         public void should_call_next_middleware_if_route_is_not_authenticated()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder()
+                                                                                                                            .WithUpstreamHttpMethod("Get")
+                                                                                                                            .Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheUserIsAuthenticated())
                 .BDDfy();

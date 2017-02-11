@@ -1,23 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(DownstreamPathTemplate downstreamPathTemplate, 
-            string upstreamTemplate, string upstreamHttpMethod, 
+        public ReRoute(PathTemplate downstreamPathTemplate, 
+            PathTemplate upstreamTemplate, 
+            HttpMethod upstreamHttpMethod, 
             string upstreamTemplatePattern, 
-            bool isAuthenticated, AuthenticationOptions authenticationOptions, 
+            bool isAuthenticated, 
+            AuthenticationOptions authenticationOptions, 
             List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, 
-            Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, 
+            Dictionary<string, string> routeClaimsRequirement, 
+            bool isAuthorised, 
             List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, bool isCached, CacheOptions fileCacheOptions, 
-            string downstreamScheme, string loadBalancer, string downstreamHost, 
-            int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion,
-            bool isQos,QoSOptions qos)
+            string requestIdKey, 
+            bool isCached, 
+            CacheOptions fileCacheOptions, 
+            string downstreamScheme, 
+            string loadBalancer, 
+            string downstreamHost, 
+            int downstreamPort, 
+            string loadBalancerKey, 
+            ServiceProviderConfiguraion serviceProviderConfiguraion,
+            bool isQos,
+            QoSOptions qos)
         {
             LoadBalancerKey = loadBalancerKey;
             ServiceProviderConfiguraion = serviceProviderConfiguraion;
@@ -25,7 +36,7 @@ namespace Ocelot.Configuration
             DownstreamHost = downstreamHost;
             DownstreamPort = downstreamPort;
             DownstreamPathTemplate = downstreamPathTemplate;
-            UpstreamTemplate = upstreamTemplate;
+            UpstreamPathTemplate = upstreamTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             IsAuthenticated = isAuthenticated;
@@ -47,10 +58,10 @@ namespace Ocelot.Configuration
         }
 
         public string LoadBalancerKey {get;private set;}
-        public DownstreamPathTemplate DownstreamPathTemplate { get; private set; }
-        public string UpstreamTemplate { get; private set; }
+        public PathTemplate DownstreamPathTemplate { get; private set; }
+        public PathTemplate UpstreamPathTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }
-        public string UpstreamHttpMethod { get; private set; }
+        public HttpMethod UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
         public bool IsAuthorised { get; private set; }
         public AuthenticationOptions AuthenticationOptions { get; private set; }

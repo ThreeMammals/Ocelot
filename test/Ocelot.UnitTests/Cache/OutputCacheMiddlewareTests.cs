@@ -87,7 +87,12 @@ namespace Ocelot.UnitTests.Cache
 
         private void GivenTheDownstreamRouteIs()
         {
-            var reRoute = new ReRouteBuilder().WithIsCached(true).WithCacheOptions(new CacheOptions(100)).Build();
+            var reRoute = new ReRouteBuilder()
+                .WithIsCached(true)
+                .WithCacheOptions(new CacheOptions(100))
+                .WithUpstreamHttpMethod("Get")
+                .Build();
+                
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), reRoute);
 
             _scopedRepo

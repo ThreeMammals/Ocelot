@@ -35,7 +35,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             FileCacheOptions = new FileCacheOptions
                             {
@@ -71,7 +71,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             FileCacheOptions = new FileCacheOptions
                             {

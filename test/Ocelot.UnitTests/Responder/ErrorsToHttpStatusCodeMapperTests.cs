@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 using Ocelot.Middleware;
 using Ocelot.Responder;

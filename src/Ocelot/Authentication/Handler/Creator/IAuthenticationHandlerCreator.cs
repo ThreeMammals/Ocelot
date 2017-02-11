@@ -8,6 +8,6 @@ namespace Ocelot.Authentication.Handler.Creator
 
     public interface IAuthenticationHandlerCreator
     {
-        Response<RequestDelegate> CreateIdentityServerAuthenticationHandler(IApplicationBuilder app, AuthenticationOptions authOptions);
+        Response<RequestDelegate> Create(IApplicationBuilder app, AuthenticationOptions authOptions);
     }
 }

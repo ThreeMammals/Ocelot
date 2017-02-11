@@ -19,7 +19,7 @@ namespace Ocelot.Authentication.Handler.Factory
 
         public Response<AuthenticationHandler> Get(IApplicationBuilder app, AuthenticationOptions authOptions)
         {
-            var handler = _creator.CreateIdentityServerAuthenticationHandler(app, authOptions);
+            var handler = _creator.Create(app, authOptions);
 
             if (!handler.IsError)
             {

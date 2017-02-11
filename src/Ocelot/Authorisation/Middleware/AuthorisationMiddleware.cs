@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Ocelot.Infrastructure.RequestData;
+﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Responses;
 
@@ -61,7 +60,7 @@ namespace Ocelot.Authorisation.Middleware
                     SetPipelineError(new List<Error>
                     {
                         new UnauthorisedError(
-                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamTemplate}")
+                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
                     });
                 }
             }

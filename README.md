@@ -122,7 +122,7 @@ Ocelot's primary functionality is to take incomeing http requests and forward th
 to a downstream service. At the moment in the form of another http request (in the future
 this could be any transport mechanism.). 
 
-Ocelot always adds a trailing slash to an UpstreamTemplate.
+Ocelot always adds a trailing slash to an UpstreamPathTemplate.
 
 Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
@@ -140,16 +140,16 @@ the following.
 			"DownstreamScheme": "https",
 			"DownstreamPort": 80,
 			"DownstreamHost" "localhost"
-            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamPathTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Put"
         }
 
 The DownstreamPathTemplate,Scheme, Port and Host make the URL that this request will be forwarded to.
-The UpstreamTemplate is the URL that Ocelot will use to identity which 
+The UpstreamPathTemplate is the URL that Ocelot will use to identity which 
 DownstreamPathTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
 Ocelot can distinguish between requests to the same URL and is obviously needed to work :)
 In Ocelot you can add placeholders for variables to your Templates in the form of {something}.
-The placeholder needs to be in both the DownstreamPathTemplate and UpstreamTemplate. If it is
+The placeholder needs to be in both the DownstreamPathTemplate and UpstreamPathTemplate. If it is
 Ocelot will attempt to replace the placeholder with the correct variable value from the 
 Upstream URL when the request comes in.
 
@@ -190,7 +190,7 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         {
             "DownstreamPathTemplate": "/api/posts/{postId}",
 			"DownstreamScheme": "https",
-            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamPathTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Put",
             "ServiceName": "product"
             "LoadBalancer": "LeastConnection"
