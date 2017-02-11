@@ -9,6 +9,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -28,9 +29,15 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
+        private readonly Mock<IQoSProviderFactory> _qosProviderFactory;
+        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly Mock<IQoSProvider> _qosProvider;
 
         public FileConfigurationCreatorTests()
         {
+            _qosProviderFactory = new Mock<IQoSProviderFactory>();
+            _qosProviderHouse = new Mock<IQosProviderHouse>();
+            _qosProvider = new Mock<IQoSProvider>();
             _logger = new Mock<ILogger<FileOcelotConfigurationCreator>>();
             _configParser = new Mock<IClaimToThingConfigurationParser>();
             _validator = new Mock<IConfigurationValidator>();
@@ -40,7 +47,8 @@ namespace Ocelot.UnitTests.Configuration
             _loadBalancer = new Mock<ILoadBalancer>();
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _configParser.Object, _logger.Object,
-                _loadBalancerFactory.Object, _loadBalancerHouse.Object);
+                _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
+                _qosProviderFactory.Object, _qosProviderHouse.Object);
         }
 
         [Fact]
@@ -64,8 +72,37 @@ namespace Ocelot.UnitTests.Configuration
                                 .When(x => x.WhenICreateTheConfig())
                                 .Then(x => x.TheLoadBalancerFactoryIsCalledCorrectly())
                                 .And(x => x.ThenTheLoadBalancerHouseIsCalledCorrectly())
-                               
                     .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_qos_provider()
+        {
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHost = "127.0.0.1",
+                        UpstreamPathTemplate = "/api/products/{productId}",
+                        DownstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = "Get",
+                        QoSOptions = new FileQoSOptions
+                        {
+                            TimeoutValue = 1,
+                            DurationOfBreak = 1,
+                            ExceptionsAllowedBeforeBreaking = 1
+                        }
+                    }
+                },
+            }))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheQosProviderFactoryReturns())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.TheQosProviderFactoryIsCalledCorrectly())
+                .And(x => x.ThenTheQosProviderHouseIsCalledCorrectly())
+                .BDDfy();
         }
 
         [Fact]
@@ -568,7 +605,7 @@ namespace Ocelot.UnitTests.Configuration
                         .WithDownstreamPathTemplate("/api/products/")
                         .WithUpstreamPathTemplate("/")
                         .WithUpstreamHttpMethod("Get")
-                        .WithUpstreamTemplatePattern("/$")
+                        .WithUpstreamTemplatePattern("^/$")
                         .Build()
                 }))
                 .BDDfy();
@@ -642,6 +679,25 @@ namespace Ocelot.UnitTests.Configuration
         {
             _loadBalancerHouse
                 .Verify(x => x.Add(It.IsAny<string>(), _loadBalancer.Object), Times.Once);
+        }
+
+        private void GivenTheQosProviderFactoryReturns()
+        {
+            _qosProviderFactory
+                .Setup(x => x.Get(It.IsAny<ReRoute>()))
+                .Returns(_qosProvider.Object);
+        }
+
+        private void TheQosProviderFactoryIsCalledCorrectly()
+        {
+            _qosProviderFactory
+                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
+        }
+
+        private void ThenTheQosProviderHouseIsCalledCorrectly()
+        {
+            _qosProviderHouse
+                .Verify(x => x.Add(It.IsAny<string>(), _qosProvider.Object), Times.Once);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Responder
                     new RequestTimedOutError(new Exception())
                 }))
                .When(x => x.WhenIGetErrorStatusCode())
-               .Then(x => x.ThenTheResponseIsStatusCodeIs(408))
+               .Then(x => x.ThenTheResponseIsStatusCodeIs(503))
                .BDDfy();
         }
 

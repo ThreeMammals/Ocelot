@@ -25,12 +25,12 @@ namespace Ocelot.Configuration
             string loadBalancer, 
             string downstreamHost, 
             int downstreamPort, 
-            string loadBalancerKey, 
+            string reRouteKey, 
             ServiceProviderConfiguraion serviceProviderConfiguraion,
             bool isQos,
             QoSOptions qos)
         {
-            LoadBalancerKey = loadBalancerKey;
+            ReRouteKey = reRouteKey;
             ServiceProviderConfiguraion = serviceProviderConfiguraion;
             LoadBalancer = loadBalancer;
             DownstreamHost = downstreamHost;
@@ -57,7 +57,7 @@ namespace Ocelot.Configuration
             QosOptions = qos;
         }
 
-        public string LoadBalancerKey {get;private set;}
+        public string ReRouteKey {get;private set;}
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamPathTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }

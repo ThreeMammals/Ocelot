@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Ocelot.Errors;
-using Ocelot.Responses;
 using Ocelot.Logging;
+using Ocelot.Responses;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace Ocelot.Requester
 {
     public class HttpClientHttpRequester : IHttpRequester
     {
         private readonly IOcelotLogger _logger;
- 
+
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
@@ -19,13 +19,13 @@ namespace Ocelot.Requester
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            HttpClientBuilder builder = new HttpClientBuilder();    
+            var builder = new HttpClientBuilder();    
 
             using (var handler = new HttpClientHandler { CookieContainer = request.CookieContainer })
             {
                 if (request.IsQos)
                 {
-                    builder.WithCircuitBreaker(request.Qos, _logger, handler);
+                    builder.WithQoS(request.QosProvider, _logger, handler);
                 }           
 
                 using (var httpClient = builder.Build(handler))
@@ -35,10 +35,15 @@ namespace Ocelot.Requester
                         var response = await httpClient.SendAsync(request.HttpRequestMessage);
                         return new OkResponse<HttpResponseMessage>(response);
                     }
-                    catch (Polly.Timeout.TimeoutRejectedException exception)
+                    catch (TimeoutRejectedException exception)
                     {
                         return
-                           new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                            new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                    }
+                    catch (BrokenCircuitException exception)
+                    {
+                        return
+                            new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
                     }
                     catch (Exception exception)
                     {
