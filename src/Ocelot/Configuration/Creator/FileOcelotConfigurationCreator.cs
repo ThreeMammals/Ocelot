@@ -95,6 +95,7 @@ namespace Ocelot.Configuration.Creator
             var loadBalancerKey = BuildLoadBalancerKey(fileReRoute);
 
             var upstreamTemplatePattern = BuildUpstreamTemplate(fileReRoute);
+
             var isQos = fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions.TimeoutValue >0;
 
             var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
@@ -103,7 +104,6 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToHeaders = BuildAddThingsToRequest(fileReRoute.AddHeadersToRequest);
  
-
             var claimsToClaims = BuildAddThingsToRequest(fileReRoute.AddClaimsToRequest);
 
             var claimsToQueries = BuildAddThingsToRequest(fileReRoute.AddQueriesToRequest);
@@ -129,6 +129,8 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamPort(fileReRoute.DownstreamPort)
                 .WithLoadBalancerKey(loadBalancerKey)
                 .WithServiceProviderConfiguraion(serviceProviderConfiguration)
+                .WithIsQos(isQos)
+                .WithQosOptions(new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue))
                 .Build();   
 
             await SetupLoadBalancer(reRoute);

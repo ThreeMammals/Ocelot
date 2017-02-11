@@ -22,7 +22,6 @@ namespace Ocelot.Configuration.Builder
         private string _requestIdHeaderKey;
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
-        private string _serviceName;
         private string _downstreamScheme;
         private string _downstreamHost;
         private int _downstreamPort;
@@ -46,12 +45,6 @@ namespace Ocelot.Configuration.Builder
         public ReRouteBuilder WithDownstreamHost(string downstreamHost)
         {
             _downstreamHost = downstreamHost;
-            return this;
-        }
-
-        public ReRouteBuilder WithServiceName(string serviceName)
-        {
-            _serviceName = serviceName;
             return this;
         }
 
