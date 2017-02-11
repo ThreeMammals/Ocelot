@@ -310,7 +310,8 @@ private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbo
             .ToDictionary(v => v[0], v => v[1]);
 
 		var codePackage = packagesDir + File(artifacts["nuget"]);
-		var symbolsPackage = packagesDir + File(artifacts["nugetSymbols"]);
+
+		Information("Pushing package");
 
         NuGetPush(
             codePackage,
@@ -318,14 +319,6 @@ private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbo
                 ApiKey = feedApiKey,
                 Source = codeFeedUrl
             });
-
-        NuGetPush(
-            symbolsPackage,
-            new NuGetPushSettings {
-                ApiKey = feedApiKey,
-                Source = symbolFeedUrl
-            });
-
 }
 
 /// gets the resource from the specified url
