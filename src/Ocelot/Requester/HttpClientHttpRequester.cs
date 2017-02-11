@@ -27,6 +27,7 @@ namespace Ocelot.Requester
                 {
                     builder.WithCircuitBreaker(request.Qos, _logger, handler);
                 }           
+
                 using (var httpClient = builder.Build(handler))
                 {
                     try
@@ -34,13 +35,14 @@ namespace Ocelot.Requester
                         var response = await httpClient.SendAsync(request.HttpRequestMessage);
                         return new OkResponse<HttpResponseMessage>(response);
                     }
-                    catch (Exception exception)
+                    catch (Polly.Timeout.TimeoutRejectedException exception)
                     {
                         return
-                            new ErrorResponse<HttpResponseMessage>(new List<Error>
-                            {
-                                new UnableToCompleteRequestError(exception)
-                            });
+                           new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                    }
+                    catch (Exception exception)
+                    {
+                        return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
                     }
                 }
             }
