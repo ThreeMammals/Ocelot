@@ -11,6 +11,7 @@ using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -100,7 +101,7 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-
+                    s.AddMemoryCache();
                     s.AddOcelotOutputCaching(settings);
                     s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();

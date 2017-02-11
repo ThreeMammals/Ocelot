@@ -33,7 +33,8 @@
     "Microsoft.NETCore.App": "1.1.0",
     "Shouldly": "2.8.2",
     "TestStack.BDDfy": "4.3.2",
-    "Consul": "0.7.2.1"
+    "Consul": "0.7.2.1",
+    "Microsoft.Extensions.Caching.Memory": "1.1.0"
   },
   "runtimes": {
     "win10-x64": {},

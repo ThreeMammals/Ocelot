@@ -17,7 +17,7 @@ namespace Ocelot.Configuration
             string requestIdKey, bool isCached, CacheOptions fileCacheOptions, 
             string downstreamScheme, string loadBalancer, string downstreamHost, 
             int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion,
-            bool isQos,QoSOptions qos)
+            bool isQos,QoSOptions qos, bool enableRateLimit, RateLimitOptions ratelimitOptions)
         {
             LoadBalancerKey = loadBalancerKey;
             ServiceProviderConfiguraion = serviceProviderConfiguraion;
@@ -44,6 +44,8 @@ namespace Ocelot.Configuration
                 DownstreamScheme = downstreamScheme;
             IsQos = isQos;
             QosOptions = qos;
+            EnableEndpointRateLimiting = enableRateLimit;
+            RateLimitOptions = ratelimitOptions;
         }
 
         public string LoadBalancerKey {get;private set;}
@@ -68,5 +70,7 @@ namespace Ocelot.Configuration
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
         public ServiceProviderConfiguraion ServiceProviderConfiguraion { get; private set; }
+        public bool EnableEndpointRateLimiting { get; private set; }
+        public RateLimitOptions RateLimitOptions { get; private set; }
     }
 }

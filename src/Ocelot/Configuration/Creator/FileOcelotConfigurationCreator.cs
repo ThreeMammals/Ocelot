@@ -109,8 +109,21 @@ namespace Ocelot.Configuration.Creator
             var loadBalancerKey = $"{fileReRoute.UpstreamTemplate}{fileReRoute.UpstreamHttpMethod}";
 
             ReRoute reRoute;
- 
 
+            var enableRateLimiting = (fileReRoute.RateLimitOptions!= null && fileReRoute.RateLimitOptions.EnableRateLimiting)? true: false;
+            RateLimitOptions rateLimitOption = null;
+            if (enableRateLimiting)
+            {
+                rateLimitOption = new RateLimitOptions(enableRateLimiting, fileReRoute.RateLimitOptions.ClientIdHeader, 
+                   fileReRoute.RateLimitOptions.ClientWhitelist,fileReRoute.RateLimitOptions.DisableRateLimitHeaders,
+                   fileReRoute.RateLimitOptions.QuotaExceededMessage,fileReRoute.RateLimitOptions.RateLimitCounterPrefix,
+                   new RateLimitRule()
+                   {
+                       Limit = fileReRoute.RateLimitOptions.RateLimitRule.Limit,
+                       Period = fileReRoute.RateLimitOptions.RateLimitRule.Period,
+                       PeriodTimespan = TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.RateLimitRule.PeriodTimespan)
+                   });                
+            }
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
             var serviceProviderConfiguration = new ServiceProviderConfiguraion(fileReRoute.ServiceName,
@@ -138,7 +151,8 @@ namespace Ocelot.Configuration.Creator
                    , fileReRoute.DownstreamScheme,
                    fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
                    serviceProviderConfiguration, isQos, 
-                   new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
+                   new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue),
+                   enableRateLimiting, rateLimitOption);
             }
             else
             {
@@ -151,7 +165,8 @@ namespace Ocelot.Configuration.Creator
                     fileReRoute.DownstreamScheme,
                     fileReRoute.LoadBalancer, fileReRoute.DownstreamHost, fileReRoute.DownstreamPort, loadBalancerKey,
                     serviceProviderConfiguration, isQos,
-                    new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue));
+                    new QoSOptions(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking, fileReRoute.QoSOptions.DurationOfBreak, fileReRoute.QoSOptions.TimeoutValue),
+                    enableRateLimiting, rateLimitOption);
             }
       
             var loadBalancer = await _loadBalanceFactory.Get(reRoute);
