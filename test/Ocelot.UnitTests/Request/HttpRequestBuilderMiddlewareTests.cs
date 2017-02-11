@@ -19,6 +19,7 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
+using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Request
 {
@@ -74,7 +75,7 @@ namespace Ocelot.UnitTests.Request
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), new CookieContainer())))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), new CookieContainer(), true, new QoSOptions(3, 8 ,5000, Polly.Timeout.TimeoutStrategy.Pessimistic))))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -93,7 +94,7 @@ namespace Ocelot.UnitTests.Request
             _request = new OkResponse<Ocelot.Request.Request>(request);
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(),
-                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>()))
+                It.IsAny<IRequestCookieCollection>(), It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<QoSOptions>()))
                 .ReturnsAsync(_request);
         }
 

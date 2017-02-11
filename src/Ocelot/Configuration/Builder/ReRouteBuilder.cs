@@ -28,6 +28,8 @@ namespace Ocelot.Configuration.Builder
         private int _downstreamPort;
         private string _loadBalancer;
         private ServiceProviderConfiguraion _serviceProviderConfiguraion;
+        private bool _useQos;
+        private QoSOptions _qosOptions;
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
@@ -135,6 +137,19 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithIsQos(bool input)
+        {
+            _useQos = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithQosOptions(QoSOptions input)
+        {
+            _qosOptions = input;
+            return this;
+        }
+       
+
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
@@ -175,7 +190,9 @@ namespace Ocelot.Configuration.Builder
                 _downstreamHost, 
                 _downstreamPort, 
                 _loadBalancerKey, 
-                _serviceProviderConfiguraion);
+                _serviceProviderConfiguraion, 
+                _useQos, 
+                _qosOptions);
         }
     }
 }

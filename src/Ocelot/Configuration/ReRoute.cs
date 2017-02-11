@@ -8,16 +8,27 @@ namespace Ocelot.Configuration
     public class ReRoute
     {
         public ReRoute(PathTemplate downstreamPathTemplate, 
-            PathTemplate upstreamTemplate, HttpMethod upstreamHttpMethod, 
+            PathTemplate upstreamTemplate, 
+            HttpMethod upstreamHttpMethod, 
             string upstreamTemplatePattern, 
-            bool isAuthenticated, AuthenticationOptions authenticationOptions, 
+            bool isAuthenticated, 
+            AuthenticationOptions authenticationOptions, 
             List<ClaimToThing> configurationHeaderExtractorProperties, 
             List<ClaimToThing> claimsToClaims, 
-            Dictionary<string, string> routeClaimsRequirement, bool isAuthorised, 
+            Dictionary<string, string> routeClaimsRequirement, 
+            bool isAuthorised, 
             List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, bool isCached, CacheOptions fileCacheOptions, 
-            string downstreamScheme, string loadBalancer, string downstreamHost, 
-            int downstreamPort, string loadBalancerKey, ServiceProviderConfiguraion serviceProviderConfiguraion)
+            string requestIdKey, 
+            bool isCached, 
+            CacheOptions fileCacheOptions, 
+            string downstreamScheme, 
+            string loadBalancer, 
+            string downstreamHost, 
+            int downstreamPort, 
+            string loadBalancerKey, 
+            ServiceProviderConfiguraion serviceProviderConfiguraion,
+            bool isQos,
+            QoSOptions qos)
         {
             LoadBalancerKey = loadBalancerKey;
             ServiceProviderConfiguraion = serviceProviderConfiguraion;
@@ -42,6 +53,8 @@ namespace Ocelot.Configuration
             ClaimsToHeaders = configurationHeaderExtractorProperties 
                 ?? new List<ClaimToThing>();
                 DownstreamScheme = downstreamScheme;
+            IsQos = isQos;
+            QosOptions = qos;
         }
 
         public string LoadBalancerKey {get;private set;}
@@ -60,6 +73,8 @@ namespace Ocelot.Configuration
         public bool IsCached { get; private set; }
         public CacheOptions FileCacheOptions { get; private set; }
         public string DownstreamScheme {get;private set;}
+        public bool IsQos { get; private set; }
+        public QoSOptions QosOptions { get; private set; }
         public string LoadBalancer {get;private set;}
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }

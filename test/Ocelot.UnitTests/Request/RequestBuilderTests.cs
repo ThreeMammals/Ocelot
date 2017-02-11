@@ -10,6 +10,7 @@ using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Request
 {
@@ -25,6 +26,8 @@ namespace Ocelot.UnitTests.Request
         private readonly IRequestCreator _requestCreator;
         private Response<Ocelot.Request.Request> _result;
         private Ocelot.RequestId.RequestId _requestId;
+        private bool _isQos;
+        private QoSOptions _qos;
 
         public RequestBuilderTests()
         {
@@ -37,6 +40,7 @@ namespace Ocelot.UnitTests.Request
         {
             this.Given(x => x.GivenIHaveHttpMethod("GET"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x=> x.GivenTheQos(true,new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
                 .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectDownstreamUrlIsUsed("http://www.bbc.co.uk/"))
                 .BDDfy();
@@ -47,6 +51,8 @@ namespace Ocelot.UnitTests.Request
         {
             this.Given(x => x.GivenIHaveHttpMethod("POST"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
+                .And(x => x.GivenTheQos(true,new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+
                 .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHttpMethodIsUsed(HttpMethod.Post))
                 .BDDfy();
@@ -59,7 +65,9 @@ namespace Ocelot.UnitTests.Request
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
                 .And(x => x.GivenTheContentTypeIs("application/json"))
-               .When(x => x.WhenICreateARequest())
+                              .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+
+                              .When(x => x.WhenICreateARequest())
                .And(x => x.ThenTheCorrectContentIsUsed(new StringContent("Hi from Tom")))
                .BDDfy();
         }
@@ -71,6 +79,8 @@ namespace Ocelot.UnitTests.Request
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
                 .And(x => x.GivenTheContentTypeIs("application/json"))
+                .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+
                .When(x => x.WhenICreateARequest())
                .And(x => x.ThenTheCorrectContentHeadersAreUsed(new HeaderDictionary
                 {
@@ -88,6 +98,8 @@ namespace Ocelot.UnitTests.Request
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenIHaveTheHttpContent(new StringContent("Hi from Tom")))
                 .And(x => x.GivenTheContentTypeIs("application/json; charset=utf-8"))
+                                .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+
                .When(x => x.WhenICreateARequest())
                .And(x => x.ThenTheCorrectContentHeadersAreUsed(new HeaderDictionary
                 {
@@ -107,6 +119,8 @@ namespace Ocelot.UnitTests.Request
                 {
                     {"ChopSticks", "Bubbles" }
                 }))
+                                .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+
                 .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
                 {
@@ -124,7 +138,8 @@ namespace Ocelot.UnitTests.Request
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
                 .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", requestId)))
-                .When(x => x.WhenICreateARequest())
+                              .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+  .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
                 {
                     {"RequestId", requestId }
@@ -142,7 +157,8 @@ namespace Ocelot.UnitTests.Request
                     {"RequestId", "534534gv54gv45g" }
                 }))
                 .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", Guid.NewGuid().ToString())))
-                .When(x => x.WhenICreateARequest())
+                               .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+ .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
                 {
                     {"RequestId", "534534gv54gv45g" }
@@ -161,7 +177,8 @@ namespace Ocelot.UnitTests.Request
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
                 .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId(requestIdKey, requestIdValue)))
-                .When(x => x.WhenICreateARequest())
+                              .And(x => x.GivenTheQos(true, new QoSOptions(3, 8, 5000, Polly.Timeout.TimeoutStrategy.Pessimistic)))
+  .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheRequestIdIsNotInTheHeaders())
                 .BDDfy();
         }
@@ -169,6 +186,12 @@ namespace Ocelot.UnitTests.Request
         private void GivenTheRequestIdIs(Ocelot.RequestId.RequestId requestId)
         {
             _requestId = requestId;
+        }
+
+        private void GivenTheQos(bool isQos, QoSOptions qos)
+        {
+            _isQos = isQos;
+            _qos = qos;
         }
 
         [Fact]
@@ -281,7 +304,7 @@ namespace Ocelot.UnitTests.Request
         private void WhenICreateARequest()
         {
             _result = _requestCreator.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
-                _cookies, _query, _contentType, _requestId).Result;
+                _cookies, _query, _contentType, _requestId,_isQos,_qos).Result;
         }
 
 

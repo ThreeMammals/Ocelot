@@ -95,12 +95,14 @@ namespace Ocelot.Configuration.Creator
             var loadBalancerKey = BuildLoadBalancerKey(fileReRoute);
 
             var upstreamTemplatePattern = BuildUpstreamTemplate(fileReRoute);
+            var isQos = fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions.TimeoutValue >0;
 
             var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
 
             var authOptionsForRoute = BuildAuthenticationOptions(fileReRoute);
 
             var claimsToHeaders = BuildAddThingsToRequest(fileReRoute.AddHeadersToRequest);
+ 
 
             var claimsToClaims = BuildAddThingsToRequest(fileReRoute.AddClaimsToRequest);
 
@@ -137,7 +139,7 @@ namespace Ocelot.Configuration.Creator
         {
             return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
         }
-
+      
         private bool IsAuthorised(FileReRoute fileReRoute)
         {
             return fileReRoute.RouteClaimsRequirement?.Count > 0;

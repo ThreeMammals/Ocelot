@@ -35,7 +35,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get"
+                            UpstreamHttpMethod = "Get",
                         }
                     }
             };
@@ -63,7 +63,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = false
+                            ReRouteIsCaseSensitive = false,
                         }
                     }
             };
@@ -91,7 +91,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -119,7 +119,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -147,7 +147,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -175,7 +175,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
