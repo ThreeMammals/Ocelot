@@ -318,14 +318,6 @@ private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbo
                 ApiKey = feedApiKey,
                 Source = codeFeedUrl
             });
-
-        NuGetPush(
-            symbolsPackage,
-            new NuGetPushSettings {
-                ApiKey = feedApiKey,
-                Source = symbolFeedUrl
-            });
-
 }
 
 /// gets the resource from the specified url
