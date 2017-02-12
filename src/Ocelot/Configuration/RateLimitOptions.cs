@@ -11,7 +11,7 @@ namespace Ocelot.Configuration
     public class RateLimitOptions
     {
         public RateLimitOptions(bool enbleRateLimiting, string clientIdHeader, List<string> clientWhitelist,bool disableRateLimitHeaders,
-            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule)
+            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
         {
             EnableRateLimiting = enbleRateLimiting;
             ClientIdHeader = clientIdHeader;
@@ -20,6 +20,7 @@ namespace Ocelot.Configuration
             QuotaExceededMessage = quotaExceededMessage;
             RateLimitCounterPrefix = rateLimitCounterPrefix;
             RateLimitRule = rateLimitRule;
+            HttpStatusCode = httpStatusCode;
         }
 
         public RateLimitRule RateLimitRule { get;  private set; }
@@ -29,12 +30,12 @@ namespace Ocelot.Configuration
         /// <summary>
         /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId
         /// </summary>
-        public string ClientIdHeader { get; private set; } = "ClientId";
+        public string ClientIdHeader { get; private set; }  
 
         /// <summary>
         /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
         /// </summary>
-        public int HttpStatusCode { get; private set; } = 429;
+        public int HttpStatusCode { get; private set; } 
 
         /// <summary>
         /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
@@ -46,7 +47,7 @@ namespace Ocelot.Configuration
         /// <summary>
         /// Gets or sets the counter prefix, used to compose the rate limit counter cache key
         /// </summary>
-        public string RateLimitCounterPrefix { get; private set; } = "ocelot";
+        public string RateLimitCounterPrefix { get; private set; }  
 
         /// <summary>
         /// Enables endpoint rate limiting based URL path and HTTP verb

@@ -122,7 +122,7 @@ namespace Ocelot.Configuration.Creator
                        Limit = fileReRoute.RateLimitOptions.Limit,
                        Period = fileReRoute.RateLimitOptions.Period,
                        PeriodTimespan = TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.PeriodTimespan)
-                   });                
+                   }, globalConfiguration.RateLimitOptions.HttpStatusCode);                
             }
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 

@@ -29,7 +29,6 @@ namespace Ocelot.UnitTests.RateLimit
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
-        private HttpResponseMessage _result;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private int responseStatusCode;
 
@@ -71,7 +70,7 @@ namespace Ocelot.UnitTests.RateLimit
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) }))
+                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) },429))
                      .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -85,7 +84,7 @@ namespace Ocelot.UnitTests.RateLimit
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) }))
+                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) },429))
                      .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

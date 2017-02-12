@@ -7,7 +7,6 @@ namespace Ocelot.Configuration.File
 {
     public class FileRateLimitOptions
     {
-
         /// <summary>
         /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId
         /// </summary>
@@ -29,6 +28,11 @@ namespace Ocelot.Configuration.File
         /// Disables X-Rate-Limit and Rety-After headers
         /// </summary>
         public bool DisableRateLimitHeaders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
+        /// </summary>
+        public int HttpStatusCode { get; private set; } = 429;
     }
 
     
