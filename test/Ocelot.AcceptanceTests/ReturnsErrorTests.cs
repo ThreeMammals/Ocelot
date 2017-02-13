@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_server_error()
+        public void should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
         {
             var configuration = new FileConfiguration
             {
@@ -33,8 +33,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             DownstreamPort = 53876,
-                            DownstreamHost = "localhost",
                             DownstreamScheme = "http",
+                            DownstreamHost = "localhost"
                         }
                     }
             };
