@@ -31,7 +31,16 @@ namespace Ocelot.Middleware
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
         {
             CreateConfiguration(builder);
+
+            builder.Map("/admin", x => 
+            {
+               x.UseMvc();
+            });
+
             builder.UseOcelot(new OcelotMiddlewareConfiguration());
+
+
+
             return builder;
         }
 

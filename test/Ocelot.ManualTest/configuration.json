@@ -5,7 +5,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "localhost",
       "DownstreamPort": 52876,
-      "UpstreamTemplate": "/identityserverexample",
+      "UpstreamPathTemplate": "/identityserverexample",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -50,7 +50,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts",
+      "UpstreamPathTemplate": "/posts",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -63,7 +63,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/{postId}",
+      "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -76,7 +76,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/{postId}/comments",
+      "UpstreamPathTemplate": "/posts/{postId}/comments",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -89,7 +89,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/comments",
+      "UpstreamPathTemplate": "/comments",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -102,7 +102,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts",
+      "UpstreamPathTemplate": "/posts",
       "UpstreamHttpMethod": "Post",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -115,7 +115,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/{postId}",
+      "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": "Put",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -128,7 +128,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/{postId}",
+      "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": "Patch",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -141,7 +141,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/{postId}",
+      "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": "Delete",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -154,7 +154,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/products",
+      "UpstreamPathTemplate": "/products",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -168,7 +168,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/products/{productId}",
+      "UpstreamPathTemplate": "/products/{productId}",
       "UpstreamHttpMethod": "Get",
       "FileCacheOptions": { "TtlSeconds": 15 }
     },
@@ -177,7 +177,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "products20161126090340.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/products",
+      "UpstreamPathTemplate": "/products",
       "UpstreamHttpMethod": "Post",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -190,7 +190,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "products20161126090340.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/products/{productId}",
+      "UpstreamPathTemplate": "/products/{productId}",
       "UpstreamHttpMethod": "Put",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -204,7 +204,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "products20161126090340.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/products/{productId}",
+      "UpstreamPathTemplate": "/products/{productId}",
       "UpstreamHttpMethod": "Delete",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -218,7 +218,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "customers20161126090811.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/customers",
+      "UpstreamPathTemplate": "/customers",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -232,7 +232,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "customers20161126090811.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/customers/{customerId}",
+      "UpstreamPathTemplate": "/customers/{customerId}",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -246,7 +246,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "customers20161126090811.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/customers",
+      "UpstreamPathTemplate": "/customers",
       "UpstreamHttpMethod": "Post",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -260,7 +260,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "customers20161126090811.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/customers/{customerId}",
+      "UpstreamPathTemplate": "/customers/{customerId}",
       "UpstreamHttpMethod": "Put",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -274,7 +274,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "customers20161126090811.azurewebsites.net",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/customers/{customerId}",
+      "UpstreamPathTemplate": "/customers/{customerId}",
       "UpstreamHttpMethod": "Delete",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -288,7 +288,7 @@
       "DownstreamScheme": "http",
       "DownstreamHost": "jsonplaceholder.typicode.com",
       "DownstreamPort": 80,
-      "UpstreamTemplate": "/posts/",
+      "UpstreamPathTemplate": "/posts/",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
