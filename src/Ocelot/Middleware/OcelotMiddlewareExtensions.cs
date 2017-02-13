@@ -29,20 +29,26 @@ namespace Ocelot.Middleware
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            var configuration = CreateConfiguration(builder).Result;
+            await CreateAdministrationArea(builder);
 
-            builder.Map(configuration.AdministrationPath, x => 
-            {
-               x.UseMvc();
-            });
-
-            builder.UseOcelot(new OcelotMiddlewareConfiguration());
-
-
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
 
             return builder;
+        }
+
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        {
+            var configuration = await CreateConfiguration(builder);
+
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
+            {
+                builder.Map(configuration.AdministrationPath, x => 
+                {
+                    x.UseMvc();
+                });
+            }
         }
 
         /// <summary>
@@ -51,9 +57,9 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
-            CreateConfiguration(builder);
+            await CreateAdministrationArea(builder);
             
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();

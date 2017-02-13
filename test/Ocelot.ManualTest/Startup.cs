@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,11 +44,11 @@ namespace Ocelot.ManualTest
             services.AddOcelot();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 
-            app.UseOcelot();
+            await app.UseOcelot();
         }
     }
 }
