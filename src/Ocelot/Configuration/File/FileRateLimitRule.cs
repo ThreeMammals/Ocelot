@@ -25,7 +25,7 @@ namespace Ocelot.Configuration.File
         /// </summary>
         public string Period { get; set; }
 
-        public int PeriodTimespan { get; set; }
+        public double PeriodTimespan { get; set; }
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>

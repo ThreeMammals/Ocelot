@@ -91,7 +91,7 @@ namespace Ocelot.DependencyInjection
             // could maybe use a scoped data repository
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IRequestScopedDataRepository, HttpDataRepository>();
-
+            services.AddMemoryCache();
             return services;
         }
     }

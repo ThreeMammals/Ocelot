@@ -32,7 +32,7 @@ namespace Ocelot.Configuration.File
         /// <summary>
         /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
         /// </summary>
-        public int HttpStatusCode { get; private set; } = 429;
+        public int HttpStatusCode { get;  set; } = 429;
     }
 
     

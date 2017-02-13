@@ -2,10 +2,17 @@
 {
     public class ClientRequestIdentity
     {
-        public string ClientId { get; set; }
+        public ClientRequestIdentity(string clientId, string path, string httpverb)
+        {
+            ClientId = clientId;
+            Path = path;
+            HttpVerb = httpverb;
+        }
 
-        public string Path { get; set; }
+        public string ClientId { get; private set; }
 
-        public string HttpVerb { get; set; }
+        public string Path { get; private set; }
+
+        public string HttpVerb { get; private set; }
     }
 }

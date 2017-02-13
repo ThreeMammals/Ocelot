@@ -101,7 +101,6 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-                    s.AddMemoryCache();
                     s.AddOcelotOutputCaching(settings);
                     s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();

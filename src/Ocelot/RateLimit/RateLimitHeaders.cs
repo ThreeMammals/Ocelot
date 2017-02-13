@@ -8,12 +8,20 @@ namespace Ocelot.RateLimit
 {
     public class RateLimitHeaders
     {
-        public HttpContext Context { get; set; }
+        public RateLimitHeaders(HttpContext context, string limit, string remaining, string reset)
+        {
+            Context = context;
+            Limit = limit;
+            Remaining = remaining;
+            Reset = reset;
+        }
 
-        public string Limit { get; set; }
+        public HttpContext Context { get; private set; }
 
-        public string Remaining { get; set; }
+        public string Limit { get; private set; }
 
-        public string Reset { get; set; }
+        public string Remaining { get; private set; }
+
+        public string Reset { get; private set; }
     }
 }

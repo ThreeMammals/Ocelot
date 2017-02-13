@@ -15,7 +15,7 @@ namespace Ocelot.Configuration
         {
             EnableRateLimiting = enbleRateLimiting;
             ClientIdHeader = clientIdHeader;
-            ClientWhitelist = clientWhitelist;
+            ClientWhitelist = clientWhitelist?? new List<string>();
             DisableRateLimitHeaders = disableRateLimitHeaders;
             QuotaExceededMessage = quotaExceededMessage;
             RateLimitCounterPrefix = rateLimitCounterPrefix;
@@ -62,15 +62,22 @@ namespace Ocelot.Configuration
 
     public class RateLimitRule
     {
-        /// <summary>
-        /// Rate limit period as in 1s, 1m, 1h
-        /// </summary>
-        public string Period { get; set; }
+        public RateLimitRule(string period, TimeSpan periodTimespan, long limit)
+        {
+            Period = period;
+            PeriodTimespan = periodTimespan;
+            Limit = limit;
+        }
 
-        public TimeSpan? PeriodTimespan { get; set; }
+        /// <summary>
+        /// Rate limit period as in 1s, 1m, 1h,1d
+        /// </summary>
+        public string Period { get; private set; }
+
+        public TimeSpan PeriodTimespan { get; private set; }
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>
-        public long Limit { get; set; }
+        public long Limit { get; private set; }
     }
 }

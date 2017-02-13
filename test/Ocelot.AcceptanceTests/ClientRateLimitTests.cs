@@ -67,7 +67,9 @@ namespace Ocelot.AcceptanceTests
                         ClientIdHeader = "ClientId",
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
-                        RateLimitCounterPrefix = ""                         
+                        RateLimitCounterPrefix = "",
+                         HttpStatusCode = 428
+
                     },
                      RequestIdKey ="oceclientrequest"
                 }
@@ -76,8 +78,12 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 5))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(429))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
                 .BDDfy();
         }
 
@@ -154,55 +160,6 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        //private void GetApiRateLimait(string url)
-        //{
-        //    var clientId = "ocelotclient1";
-        //     var request = new HttpRequestMessage(new HttpMethod("GET"), url);
-        //        request.Headers.Add("ClientId", clientId);
-
-        //        var response = _client.SendAsync(request);
-        //        responseStatusCode = (int)response.Result.StatusCode;
-        //    }
-
-        //}
-
-        //public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
-        //{
-        //    var clientId = "ocelotclient1";
-        //    var tasks = new Task[times];
-
-        //    for (int i = 0; i < times; i++)
-        //    {
-        //        var urlCopy = url;
-        //        tasks[i] = GetForServiceDiscoveryTest(urlCopy);
-        //        Thread.Sleep(_random.Next(40, 60));
-        //    }
-
-        //    Task.WaitAll(tasks);
-        //}
-
-        //private void WhenICallTheMiddlewareWithWhiteClient()
-        //{
-        //    var clientId = "ocelotclient2";
-        //    // Act    
-        //    for (int i = 0; i < 2; i++)
-        //    {
-        //        var request = new HttpRequestMessage(new HttpMethod("GET"), apiRateLimitPath);
-        //        request.Headers.Add("ClientId", clientId);
-
-        //        var response = _client.SendAsync(request);
-        //        responseStatusCode = (int)response.Result.StatusCode;
-        //    }
-        //}
-
-        //private void ThenresponseStatusCodeIs429()
-        //{
-        //    responseStatusCode.ShouldBe(429);
-        //}
-
-        //private void ThenresponseStatusCodeIs200()
-        //{
-        //    responseStatusCode.ShouldBe(200);
-        //}
+  
     }
 }

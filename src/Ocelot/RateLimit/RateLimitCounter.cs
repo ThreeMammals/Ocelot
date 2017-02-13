@@ -10,8 +10,14 @@ namespace Ocelot.RateLimit
     /// </summary>
     public struct RateLimitCounter
     {
-        public DateTime Timestamp { get; set; }
+        public RateLimitCounter(DateTime timestamp, long totalRequest)
+        {
+            Timestamp = timestamp;
+            TotalRequests = totalRequest;
+        }
 
-        public long TotalRequests { get; set; }
+        public DateTime Timestamp { get; private set; }
+
+        public long TotalRequests { get; private set; }
     }
 }

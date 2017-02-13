@@ -72,9 +72,7 @@ namespace Ocelot.RateLimit.Middleware
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _processor.GetRateLimitHeaders(identity, options);
-                headers.Context = context;
-
+                var headers = _processor.GetRateLimitHeaders( context,identity, options);
                 context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
@@ -89,21 +87,19 @@ namespace Ocelot.RateLimit.Middleware
                 clientId = httpContext.Request.Headers[option.ClientIdHeader].First();
             }
 
-            return new ClientRequestIdentity
-            {
-                Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
-                HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientId = clientId,
-            };
-        }
+            return new ClientRequestIdentity(
+                clientId,
+                httpContext.Request.Path.ToString().ToLowerInvariant(), 
+                httpContext.Request.Method.ToLowerInvariant()
+                );
+         }
 
         public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            if (option.ClientWhitelist != null && option.ClientWhitelist.Contains(requestIdentity.ClientId))
+            if (option.ClientWhitelist.Contains(requestIdentity.ClientId))
             {
                 return true;
             }
-
             return false;
         }
 

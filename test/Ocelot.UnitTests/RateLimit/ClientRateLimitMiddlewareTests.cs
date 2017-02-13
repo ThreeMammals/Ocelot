@@ -20,6 +20,7 @@ using Xunit;
 using TestStack.BDDfy;
 using Ocelot.Configuration.Builder;
 using Shouldly;
+using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.RateLimit
 {
@@ -70,11 +71,13 @@ namespace Ocelot.UnitTests.RateLimit
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) },429))
+                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule("1s", TimeSpan.FromSeconds(100), 3), 429))
                      .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareMultipleTime(2))
+                .Then(x => x.ThenresponseStatusCodeIs200())
+                .When(x => x.WhenICallTheMiddlewareMultipleTime(2))
                 .Then(x => x.ThenresponseStatusCodeIs429())
                 .BDDfy();
         }
@@ -84,7 +87,7 @@ namespace Ocelot.UnitTests.RateLimit
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new Ocelot.Configuration.RateLimitRule() { Limit = 3, Period = "1s", PeriodTimespan = TimeSpan.FromSeconds(100) },429))
+                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new  RateLimitRule( "1s", TimeSpan.FromSeconds(100),3),429))
                      .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -102,11 +105,11 @@ namespace Ocelot.UnitTests.RateLimit
                 .Returns(_downstreamRoute);
         }
 
-        private void WhenICallTheMiddleware()
+        private void WhenICallTheMiddlewareMultipleTime(int times)
         {
             var clientId = "ocelotclient1";
             // Act    
-            for (int i = 0; i <10; i++)
+            for (int i = 0; i < times; i++)
             {
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);

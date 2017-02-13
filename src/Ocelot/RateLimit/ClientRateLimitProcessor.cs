@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +28,9 @@ namespace Ocelot.RateLimit
             return _core.RetryAfterFrom(timestamp, rule);
         }
 
-        public RateLimitHeaders GetRateLimitHeaders(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            return _core.GetRateLimitHeaders(requestIdentity, option);
+            return _core.GetRateLimitHeaders(context, requestIdentity, option);
         }
 
     }

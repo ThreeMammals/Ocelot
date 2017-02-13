@@ -117,12 +117,8 @@ namespace Ocelot.Configuration.Creator
                 rateLimitOption = new RateLimitOptions(enableRateLimiting, globalConfiguration.RateLimitOptions.ClientIdHeader, 
                    fileReRoute.RateLimitOptions.ClientWhitelist, globalConfiguration.RateLimitOptions.DisableRateLimitHeaders,
                    globalConfiguration.RateLimitOptions.QuotaExceededMessage, globalConfiguration.RateLimitOptions.RateLimitCounterPrefix,
-                   new RateLimitRule()
-                   {
-                       Limit = fileReRoute.RateLimitOptions.Limit,
-                       Period = fileReRoute.RateLimitOptions.Period,
-                       PeriodTimespan = TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.PeriodTimespan)
-                   }, globalConfiguration.RateLimitOptions.HttpStatusCode);                
+                   new RateLimitRule(fileReRoute.RateLimitOptions.Period, TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.PeriodTimespan), fileReRoute.RateLimitOptions.Limit)
+                   , globalConfiguration.RateLimitOptions.HttpStatusCode);                
             }
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
