@@ -82,6 +82,14 @@ namespace Ocelot.UnitTests.Configuration
                 _downstreamTemplatePath = downstreamTemplatePath;
             }
 
+            public string AdministrationPath
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public List<ReRoute> ReRoutes => new List<ReRoute>
             {
                 new ReRouteBuilder()

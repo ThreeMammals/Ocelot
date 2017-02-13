@@ -8,5 +8,6 @@
         }
         public string RequestIdKey { get; set; }
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider {get;set;}
+        public string AdministrationPath {get;set;}
     }
 }

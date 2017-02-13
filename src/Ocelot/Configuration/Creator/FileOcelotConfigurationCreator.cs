@@ -85,7 +85,7 @@ namespace Ocelot.Configuration.Creator
                 reRoutes.Add(ocelotReRoute);
             }
             
-            return new OcelotConfiguration(reRoutes);
+            return new OcelotConfiguration(reRoutes, _options.Value.GlobalConfiguration.AdministrationPath);
         }
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)

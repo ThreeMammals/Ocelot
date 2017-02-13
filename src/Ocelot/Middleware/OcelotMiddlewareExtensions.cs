@@ -18,6 +18,7 @@ namespace Ocelot.Middleware
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Provider;
     using Ocelot.LoadBalancer.Middleware;
 
@@ -30,9 +31,9 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
         {
-            CreateConfiguration(builder);
+            var configuration = CreateConfiguration(builder).Result;
 
-            builder.Map("/admin", x => 
+            builder.Map(configuration.AdministrationPath, x => 
             {
                x.UseMvc();
             });
@@ -131,16 +132,19 @@ namespace Ocelot.Middleware
             return builder;
         }
 
-        private static void CreateConfiguration(IApplicationBuilder builder)
+        private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
             var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
             
-            var config = configProvider.Get();
+            var config = await configProvider.Get();
             
-            if(config == null)
+            //todo move this to config validators
+            if(config == null || config.Data == null || config.IsError)
             {
-                throw new Exception("Unable to start Ocelot: configuration was null");
+                throw new Exception("Unable to start Ocelot: configuration was invalid");
             }
+
+            return config.Data;
         }
 
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)

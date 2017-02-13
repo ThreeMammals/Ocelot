@@ -300,6 +300,7 @@
   ],
 
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId"
+    "RequestIdKey": "OcRequestId",
+    "AdministrationPath": "/admin"
   }
 }
