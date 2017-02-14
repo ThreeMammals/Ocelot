@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51876,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
@@ -98,7 +98,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51876,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                             AuthenticationOptions = new FileAuthenticationOptions
                             {

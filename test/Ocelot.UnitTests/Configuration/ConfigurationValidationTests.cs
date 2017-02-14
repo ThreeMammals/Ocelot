@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
-                        UpstreamTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "http://asdf.com"
                     }
                 }
             }))
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "http://asdf.com"
                     }
                 }
             }))
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamTemplate = "http://asdf.com",
+                        UpstreamPathTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
                             Provider = "IdentityServer"
@@ -90,7 +90,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamTemplate = "http://asdf.com",
+                        UpstreamPathTemplate = "http://asdf.com",
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
                             Provider = "BootyBootyBottyRockinEverywhere"
@@ -114,12 +114,12 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "http://asdf.com"
                     },
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk",
-                        UpstreamTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "http://asdf.com"
                     }
                 }
             }))

@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration;
+using Ocelot.Requester.QoS;
 
 namespace Ocelot.Request.Builder
 {
@@ -24,7 +24,7 @@ namespace Ocelot.Request.Builder
         private IRequestCookieCollection _cookies;
         private readonly string[] _unsupportedHeaders = {"host"};
         private bool _isQos;
-        private QoSOptions _qos;
+        private IQoSProvider _qoSProvider;
 
         public RequestBuilder WithHttpMethod(string httpMethod)
         {
@@ -80,9 +80,9 @@ namespace Ocelot.Request.Builder
             return this;
         }
 
-        public RequestBuilder WithQos(QoSOptions qos)
+        public RequestBuilder WithQos(IQoSProvider qoSProvider)
         {
-            _qos = qos;
+            _qoSProvider = qoSProvider;
             return this;
         }
 
@@ -105,7 +105,7 @@ namespace Ocelot.Request.Builder
 
             var cookieContainer = CreateCookieContainer(uri);
 
-            return new Request(httpRequestMessage, cookieContainer,_isQos,_qos);
+            return new Request(httpRequestMessage, cookieContainer,_isQos, _qoSProvider);
         }
 
         private Uri CreateUri()

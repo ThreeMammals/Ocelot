@@ -54,7 +54,7 @@ namespace Ocelot.Configuration.Validator
                     continue;
                 }
 
-                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationOptions?.Provider} is unsupported authentication provider, upstream template is {reRoute.UpstreamTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
+                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationOptions?.Provider} is unsupported authentication provider, upstream template is {reRoute.UpstreamPathTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
                 errors.Add(error);
             }
 
@@ -94,18 +94,18 @@ namespace Ocelot.Configuration.Validator
         private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)
         {
             var hasDupes = configuration.ReRoutes
-                   .GroupBy(x => new { x.UpstreamTemplate, x.UpstreamHttpMethod }).Any(x => x.Skip(1).Any());
+                   .GroupBy(x => new { x.UpstreamPathTemplate, x.UpstreamHttpMethod }).Any(x => x.Skip(1).Any());
 
             if (!hasDupes)
             {
                 return new ConfigurationValidationResult(false);
             }
 
-            var dupes = configuration.ReRoutes.GroupBy(x => new { x.UpstreamTemplate, x.UpstreamHttpMethod })
+            var dupes = configuration.ReRoutes.GroupBy(x => new { x.UpstreamPathTemplate, x.UpstreamHttpMethod })
                                .Where(x => x.Skip(1).Any());
 
             var errors = dupes
-                .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d.Key.UpstreamTemplate)))
+                .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d.Key.UpstreamPathTemplate)))
                 .Cast<Error>()
                 .ToList();
 

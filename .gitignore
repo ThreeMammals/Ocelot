@@ -236,3 +236,9 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 tools/
+
+# MacOS
+.DS_Store
+
+# Ocelot acceptance test config
+test/Ocelot.AcceptanceTests/configuration.json

@@ -72,7 +72,9 @@ namespace Ocelot.UnitTests.RequestId
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId").Build());
+                .WithRequestIdKey("LSRequestId")
+                .WithUpstreamHttpMethod("Get")
+                .Build());
 
             var requestId = Guid.NewGuid().ToString();
 
@@ -89,7 +91,9 @@ namespace Ocelot.UnitTests.RequestId
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId").Build());
+                .WithRequestIdKey("LSRequestId")
+                .WithUpstreamHttpMethod("Get")
+                .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .When(x => x.WhenICallTheMiddleware())

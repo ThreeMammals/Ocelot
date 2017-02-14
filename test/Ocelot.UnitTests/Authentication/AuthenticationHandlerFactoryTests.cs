@@ -6,6 +6,7 @@ using Moq;
 using Ocelot.Authentication.Handler;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
+using Ocelot.Configuration.Builder;
 using Ocelot.Errors;
 using Ocelot.Responses;
 using Shouldly;
@@ -33,7 +34,11 @@ namespace Ocelot.UnitTests.Authentication
         [Fact]
         public void should_return_identity_server_access_token_handler()
         {
-            this.Given(x => x.GivenTheAuthenticationOptionsAre(new AuthenticationOptions("IdentityServer", "","",false, new List<string>(), "")))
+            var authenticationOptions = new AuthenticationOptionsBuilder()
+                .WithProvider("IdentityServer")
+                .Build();
+
+            this.Given(x => x.GivenTheAuthenticationOptionsAre(authenticationOptions))
                 .And(x => x.GivenTheCreatorReturns())
                 .When(x => x.WhenIGetFromTheFactory())
                 .Then(x => x.ThenTheHandlerIsReturned("IdentityServer"))
@@ -43,7 +48,10 @@ namespace Ocelot.UnitTests.Authentication
         [Fact]
         public void should_return_error_if_cannot_create_handler()
         {
-            this.Given(x => x.GivenTheAuthenticationOptionsAre(new AuthenticationOptions("IdentityServer", "", "", false, new List<string>(), "")))
+             var authenticationOptions = new AuthenticationOptionsBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheAuthenticationOptionsAre(authenticationOptions))
                 .And(x => x.GivenTheCreatorReturnsAnError())
                 .When(x => x.WhenIGetFromTheFactory())
                 .Then(x => x.ThenAnErrorResponseIsReturned())
@@ -58,7 +66,7 @@ namespace Ocelot.UnitTests.Authentication
         private void GivenTheCreatorReturnsAnError()
         {
             _creator
-                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>(), It.IsAny<AuthenticationOptions>()))
+                .Setup(x => x.Create(It.IsAny<IApplicationBuilder>(), It.IsAny<AuthenticationOptions>()))
                 .Returns(new ErrorResponse<RequestDelegate>(new List<Error>
             {
                 new UnableToCreateAuthenticationHandlerError($"Unable to create authentication handler for xxx")
@@ -68,7 +76,7 @@ namespace Ocelot.UnitTests.Authentication
         private void GivenTheCreatorReturns()
         {
             _creator
-                .Setup(x => x.CreateIdentityServerAuthenticationHandler(It.IsAny<IApplicationBuilder>(), It.IsAny<AuthenticationOptions>()))
+                .Setup(x => x.Create(It.IsAny<IApplicationBuilder>(), It.IsAny<AuthenticationOptions>()))
                 .Returns(new OkResponse<RequestDelegate>(x => Task.CompletedTask));
         }
 

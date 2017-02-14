@@ -72,6 +72,7 @@ namespace Ocelot.UnitTests.Headers
                     {
                         new ClaimToThing("UserId", "Subject", "", 0)
                     })
+                    .WithUpstreamHttpMethod("Get")
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

@@ -34,7 +34,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/products/{productId}",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                         }
                     }
@@ -61,7 +61,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/products/{productId}",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = false,
                         }
@@ -89,7 +89,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/products/{productId}",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
                         }
@@ -117,7 +117,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/PRODUCTS/{productId}",
+                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
                         }
@@ -145,7 +145,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/products/{productId}",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
                         }
@@ -173,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/PRODUCTS/{productId}",
+                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
                             ReRouteIsCaseSensitive = true,
                         }
