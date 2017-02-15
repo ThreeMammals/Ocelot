@@ -31,24 +31,9 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            await CreateAdministrationArea(builder);
-
             await builder.UseOcelot(new OcelotMiddlewareConfiguration());
 
             return builder;
-        }
-
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
-        {
-            var configuration = await CreateConfiguration(builder);
-
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
-            {
-                builder.Map(configuration.AdministrationPath, x => 
-                {
-                    x.UseMvc();
-                });
-            }
         }
 
         /// <summary>
@@ -151,6 +136,19 @@ namespace Ocelot.Middleware
             }
 
             return config.Data;
+        }
+
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        {
+            var configuration = await CreateConfiguration(builder);
+
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
+            {
+                builder.Map(configuration.AdministrationPath, x => 
+                {
+                    x.UseMvc();
+                });
+            }
         }
 
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
