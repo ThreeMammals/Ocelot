@@ -130,10 +130,10 @@ Ocelot's describes the routing of one request to another as a ReRoute. In order 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
 
 ```json
-    {
-        "ReRoutes": [
-        ]
-    }
+{
+    "ReRoutes": [
+    ]
+}
 ```
 
 In order to set up a ReRoute you need to add one to the json array called ReRoutes like
