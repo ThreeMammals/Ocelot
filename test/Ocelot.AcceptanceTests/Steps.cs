@@ -11,6 +11,7 @@ using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -100,7 +101,6 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-
                     s.AddOcelotOutputCaching(settings);
                     s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();
@@ -183,6 +183,17 @@ namespace Ocelot.AcceptanceTests
             count.ShouldBeGreaterThan(0);
         }
 
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
+        {
+            for (int i = 0; i < times; i++)
+            {
+                var clientId = "ocelotclient1";
+                var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+                request.Headers.Add("ClientId", clientId);
+                _response = _ocelotClient.SendAsync(request).Result;
+            }
+        } 
+
         public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
         {
             _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
@@ -208,6 +219,13 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
+        }
+
+
+        public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
+        {
+            var responseStatusCode = (int)_response.StatusCode;
+            responseStatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
         public void Dispose()

@@ -31,6 +31,7 @@ using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
+using Ocelot.RateLimit;
 
 namespace Ocelot.DependencyInjection
 {
@@ -87,12 +88,13 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             services.AddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
             services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
+            services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IRequestScopedDataRepository, HttpDataRepository>();
-
+            services.AddMemoryCache();
             return services;
         }
     }
