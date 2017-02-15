@@ -122,7 +122,7 @@ Ocelot's primary functionality is to take incomeing http requests and forward th
 to a downstream service. At the moment in the form of another http request (in the future
 this could be any transport mechanism.). 
 
-Ocelot always adds a trailing slash to an UpstreamTemplate.
+Ocelot always adds a trailing slash to an UpstreamPathTemplate.
 
 Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
@@ -140,16 +140,16 @@ the following.
 			"DownstreamScheme": "https",
 			"DownstreamPort": 80,
 			"DownstreamHost" "localhost"
-            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamPathTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Put"
         }
 
 The DownstreamPathTemplate,Scheme, Port and Host make the URL that this request will be forwarded to.
-The UpstreamTemplate is the URL that Ocelot will use to identity which 
+The UpstreamPathTemplate is the URL that Ocelot will use to identity which 
 DownstreamPathTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
 Ocelot can distinguish between requests to the same URL and is obviously needed to work :)
 In Ocelot you can add placeholders for variables to your Templates in the form of {something}.
-The placeholder needs to be in both the DownstreamPathTemplate and UpstreamTemplate. If it is
+The placeholder needs to be in both the DownstreamPathTemplate and UpstreamPathTemplate. If it is
 Ocelot will attempt to replace the placeholder with the correct variable value from the 
 Upstream URL when the request comes in.
 
@@ -190,7 +190,7 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         {
             "DownstreamPathTemplate": "/api/posts/{postId}",
 			"DownstreamScheme": "https",
-            "UpstreamTemplate": "/posts/{postId}",
+            "UpstreamPathTemplate": "/posts/{postId}",
             "UpstreamHttpMethod": "Put",
             "ServiceName": "product"
             "LoadBalancer": "LeastConnection"
@@ -305,19 +305,25 @@ Below is an example configuration that will transforms claims to query string pa
 This shows a transform where Ocelot looks at the users LocationId claim and add its as
 a query string parameter to be forwarded onto the downstream service.
 
-## Logging
+## Quality of Service
 
-Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> at the moment. 
-This is encapsulated in  IOcelotLogger / IOcelotLoggerFactory with an implementation 
-for the standard asp.net core logging stuff at the moment. 
+Ocelot supports one QoS capability at the current time. You can set on a per ReRoute basis if you 
+want to use a circuit breaker when making requests to a downstream service. This uses the an awesome
+.NET library called Polly check them out [here](https://github.com/App-vNext/Polly).
 
-There are a bunch of debugging logs in the ocelot middlewares however I think the 
-system probably needs more logging in the code it calls into. Other than the debugging
-there is a global error handler that should catch any errors thrown and log them as errors.
+Add the following section to a ReRoute configuration. 
 
-The reason for not just using bog standard framework logging is that I could not 
-work out how to override the request id that get's logged when setting IncludeScopes 
-to true for logging settings. Nicely onto the next feature.
+		"QoSOptions": {
+			"ExceptionsAllowedBeforeBreaking":3,
+			"DurationOfBreak":5,
+			"TimeoutValue":5000
+		}
+
+You must set a number greater than 0 against ExceptionsAllowedBeforeBreaking for this rule to be 
+implemented. Duration of break is how long the circuit breaker will stay open for after it is tripped.
+TimeoutValue means ff a request takes more than 5 seconds it will automatically be timed out. 
+
+If you do not add a QoS section QoS will not be used.
 
 ## RequestId / CorrelationId
 
@@ -403,6 +409,20 @@ http request before it is passed to Ocelots request creator.
 
 Obviously you can just add middleware as normal before the call to app.UseOcelot() It cannot be added
 after as Ocelot does not call the next middleware.
+
+## Logging
+
+Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> at the moment. 
+This is encapsulated in  IOcelotLogger / IOcelotLoggerFactory with an implementation 
+for the standard asp.net core logging stuff at the moment. 
+
+There are a bunch of debugging logs in the ocelot middlewares however I think the 
+system probably needs more logging in the code it calls into. Other than the debugging
+there is a global error handler that should catch any errors thrown and log them as errors.
+
+The reason for not just using bog standard framework logging is that I could not 
+work out how to override the request id that get's logged when setting IncludeScopes 
+to true for logging settings. Nicely onto the next feature.
 
 ## Not supported
 

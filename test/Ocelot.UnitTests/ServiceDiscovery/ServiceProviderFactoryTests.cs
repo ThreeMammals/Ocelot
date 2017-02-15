@@ -1,4 +1,5 @@
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;
@@ -20,7 +21,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_no_service_provider()
         {
-            var serviceConfig = new ServiceProviderConfiguraion("product", "127.0.0.1", 80, false, "Does not matter", string.Empty, 0);
+            var serviceConfig = new ServiceProviderConfiguraionBuilder()
+                .WithDownstreamHost("127.0.0.1")
+                .WithDownstreamPort(80)
+                .WithUseServiceDiscovery(false)
+                .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig))
                 .When(x => x.WhenIGetTheServiceProvider())
@@ -31,7 +36,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_consul_service_provider()
         {
-            var serviceConfig = new ServiceProviderConfiguraion("product", string.Empty, 0, true, "Consul", string.Empty, 0);
+            var serviceConfig = new ServiceProviderConfiguraionBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .WithServiceDiscoveryProvider("Consul")
+                .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig))
                 .When(x => x.WhenIGetTheServiceProvider())

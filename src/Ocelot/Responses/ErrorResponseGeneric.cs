@@ -5,7 +5,13 @@ namespace Ocelot.Responses
 {
     public class ErrorResponse<T> : Response<T>
     {
-        public ErrorResponse(List<Error> errors) : base(errors)
+        public ErrorResponse(Error error) 
+            : base(new List<Error> {error})
+        {
+            
+        }
+        public ErrorResponse(List<Error> errors) 
+            : base(errors)
         {
         }
     }

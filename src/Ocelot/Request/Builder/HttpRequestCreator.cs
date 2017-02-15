@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
 using Ocelot.Configuration;
+using Ocelot.Requester.QoS;
 
 namespace Ocelot.Request.Builder
 {
@@ -18,7 +19,7 @@ namespace Ocelot.Request.Builder
             string contentType, 
             RequestId.RequestId requestId,
             bool isQos,
-            QoSOptions qos)
+            IQoSProvider qosProvider)
         {
             var request = await new RequestBuilder()
                 .WithHttpMethod(httpMethod)
@@ -30,7 +31,7 @@ namespace Ocelot.Request.Builder
                 .WithRequestId(requestId)
                 .WithCookies(cookies)
                 .WithIsQos(isQos)
-                .WithQos(qos)
+                .WithQos(qosProvider)
                 .Build();
 
             return new OkResponse<Request>(request);

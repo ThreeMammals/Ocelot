@@ -28,6 +28,7 @@ using Ocelot.Logging;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
 using Ocelot.Requester;
+using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
 using Ocelot.RateLimit;
@@ -62,6 +63,8 @@ namespace Ocelot.DependencyInjection
         {
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
+            services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
+            services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
             services.AddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             services.AddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();

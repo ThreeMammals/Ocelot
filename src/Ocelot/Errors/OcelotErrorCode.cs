@@ -25,6 +25,8 @@
         ServicesAreNullError,
         ServicesAreEmptyError,
         UnableToFindServiceDiscoveryProviderError,
-        UnableToFindLoadBalancerError
+        UnableToFindLoadBalancerError,
+        RequestTimedOutError,
+        UnableToFindQoSProviderError
     }
 }

@@ -15,7 +15,7 @@
 			# The path template we are listening on for this re route, Ocelot will add a trailing 
 			# slash to this property. Then when a request is made Ocelot makes sure a trailing 
 			# slash is added, so everything matches
-			"UpstreamTemplate": "/identityserverexample",
+			"UpstreamPathTemplate": "/identityserverexample",
 			# The method we are listening for on this re route
 			"UpstreamHttpMethod": "Get",
 			# Only support identity server at the moment

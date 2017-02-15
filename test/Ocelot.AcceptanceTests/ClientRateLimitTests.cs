@@ -46,7 +46,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/api/ClientRateLimit",
+                            UpstreamPathTemplate = "/api/ClientRateLimit",
                             UpstreamHttpMethod = "Get",
                             RequestIdKey = _steps.RequestIdKey,
                              
@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
                                 ClientWhitelist = new List<string>(),
                                 Limit = 3,
                                 Period = "1s",
-                                PeriodTimespan = 100
+                                PeriodTimespan = 1000
                             }
                         }
                 },
@@ -101,7 +101,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
-                            UpstreamTemplate = "/api/ClientRateLimit",
+                            UpstreamPathTemplate = "/api/ClientRateLimit",
                             UpstreamHttpMethod = "Get",
                             RequestIdKey = _steps.RequestIdKey,
 
