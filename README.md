@@ -30,9 +30,6 @@ and retrived as the requests goes back up the Ocelot pipeline. There is a piece 
 that maps the HttpResponseMessage onto the HttpResponse object and that is returned to the client.
 That is basically it with a bunch of other features.
 
-This is not ready for production yet as uses a lot of rc and beta .net core packages.
-Hopefully by the start of 2017 it will be in use.
-
 ## Contributing
 
 Pull requests, issues and commentary welcome! No special process just create a request and get in 
