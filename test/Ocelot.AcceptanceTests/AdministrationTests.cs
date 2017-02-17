@@ -34,9 +34,38 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/administration/reroutes"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("hi from re routes controller"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_file_configuration()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes  = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/"
+                    }
+                }
+            };
+
+            this.Given(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseShouldBe(configuration))
                 .BDDfy();
         }
 

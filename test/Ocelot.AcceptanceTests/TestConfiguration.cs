@@ -28,7 +28,7 @@
         {
             var runTime = $"{oSDescription}-{osArchitecture}".ToLower();
 
-            var configPath = $"./bin/Debug/netcoreapp{Version}/{runTime}/configuration.json";
+            var configPath = $"./test/Ocelot.AcceptanceTests/bin/Debug/netcoreapp{Version}/{runTime}/configuration.json";
 
             return configPath;
         }
