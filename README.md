@@ -30,9 +30,6 @@ and retrived as the requests goes back up the Ocelot pipeline. There is a piece 
 that maps the HttpResponseMessage onto the HttpResponse object and that is returned to the client.
 That is basically it with a bunch of other features.
 
-This is not ready for production yet as uses a lot of rc and beta .net core packages.
-Hopefully by the start of 2017 it will be in use.
-
 ## Contributing
 
 Pull requests, issues and commentary welcome! No special process just create a request and get in 
@@ -61,11 +58,12 @@ The ReRoutes are the objects that tell Ocelot how to treat an upstream request. 
 configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
 if you don't want to manage lots of ReRoute specific settings.
 
-		{
-			"ReRoutes": [],
-			"GlobalConfiguration": {}
-		}
-
+```json
+{
+    "ReRoutes": [],
+    "GlobalConfiguration": {}
+}
+```
 More information on how to use these options is below..
 
 ## Startup
@@ -73,46 +71,47 @@ More information on how to use these options is below..
 An example startup using a json file for configuration can be seen below. 
 Currently this is the only way to get configuration into Ocelot.
 
-	 public class Startup
+```csharp
+public class Startup
+{
+    public Startup(IHostingEnvironment env)
     {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("configuration.json")
-                .AddEnvironmentVariables();
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(env.ContentRootPath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            .AddJsonFile("configuration.json")
+            .AddEnvironmentVariables();
 
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            Action<ConfigurationBuilderCachePart> settings = (x) =>
-            {
-                x.WithMicrosoftLogging(log =>
-                {
-                    log.AddConsole(LogLevel.Debug);
-                })
-                .WithDictionaryHandle();
-            };
-
-            services.AddOcelotOutputCaching(settings);
-            services.AddOcelotFileConfiguration(Configuration);
-            services.AddOcelot();
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
-            app.UseOcelot();
-        }
+        Configuration = builder.Build();
     }
 
+    public IConfigurationRoot Configuration { get; }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        Action<ConfigurationBuilderCachePart> settings = (x) =>
+        {
+            x.WithMicrosoftLogging(log =>
+            {
+                log.AddConsole(LogLevel.Debug);
+            })
+            .WithDictionaryHandle();
+        };
+
+        services.AddOcelotOutputCaching(settings);
+        services.AddOcelotFileConfiguration(Configuration);
+        services.AddOcelot();
+    }
+
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+    {
+        loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
+        app.UseOcelot();
+    }
+}
+```
 
 This is pretty much all you need to get going.......more to come! 
 
@@ -127,22 +126,26 @@ Ocelot always adds a trailing slash to an UpstreamPathTemplate.
 Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
 
-		{
-			"ReRoutes": [
-			]
-		}
+```json
+{
+    "ReRoutes": [
+    ]
+}
+```
 
 In order to set up a ReRoute you need to add one to the json array called ReRoutes like
 the following.
 
-		{
-            "DownstreamPathTemplate": "/api/posts/{postId}",
-			"DownstreamScheme": "https",
-			"DownstreamPort": 80,
-			"DownstreamHost" "localhost"
-            "UpstreamPathTemplate": "/posts/{postId}",
-            "UpstreamHttpMethod": "Put"
-        }
+```json
+{
+    "DownstreamPathTemplate": "/api/posts/{postId}",
+    "DownstreamScheme": "https",
+    "DownstreamPort": 80,
+    "DownstreamHost" "localhost"
+    "UpstreamPathTemplate": "/posts/{postId}",
+    "UpstreamHttpMethod": "Put"
+}
+```
 
 The DownstreamPathTemplate,Scheme, Port and Host make the URL that this request will be forwarded to.
 The UpstreamPathTemplate is the URL that Ocelot will use to identity which 
@@ -156,7 +159,9 @@ Upstream URL when the request comes in.
 At the moment without any configuration Ocelot will default to all ReRoutes being case insensitive.
 In order to change this you can specify on a per ReRoute basis the following setting.
 
-		"ReRouteIsCaseSensitive": true
+```json
+"ReRouteIsCaseSensitive": true
+```
 
 This means that when Ocelot tries to match the incoming upstream url with an upstream template the
 evaluation will be case sensitive. This setting defaults to false so only set it if you want 
@@ -176,25 +181,28 @@ At the moment the only supported service discovery provider is Consul. The follo
 GlobalConfiguration. The Provider is required and if you do not specify a host and port the Consul default
 will be used.
 
-        "ServiceDiscoveryProvider":
-        {
-            "Provider":"Consul",
-            "Host":"localhost",
-            "Port":8500
-        }
+```json
+"ServiceDiscoveryProvider": {
+    "Provider":"Consul",
+    "Host":"localhost",
+    "Port":8500
+}
+```
 
 In order to tell Ocelot a ReRoute is to use the service discovery provider for its host and port you must add the 
 ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin
 and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
 
-        {
-            "DownstreamPathTemplate": "/api/posts/{postId}",
-			"DownstreamScheme": "https",
-            "UpstreamPathTemplate": "/posts/{postId}",
-            "UpstreamHttpMethod": "Put",
-            "ServiceName": "product"
-            "LoadBalancer": "LeastConnection"
-        }
+```json
+{
+    "DownstreamPathTemplate": "/api/posts/{postId}",
+    "DownstreamScheme": "https",
+    "UpstreamPathTemplate": "/posts/{postId}",
+    "UpstreamHttpMethod": "Put",
+    "ServiceName": "product",
+    "LoadBalancer": "LeastConnection"
+}
+```
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balancer
 requests across any available services.
@@ -206,16 +214,18 @@ Ocelot currently supports the use of bearer tokens with Identity Server (more pr
 come if required). In order to identity a ReRoute as authenticated it needs the following
 configuration added.
 
-		"AuthenticationOptions": {
-            "Provider": "IdentityServer",
-            "ProviderRootUrl": "http://localhost:52888",
-            "ScopeName": "api",
-            "AdditionalScopes": [
-                "openid",
-                "offline_access"
-            ],
-            "ScopeSecret": "secret"
-        }
+```json
+"AuthenticationOptions": {
+    "Provider": "IdentityServer",
+    "ProviderRootUrl": "http://localhost:52888",
+    "ScopeName": "api",
+    "AdditionalScopes": [
+        "openid",
+        "offline_access"
+    ],
+    "ScopeSecret": "secret"
+}
+```
 
 In this example the Provider is specified as IdentityServer. This string is important 
 because it is used to identity the authentication provider (as previously mentioned in
@@ -234,9 +244,11 @@ is 401 unauthorised.
 Ocelot supports claims based authorisation which is run post authentication. This means if
 you have a route you want to authorise you can add the following to you ReRoute configuration.
 
-		"RouteClaimsRequirement": {
-            "UserType": "registered"
-        },
+```json
+"RouteClaimsRequirement": {
+    "UserType": "registered"
+},
+```
 
 In this example when the authorisation middleware is called Ocelot will check to see
 if the user has the claim type UserType and if the value of that claim is registered. 
@@ -275,10 +287,12 @@ and add whatever was at the index requested to the transform.
 
 Below is an example configuration that will transforms claims to claims
 
-		 "AddClaimsToRequest": {
-			"UserType": "Claims[sub] > value[0] > |",
-			"UserId": "Claims[sub] > value[1] > |"
-		},
+```json
+ "AddClaimsToRequest": {
+    "UserType": "Claims[sub] > value[0] > |",
+    "UserId": "Claims[sub] > value[1] > |"
+},
+```
 
 This shows a transforms where Ocelot looks at the users sub claim and transforms it into
 UserType and UserId claims. Assuming the sub looks like this "usertypevalue|useridvalue".
@@ -287,9 +301,11 @@ UserType and UserId claims. Assuming the sub looks like this "usertypevalue|user
 
 Below is an example configuration that will transforms claims to headers
 
-	   "AddHeadersToRequest": {
-			"CustomerId": "Claims[sub] > value[1] > |"
-		},
+```json
+"AddHeadersToRequest": {
+    "CustomerId": "Claims[sub] > value[1] > |"
+},
+```
 
 This shows a transform where Ocelot looks at the users sub claim and trasnforms it into a 
 CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
@@ -298,9 +314,11 @@ CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
 
 Below is an example configuration that will transforms claims to query string parameters
 
-		"AddQueriesToRequest": {
-            "LocationId": "Claims[LocationId] > value",
-        },
+```json
+"AddQueriesToRequest": {
+    "LocationId": "Claims[LocationId] > value",
+},
+```
 
 This shows a transform where Ocelot looks at the users LocationId claim and add its as
 a query string parameter to be forwarded onto the downstream service.
@@ -313,11 +331,13 @@ want to use a circuit breaker when making requests to a downstream service. This
 
 Add the following section to a ReRoute configuration. 
 
-		"QoSOptions": {
-			"ExceptionsAllowedBeforeBreaking":3,
-			"DurationOfBreak":5,
-			"TimeoutValue":5000
-		}
+```json
+"QoSOptions": {
+    "ExceptionsAllowedBeforeBreaking":3,
+    "DurationOfBreak":5,
+    "TimeoutValue":5000
+}
+```
 
 You must set a number greater than 0 against ExceptionsAllowedBeforeBreaking for this rule to be 
 implemented. Duration of break is how long the circuit breaker will stay open for after it is tripped.
@@ -338,14 +358,18 @@ have an OcelotRequestId.
 
 In order to use the requestid feature in your ReRoute configuration add this setting
 
-		"RequestIdKey": "OcRequestId"
+```json
+"RequestIdKey": "OcRequestId"
+```
 
 In this example OcRequestId is the request header that contains the clients request id.
 
 There is also a setting in the GlobalConfiguration section which will override whatever has been
 set at ReRoute level for the request id. The setting is as fllows.
 
-		"RequestIdKey": "OcRequestId",
+```json
+"RequestIdKey": "OcRequestId",
+```
 
 It behaves in exactly the same way as the ReRoute level RequestIdKey settings.
 
@@ -364,7 +388,9 @@ and setting a TTL in seconds to expire the cache. More to come!
 
 In orde to use caching on a route in your ReRoute configuration add this setting.
 
-		"FileCacheOptions": { "TtlSeconds": 15 }
+```json
+"FileCacheOptions": { "TtlSeconds": 15 }
+```
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
 
@@ -376,15 +402,17 @@ pipeline and you are using any of the following. Remove them and try again!
 When setting up Ocelot in your Startup.cs you can provide some additonal middleware 
 and override middleware. This is done as follos.
 
-		var configuration = new OcelotMiddlewareConfiguration
-		{
-			PreErrorResponderMiddleware = async (ctx, next) =>
-			{
-				await next.Invoke();
-			}
-		};
+```csharp
+var configuration = new OcelotMiddlewareConfiguration
+{
+    PreErrorResponderMiddleware = async (ctx, next) =>
+    {
+        await next.Invoke();
+    }
+};
 
-		app.UseOcelot(configuration);
+app.UseOcelot(configuration);
+```
 
 In the example above the provided function will run before the first piece of Ocelot middleware. 
 This allows a user to supply any behaviours they want before and after the Ocelot pipeline has run.
