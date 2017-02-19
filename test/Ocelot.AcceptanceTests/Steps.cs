@@ -31,7 +31,7 @@ namespace Ocelot.AcceptanceTests
         private BearerToken _token;
         public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
-        private Random _random;
+        private readonly Random _random;
 
         public Steps()
         {
@@ -91,6 +91,8 @@ namespace Ocelot.AcceptanceTests
                 response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
                 response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
                 response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
             }
         }
 

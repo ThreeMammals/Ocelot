@@ -31,6 +31,7 @@ using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
+using Ocelot.Services;
 
 namespace Ocelot.DependencyInjection
 {
@@ -62,6 +63,7 @@ namespace Ocelot.DependencyInjection
         {
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
+            services.AddSingleton<IGetFileConfiguration, GetFileConfiguration>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
             services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();

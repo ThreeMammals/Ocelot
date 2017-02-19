@@ -10,7 +10,7 @@ namespace Ocelot.Services
     {
         public Response<FileConfiguration> Invoke()
         {
-            var configFilePath = "configuration.json";
+            var configFilePath = $"{AppContext.BaseDirectory}/configuration.json";
             var json = File.ReadAllText(configFilePath);
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(json);
             return new OkResponse<FileConfiguration>(fileConfiguration);

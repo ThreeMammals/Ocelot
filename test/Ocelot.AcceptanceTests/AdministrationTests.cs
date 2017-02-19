@@ -36,7 +36,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("hi from re routes controller"))
                 .BDDfy();
         }
 
@@ -56,7 +55,18 @@ namespace Ocelot.AcceptanceTests
                         DownstreamHost = "localhost",
                         DownstreamPort = 80,
                         DownstreamScheme = "https",
-                        DownstreamPathTemplate = "/"
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = "get",
+                        UpstreamPathTemplate = "/"
+                    },
+                     new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = "get",
+                        UpstreamPathTemplate = "/test"
                     }
                 }
             };
@@ -67,27 +77,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseShouldBe(configuration))
                 .BDDfy();
-        }
-
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
-        {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _builder.Start();
         }
 
         public void Dispose()

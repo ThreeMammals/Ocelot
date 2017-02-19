@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
@@ -14,7 +15,7 @@ namespace Ocelot.UnitTests.Services
 {
     public class GetFileConfigurationTests
     {
-        private IGetFileConfiguration _getReRoutes;
+        private readonly IGetFileConfiguration _getReRoutes;
         private FileConfiguration _result;
 
         public GetFileConfigurationTests()
@@ -59,7 +60,8 @@ namespace Ocelot.UnitTests.Services
 
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            var configurationPath = "configuration.json";
+            var configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
+
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
             if (File.Exists(configurationPath))
@@ -89,7 +91,6 @@ namespace Ocelot.UnitTests.Services
                 _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
                 _result.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
                 _result.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                //todo -- add more!
             }
         }
     }
