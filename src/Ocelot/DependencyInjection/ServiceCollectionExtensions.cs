@@ -112,7 +112,9 @@ namespace Ocelot.DependencyInjection
                         SubjectId = "admin",
                     }
                 });
-            services.AddMvcCore().AddJsonFormatters();
+            services.AddMvcCore()
+                .AddAuthorization()
+                .AddJsonFormatters();
             services.AddLogging();
             services.AddSingleton<IGetFileConfiguration, GetFileConfiguration>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();

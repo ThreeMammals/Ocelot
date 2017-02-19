@@ -18,7 +18,9 @@ var unitTestAssemblies = @"./test/Ocelot.UnitTests";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
-var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests";
+
+// integration testing
+var artifactsForIntegrationTestsDir = artifactsDir + Directory("IntegrationTests");
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -129,6 +131,24 @@ Task("RunAcceptanceTests")
 
 	});
 
+	Task("RunIntegrationTests")
+	.IsDependentOn("Restore")
+	.Does(() =>
+	{
+		var buildSettings = new DotNetCoreTestSettings
+		{
+			Configuration = "Debug", //int test config is hard-coded for debug
+		};
+
+		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+
+		DoInDirectory("test/Ocelot.IntegrationTests", () =>
+		{
+			DotNetCoreTest(".", buildSettings);
+		});
+
+	});
+
 Task("RunBenchmarkTests")
 	.IsDependentOn("Restore")
 	.Does(() =>
@@ -149,6 +169,7 @@ Task("RunBenchmarkTests")
 Task("RunTests")
 	.IsDependentOn("RunUnitTests")
 	.IsDependentOn("RunAcceptanceTests")
+	.IsDependentOn("RunIntegrationTests")
 	.Does(() =>
 	{
 	});

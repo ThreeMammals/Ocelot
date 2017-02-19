@@ -148,9 +148,11 @@ namespace Ocelot.Middleware
             {
                 builder.Map(configuration.AdministrationPath, app =>
                 {
+                    var identityServerUrl = $"http://localhost:5000/{configuration.AdministrationPath.Remove(0,1)}";
+
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
-                        Authority = "http://localhost:5000/admin",
+                        Authority = identityServerUrl,
                         ApiName = "admin",
                         RequireHttpsMetadata = false,
                         AllowedScopes = new List<string>(),

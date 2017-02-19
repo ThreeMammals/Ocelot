@@ -133,7 +133,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(a =>
                 {
-                    a.UseOcelot(ocelotMiddlewareConfig);
+                    a.UseOcelot(ocelotMiddlewareConfig).Wait();
                 }));
 
             _ocelotClient = _ocelotServer.CreateClient();
@@ -165,6 +165,26 @@ namespace Ocelot.AcceptanceTests
                 response.EnsureSuccessStatusCode();
                 _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             }
+        }
+
+        public void GivenIHaveAnOcelotToken(string adminPath)
+        {
+            var tokenUrl = $"{adminPath}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "admin"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "admin"),
+                new KeyValuePair<string, string>("username", "admin"),
+                new KeyValuePair<string, string>("password", "admin"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = _ocelotClient.PostAsync(tokenUrl, content).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            response.EnsureSuccessStatusCode();
+            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
         public void VerifyIdentiryServerStarted(string url)

@@ -4,7 +4,7 @@ using Ocelot.Services;
 
 namespace Ocelot.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [Route("configuration")]
     public class FileConfigurationController : Controller
     {
@@ -18,7 +18,6 @@ namespace Ocelot.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var user = this.HttpContext.User;
             return new OkObjectResult(_getFileConfig.Invoke().Data);
         }
     }
