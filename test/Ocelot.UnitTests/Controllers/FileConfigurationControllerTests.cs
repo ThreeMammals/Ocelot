@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Controllers;
 using Ocelot.Responses;
@@ -30,7 +28,7 @@ namespace Ocelot.UnitTests.Controllers
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
-                .Then(x => x.ThenTheFileConfigurationIsReturned(expected.Data))
+                .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -46,8 +44,10 @@ namespace Ocelot.UnitTests.Controllers
             _result = _controller.Get();
         }
 
-        private void ThenTheFileConfigurationIsReturned(FileConfiguration expected)
+        private void TheTheGetFileConfigurationIsCalledCorrectly()
         {
+               _getFileConfig
+                .Verify(x => x.Invoke(), Times.Once);
         }
     }
 }
