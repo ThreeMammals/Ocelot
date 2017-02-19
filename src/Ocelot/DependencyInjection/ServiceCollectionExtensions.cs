@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using CacheManager.Core;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,6 +65,53 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services)
         {
+            services.AddIdentityServer()
+                .AddTemporarySigningCredential()
+                .AddInMemoryApiResources(new List<ApiResource>
+                {
+                    new ApiResource
+                    {
+                        Name = "admin",
+                        Description = "Ocelot Administration",
+                        Enabled = true,
+                        DisplayName = "admin",
+                        Scopes = new List<Scope>()
+                        {
+                            new Scope("admin"),
+                            new Scope("openid"),
+                            new Scope("offline_access")
+                        },
+                        ApiSecrets = new List<Secret>
+                        {
+                            new Secret
+                            {
+                                Value = "secret".Sha256()
+                            }
+                        }
+                    }
+                })
+                .AddInMemoryClients(new List<Client>
+                {
+                    new Client
+                    {
+                        ClientId = "admin",
+                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                        ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                        AllowedScopes = new List<string> {"admin", "openid", "offline_access"},
+                        AccessTokenType = AccessTokenType.Jwt,
+                        Enabled = true,
+                        RequireClientSecret = false
+                    }
+                })
+                .AddTestUsers(new List<TestUser>
+                {
+                    new TestUser
+                    {
+                        Username = "admin",
+                        Password = "admin",
+                        SubjectId = "admin",
+                    }
+                });
             services.AddMvcCore().AddJsonFormatters();
             services.AddLogging();
             services.AddSingleton<IGetFileConfiguration, GetFileConfiguration>();

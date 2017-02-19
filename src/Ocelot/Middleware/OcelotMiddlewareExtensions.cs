@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Collections.Generic;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
@@ -45,7 +47,7 @@ namespace Ocelot.Middleware
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             await CreateAdministrationArea(builder);
-            
+
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
 
@@ -144,9 +146,21 @@ namespace Ocelot.Middleware
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath))
             {
-                builder.Map(configuration.AdministrationPath, x => 
+                builder.Map(configuration.AdministrationPath, app =>
                 {
-                    x.UseMvc();
+                    app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
+                    {
+                        Authority = "http://localhost:5000/admin",
+                        ApiName = "admin",
+                        RequireHttpsMetadata = false,
+                        AllowedScopes = new List<string>(),
+                        SupportedTokens = SupportedTokens.Both,
+                        ApiSecret = "secret"
+                    });
+
+                    app.UseIdentityServer();
+
+                    app.UseMvc();
                 });
             }
         }

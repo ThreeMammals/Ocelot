@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
@@ -13,7 +9,6 @@ namespace Ocelot.AcceptanceTests
 {
     public class AdministrationTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
 
         public AdministrationTests()
@@ -81,7 +76,6 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _builder?.Dispose();
             _steps.Dispose();
         }
     }
