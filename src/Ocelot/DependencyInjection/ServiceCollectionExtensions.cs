@@ -17,6 +17,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -111,6 +112,7 @@ namespace Ocelot.DependencyInjection
                 .AddAuthorization()
                 .AddJsonFormatters();
             services.AddLogging();
+            services.AddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
             services.AddSingleton<IFileConfigurationProvider, Services.FileConfigurationProvider>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
             services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
