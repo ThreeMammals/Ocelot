@@ -20,8 +20,11 @@ namespace Ocelot.Middleware
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Options;
     using Ocelot.Configuration;
+    using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
+    using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
 
     public static class OcelotMiddlewareExtensions
@@ -127,17 +130,27 @@ namespace Ocelot.Middleware
 
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
+            var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
+            
+            var configSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+            
             var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
             
-            var config = await configProvider.Get();
+            var config = await configSetter.Set(fileConfig.Value);
             
-            //todo move this to config validators
-            if(config == null || config.Data == null || config.IsError)
+            if(config == null || config.IsError)
             {
-                throw new Exception("Unable to start Ocelot: configuration was invalid");
+                throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
             }
 
-            return config.Data;
+            var ocelotConfiguration = configProvider.Get();
+
+            if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            {
+                throw new Exception("Unable to start Ocelot: ocelot configuration was not returned by provider.");
+            }
+
+            return ocelotConfiguration.Data;
         }
 
         private static async Task CreateAdministrationArea(IApplicationBuilder builder)

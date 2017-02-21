@@ -15,12 +15,12 @@ namespace Ocelot.UnitTests.Services
 {
     public class GetFileConfigurationTests
     {
-        private readonly IGetFileConfiguration _getReRoutes;
+        private readonly IFileConfigurationProvider _getReRoutes;
         private FileConfiguration _result;
 
         public GetFileConfigurationTests()
         {
-            _getReRoutes = new GetFileConfiguration();
+            _getReRoutes = new FileConfigurationProvider();
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.Services
 
         private void WhenIGetTheReRoutes()
         {
-            _result = _getReRoutes.Invoke().Data;
+            _result = _getReRoutes.Get().Data;
         }
 
         private void ThenTheFollowingIsReturned(FileConfiguration expected)

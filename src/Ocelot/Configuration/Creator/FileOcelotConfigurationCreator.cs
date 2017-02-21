@@ -56,14 +56,21 @@ namespace Ocelot.Configuration.Creator
 
         public async Task<Response<IOcelotConfiguration>> Create()
         {     
-            var config = await SetUpConfiguration();
+            var config = await SetUpConfiguration(_options.Value);
 
             return new OkResponse<IOcelotConfiguration>(config);
         }
 
-        private async Task<IOcelotConfiguration> SetUpConfiguration()
+        public async Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration)
+        {     
+            var config = await SetUpConfiguration(fileConfiguration);
+
+            return new OkResponse<IOcelotConfiguration>(config);
+        }
+
+        private async Task<IOcelotConfiguration> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
-            var response = _configurationValidator.IsValid(_options.Value);
+            var response = _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {

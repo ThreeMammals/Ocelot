@@ -6,9 +6,9 @@ using Ocelot.Responses;
 
 namespace Ocelot.Services
 {
-    public class GetFileConfiguration : IGetFileConfiguration
+    public class FileConfigurationProvider : IFileConfigurationProvider
     {
-        public Response<FileConfiguration> Invoke()
+        public Response<FileConfiguration> Get()
         {
             var configFilePath = $"{AppContext.BaseDirectory}/configuration.json";
             var json = File.ReadAllText(configFilePath);

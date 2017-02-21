@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -22,9 +21,9 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _urlPathPlaceholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public async Task<Response<DownstreamRoute>> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
+        public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
         {
-            var configuration = await _configProvider.Get();
+            var configuration = _configProvider.Get();
 
             var applicableReRoutes = configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod.Method, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase));
 

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Security.Claims;
 using CacheManager.Core;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
@@ -46,7 +44,6 @@ namespace Ocelot.DependencyInjection
         {
             var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
             var ocelotCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
-
             services.AddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
             services.AddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotCacheManager);
 
@@ -55,11 +52,9 @@ namespace Ocelot.DependencyInjection
         public static IServiceCollection AddOcelotFileConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
             services.Configure<FileConfiguration>(configurationRoot);
-
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
-
             return services;
         }
 
@@ -116,7 +111,7 @@ namespace Ocelot.DependencyInjection
                 .AddAuthorization()
                 .AddJsonFormatters();
             services.AddLogging();
-            services.AddSingleton<IGetFileConfiguration, GetFileConfiguration>();
+            services.AddSingleton<IFileConfigurationProvider, Services.FileConfigurationProvider>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
             services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();

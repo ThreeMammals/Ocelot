@@ -1,8 +1,0 @@
-version: 1.0.{build}
-configuration:
-- Release
-platform: Any CPU
-build_script:
-- build.ps1
-cache:
-- '%USERPROFILE%\.nuget\packages'

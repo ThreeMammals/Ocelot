@@ -3,8 +3,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.Services
 {
-    public interface IGetFileConfiguration
+    public interface IFileConfigurationProvider
     {
-        Response<FileConfiguration> Invoke();
+        Response<FileConfiguration> Get();
     }
 }

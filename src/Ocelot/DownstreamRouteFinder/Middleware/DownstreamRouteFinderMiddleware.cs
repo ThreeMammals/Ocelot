@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -34,7 +33,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
-            var downstreamRoute = await _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
 
             if (downstreamRoute.IsError)
             {

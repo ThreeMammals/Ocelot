@@ -1,5 +1,8 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Setter;
 using Ocelot.Services;
 
 namespace Ocelot.Controllers
@@ -8,17 +11,39 @@ namespace Ocelot.Controllers
     [Route("configuration")]
     public class FileConfigurationController : Controller
     {
-        private readonly IGetFileConfiguration _getFileConfig;
+        private readonly IFileConfigurationProvider _configGetter;
+        private readonly IFileConfigurationSetter _configSetter;
 
-        public FileConfigurationController(IGetFileConfiguration getFileConfig)
+        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter)
         {
-            _getFileConfig = getFileConfig;
+            _configGetter = getFileConfig;
+            _configSetter = configSetter;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            return new OkObjectResult(_getFileConfig.Invoke().Data);
+            var response = _configGetter.Get();
+
+            if(response.IsError)
+            {
+                return new BadRequestObjectResult(response.Errors);
+            }
+
+            return new OkObjectResult(response.Data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post(FileConfiguration fileConfiguration)
+        {
+            var response = await _configSetter.Set(fileConfiguration);
+              
+            if(response.IsError)
+            {
+                return new BadRequestObjectResult(response.Errors);
+            }
+
+            return new OkObjectResult(fileConfiguration);
         }
     }
 }

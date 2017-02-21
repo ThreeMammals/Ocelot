@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
