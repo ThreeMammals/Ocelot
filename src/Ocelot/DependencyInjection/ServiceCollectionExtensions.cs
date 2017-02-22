@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using CacheManager.Core;
 using IdentityServer4.Models;
@@ -60,27 +61,25 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services)
         {
+            var authProvider = new HardCodedIdentityServerConfigurationProvider();
+            var identityServerConfig = authProvider.Get();
+
             services.AddIdentityServer()
                 .AddTemporarySigningCredential()
                 .AddInMemoryApiResources(new List<ApiResource>
                 {
                     new ApiResource
                     {
-                        Name = "admin",
-                        Description = "Ocelot Administration",
-                        Enabled = true,
-                        DisplayName = "admin",
-                        Scopes = new List<Scope>()
-                        {
-                            new Scope("admin"),
-                            new Scope("openid"),
-                            new Scope("offline_access")
-                        },
+                        Name = identityServerConfig.ApiName,
+                        Description = identityServerConfig.Description,
+                        Enabled = identityServerConfig.Enabled,
+                        DisplayName = identityServerConfig.ApiName,
+                        Scopes = identityServerConfig.AllowedScopes.Select(x => new Scope(x)).ToList(),
                         ApiSecrets = new List<Secret>
                         {
                             new Secret
                             {
-                                Value = "secret".Sha256()
+                                Value = identityServerConfig.ApiSecret.Sha256()
                             }
                         }
                     }
@@ -89,24 +88,17 @@ namespace Ocelot.DependencyInjection
                 {
                     new Client
                     {
-                        ClientId = "admin",
+                        ClientId = identityServerConfig.ApiName,
                         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                        ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
-                        AllowedScopes = new List<string> {"admin", "openid", "offline_access"},
-                        AccessTokenType = AccessTokenType.Jwt,
-                        Enabled = true,
-                        RequireClientSecret = false
+                        ClientSecrets = new List<Secret> {new Secret(identityServerConfig.ApiSecret.Sha256())},
+                        AllowedScopes = identityServerConfig.AllowedScopes,
+                        AccessTokenType = identityServerConfig.AccessTokenType,
+                        Enabled = identityServerConfig.Enabled,
+                        RequireClientSecret = identityServerConfig.RequireClientSecret
                     }
                 })
-                .AddTestUsers(new List<TestUser>
-                {
-                    new TestUser
-                    {
-                        Username = "admin",
-                        Password = "admin",
-                        SubjectId = "admin",
-                    }
-                });
+                .AddTestUsers(identityServerConfig.Users);
+                
             services.AddMvcCore()
                 .AddAuthorization()
                 .AddJsonFormatters();

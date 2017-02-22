@@ -157,6 +157,9 @@ namespace Ocelot.Middleware
         {
             var configuration = await CreateConfiguration(builder);
 
+            var authProvider = new HardCodedIdentityServerConfigurationProvider();
+            var identityServerConfig = authProvider.Get();
+
             if(!string.IsNullOrEmpty(configuration.AdministrationPath))
             {
                 builder.Map(configuration.AdministrationPath, app =>
@@ -166,11 +169,11 @@ namespace Ocelot.Middleware
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
                         Authority = identityServerUrl,
-                        ApiName = "admin",
-                        RequireHttpsMetadata = false,
-                        AllowedScopes = new List<string>(),
+                        ApiName = identityServerConfig.ApiName,
+                        RequireHttpsMetadata = identityServerConfig.RequireHttps,
+                        AllowedScopes = identityServerConfig.AllowedScopes,
                         SupportedTokens = SupportedTokens.Both,
-                        ApiSecret = "secret"
+                        ApiSecret = identityServerConfig.ApiSecret
                     });
 
                     app.UseIdentityServer();
