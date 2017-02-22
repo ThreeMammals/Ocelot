@@ -19,6 +19,7 @@ namespace Ocelot.Middleware
     using System;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
     using Ocelot.Configuration;
@@ -36,7 +37,21 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), null);
+
+            return builder;
+        }
+
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,IdentityServerConfiguration identityServerConfiguration)
+        {
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), identityServerConfiguration);
+
+            return builder;
+        }
+
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,OcelotMiddlewareConfiguration middlewareConfiguration)
+        {
+            await builder.UseOcelot(middlewareConfiguration, null);
 
             return builder;
         }
@@ -47,9 +62,9 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration, IdentityServerConfiguration identityServerConfiguration)
         {
-            await CreateAdministrationArea(builder);
+            await CreateAdministrationArea(builder, identityServerConfiguration);
 
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
@@ -153,27 +168,28 @@ namespace Ocelot.Middleware
             return ocelotConfiguration.Data;
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IdentityServerConfiguration identityServerConfiguration)
         {
             var configuration = await CreateConfiguration(builder);
 
-            var authProvider = new HardCodedIdentityServerConfigurationProvider();
-            var identityServerConfig = authProvider.Get();
-
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
+                var webHostBuilder = (IWebHostBuilder)builder.ApplicationServices.GetService(typeof(IWebHostBuilder));
+                
+                var baseSchemeUrlAndPort = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey);
+                
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    var identityServerUrl = $"http://localhost:5000/{configuration.AdministrationPath.Remove(0,1)}";
+                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
 
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
                         Authority = identityServerUrl,
-                        ApiName = identityServerConfig.ApiName,
-                        RequireHttpsMetadata = identityServerConfig.RequireHttps,
-                        AllowedScopes = identityServerConfig.AllowedScopes,
+                        ApiName = identityServerConfiguration.ApiName,
+                        RequireHttpsMetadata = identityServerConfiguration.RequireHttps,
+                        AllowedScopes = identityServerConfiguration.AllowedScopes,
                         SupportedTokens = SupportedTokens.Both,
-                        ApiSecret = identityServerConfig.ApiSecret
+                        ApiSecret = identityServerConfiguration.ApiSecret
                     });
 
                     app.UseIdentityServer();
@@ -182,7 +198,6 @@ namespace Ocelot.Middleware
                 });
             }
         }
-
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         {
             if (middleware != null)

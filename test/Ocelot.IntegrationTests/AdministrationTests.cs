@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.ManualTest;
@@ -19,6 +20,7 @@ namespace Ocelot.IntegrationTests
         private readonly HttpClient _httpClient;
         private HttpResponseMessage _response;
         private IWebHost _builder;
+        private IWebHostBuilder _webHostBuilder;
         private readonly string _ocelotBaseUrl;
         private BearerToken _token;
 
@@ -246,12 +248,16 @@ namespace Ocelot.IntegrationTests
 
         private void GivenOcelotIsRunning()
         {
-            _builder = new WebHostBuilder()
+            _webHostBuilder = new WebHostBuilder()
                 .UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .Build();
+                .ConfigureServices(x => {
+                    x.AddSingleton(_webHostBuilder);
+                })
+                .UseStartup<Startup>();
+
+              _builder = _webHostBuilder.Build();
 
             _builder.Start();
         }

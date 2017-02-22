@@ -5,6 +5,7 @@ using System.Net.Http;
 using CacheManager.Core;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,44 +62,49 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services)
         {
-            var authProvider = new HardCodedIdentityServerConfigurationProvider();
-            var identityServerConfig = authProvider.Get();
+            return AddOcelot(services, null);
+        }
 
-            services.AddIdentityServer()
-                .AddTemporarySigningCredential()
-                .AddInMemoryApiResources(new List<ApiResource>
-                {
-                    new ApiResource
+        public static IServiceCollection AddOcelot(this IServiceCollection services, IdentityServerConfiguration identityServerConfiguration)
+        {
+            if(identityServerConfiguration != null)
+            {
+                services.AddIdentityServer()
+                    .AddTemporarySigningCredential()
+                    .AddInMemoryApiResources(new List<ApiResource>
                     {
-                        Name = identityServerConfig.ApiName,
-                        Description = identityServerConfig.Description,
-                        Enabled = identityServerConfig.Enabled,
-                        DisplayName = identityServerConfig.ApiName,
-                        Scopes = identityServerConfig.AllowedScopes.Select(x => new Scope(x)).ToList(),
-                        ApiSecrets = new List<Secret>
+                        new ApiResource
                         {
-                            new Secret
+                            Name = identityServerConfiguration.ApiName,
+                            Description = identityServerConfiguration.Description,
+                            Enabled = identityServerConfiguration.Enabled,
+                            DisplayName = identityServerConfiguration.ApiName,
+                            Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
+                            ApiSecrets = new List<Secret>
                             {
-                                Value = identityServerConfig.ApiSecret.Sha256()
+                                new Secret
+                                {
+                                    Value = identityServerConfiguration.ApiSecret.Sha256()
+                                }
                             }
                         }
-                    }
-                })
-                .AddInMemoryClients(new List<Client>
-                {
-                    new Client
+                    })
+                    .AddInMemoryClients(new List<Client>
                     {
-                        ClientId = identityServerConfig.ApiName,
-                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                        ClientSecrets = new List<Secret> {new Secret(identityServerConfig.ApiSecret.Sha256())},
-                        AllowedScopes = identityServerConfig.AllowedScopes,
-                        AccessTokenType = identityServerConfig.AccessTokenType,
-                        Enabled = identityServerConfig.Enabled,
-                        RequireClientSecret = identityServerConfig.RequireClientSecret
-                    }
-                })
-                .AddTestUsers(identityServerConfig.Users);
-                
+                        new Client
+                        {
+                            ClientId = identityServerConfiguration.ApiName,
+                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                            ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+                            AllowedScopes = identityServerConfiguration.AllowedScopes,
+                            AccessTokenType = identityServerConfiguration.AccessTokenType,
+                            Enabled = identityServerConfiguration.Enabled,
+                            RequireClientSecret = identityServerConfiguration.RequireClientSecret
+                        }
+                    })
+                    .AddTestUsers(identityServerConfiguration.Users);
+            }
+        
             services.AddMvcCore()
                 .AddAuthorization()
                 .AddJsonFormatters();

@@ -11,6 +11,7 @@ using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -32,6 +33,7 @@ namespace Ocelot.AcceptanceTests
         public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
         private readonly Random _random;
+        private IWebHostBuilder _webHostBuilder;
 
         public Steps()
         {
@@ -69,7 +71,14 @@ namespace Ocelot.AcceptanceTests
         /// </summary>
         public void GivenOcelotIsRunning()
         {
-            _ocelotServer = new TestServer(new WebHostBuilder()
+             _webHostBuilder = new WebHostBuilder();
+            
+            _webHostBuilder.ConfigureServices(s => 
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
                 .UseStartup<Startup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
@@ -109,7 +118,14 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = builder.Build();
 
-            _ocelotServer = new TestServer(new WebHostBuilder()
+            _webHostBuilder = new WebHostBuilder();
+            
+            _webHostBuilder.ConfigureServices(s => 
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
                 .UseConfiguration(configuration)
                 .ConfigureServices(s =>
                 {
@@ -121,7 +137,7 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-
+                    
                     s.AddOcelotOutputCaching(settings);
                     s.AddOcelotFileConfiguration(configuration);
                     s.AddOcelot();

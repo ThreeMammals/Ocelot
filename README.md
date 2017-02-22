@@ -113,6 +113,24 @@ Currently this is the only way to get configuration into Ocelot.
         }
     }
 
+Then in your Program.cs you will want to have the following..
+
+            IWebHostBuilder builder = new WebHostBuilder();
+            
+            builder.ConfigureServices(s => {
+                s.AddSingleton(builder);
+            });
+
+            builder.UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>();
+
+            var host = builder.Build();
+
+            host.Run();
+
+Sadly we need to inject the IWebHostBuilder interface to get the applications scheme, url and port later. I cannot 
+find a better way of doing this at the moment without setting this in a static or some kind of config.
 
 This is pretty much all you need to get going.......more to come! 
 
