@@ -1,4 +1,5 @@
-﻿namespace Ocelot.Configuration.File
+﻿
+namespace Ocelot.Configuration.File
 {
     public class FileGlobalConfiguration
     {
@@ -6,6 +7,7 @@
         {
             ServiceDiscoveryProvider = new FileServiceDiscoveryProvider();
         }
+
         public string RequestIdKey { get; set; }
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider {get;set;}
         public string AdministrationPath {get;set;}

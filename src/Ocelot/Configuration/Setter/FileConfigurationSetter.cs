@@ -10,15 +10,25 @@ namespace Ocelot.Configuration.Setter
     {
         private readonly IOcelotConfigurationRepository _configRepo;
         private readonly IOcelotConfigurationCreator _configCreator;
+        private readonly IFileConfigurationRepository _repo;
 
-        public  FileConfigurationSetter(IOcelotConfigurationRepository configRepo, IOcelotConfigurationCreator configCreator)
+        public  FileConfigurationSetter(IOcelotConfigurationRepository configRepo, 
+            IOcelotConfigurationCreator configCreator, IFileConfigurationRepository repo)
         {
             _configRepo = configRepo;
             _configCreator = configCreator;
+            _repo = repo;
         }
 
         public async Task<Response> Set(FileConfiguration fileConfig)
         {
+            var response = _repo.Set(fileConfig);
+
+            if(response.IsError)
+            {
+                return new ErrorResponse(response.Errors);
+            }
+
             var config = await _configCreator.Create(fileConfig);
 
             if(!config.IsError)

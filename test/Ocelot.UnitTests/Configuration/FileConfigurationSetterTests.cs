@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
@@ -21,12 +22,14 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IOcelotConfigurationCreator> _configCreator;
         private Response<IOcelotConfiguration> _configuration;
         private object _result; 
+        private Mock<IFileConfigurationRepository> _repo;
 
         public FileConfigurationSetterTests()
         {
+            _repo = new Mock<IFileConfigurationRepository>();
             _configRepo = new Mock<IOcelotConfigurationRepository>();
             _configCreator = new Mock<IOcelotConfigurationCreator>();
-            _configSetter = new FileConfigurationSetter(_configRepo.Object, _configCreator.Object);
+            _configSetter = new FileConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
         }
 
         [Fact]
@@ -36,22 +39,44 @@ namespace Ocelot.UnitTests.Configuration
             var config = new OcelotConfiguration(new List<ReRoute>(), string.Empty);
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
+                .And(x => GivenTheRepoReturns(new OkResponse()))
                 .And(x => GivenTheCreatorReturns(new OkResponse<IOcelotConfiguration>(config)))
                 .When(x => WhenISetTheConfiguration())
                 .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
                 .BDDfy();
         }
 
+
         [Fact]
-        public void should_return_error_if_unable_to_set_configuration()
+        public void should_return_error_if_unable_to_set_file_configuration()
         {
             var fileConfig = new FileConfiguration();
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
+                .And(x => GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>())))
+                .When(x => WhenISetTheConfiguration())
+                .And(x => ThenAnErrorResponseIsReturned())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_unable_to_set_ocelot_configuration()
+        {
+            var fileConfig = new FileConfiguration();
+
+            this.Given(x => GivenTheFollowingConfiguration(fileConfig))
+                .And(x => GivenTheRepoReturns(new OkResponse()))
                 .And(x => GivenTheCreatorReturns(new ErrorResponse<IOcelotConfiguration>(It.IsAny<Error>())))
                 .When(x => WhenISetTheConfiguration())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
+        }
+
+        private void GivenTheRepoReturns(Response response)
+        {
+            _repo
+                .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+                .Returns(response);
         }
 
         private void ThenAnErrorResponseIsReturned()

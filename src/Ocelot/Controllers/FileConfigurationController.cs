@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Setter;
-using Ocelot.Services;
 
 namespace Ocelot.Controllers
 {
@@ -34,7 +34,7 @@ namespace Ocelot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(FileConfiguration fileConfiguration)
+        public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
             var response = await _configSetter.Set(fileConfiguration);
               

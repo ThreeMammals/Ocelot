@@ -1,7 +1,7 @@
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
 
-namespace Ocelot.Services
+namespace Ocelot.Configuration.Provider
 {
     public interface IFileConfigurationProvider
     {

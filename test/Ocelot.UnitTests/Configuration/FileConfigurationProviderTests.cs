@@ -1,77 +1,62 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.Provider;
-using Ocelot.Configuration.Repository;
-using Ocelot.Errors;
+using Ocelot.Configuration.File;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using Newtonsoft.Json;
+using System.IO;
+using Ocelot.Configuration.Provider;
+using Ocelot.Configuration.Repository;
 
 namespace Ocelot.UnitTests.Configuration
 {
     public class FileConfigurationProviderTests
     {
-        private readonly IOcelotConfigurationProvider _ocelotConfigurationProvider;
-        private readonly Mock<IOcelotConfigurationRepository> _configurationRepository;
-        private Response<IOcelotConfiguration> _result;
+        private readonly IFileConfigurationProvider _provider;
+        private Mock<IFileConfigurationRepository> _repo;
+        private FileConfiguration _result;
+        private FileConfiguration _fileConfiguration;
 
         public FileConfigurationProviderTests()
         {
-            _configurationRepository = new Mock<IOcelotConfigurationRepository>();
-            _ocelotConfigurationProvider = new OcelotConfigurationProvider(_configurationRepository.Object);
+            _repo = new Mock<IFileConfigurationRepository>();
+            _provider = new FileConfigurationProvider(_repo.Object);
         }
 
         [Fact]
-        public void should_get_config()
+        public void should_return_file_configuration()
         {
-            this.Given(x => x.GivenTheRepoReturns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty))))
-                .When(x => x.WhenIGetTheConfig())
-                .Then(x => x.TheFollowingIsReturned(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty))))
+            var config = new FileConfiguration();
+
+            this.Given(x => x.GivenTheConfigurationIs(config))
+                .When(x => x.WhenIGetTheReRoutes())
+                .Then(x => x.ThenTheRepoIsCalledCorrectly())
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_error()
-        {
-            this.Given(x => x.GivenTheRepoReturns(new ErrorResponse<IOcelotConfiguration>(new List<Error>
-                    {
-                        new AnyError()
-                    })))
-              .When(x => x.WhenIGetTheConfig())
-              .Then(x => x.TheFollowingIsReturned(
-                    new ErrorResponse<IOcelotConfiguration>(new List<Error>
-                    {
-                        new AnyError()
-                    })))
-              .BDDfy();
-        }
+      
 
-        private void GivenTheRepoReturns(Response<IOcelotConfiguration> config)
+        private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            _configurationRepository
+            _fileConfiguration = fileConfiguration;
+            _repo
                 .Setup(x => x.Get())
-                .Returns(config);
+                .Returns(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
-        private void WhenIGetTheConfig()
+        private void WhenIGetTheReRoutes()
         {
-            _result = _ocelotConfigurationProvider.Get();
+            _result = _provider.Get().Data;
         }
 
-        private void TheFollowingIsReturned(Response<IOcelotConfiguration> expected)
+        private void ThenTheRepoIsCalledCorrectly()
         {
-            _result.IsError.ShouldBe(expected.IsError);
-        }
-
-        class AnyError : Error
-        {
-            public AnyError() 
-                : base("blamo", OcelotErrorCode.UnknownError)
-            {
-            }
+            _repo
+                .Verify(x => x.Get(), Times.Once);
         }
     }
 }

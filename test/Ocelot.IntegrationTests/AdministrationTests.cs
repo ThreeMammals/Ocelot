@@ -74,7 +74,14 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration"
+                    AdministrationPath = "/administration",
+                    RequestIdKey = "RequestId",
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "127.0.0.1",
+                        Provider = "test"
+                    }
+
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
@@ -107,6 +114,88 @@ namespace Ocelot.IntegrationTests
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseShouldBe(configuration))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_file_configuration_edit_and_post_updated_version()
+        {
+            var initialConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = "get",
+                        UpstreamPathTemplate = "/"
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = "get",
+                        UpstreamPathTemplate = "/test"
+                    }
+                }
+            };
+
+             var updatedConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "127.0.0.1",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "http",
+                        DownstreamPathTemplate = "/geoffrey",
+                        UpstreamHttpMethod = "get",
+                        UpstreamPathTemplate = "/"
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "123.123.123",
+                        DownstreamPort = 443,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/blooper/{productId}",
+                        UpstreamHttpMethod = "post",
+                        UpstreamPathTemplate = "/test"
+                    }
+                }
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .BDDfy();
+        }
+
+        private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
+        {
+            var json = JsonConvert.SerializeObject(updatedConfiguration);
+            var content = new StringContent(json);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            _response = _httpClient.PostAsync(url, content).Result;
         }
 
         private void ThenTheResponseShouldBe(FileConfiguration expected)
@@ -180,6 +269,8 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
+            var text = File.ReadAllText(configurationPath);
+
             configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
 
             if (File.Exists(configurationPath))
@@ -188,6 +279,8 @@ namespace Ocelot.IntegrationTests
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
+
+            text = File.ReadAllText(configurationPath);
         }
 
         private void WhenIGetUrlOnTheApiGateway(string url)
