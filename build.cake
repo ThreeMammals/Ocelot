@@ -80,7 +80,7 @@ Task("Version")
 		if (AppVeyor.IsRunningOnAppVeyor)
 		{
 			Information("Persisting version number...");
-			PersistVersion(nugetVersion);
+			PersistVersion(committedVersion, nugetVersion);
 			buildVersion = nugetVersion;
 		}
 		else
@@ -158,7 +158,7 @@ Task("CreatePackages")
 	{
 		EnsureDirectoryExists(packagesDir);
         
-		GenerateReleaseNotes();
+		GenerateReleaseNotes(releaseNotesFile);
 
 		var settings = new DotNetCorePackSettings
 			{
@@ -189,7 +189,7 @@ Task("ReleasePackagesToUnstableFeed")
 	.IsDependentOn("CreatePackages")
 	.Does(() =>
 	{
-		PublishPackages(nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+		PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
 	});
 
 Task("EnsureStableReleaseRequirements")
@@ -241,7 +241,7 @@ Task("ReleasePackagesToStableFeed")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		PublishPackages(nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
     });
 
 Task("Release")
@@ -262,9 +262,9 @@ private string GetNuGetVersionForCommit()
 }
 
 /// Updates project version in all of our projects
-private void PersistVersion(string version)
+private void PersistVersion(string committedVersion, string newVersion)
 {
-	Information(string.Format("We'll search all project.json files for {0} and replace with {1}...", committedVersion, version));
+	Information(string.Format("We'll search all project.json files for {0} and replace with {1}...", committedVersion, newVersion));
 
 	var projectJsonFiles = GetFiles("./**/project.json");
 
@@ -275,24 +275,30 @@ private void PersistVersion(string version)
 		Information(string.Format("Updating {0}...", file));
 
 		var updatedProjectJson = System.IO.File.ReadAllText(file)
-			.Replace(committedVersion, version);
+			.Replace(committedVersion, newVersion);
 
 		System.IO.File.WriteAllText(file, updatedProjectJson);
 	}
 }
 
 /// generates release notes based on issues closed in GitHub since the last release
-private void GenerateReleaseNotes()
+private void GenerateReleaseNotes(ConvertableFilePath file)
 {
-	Information("Generating release notes at " + releaseNotesFile);
+	if (!IsRunningOnWindows())
+	{
+		Warning("We can't generate release notes as we're not running on Windows.");
+		return;
+	}
+
+	Information("Generating release notes at " + file);
 
     var releaseNotesExitCode = StartProcess(
         @"tools/GitReleaseNotes/tools/gitreleasenotes.exe", 
-        new ProcessSettings { Arguments = ". /o " + releaseNotesFile });
+        new ProcessSettings { Arguments = ". /o " + file });
 
-    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
+    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(file)))
 	{
-        System.IO.File.WriteAllText(releaseNotesFile, "No issues closed since last release");
+        System.IO.File.WriteAllText(file, "No issues closed since last release");
 	}
 
     if (releaseNotesExitCode != 0) 
@@ -302,7 +308,7 @@ private void GenerateReleaseNotes()
 }
 
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
-private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
+private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
@@ -311,8 +317,7 @@ private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbo
 
 		var codePackage = packagesDir + File(artifacts["nuget"]);
 
-		Information("Pushing package");
-
+		Information("Pushing package " + codePackage);
         NuGetPush(
             codePackage,
             new NuGetPushSettings {
