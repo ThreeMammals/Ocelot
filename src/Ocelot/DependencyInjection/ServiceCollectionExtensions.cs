@@ -14,6 +14,7 @@ using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
+using Ocelot.Configuration.Authentication;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
@@ -41,7 +42,6 @@ namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-
         public static IServiceCollection AddOcelotOutputCaching(this IServiceCollection services, Action<ConfigurationBuilderCachePart> settings)
         {
             var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
@@ -51,24 +51,23 @@ namespace Ocelot.DependencyInjection
 
             return services;
         }
-        public static IServiceCollection AddOcelotFileConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
+
+        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
+        {
+            return AddOcelot(services, configurationRoot, null);
+        }
+
+        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot, IIdentityServerConfiguration identityServerConfiguration)
         {
             services.Configure<FileConfiguration>(configurationRoot);
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
-            return services;
-        }
-
-        public static IServiceCollection AddOcelot(this IServiceCollection services)
-        {
-            return AddOcelot(services, null);
-        }
-
-        public static IServiceCollection AddOcelot(this IServiceCollection services, IdentityServerConfiguration identityServerConfiguration)
-        {
+            
             if(identityServerConfiguration != null)
             {
+                services.AddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+                services.AddSingleton<IHashMatcher, HashMatcher>();
                 services.AddIdentityServer()
                     .AddTemporarySigningCredential()
                     .AddInMemoryApiResources(new List<ApiResource>
@@ -101,8 +100,7 @@ namespace Ocelot.DependencyInjection
                             Enabled = identityServerConfiguration.Enabled,
                             RequireClientSecret = identityServerConfiguration.RequireClientSecret
                         }
-                    })
-                    .AddTestUsers(identityServerConfiguration.Users);
+                    }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
             }
         
             services.AddMvcCore()

@@ -24,7 +24,8 @@
     "Shouldly": "2.8.2",
     "TestStack.BDDfy": "4.3.2",
     "Microsoft.AspNetCore.Authentication.OAuth": "1.1.0",
-    "Microsoft.DotNet.InternalAbstractions": "1.0.0"
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.1.0"
   },
   "runtimes": {
     "win10-x64": {},

@@ -1,49 +1,12 @@
-using System;
 using System.Collections.Generic;
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
-using IdentityServer4.Test;
 
 namespace Ocelot.Configuration.Provider
 {
-    public class HardCodedIdentityServerConfigurationProvider : IIdentityServerConfigurationProvider
-    {
-        public IdentityServerConfiguration Get()
-        {
-            var url = "";
-            return new IdentityServerConfiguration(
-                url,
-                "admin",
-                false,
-                SupportedTokens.Both,
-                "secret",
-                new List<string> {"admin", "openid", "offline_access"},
-                "Ocelot Administration",
-                true,
-                GrantTypes.ResourceOwnerPassword,
-                AccessTokenType.Jwt,
-                false,
-                new List<TestUser> {
-                        new TestUser
-                        { 
-                            Username = "admin",
-                            Password = "admin",
-                            SubjectId = "admin",
-                        }
-                    }
-                );
-        }
-    }
-
-    public interface IIdentityServerConfigurationProvider
-    {
-        IdentityServerConfiguration Get();
-    }
-
-    public class IdentityServerConfiguration
+    public class IdentityServerConfiguration : IIdentityServerConfiguration
     {
         public IdentityServerConfiguration(
-            string identityServerUrl, 
             string apiName, 
             bool requireHttps, 
             SupportedTokens supportedTokens, 
@@ -54,9 +17,8 @@ namespace Ocelot.Configuration.Provider
             IEnumerable<string>  grantType,
             AccessTokenType accessTokenType,
             bool requireClientSecret,
-            List<TestUser> users)
+            List<User> users)
         {
-            IdentityServerUrl = identityServerUrl;
             ApiName = apiName;
             RequireHttps = requireHttps;
             SupportedTokens = supportedTokens;
@@ -70,7 +32,6 @@ namespace Ocelot.Configuration.Provider
             Users = users;
         }
 
-        public string IdentityServerUrl { get; private set; }
         public string ApiName { get; private set; }
         public bool RequireHttps { get; private set; }
         public List<string> AllowedScopes { get; private set; }
@@ -80,7 +41,7 @@ namespace Ocelot.Configuration.Provider
         public bool Enabled {get;private set;}
         public IEnumerable<string>  AllowedGrantTypes {get;private set;}
         public AccessTokenType AccessTokenType {get;private set;}
-        public bool RequireClientSecret = false;
-        public List<TestUser> Users {get;private set;}
+        public bool RequireClientSecret {get;private set;}
+        public List<User> Users {get;private set;}
     }
 }

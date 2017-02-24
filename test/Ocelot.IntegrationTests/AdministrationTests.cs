@@ -235,7 +235,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "admin"),
                 new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "admin"),
+                new KeyValuePair<string, string>("password", "secret"),
                 new KeyValuePair<string, string>("grant_type", "password")
             };
             var content = new FormUrlEncodedContent(formData);

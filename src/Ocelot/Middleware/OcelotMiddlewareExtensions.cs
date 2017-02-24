@@ -37,21 +37,7 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), null);
-
-            return builder;
-        }
-
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,IdentityServerConfiguration identityServerConfiguration)
-        {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), identityServerConfiguration);
-
-            return builder;
-        }
-
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,OcelotMiddlewareConfiguration middlewareConfiguration)
-        {
-            await builder.UseOcelot(middlewareConfiguration, null);
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
 
             return builder;
         }
@@ -62,9 +48,9 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration, IdentityServerConfiguration identityServerConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
         {
-            await CreateAdministrationArea(builder, identityServerConfiguration);
+            await CreateAdministrationArea(builder);
 
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
@@ -168,9 +154,11 @@ namespace Ocelot.Middleware
             return ocelotConfiguration.Data;
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IdentityServerConfiguration identityServerConfiguration)
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
         {
             var configuration = await CreateConfiguration(builder);
+
+            var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {

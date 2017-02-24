@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +18,7 @@ namespace Ocelot.ManualTest
 {
     public class Startup
     {
-        private IdentityServerConfiguration _identityServerConfig;
+        private IIdentityServerConfiguration _identityServerConfig;
 
         public Startup(IHostingEnvironment env)
         {
@@ -27,9 +30,6 @@ namespace Ocelot.ManualTest
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
-
-            var identityServerConfigProvider = new HardCodedIdentityServerConfigurationProvider();
-            _identityServerConfig = identityServerConfigProvider.Get();
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -46,15 +46,36 @@ namespace Ocelot.ManualTest
             };
 
             services.AddOcelotOutputCaching(settings);
-            services.AddOcelotFileConfiguration(Configuration);
-            services.AddOcelot(_identityServerConfig);
+
+            var username = Environment.GetEnvironmentVariable("OCELOT_USERNAME");
+            var hash = Environment.GetEnvironmentVariable("OCELOT_HASH");
+            var salt = Environment.GetEnvironmentVariable("OCELOT_SALT");
+
+            _identityServerConfig = new IdentityServerConfiguration(
+                "admin",
+                false,
+                SupportedTokens.Both,
+                "secret",
+                new List<string> {"admin", "openid", "offline_access"},
+                "Ocelot Administration",
+                true,
+                GrantTypes.ResourceOwnerPassword,
+                AccessTokenType.Jwt,
+                false,
+                new List<User> 
+                {
+                    new User("admin", username, hash, salt)
+                }
+            );
+
+            services.AddOcelot(Configuration, _identityServerConfig);
         }
 
         public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 
-            await app.UseOcelot(_identityServerConfig);
+            await app.UseOcelot();
         }
     }
 }

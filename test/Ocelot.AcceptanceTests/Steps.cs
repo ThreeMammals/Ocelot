@@ -139,8 +139,7 @@ namespace Ocelot.AcceptanceTests
                     };
                     
                     s.AddOcelotOutputCaching(settings);
-                    s.AddOcelotFileConfiguration(configuration);
-                    s.AddOcelot();
+                    s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
                 {

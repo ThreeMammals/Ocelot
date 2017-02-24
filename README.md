@@ -4,6 +4,8 @@
 
 [![Join the chat at https://gitter.im/Ocelotey/Lobby](https://badges.gitter.im/Ocelotey/Lobby.svg)](https://gitter.im/Ocelotey/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
+
 Attempt at a .NET Api Gateway
 
 This project is aimed at people using .NET running 
@@ -73,7 +75,7 @@ More information on how to use these options is below..
 An example startup using a json file for configuration can be seen below. 
 Currently this is the only way to get configuration into Ocelot.
 
-	 public class Startup
+	public class Startup
     {
         public Startup(IHostingEnvironment env)
         {
@@ -101,15 +103,14 @@ Currently this is the only way to get configuration into Ocelot.
             };
 
             services.AddOcelotOutputCaching(settings);
-            services.AddOcelotFileConfiguration(Configuration);
-            services.AddOcelot();
+            services.AddOcelot(Configuration);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 
-            app.UseOcelot();
+            await app.UseOcelot();
         }
     }
 
@@ -385,6 +386,43 @@ In orde to use caching on a route in your ReRoute configuration add this setting
 		"FileCacheOptions": { "TtlSeconds": 15 }
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
+
+## Administration
+
+Ocelot supports changing configuration during runtime via an authenticated HTTP API. The API is authenticated 
+using bearer tokens that you request from iteself. This support is provided by the amazing IdentityServer 
+project that I have been using for a few years now. Check them out.
+
+In order to enable the administration section you need to do a few things. First of all add this to your
+initial configuration.json. The value can be anything you want and it is obviously reccomended don't use
+a url you would like to route through with Ocelot as this will not work. The administration uses the
+MapWhen functionality of asp.net core and all requests to root/administration will be sent there not 
+to the Ocelot middleware.
+
+        "GlobalConfiguration": {
+            "AdministrationPath": "/administration"
+        }
+
+This will get the admin area set up but not the authentication. You need to set 3 environmental variables.
+
+    OCELOT_USERNAME
+    OCELOT_HASH
+    OCELOT_SALT
+
+These need to be the admin username you want to use with Ocelot and the hash and salt of the password you want to 
+use given hashing algorythm. When requesting bearer tokens for use with the administration api you will need to
+supply username and password.
+
+In order to create a hash and salt of your password please check out HashCreationTests.should_create_hash_and_salt() this technique is based on MS doc I found online TODO find and link...
+
+OK next thing is to get this config into Ocelot...
+
+
+At the moment Ocelot supports really limited options in terms of users and authentication for the admin API. At 
+least your stuff needs to be hashed!
+
+
+
 
 ## Ocelot Middleware injection and overrides
 
