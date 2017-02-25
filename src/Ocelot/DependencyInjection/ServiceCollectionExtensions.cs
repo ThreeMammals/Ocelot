@@ -5,8 +5,6 @@ using System.Net.Http;
 using CacheManager.Core;
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
-using IdentityServer4.Test;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,12 +30,14 @@ using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
+using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
 {
@@ -59,6 +59,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
+            services.AddSingleton<IBaseUrlFinder, BaseUrlFinder>();
 
             var identityServerConfiguration = GetIdentityServerConfiguration();
             
@@ -107,7 +108,7 @@ namespace Ocelot.DependencyInjection
             services.AddLogging();
             services.AddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.AddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
-            services.AddSingleton<Configuration.Provider.IFileConfigurationProvider, Configuration.Provider.FileConfigurationProvider>();
+            services.AddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
             services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();

@@ -162,9 +162,9 @@ namespace Ocelot.Middleware
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
-                var webHostBuilder = (IWebHostBuilder)builder.ApplicationServices.GetService(typeof(IWebHostBuilder));
-                
-                var baseSchemeUrlAndPort = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey);
+                var urlFinder = (IBaseUrlFinder)builder.ApplicationServices.GetService(typeof(IBaseUrlFinder));
+
+                var baseSchemeUrlAndPort = urlFinder.Find();
                 
                 builder.Map(configuration.AdministrationPath, app =>
                 {
@@ -186,6 +186,7 @@ namespace Ocelot.Middleware
                 });
             }
         }
+        
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         {
             if (middleware != null)
