@@ -182,6 +182,45 @@ This means that when Ocelot tries to match the incoming upstream url with an ups
 evaluation will be case sensitive. This setting defaults to false so only set it if you want 
 the ReRoute to be case sensitive is my advice!
 
+## Administration
+
+Ocelot supports changing configuration during runtime via an authenticated HTTP API. The API is authenticated 
+using bearer tokens that you request from iteself. This is provided by the amazing [IdentityServer](https://github.com/IdentityServer/IdentityServer4)
+project that I have been using for a few years now. Check them out.
+
+In order to enable the administration section you need to do a few things. First of all add this to your
+initial configuration.json. The value can be anything you want and it is obviously reccomended don't use
+a url you would like to route through with Ocelot as this will not work. The administration uses the
+MapWhen functionality of asp.net core and all requests to root/administration will be sent there not 
+to the Ocelot middleware.
+
+        "GlobalConfiguration": {
+            "AdministrationPath": "/administration"
+        }
+
+This will get the admin area set up but not the authentication. Please note that this is a very basic approach to 
+this problem and if needed we can obviously improve on this!
+
+You need to set 3 environmental variables. 
+
+    OCELOT_USERNAME
+    OCELOT_HASH
+    OCELOT_SALT
+
+These need to be the admin username you want to use with Ocelot and the hash and salt of the password you want to 
+use given hashing algorythm. When requesting bearer tokens for use with the administration api you will need to
+supply username and password.
+
+In order to create a hash and salt of your password please check out HashCreationTests.should_create_hash_and_salt() 
+this technique is based on [this](https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing)
+using SHA256 rather than SHA1.
+
+Now if you went with the configuration options above and want to access the API you can use the postman scripts
+called ocelot.postman_collection.json in the solution to change the Ocelot configuration. Obviously these 
+will need to be changed if you are running Ocelot on a different url to http://localhost:5000.
+
+The scripts show you how to request a bearer token from ocelot and then use it to GET the existing configuration and POST 
+a configuration.
 
 ## Service Discovery
 
@@ -387,43 +426,6 @@ In orde to use caching on a route in your ReRoute configuration add this setting
 		"FileCacheOptions": { "TtlSeconds": 15 }
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
-
-## Administration
-
-Ocelot supports changing configuration during runtime via an authenticated HTTP API. The API is authenticated 
-using bearer tokens that you request from iteself. This is provided by the amazing [IdentityServer](https://github.com/IdentityServer/IdentityServer4)
-project that I have been using for a few years now. Check them out.
-
-In order to enable the administration section you need to do a few things. First of all add this to your
-initial configuration.json. The value can be anything you want and it is obviously reccomended don't use
-a url you would like to route through with Ocelot as this will not work. The administration uses the
-MapWhen functionality of asp.net core and all requests to root/administration will be sent there not 
-to the Ocelot middleware.
-
-        "GlobalConfiguration": {
-            "AdministrationPath": "/administration"
-        }
-
-This will get the admin area set up but not the authentication. You need to set 3 environmental variables. 
-
-    OCELOT_USERNAME
-    OCELOT_HASH
-    OCELOT_SALT
-
-These need to be the admin username you want to use with Ocelot and the hash and salt of the password you want to 
-use given hashing algorythm. When requesting bearer tokens for use with the administration api you will need to
-supply username and password.
-
-In order to create a hash and salt of your password please check out HashCreationTests.should_create_hash_and_salt() 
-this technique is based on [this](https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing)
-using SHA256 rather than SHA1.
-
-Now if you went with the configuration options above and want to access the API you can make the following requests.
-
-
-
-
-
 
 ## Ocelot Middleware injection and overrides
 
