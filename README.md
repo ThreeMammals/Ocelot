@@ -119,19 +119,25 @@ Then in your Program.cs you will want to have the following. This can be changed
 don't wan't to use the default url e.g. UseUrls(someUrls) and should work as long as you keep the WebHostBuilder registration.
 
 ```csharp
-IWebHostBuilder builder = new WebHostBuilder();
+ public class Program
+    {
+        public static void Main(string[] args)
+        {
+            IWebHostBuilder builder = new WebHostBuilder();
             
-builder.ConfigureServices(s => {
-	s.AddSingleton(builder);
-});
+            builder.ConfigureServices(s => {
+                s.AddSingleton(builder);
+            });
 
-builder.UseKestrel()
-	.UseContentRoot(Directory.GetCurrentDirectory())
-	.UseStartup<Startup>();
+            builder.UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>();
 
-var host = builder.Build();
+            var host = builder.Build();
 
-host.Run();
+            host.Run();
+        }
+    }
 ```
 
 Sadly we need to inject the IWebHostBuilder interface to get the applications scheme, url and port later. I cannot 
