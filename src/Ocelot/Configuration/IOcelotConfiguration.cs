@@ -5,5 +5,6 @@ namespace Ocelot.Configuration
     public interface IOcelotConfiguration
     {
         List<ReRoute> ReRoutes { get; }
+        string AdministrationPath {get;}
     }
 }

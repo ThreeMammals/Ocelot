@@ -1,6 +1,4 @@
-﻿using Ocelot.Configuration;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator

@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void can_add_config()
         {
-            this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial")))
+            this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial", "adminath")))
                 .When(x => x.WhenIAddOrReplaceTheConfig())
                 .Then(x => x.ThenNoErrorsAreReturned())
                 .BDDfy();
@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenThereIsASavedConfiguration()
         {
-            GivenTheConfigurationIs(new FakeConfig("initial"));
+            GivenTheConfigurationIs(new FakeConfig("initial", "adminath"));
             WhenIAddOrReplaceTheConfig();
         }
 
@@ -77,9 +77,10 @@ namespace Ocelot.UnitTests.Configuration
         {
             private readonly string _downstreamTemplatePath;
 
-            public FakeConfig(string downstreamTemplatePath)
+            public FakeConfig(string downstreamTemplatePath, string administrationPath)
             {
                 _downstreamTemplatePath = downstreamTemplatePath;
+                AdministrationPath = administrationPath;
             }
 
             public List<ReRoute> ReRoutes => new List<ReRoute>
@@ -89,6 +90,8 @@ namespace Ocelot.UnitTests.Configuration
                 .WithUpstreamHttpMethod("Get")
                 .Build()
             };
+
+            public string AdministrationPath {get;}
         }
     }
 }

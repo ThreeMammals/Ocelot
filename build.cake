@@ -18,7 +18,9 @@ var unitTestAssemblies = @"./test/Ocelot.UnitTests";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
-var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests";
+
+// integration testing
+var artifactsForIntegrationTestsDir = artifactsDir + Directory("IntegrationTests");
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -44,8 +46,11 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 var releaseTag = "";
 string committedVersion = "0.0.0-dev";
 var buildVersion = committedVersion;
+GitVersion versioning = null;
+var nugetFeedUnstableBranchFilter = "^(develop)$|^(PullRequest/)";
 
 var target = Argument("target", "Default");
+
 
 Information("target is " +target);
 Information("Build configuration is " + compileConfig);	
@@ -74,7 +79,9 @@ Task("Clean")
 Task("Version")
 	.Does(() =>
 	{
-		var nugetVersion = GetNuGetVersionForCommit();
+		versioning = GetNuGetVersionForCommit();
+		var nugetVersion = versioning.NuGetVersion;
+
 		Information("SemVer version number: " + nugetVersion);
 
 		if (AppVeyor.IsRunningOnAppVeyor)
@@ -129,6 +136,24 @@ Task("RunAcceptanceTests")
 
 	});
 
+	Task("RunIntegrationTests")
+	.IsDependentOn("Restore")
+	.Does(() =>
+	{
+		var buildSettings = new DotNetCoreTestSettings
+		{
+			Configuration = "Debug", //int test config is hard-coded for debug
+		};
+
+		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+
+		DoInDirectory("test/Ocelot.IntegrationTests", () =>
+		{
+			DotNetCoreTest(".", buildSettings);
+		});
+
+	});
+
 Task("RunBenchmarkTests")
 	.IsDependentOn("Restore")
 	.Does(() =>
@@ -149,6 +174,7 @@ Task("RunBenchmarkTests")
 Task("RunTests")
 	.IsDependentOn("RunUnitTests")
 	.IsDependentOn("RunAcceptanceTests")
+	.IsDependentOn("RunIntegrationTests")
 	.Does(() =>
 	{
 	});
@@ -189,7 +215,10 @@ Task("ReleasePackagesToUnstableFeed")
 	.IsDependentOn("CreatePackages")
 	.Does(() =>
 	{
-		PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+		if (ShouldPublishToUnstableFeed(nugetFeedUnstableBranchFilter, versioning.BranchName))
+		{		
+			PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+		}
 	});
 
 Task("EnsureStableReleaseRequirements")
@@ -250,15 +279,14 @@ Task("Release")
 RunTarget(target);
 
 /// Gets nuique nuget version for this commit
-private string GetNuGetVersionForCommit()
+private GitVersion GetNuGetVersionForCommit()
 {
     GitVersion(new GitVersionSettings{
         UpdateAssemblyInfo = false,
         OutputType = GitVersionOutput.BuildServer
     });
 
-    var versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
-	return versionInfo.NuGetVersion;
+    return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 }
 
 /// Updates project version in all of our projects
@@ -342,4 +370,19 @@ private string GetResource(string url)
         var assetsReader = new StreamReader(assetsStream);
         return assetsReader.ReadToEnd();
     }
+}
+
+private bool ShouldPublishToUnstableFeed(string filter, string branchName)
+{
+	var regex = new System.Text.RegularExpressions.Regex(filter);
+	var publish = regex.IsMatch(branchName);
+	if (publish)
+	{
+		Information("Branch " + branchName + " will be published to the unstable feed");
+	}
+	else
+	{
+		Information("Branch " + branchName + " will not be published to the unstable feed");
+	}
+	return publish;	
 }

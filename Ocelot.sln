@@ -8,7 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3FA7C349-DBE8-4904-A2CE-015B8869CE6C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		appveyor.yml = appveyor.yml
 		build-and-release-unstable.ps1 = build-and-release-unstable.ps1
 		build-and-run-tests.ps1 = build-and-run-tests.ps1
 		build.cake = build.cake
@@ -19,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		GitVersion.yml = GitVersion.yml
 		global.json = global.json
 		LICENSE.md = LICENSE.md
-		Ocelot.nuspec = Ocelot.nuspec
+		ocelot.postman_collection.json = ocelot.postman_collection.json
 		README.md = README.md
 		release.ps1 = release.ps1
 		ReleaseNotes.md = ReleaseNotes.md
@@ -40,6 +39,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.ManualTest", "test\Ocelot.ManualTest\Ocelot.ManualTest.xproj", "{02BBF4C5-517E-4157-8D21-4B8B9E118B7A}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.Benchmarks", "test\Ocelot.Benchmarks\Ocelot.Benchmarks.xproj", "{106B49E6-95F6-4A7B-B81C-96BFA74AF035}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.xproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +68,10 @@ Global
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4575572-99CA-4530-8737-C296EDA326F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4575572-99CA-4530-8737-C296EDA326F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4575572-99CA-4530-8737-C296EDA326F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4575572-99CA-4530-8737-C296EDA326F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,5 +82,6 @@ Global
 		{F8C224FE-36BE-45F5-9B0E-666D8F4A9B52} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{02BBF4C5-517E-4157-8D21-4B8B9E118B7A} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035} = {5B401523-36DA-4491-B73A-7590A26E420B}
+		{D4575572-99CA-4530-8737-C296EDA326F8} = {5B401523-36DA-4491-B73A-7590A26E420B}
 	EndGlobalSection
 EndGlobal

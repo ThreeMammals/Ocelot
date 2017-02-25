@@ -90,7 +90,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
             _downstreamRouteFinder
                 .Setup(x => x.FindDownstreamRoute(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(_downstreamRoute);
+                .Returns(_downstreamRoute);
         }
 
         public void Dispose()
