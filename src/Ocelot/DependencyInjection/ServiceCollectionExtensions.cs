@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Hosting;
@@ -54,15 +55,12 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
-            return AddOcelot(services, configurationRoot, null);
-        }
-
-        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot, IIdentityServerConfiguration identityServerConfiguration)
-        {
             services.Configure<FileConfiguration>(configurationRoot);
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
+
+            var identityServerConfiguration = GetIdentityServerConfiguration();
             
             if(identityServerConfiguration != null)
             {
@@ -142,6 +140,30 @@ namespace Ocelot.DependencyInjection
             services.AddScoped<IRequestScopedDataRepository, HttpDataRepository>();
 
             return services;
+        }
+
+        private static IdentityServerConfiguration GetIdentityServerConfiguration()
+        {
+            var username = Environment.GetEnvironmentVariable("OCELOT_USERNAME");
+            var hash = Environment.GetEnvironmentVariable("OCELOT_HASH");
+            var salt = Environment.GetEnvironmentVariable("OCELOT_SALT");
+
+            return new IdentityServerConfiguration(
+                "admin",
+                false,
+                SupportedTokens.Both,
+                "secret",
+                new List<string> {"admin", "openid", "offline_access"},
+                "Ocelot Administration",
+                true,
+                GrantTypes.ResourceOwnerPassword,
+                AccessTokenType.Jwt,
+                false,
+                new List<User> 
+                {
+                    new User("admin", username, hash, salt)
+                }
+            );
         }
     }
 }
