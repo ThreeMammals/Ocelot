@@ -86,13 +86,13 @@ namespace Ocelot.Configuration.Creator
 
             var reRoutes = new List<ReRoute>();
 
-            foreach (var reRoute in _options.Value.ReRoutes)
+            foreach (var reRoute in fileConfiguration.ReRoutes)
             {
-                var ocelotReRoute = await SetUpReRoute(reRoute, _options.Value.GlobalConfiguration);
+                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
             
-            return new OcelotConfiguration(reRoutes, _options.Value.GlobalConfiguration.AdministrationPath);
+            return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath);
         }
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)

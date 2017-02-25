@@ -114,7 +114,8 @@ Currently this is the only way to get configuration into Ocelot.
         }
     }
 
-Then in your Program.cs you will want to have the following..
+Then in your Program.cs you will want to have the following. This can be changed if you 
+don't wan't to use the default url e.g. UseUrls(someUrls) and should work as long as you keep the WebHostBuilder registration.
 
             IWebHostBuilder builder = new WebHostBuilder();
             
@@ -390,7 +391,7 @@ In this example ttl seconds is set to 15 which means the cache will expire after
 ## Administration
 
 Ocelot supports changing configuration during runtime via an authenticated HTTP API. The API is authenticated 
-using bearer tokens that you request from iteself. This support is provided by the amazing IdentityServer 
+using bearer tokens that you request from iteself. This is provided by the amazing [IdentityServer](https://github.com/IdentityServer/IdentityServer4)
 project that I have been using for a few years now. Check them out.
 
 In order to enable the administration section you need to do a few things. First of all add this to your
@@ -403,7 +404,7 @@ to the Ocelot middleware.
             "AdministrationPath": "/administration"
         }
 
-This will get the admin area set up but not the authentication. You need to set 3 environmental variables.
+This will get the admin area set up but not the authentication. You need to set 3 environmental variables. 
 
     OCELOT_USERNAME
     OCELOT_HASH
@@ -413,13 +414,13 @@ These need to be the admin username you want to use with Ocelot and the hash and
 use given hashing algorythm. When requesting bearer tokens for use with the administration api you will need to
 supply username and password.
 
-In order to create a hash and salt of your password please check out HashCreationTests.should_create_hash_and_salt() this technique is based on MS doc I found online TODO find and link...
+In order to create a hash and salt of your password please check out HashCreationTests.should_create_hash_and_salt() 
+this technique is based on [this](https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing)
+using SHA256 rather than SHA1.
 
-OK next thing is to get this config into Ocelot...
+Now if you went with the configuration options above and want to access the API you can make the following requests.
 
 
-At the moment Ocelot supports really limited options in terms of users and authentication for the admin API. At 
-least your stuff needs to be hashed!
 
 
 

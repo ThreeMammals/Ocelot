@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -54,7 +55,10 @@ namespace Ocelot.Responder
 
             using (Stream stream = new MemoryStream(content))
             {
-                await stream.CopyToAsync(context.Response.Body);
+                if (response.StatusCode != HttpStatusCode.NotModified)
+                {
+                    await stream.CopyToAsync(context.Response.Body);
+                }
             }
         }
 
