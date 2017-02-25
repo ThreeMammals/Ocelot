@@ -13,6 +13,7 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
+using Ocelot.RateLimit.Middleware;
 
 namespace Ocelot.Middleware
 {
@@ -63,6 +64,9 @@ namespace Ocelot.Middleware
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
+
+            // We check whether the request is ratelimit, and if there is no continue processing
+            builder.UseRateLimiting();
 
             // Now we can look for the requestId
             builder.UseRequestIdMiddleware();

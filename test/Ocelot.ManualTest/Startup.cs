@@ -37,7 +37,6 @@ namespace Ocelot.ManualTest
                 })
                 .WithDictionaryHandle();
             };
-
             services.AddOcelotOutputCaching(settings);
             services.AddOcelot(Configuration);
         }

@@ -73,10 +73,14 @@ More information on how to use these options is below..
 An example startup using a json file for configuration can be seen below. 
 Currently this is the only way to get configuration into Ocelot.
 
+<<<<<<< HEAD
+	public class Startup
+=======
 ```csharp
 public class Startup
 {
     public Startup(IHostingEnvironment env)
+>>>>>>> develop
     {
         var builder = new ConfigurationBuilder()
             .SetBasePath(env.ContentRootPath)
@@ -96,10 +100,13 @@ public class Startup
         {
             x.WithMicrosoftLogging(log =>
             {
-                log.AddConsole(LogLevel.Debug);
-            })
-            .WithDictionaryHandle();
-        };
+<<<<<<< HEAD
+                x.WithMicrosoftLogging(log =>
+                {
+                    log.AddConsole(LogLevel.Debug);
+                })
+                .WithDictionaryHandle();
+            };
 
             services.AddOcelotOutputCaching(settings);
             services.AddOcelot(Configuration);
@@ -112,30 +119,46 @@ public class Startup
             await app.UseOcelot();
         }
     }
-}
-```
 
 Then in your Program.cs you will want to have the following. This can be changed if you 
 don't wan't to use the default url e.g. UseUrls(someUrls) and should work as long as you keep the WebHostBuilder registration.
 
-```csharp
-IWebHostBuilder builder = new WebHostBuilder();
+            IWebHostBuilder builder = new WebHostBuilder();
             
-builder.ConfigureServices(s => {
-	s.AddSingleton(builder);
-});
+            builder.ConfigureServices(s => {
+                s.AddSingleton(builder);
+            });
 
-builder.UseKestrel()
-	.UseContentRoot(Directory.GetCurrentDirectory())
-	.UseStartup<Startup>();
+            builder.UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>();
 
-var host = builder.Build();
+            var host = builder.Build();
 
-host.Run();
-```
+            host.Run();
 
 Sadly we need to inject the IWebHostBuilder interface to get the applications scheme, url and port later. I cannot 
 find a better way of doing this at the moment without setting this in a static or some kind of config.
+=======
+                log.AddConsole(LogLevel.Debug);
+            })
+            .WithDictionaryHandle();
+        };
+
+        services.AddOcelotOutputCaching(settings);
+        services.AddOcelotFileConfiguration(Configuration);
+        services.AddOcelot();
+    }
+
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+    {
+        loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
+        app.UseOcelot();
+    }
+}
+```
+>>>>>>> develop
 
 This is pretty much all you need to get going.......more to come! 
 
@@ -203,11 +226,10 @@ a url you would like to route through with Ocelot as this will not work. The adm
 MapWhen functionality of asp.net core and all requests to root/administration will be sent there not 
 to the Ocelot middleware.
 
-```json
-"GlobalConfiguration": {
-    "AdministrationPath": "/administration"
-}
-```
+        "GlobalConfiguration": {
+            "AdministrationPath": "/administration"
+        }
+
 This will get the admin area set up but not the authentication. Please note that this is a very basic approach to 
 this problem and if needed we can obviously improve on this!
 

@@ -23,9 +23,14 @@
   },
   "runtimes": {
     "osx.10.11-x64":{},
+<<<<<<< HEAD
+    "osx.10.12-x64": {},
+    "win7-x64": {}
+=======
     "osx.10.12-x64":{},
     "win7-x64": {},
     "win10-x64": {}
+>>>>>>> develop
   },
   "frameworks": {
     "netcoreapp1.1": {

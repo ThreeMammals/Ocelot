@@ -36,8 +36,11 @@ using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
+<<<<<<< HEAD
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+=======
 using Ocelot.RateLimit;
+>>>>>>> develop
 
 namespace Ocelot.DependencyInjection
 {

@@ -49,7 +49,11 @@
       "DownstreamPathTemplate": "/posts",
       "DownstreamScheme": "https",
       "DownstreamHost": "jsonplaceholder.typicode.com",
+<<<<<<< HEAD
+      "DownstreamPort": 80,
+=======
       "DownstreamPort": 443,
+>>>>>>> develop
       "UpstreamPathTemplate": "/posts",
       "UpstreamHttpMethod": "Get",
       "QoSOptions": {

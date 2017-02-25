@@ -28,10 +28,12 @@ namespace Ocelot.Configuration.Builder
         private ServiceProviderConfiguraion _serviceProviderConfiguraion;
         private bool _useQos;
         private QoSOptions _qosOptions;
+        public bool _enableRateLimiting;
+        public RateLimitOptions _rateLimitOptions;
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
-            _loadBalancer = loadBalancer;
+          _loadBalancer = loadBalancer;
             return this;
         }
 
@@ -160,6 +162,19 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithEnableRateLimiting(bool input)
+        {
+            _enableRateLimiting = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithRateLimitOptions(RateLimitOptions input)
+        {
+            _rateLimitOptions = input;
+            return this;
+        }
+
+
         public ReRoute Build()
         {
             return new ReRoute(
@@ -184,7 +199,9 @@ namespace Ocelot.Configuration.Builder
                 _loadBalancerKey, 
                 _serviceProviderConfiguraion, 
                 _useQos, 
-                _qosOptions);
+                _qosOptions,
+                _enableRateLimiting,
+                _rateLimitOptions);
         }
     }
 }

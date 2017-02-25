@@ -137,7 +137,10 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
+<<<<<<< HEAD
                     
+=======
+>>>>>>> develop
                     s.AddOcelotOutputCaching(settings);
                     s.AddOcelot(configuration);
                 })
