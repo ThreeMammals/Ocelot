@@ -4,8 +4,6 @@
 
 [![Join the chat at https://gitter.im/Ocelotey/Lobby](https://badges.gitter.im/Ocelotey/Lobby.svg)](https://gitter.im/Ocelotey/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
-
 Attempt at a .NET Api Gateway
 
 This project is aimed at people using .NET running 
@@ -539,6 +537,8 @@ forwarded to the downstream service. Obviously this would break everything :(
 + The base OcelotMiddleware lets you access things that are going to be null
 and doesnt check the response is OK. I think the fact you can even call stuff
 that isnt available is annoying. Let alone it be null.
+
+[![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
 
 ## Coming up
 
