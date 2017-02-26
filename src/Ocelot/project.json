@@ -36,11 +36,14 @@
     "CacheManager.Microsoft.Extensions.Configuration": "0.9.2",
     "CacheManager.Microsoft.Extensions.Logging": "0.9.2",
     "Consul": "0.7.2.1",
-    "Polly": "5.0.3"
+    "Polly": "5.0.3",
+	"IdentityServer4": "1.0.1",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.1.0"
   },
   "runtimes": {
     "win10-x64": {},
     "osx.10.11-x64": {},
+    "osx.10.12-x64": {},
     "win7-x64": {}
   },
   "frameworks": {

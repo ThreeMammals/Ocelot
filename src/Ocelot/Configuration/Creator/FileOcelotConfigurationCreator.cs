@@ -56,14 +56,21 @@ namespace Ocelot.Configuration.Creator
 
         public async Task<Response<IOcelotConfiguration>> Create()
         {     
-            var config = await SetUpConfiguration();
+            var config = await SetUpConfiguration(_options.Value);
 
             return new OkResponse<IOcelotConfiguration>(config);
         }
 
-        private async Task<IOcelotConfiguration> SetUpConfiguration()
+        public async Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration)
+        {     
+            var config = await SetUpConfiguration(fileConfiguration);
+
+            return new OkResponse<IOcelotConfiguration>(config);
+        }
+
+        private async Task<IOcelotConfiguration> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
-            var response = _configurationValidator.IsValid(_options.Value);
+            var response = _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {
@@ -79,13 +86,13 @@ namespace Ocelot.Configuration.Creator
 
             var reRoutes = new List<ReRoute>();
 
-            foreach (var reRoute in _options.Value.ReRoutes)
+            foreach (var reRoute in fileConfiguration.ReRoutes)
             {
-                var ocelotReRoute = await SetUpReRoute(reRoute, _options.Value.GlobalConfiguration);
+                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
             
-            return new OcelotConfiguration(reRoutes);
+            return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath);
         }
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)

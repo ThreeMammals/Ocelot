@@ -3,8 +3,6 @@ using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
-    using System;
-
     public class RemoveOutputHeaders : IRemoveOutputHeaders
     {
         /// <summary>

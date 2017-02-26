@@ -1,20 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using CacheManager.Core;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Ocelot.Authentication.Handler.Creator;
 using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
+using Ocelot.Configuration.Authentication;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -25,44 +29,86 @@ using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
+using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 using Ocelot.RateLimit;
 
 namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-
         public static IServiceCollection AddOcelotOutputCaching(this IServiceCollection services, Action<ConfigurationBuilderCachePart> settings)
         {
             var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
             var ocelotCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
-
             services.AddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
             services.AddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotCacheManager);
 
             return services;
         }
-        public static IServiceCollection AddOcelotFileConfiguration(this IServiceCollection services, IConfigurationRoot configurationRoot)
+
+        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
             services.Configure<FileConfiguration>(configurationRoot);
-
             services.AddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
+            services.AddSingleton<IBaseUrlFinder, BaseUrlFinder>();
 
-            return services;
-        }
-
-        public static IServiceCollection AddOcelot(this IServiceCollection services)
-        {
-            services.AddMvcCore().AddJsonFormatters();
+            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
+            
+            if(identityServerConfiguration != null)
+            {
+                services.AddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+                services.AddSingleton<IHashMatcher, HashMatcher>();
+                services.AddIdentityServer()
+                    .AddTemporarySigningCredential()
+                    .AddInMemoryApiResources(new List<ApiResource>
+                    {
+                        new ApiResource
+                        {
+                            Name = identityServerConfiguration.ApiName,
+                            Description = identityServerConfiguration.Description,
+                            Enabled = identityServerConfiguration.Enabled,
+                            DisplayName = identityServerConfiguration.ApiName,
+                            Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
+                            ApiSecrets = new List<Secret>
+                            {
+                                new Secret
+                                {
+                                    Value = identityServerConfiguration.ApiSecret.Sha256()
+                                }
+                            }
+                        }
+                    })
+                    .AddInMemoryClients(new List<Client>
+                    {
+                        new Client
+                        {
+                            ClientId = identityServerConfiguration.ApiName,
+                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                            ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+                            AllowedScopes = identityServerConfiguration.AllowedScopes,
+                            AccessTokenType = identityServerConfiguration.AccessTokenType,
+                            Enabled = identityServerConfiguration.Enabled,
+                            RequireClientSecret = identityServerConfiguration.RequireClientSecret
+                        }
+                    }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+            }
+        
+            services.AddMvcCore()
+                .AddAuthorization()
+                .AddJsonFormatters();
             services.AddLogging();
+            services.AddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
+            services.AddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
+            services.AddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();
             services.AddSingleton<IQosProviderHouse, QosProviderHouse>();
             services.AddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             services.AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
