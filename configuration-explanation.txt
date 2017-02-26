@@ -1,12 +1,21 @@
 {
 	"ReRoutes": [
 		{
-			# The url we are forwarding the request to, ocelot will not add a trailing slash
-			"DownstreamTemplate": "http://somehost.com/identityserverexample",
-			# The path we are listening on for this re route, Ocelot will add a trailing slash to
-			# this property. Then when a request is made Ocelot makes sure a trailing slash is added
-			# to that so everything matches
-			"UpstreamTemplate": "/identityserverexample",
+			# The downstream path we are forwarding the request to, ocelot will not add a trailing slash.
+			# Ocelot replaces any placeholders {etc} with matched values from the incoming request.
+			"DownstreamPathTemplate": "/identityserverexample/{someid}/something",
+			# The scheme you want Ocelot to use when making the downstream request
+			"DownstreamScheme": "https",
+			# The port you want Ocelot to use when making the downstream request, will default to 
+			# scheme if nothing set
+			"DownstreamPort": 80,
+			# The host address of the downstream service, should not have a trailing slash or scheme
+			# if there is a trailing slash Ocelot will remove it.
+			"DownstreamHost" "localhost"
+			# The path template we are listening on for this re route, Ocelot will add a trailing 
+			# slash to this property. Then when a request is made Ocelot makes sure a trailing 
+			# slash is added, so everything matches
+			"UpstreamPathTemplate": "/identityserverexample",
 			# The method we are listening for on this re route
 			"UpstreamHttpMethod": "Get",
 			# Only support identity server at the moment
@@ -71,12 +80,24 @@
 			# the caching a lot.
 			"FileCacheOptions": { "TtlSeconds": 15 },
 			# The value of this is used when matching the upstream template to an upstream url. 
-			"ReRouteIsCaseSensitive": false
+			"ReRouteIsCaseSensitive": false,
+			# Tells Ocelot the name of the service it is looking when making requests to service discovery
+			# for hosts and ports
+			"ServiceName": "product"
+			# Tells Ocelot which load balancer to use when making downstream requests.
+            "LoadBalancer": "RoundRobin"
 		},
 		# This section is meant to be for global configuration settings
 		"GlobalConfiguration": {
 			# If this is set it will override any route specific request id keys, behaves the same
 			# otherwise
 			"RequestIdKey": "OcRequestId",
+			# If set Ocelot will try and use service discovery to locate downstream hosts and ports
+			 "ServiceDiscoveryProvider":
+			{
+				"Provider":"Consul",
+				"Host":"localhost",
+				"Port":8500
+			}
 		}
 	}

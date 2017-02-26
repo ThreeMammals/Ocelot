@@ -13,6 +13,7 @@ using Ocelot.Logging;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
+using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.Responses;
 using TestStack.BDDfy;
@@ -61,7 +62,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer())))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),new CookieContainer(),true, new NoQoSProvider())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())

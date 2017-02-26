@@ -22,6 +22,11 @@ namespace Ocelot.Responder
                 return new OkResponse<int>(403);
             }
 
+            if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
+            {
+                return new OkResponse<int>(503);
+            }
+
             return new OkResponse<int>(404);
         }
     }

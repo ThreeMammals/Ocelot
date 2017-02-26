@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Collections.Generic;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
@@ -11,13 +13,21 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
+using Ocelot.RateLimit.Middleware;
 
 namespace Ocelot.Middleware
 {
     using System;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Options;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Provider;
+    using Ocelot.Configuration.Setter;
+    using Ocelot.LoadBalancer.Middleware;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -26,9 +36,10 @@ namespace Ocelot.Middleware
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            builder.UseOcelot(new OcelotMiddlewareConfiguration());
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
+
             return builder;
         }
 
@@ -38,8 +49,10 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
         {
+            await CreateAdministrationArea(builder);
+
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
 
@@ -51,6 +64,9 @@ namespace Ocelot.Middleware
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
+
+            // We check whether the request is ratelimit, and if there is no continue processing
+            builder.UseRateLimiting();
 
             // Now we can look for the requestId
             builder.UseRequestIdMiddleware();
@@ -98,6 +114,9 @@ namespace Ocelot.Middleware
             // Now we can run any query string transformation logic
             builder.UseQueryStringBuilderMiddleware();
 
+            // Get the load balancer for this request
+            builder.UseLoadBalancingMiddleware();
+
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
 
@@ -114,6 +133,64 @@ namespace Ocelot.Middleware
             return builder;
         }
 
+        private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
+        {
+            var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
+            
+            var configSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+            
+            var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
+            
+            var config = await configSetter.Set(fileConfig.Value);
+            
+            if(config == null || config.IsError)
+            {
+                throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
+            }
+
+            var ocelotConfiguration = configProvider.Get();
+
+            if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            {
+                throw new Exception("Unable to start Ocelot: ocelot configuration was not returned by provider.");
+            }
+
+            return ocelotConfiguration.Data;
+        }
+
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        {
+            var configuration = await CreateConfiguration(builder);
+
+            var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
+
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
+            {
+                var urlFinder = (IBaseUrlFinder)builder.ApplicationServices.GetService(typeof(IBaseUrlFinder));
+
+                var baseSchemeUrlAndPort = urlFinder.Find();
+                
+                builder.Map(configuration.AdministrationPath, app =>
+                {
+                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
+
+                    app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
+                    {
+                        Authority = identityServerUrl,
+                        ApiName = identityServerConfiguration.ApiName,
+                        RequireHttpsMetadata = identityServerConfiguration.RequireHttps,
+                        AllowedScopes = identityServerConfiguration.AllowedScopes,
+                        SupportedTokens = SupportedTokens.Both,
+                        ApiSecret = identityServerConfiguration.ApiSecret
+                    });
+
+                    app.UseIdentityServer();
+
+                    app.UseMvc();
+                });
+            }
+        }
+        
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         {
             if (middleware != null)

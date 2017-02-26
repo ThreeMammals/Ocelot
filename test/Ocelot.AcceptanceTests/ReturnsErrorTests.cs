@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_and_foward_claim_as_header()
+        public void should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
         {
             var configuration = new FileConfiguration
             {
@@ -29,9 +29,12 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:53876/",
-                            UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Get"
+                            DownstreamPathTemplate = "/",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = "Get",
+                            DownstreamPort = 53876,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost"
                         }
                     }
             };

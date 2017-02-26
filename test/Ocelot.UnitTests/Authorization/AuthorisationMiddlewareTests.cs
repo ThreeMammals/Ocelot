@@ -63,7 +63,11 @@ namespace Ocelot.UnitTests.Authorization
         [Fact]
         public void should_call_authorisation_service()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), new ReRouteBuilder().WithIsAuthorised(true).Build())))
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), 
+                new ReRouteBuilder()
+                    .WithIsAuthorised(true)
+                    .WithUpstreamHttpMethod("Get")                                                                                                                                                                    .WithUpstreamHttpMethod("Get")
+                    .Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())

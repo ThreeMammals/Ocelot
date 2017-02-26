@@ -46,34 +46,27 @@ namespace Ocelot.Responder.Middleware
 
                 _logger.LogDebug("received errors setting error response");
 
-                await SetErrorResponse(context, errors);
+                SetErrorResponse(context, errors);
             }
             else
             {
                 _logger.LogDebug("no pipeline error, setting response");
 
-                var setResponse = await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
-
-                if (setResponse.IsError)
-                {
-                    _logger.LogDebug("error setting response, returning error to client");
-
-                    await SetErrorResponse(context, setResponse.Errors);
-                }
+                await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
             }
         }
 
-        private async Task SetErrorResponse(HttpContext context, List<Error> errors)
+        private void SetErrorResponse(HttpContext context, List<Error> errors)
         {
             var statusCode = _codeMapper.Map(errors);
 
             if (!statusCode.IsError)
             {
-                await _responder.SetErrorResponseOnContext(context, statusCode.Data);
+                _responder.SetErrorResponseOnContext(context, statusCode.Data);
             }
             else
             {
-                await _responder.SetErrorResponseOnContext(context, 500);
+                _responder.SetErrorResponseOnContext(context, 500);
             }
         }
     }

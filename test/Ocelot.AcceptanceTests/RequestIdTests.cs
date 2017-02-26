@@ -33,11 +33,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
-                            UpstreamTemplate = "/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            RequestIdKey = _steps.RequestIdKey
-                        }
+                            RequestIdKey = _steps.RequestIdKey,
+                         }
                     }
             };
 
@@ -58,10 +61,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
-                            UpstreamTemplate = "/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
-                            RequestIdKey = _steps.RequestIdKey
+ 
                         }
                     }
             };
@@ -85,8 +91,11 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/",
-                            UpstreamTemplate = "/",
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
                         }
                     },

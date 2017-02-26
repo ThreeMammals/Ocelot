@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void can_add_config()
         {
-            this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial")))
+            this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial", "adminath")))
                 .When(x => x.WhenIAddOrReplaceTheConfig())
                 .Then(x => x.ThenNoErrorsAreReturned())
                 .BDDfy();
@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.ReRoutes[0].DownstreamTemplate.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()
@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenThereIsASavedConfiguration()
         {
-            GivenTheConfigurationIs(new FakeConfig("initial"));
+            GivenTheConfigurationIs(new FakeConfig("initial", "adminath"));
             WhenIAddOrReplaceTheConfig();
         }
 
@@ -75,17 +75,23 @@ namespace Ocelot.UnitTests.Configuration
 
         class FakeConfig : IOcelotConfiguration
         {
-            private readonly string _downstreamTemplate;
+            private readonly string _downstreamTemplatePath;
 
-            public FakeConfig(string downstreamTemplate)
+            public FakeConfig(string downstreamTemplatePath, string administrationPath)
             {
-                _downstreamTemplate = downstreamTemplate;
+                _downstreamTemplatePath = downstreamTemplatePath;
+                AdministrationPath = administrationPath;
             }
 
             public List<ReRoute> ReRoutes => new List<ReRoute>
             {
-                new ReRouteBuilder().WithDownstreamTemplate(_downstreamTemplate).Build()
+                new ReRouteBuilder()
+                .WithDownstreamPathTemplate(_downstreamTemplatePath)
+                .WithUpstreamHttpMethod("Get")
+                .Build()
             };
+
+            public string AdministrationPath {get;}
         }
     }
 }

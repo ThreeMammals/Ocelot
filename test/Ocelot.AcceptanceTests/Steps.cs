@@ -5,10 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -29,6 +32,13 @@ namespace Ocelot.AcceptanceTests
         private BearerToken _token;
         public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
+        private readonly Random _random;
+        private IWebHostBuilder _webHostBuilder;
+
+        public Steps()
+        {
+            _random = new Random();
+        }
 
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
@@ -61,10 +71,38 @@ namespace Ocelot.AcceptanceTests
         /// </summary>
         public void GivenOcelotIsRunning()
         {
-            _ocelotServer = new TestServer(new WebHostBuilder()
+             _webHostBuilder = new WebHostBuilder();
+            
+            _webHostBuilder.ConfigureServices(s => 
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
                 .UseStartup<Startup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        internal void ThenTheResponseShouldBe(FileConfiguration expected)
+        {
+            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
+            
+            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
+            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
+
+            for(var i = 0; i < response.ReRoutes.Count; i++)
+            {
+                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
+                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
+                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
+                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
+            }
         }
 
         /// <summary>
@@ -80,7 +118,14 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = builder.Build();
 
-            _ocelotServer = new TestServer(new WebHostBuilder()
+            _webHostBuilder = new WebHostBuilder();
+            
+            _webHostBuilder.ConfigureServices(s => 
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
                 .UseConfiguration(configuration)
                 .ConfigureServices(s =>
                 {
@@ -92,10 +137,9 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-
+                    
                     s.AddOcelotOutputCaching(settings);
-                    s.AddOcelotFileConfiguration(configuration);
-                    s.AddOcelot();
+                    s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
                 {
@@ -104,7 +148,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(a =>
                 {
-                    a.UseOcelot(ocelotMiddlewareConfig);
+                    a.UseOcelot(ocelotMiddlewareConfig).Wait();
                 }));
 
             _ocelotClient = _ocelotServer.CreateClient();
@@ -132,10 +176,30 @@ namespace Ocelot.AcceptanceTests
             using (var httpClient = new HttpClient())
             {
                 var response = httpClient.PostAsync(tokenUrl, content).Result;
-                response.EnsureSuccessStatusCode();
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
                 _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             }
+        }
+
+        public void GivenIHaveAnOcelotToken(string adminPath)
+        {
+            var tokenUrl = $"{adminPath}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "admin"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "admin"),
+                new KeyValuePair<string, string>("username", "admin"),
+                new KeyValuePair<string, string>("password", "admin"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = _ocelotClient.PostAsync(tokenUrl, content).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            response.EnsureSuccessStatusCode();
+            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
         public void VerifyIdentiryServerStarted(string url)
@@ -147,11 +211,43 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
         }
+
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
+        {
+            var tasks = new Task[times];
+            
+            for (int i = 0; i < times; i++)
+            {
+                var urlCopy = url;
+                tasks[i] = GetForServiceDiscoveryTest(urlCopy);
+                Thread.Sleep(_random.Next(40,60));
+            }
+
+            Task.WaitAll(tasks);
+        }
+
+        private async Task GetForServiceDiscoveryTest(string url)
+        {
+            var response = await _ocelotClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            int count = int.Parse(content);
+            count.ShouldBeGreaterThan(0);
+        }
+
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
+        {
+            for (int i = 0; i < times; i++)
+            {
+                var clientId = "ocelotclient1";
+                var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+                request.Headers.Add("ClientId", clientId);
+                _response = _ocelotClient.SendAsync(request).Result;
+            }
+        } 
 
         public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
         {
@@ -178,6 +274,13 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
+        }
+
+
+        public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
+        {
+            var responseStatusCode = (int)_response.StatusCode;
+            responseStatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
         public void Dispose()

@@ -65,11 +65,12 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamTemplate("any old string")
+                    .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToQueries(new List<ClaimToThing>
                     {
                         new ClaimToThing("UserId", "Subject", "", 0)
                     })
+                    .WithUpstreamHttpMethod("Get")
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

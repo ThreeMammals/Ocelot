@@ -67,11 +67,12 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamTemplate("any old string")
+                    .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToHeaders(new List<ClaimToThing>
                     {
                         new ClaimToThing("UserId", "Subject", "", 0)
                     })
+                    .WithUpstreamHttpMethod("Get")
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

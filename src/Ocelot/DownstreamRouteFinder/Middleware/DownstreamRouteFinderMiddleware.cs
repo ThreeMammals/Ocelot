@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -44,7 +43,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamTemplate}", downstreamRoute.Data.ReRoute.DownstreamTemplate);
+            _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamPathTemplate);
 
             SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
@@ -41,13 +39,13 @@ namespace Ocelot.Errors.Middleware
 
                 var message = CreateMessage(context, e);
                 _logger.LogError(message, e);
-                await SetInternalServerErrorOnResponse(context);
+                SetInternalServerErrorOnResponse(context);
             }
 
             _logger.LogDebug("ocelot pipeline finished");
         }
 
-        private async Task SetInternalServerErrorOnResponse(HttpContext context)
+        private void SetInternalServerErrorOnResponse(HttpContext context)
         {
             context.Response.OnStarting(x =>
             {

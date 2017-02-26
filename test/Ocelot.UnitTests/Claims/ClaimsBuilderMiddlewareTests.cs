@@ -67,11 +67,12 @@ namespace Ocelot.UnitTests.Claims
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamTemplate("any old string")
+                    .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToClaims(new List<ClaimToThing>
                     {
                         new ClaimToThing("sub", "UserType", "|", 0)
                     })
+                    .WithUpstreamHttpMethod("Get")
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

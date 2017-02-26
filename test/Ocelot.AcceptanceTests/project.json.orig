@@ -1,0 +1,59 @@
+{
+  "version": "0.0.0-dev",
+
+  "buildOptions": {
+    "copyToOutput": {
+      "include": [
+        "configuration.json"
+      ]
+    }
+  },
+
+  "testRunner": "xunit",
+
+  "dependencies": {
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0",
+    "Microsoft.Extensions.Logging": "1.1.0",
+    "Microsoft.Extensions.Logging.Console": "1.1.0",
+    "Microsoft.Extensions.Logging.Debug": "1.1.0",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
+    "Microsoft.AspNetCore.Http": "1.1.0",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Ocelot": "0.0.0-dev",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Ocelot.ManualTest": "0.0.0-dev",
+    "Microsoft.AspNetCore.TestHost": "1.1.0",
+    "IdentityServer4": "1.0.1",
+    "Microsoft.AspNetCore.Mvc": "1.1.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0",
+    "Microsoft.NETCore.App": "1.1.0",
+    "Shouldly": "2.8.2",
+    "TestStack.BDDfy": "4.3.2",
+    "Consul": "0.7.2.1",
+    "Microsoft.Extensions.Caching.Memory": "1.1.0",
+    "xunit": "2.2.0-rc1-build3507"
+  },
+  "runtimes": {
+<<<<<<< HEAD
+    "win10-x64": {},
+    "osx.10.11-x64": {},
+    "osx.10.12-x64": {},
+    "win7-x64": {}
+=======
+    "osx.10.11-x64":{},
+    "osx.10.12-x64":{},
+    "win7-x64": {},
+    "win10-x64": {}
+>>>>>>> develop
+  },
+  "frameworks": {
+    "netcoreapp1.1": {
+      "imports": [
+      ]
+    }
+  }
+}

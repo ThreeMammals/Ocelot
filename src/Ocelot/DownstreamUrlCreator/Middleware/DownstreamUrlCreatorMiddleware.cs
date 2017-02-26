@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -11,17 +10,20 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IDownstreamUrlPathPlaceholderReplacer _urlReplacer;
+        private readonly IDownstreamPathPlaceholderReplacer _replacer;
         private readonly IOcelotLogger _logger;
+        private readonly IUrlBuilder _urlBuilder;
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamUrlPathPlaceholderReplacer urlReplacer,
-            IRequestScopedDataRepository requestScopedDataRepository)
+            IDownstreamPathPlaceholderReplacer replacer,
+            IRequestScopedDataRepository requestScopedDataRepository, 
+            IUrlBuilder urlBuilder)
             :base(requestScopedDataRepository)
         {
             _next = next;
-            _urlReplacer = urlReplacer;
+            _replacer = replacer;
+            _urlBuilder = urlBuilder;
             _logger = loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>();
         }
 
@@ -29,19 +31,34 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             _logger.LogDebug("started calling downstream url creator middleware");
 
-            var downstreamUrl = _urlReplacer.Replace(DownstreamRoute.ReRoute.DownstreamTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
+            var dsPath = _replacer
+                .Replace(DownstreamRoute.ReRoute.DownstreamPathTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
 
-            if (downstreamUrl.IsError)
+            if (dsPath.IsError)
             {
-                _logger.LogDebug("IDownstreamUrlPathPlaceholderReplacer returned an error, setting pipeline error");
+                _logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                SetPipelineError(downstreamUrl.Errors);
+                SetPipelineError(dsPath.Errors);
                 return;
             }
 
-            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", downstreamUrl.Data.Value);
+            var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
+            
+            var dsHostAndPort = HostAndPort;
 
-            SetDownstreamUrlForThisRequest(downstreamUrl.Data.Value);
+            var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
+
+            if (dsUrl.IsError)
+            {
+                _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
+
+                SetPipelineError(dsUrl.Errors);
+                return;
+            }
+
+            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", dsUrl.Data.Value);
+
+            SetDownstreamUrlForThisRequest(dsUrl.Data.Value);
 
             _logger.LogDebug("calling next middleware");
 

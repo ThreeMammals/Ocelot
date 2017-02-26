@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
 using Ocelot.Errors;
 using Ocelot.Middleware;
+using Ocelot.Requester;
 using Ocelot.Responder;
 using Ocelot.Responses;
 using Shouldly;
@@ -21,6 +20,18 @@ namespace Ocelot.UnitTests.Responder
         public ErrorsToHttpStatusCodeMapperTests()
         {
             _codeMapper = new ErrorsToHttpStatusCodeMapper();
+        }
+
+        [Fact]
+        public void should_return_timeout()
+        {
+            this.Given(x => x.GivenThereAreErrors(new List<Error>
+                {
+                    new RequestTimedOutError(new Exception())
+                }))
+               .When(x => x.WhenIGetErrorStatusCode())
+               .Then(x => x.ThenTheResponseIsStatusCodeIs(503))
+               .BDDfy();
         }
 
         [Fact]

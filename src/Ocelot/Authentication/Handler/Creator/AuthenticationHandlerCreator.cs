@@ -12,18 +12,18 @@ namespace Ocelot.Authentication.Handler.Creator
     /// </summary>
     public class AuthenticationHandlerCreator : IAuthenticationHandlerCreator
     {
-        public Response<RequestDelegate> CreateIdentityServerAuthenticationHandler(IApplicationBuilder app, AuthenticationOptions authOptions)
+        public Response<RequestDelegate> Create(IApplicationBuilder app, AuthenticationOptions authOptions)
         {
             var builder = app.New();
 
             builder.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
                 Authority = authOptions.ProviderRootUrl,
-                ScopeName = authOptions.ScopeName,
+                ApiName = authOptions.ScopeName,
                 RequireHttpsMetadata = authOptions.RequireHttps,
-                AdditionalScopes = authOptions.AdditionalScopes,
+                AllowedScopes = authOptions.AdditionalScopes,
                 SupportedTokens = SupportedTokens.Both,
-                ScopeSecret = authOptions.ScopeSecret
+                ApiSecret = authOptions.ScopeSecret
             });
 
             var authenticationNext = builder.Build();

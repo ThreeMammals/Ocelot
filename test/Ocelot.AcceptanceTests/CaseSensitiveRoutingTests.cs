@@ -30,9 +30,12 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get"
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/products/{productId}",
+                            UpstreamHttpMethod = "Get",
                         }
                     }
             };
@@ -54,10 +57,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = false
+                            ReRouteIsCaseSensitive = false,
                         }
                     }
             };
@@ -79,10 +85,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -104,10 +113,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/PRODUCTS/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -129,10 +141,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/products/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };
@@ -154,10 +169,13 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamTemplate = "http://localhost:51879/api/products/{productId}",
-                            UpstreamTemplate = "/PRODUCTS/{productId}",
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
                             UpstreamHttpMethod = "Get",
-                            ReRouteIsCaseSensitive = true
+                            ReRouteIsCaseSensitive = true,
                         }
                     }
             };

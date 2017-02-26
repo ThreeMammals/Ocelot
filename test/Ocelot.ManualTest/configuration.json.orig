@@ -1,0 +1,310 @@
+﻿{
+  "ReRoutes": [
+    {
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "localhost",
+      "DownstreamPort": 52876,
+      "UpstreamPathTemplate": "/identityserverexample",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "AuthenticationOptions": {
+        "Provider": "IdentityServer",
+        "ProviderRootUrl": "http://localhost:52888",
+        "ScopeName": "api",
+        "AdditionalScopes": [
+          "openid",
+          "offline_access"
+        ],
+        "ScopeSecret": "secret"
+      },
+      "AddHeadersToRequest": {
+        "CustomerId": "Claims[CustomerId] > value",
+        "LocationId": "Claims[LocationId] > value",
+        "UserType": "Claims[sub] > value[0] > |",
+        "UserId": "Claims[sub] > value[1] > |"
+      },
+      "AddClaimsToRequest": {
+        "CustomerId": "Claims[CustomerId] > value",
+        "LocationId": "Claims[LocationId] > value",
+        "UserType": "Claims[sub] > value[0] > |",
+        "UserId": "Claims[sub] > value[1] > |"
+      },
+      "AddQueriesToRequest": {
+        "CustomerId": "Claims[CustomerId] > value",
+        "LocationId": "Claims[LocationId] > value",
+        "UserType": "Claims[sub] > value[0] > |",
+        "UserId": "Claims[sub] > value[1] > |"
+      },
+      "RouteClaimsRequirement": {
+        "UserType": "registered"
+      },
+      "RequestIdKey": "OcRequestId"
+    },
+    {
+      "DownstreamPathTemplate": "/posts",
+      "DownstreamScheme": "https",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+<<<<<<< HEAD
+      "DownstreamPort": 80,
+=======
+      "DownstreamPort": 443,
+>>>>>>> develop
+      "UpstreamPathTemplate": "/posts",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/{postId}",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}/comments",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/{postId}/comments",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/comments",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/comments",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts",
+      "UpstreamHttpMethod": "Post",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/{postId}",
+      "UpstreamHttpMethod": "Put",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/{postId}",
+      "UpstreamHttpMethod": "Patch",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/{postId}",
+      "UpstreamHttpMethod": "Delete",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/products",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/{productId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/products/{productId}",
+      "UpstreamHttpMethod": "Get",
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "products20161126090340.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/products",
+      "UpstreamHttpMethod": "Post",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/{productId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "products20161126090340.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/products/{productId}",
+      "UpstreamHttpMethod": "Put",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/products/{productId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "products20161126090340.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/products/{productId}",
+      "UpstreamHttpMethod": "Delete",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/customers",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "customers20161126090811.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/customers",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/customers/{customerId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "customers20161126090811.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/customers/{customerId}",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/customers",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "customers20161126090811.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/customers",
+      "UpstreamHttpMethod": "Post",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/customers/{customerId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "customers20161126090811.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/customers/{customerId}",
+      "UpstreamHttpMethod": "Put",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/api/customers/{customerId}",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "customers20161126090811.azurewebsites.net",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/customers/{customerId}",
+      "UpstreamHttpMethod": "Delete",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "DownstreamPathTemplate": "/posts",
+      "DownstreamScheme": "http",
+      "DownstreamHost": "jsonplaceholder.typicode.com",
+      "DownstreamPort": 80,
+      "UpstreamPathTemplate": "/posts/",
+      "UpstreamHttpMethod": "Get",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    }
+  ],
+
+  "GlobalConfiguration": {
+    "RequestIdKey": "OcRequestId",
+    "AdministrationPath": "/admin"
+  }
+}

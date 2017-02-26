@@ -1,22 +1,23 @@
-﻿{
-    "version": "1.0.0-*",
-    "buildOptions": {
-        "emitEntryPoint": true
-    },
+{
+  "version": "0.0.0-dev",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
 
-    "dependencies": {
-        "Microsoft.NETCore.App": {
-            "type": "platform",
-            "version": "1.0.1"
-        },
-        "Ocelot": "1.0.0-*",
-        "BenchmarkDotNet": "0.9.9"
-    },
-
-    "frameworks": {
-        "netcoreapp1.4": {
-            "imports": [
-            ]
-        }
+  "dependencies": {
+    "Ocelot": "0.0.0-dev",
+    "BenchmarkDotNet": "0.10.2"
+  },
+  "runtimes": {
+    "osx.10.11-x64":{},
+    "osx.10.12-x64":{},
+    "win7-x64": {},
+    "win10-x64": {}
+  },
+  "frameworks": {
+    "netcoreapp1.1": {
+      "imports": [
+      ]
     }
+  }
 }
