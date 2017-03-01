@@ -35,6 +35,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
         private Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
         private Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
+        private Mock<IQoSOptionsCreator> _qosOptionsCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -52,13 +53,50 @@ namespace Ocelot.UnitTests.Configuration
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
             _requestIdKeyCreator = new Mock<IRequestIdKeyCreator>();
             _serviceProviderConfigCreator = new Mock<IServiceProviderConfigurationCreator>();
+            _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
                 _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
-                _serviceProviderConfigCreator.Object);
+                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object);
+        }
+
+        [Fact]
+        public void should_call_qos_options_creator()
+        {
+            var expected = new QoSOptionsBuilder()
+                .WithDurationOfBreak(1)
+                .WithExceptionsAllowedBeforeBreaking(1)
+                .WithTimeoutValue(1)
+                .Build();
+
+             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHost = "127.0.0.1",
+                        UpstreamPathTemplate = "/api/products/{productId}",
+                        DownstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = "Get",
+                        QoSOptions = new FileQoSOptions
+                        {
+                            TimeoutValue = 1,
+                            DurationOfBreak = 1,
+                            ExceptionsAllowedBeforeBreaking = 1
+                        }
+                    }
+                },
+            }))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheQosProviderFactoryReturns())
+                .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheQosOptionsAre(expected))
+                .BDDfy();
         }
 
         [Fact]
@@ -585,5 +623,19 @@ namespace Ocelot.UnitTests.Configuration
                 .Returns(requestId);
         }
 
+        private void GivenTheQosOptionsCreatorReturns(QoSOptions qosOptions)
+        {
+            _qosOptionsCreator
+                .Setup(x => x.Create(_fileConfiguration.ReRoutes[0]))
+                .Returns(qosOptions);
+        }
+
+        private void ThenTheQosOptionsAre(QoSOptions qosOptions)
+        {
+            _config.Data.ReRoutes[0].QosOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+
+            _config.Data.ReRoutes[0].QosOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].QosOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+        }
     }
 }

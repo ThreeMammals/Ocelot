@@ -32,6 +32,7 @@ namespace Ocelot.Configuration.Creator
         private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
         private IRequestIdKeyCreator _requestIdKeyCreator;
         private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
+        private IQoSOptionsCreator _qosOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -45,7 +46,9 @@ namespace Ocelot.Configuration.Creator
             IAuthenticationOptionsCreator authOptionsCreator,
             IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
             IRequestIdKeyCreator requestIdKeyCreator,
-            IServiceProviderConfigurationCreator serviceProviderConfigCreator)
+            IServiceProviderConfigurationCreator serviceProviderConfigCreator,
+            IQoSOptionsCreator qosOptionsCreator
+            )
         {
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
@@ -59,6 +62,7 @@ namespace Ocelot.Configuration.Creator
             _logger = logger;
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
+            _qosOptionsCreator = qosOptionsCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -128,7 +132,7 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
-            var qosOptions = BuildQoSOptions(fileReRoute);
+            var qosOptions = _qosOptionsCreator.Create(fileReRoute);
 
             var enableRateLimiting = IsEnableRateLimiting(fileReRoute);
 
@@ -184,15 +188,6 @@ namespace Ocelot.Configuration.Creator
         private static bool IsEnableRateLimiting(FileReRoute fileReRoute)
         {
             return (fileReRoute.RateLimitOptions != null && fileReRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
-        }
-
-        private QoSOptions BuildQoSOptions(FileReRoute fileReRoute)
-        {
-            return new QoSOptionsBuilder()
-                .WithExceptionsAllowedBeforeBreaking(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking)
-                .WithDurationOfBreak(fileReRoute.QoSOptions.DurationOfBreak)
-                .WithTimeoutValue(fileReRoute.QoSOptions.TimeoutValue)
-                .Build();
         }
 
         private bool IsQoS(FileReRoute fileReRoute)
