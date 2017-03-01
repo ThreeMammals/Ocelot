@@ -1,6 +1,6 @@
 namespace Ocelot.Configuration.Builder
 {
-    public class ServiceProviderConfiguraionBuilder
+    public class ServiceProviderConfigurationBuilder
     {
         private string _serviceName;
         private string _downstreamHost;
@@ -10,43 +10,43 @@ namespace Ocelot.Configuration.Builder
         private string _serviceDiscoveryProviderHost;
         private int _serviceDiscoveryProviderPort;
 
-        public ServiceProviderConfiguraionBuilder WithServiceName(string serviceName)
+        public ServiceProviderConfigurationBuilder WithServiceName(string serviceName)
         {
             _serviceName = serviceName;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithDownstreamHost(string downstreamHost)
+        public ServiceProviderConfigurationBuilder WithDownstreamHost(string downstreamHost)
         {
             _downstreamHost = downstreamHost;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithDownstreamPort(int downstreamPort)
+        public ServiceProviderConfigurationBuilder WithDownstreamPort(int downstreamPort)
         {
             _downstreamPort = downstreamPort;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithUseServiceDiscovery(bool userServiceDiscovery)
+        public ServiceProviderConfigurationBuilder WithUseServiceDiscovery(bool userServiceDiscovery)
         {
             _userServiceDiscovery = userServiceDiscovery;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithServiceDiscoveryProvider(string serviceDiscoveryProvider)
+        public ServiceProviderConfigurationBuilder WithServiceDiscoveryProvider(string serviceDiscoveryProvider)
         {
             _serviceDiscoveryProvider = serviceDiscoveryProvider;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithServiceDiscoveryProviderHost(string serviceDiscoveryProviderHost)
+        public ServiceProviderConfigurationBuilder WithServiceDiscoveryProviderHost(string serviceDiscoveryProviderHost)
         {
             _serviceDiscoveryProviderHost = serviceDiscoveryProviderHost;
             return this;
         }
 
-        public ServiceProviderConfiguraionBuilder WithServiceDiscoveryProviderPort(int serviceDiscoveryProviderPort)
+        public ServiceProviderConfigurationBuilder WithServiceDiscoveryProviderPort(int serviceDiscoveryProviderPort)
         {
             _serviceDiscoveryProviderPort = serviceDiscoveryProviderPort;
             return this;

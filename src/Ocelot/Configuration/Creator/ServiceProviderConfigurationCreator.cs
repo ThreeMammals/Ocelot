@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
-            return new ServiceProviderConfiguraionBuilder()
+            return new ServiceProviderConfigurationBuilder()
                     .WithServiceName(fileReRoute.ServiceName)
                     .WithDownstreamHost(fileReRoute.DownstreamHost)
                     .WithDownstreamPort(fileReRoute.DownstreamPort)
