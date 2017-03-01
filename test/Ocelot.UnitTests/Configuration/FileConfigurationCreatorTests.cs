@@ -34,6 +34,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IClaimsToThingCreator> _claimsToThingCreator;
         private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
+        private Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -49,12 +50,13 @@ namespace Ocelot.UnitTests.Configuration
             _claimsToThingCreator = new Mock<IClaimsToThingCreator>();
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
+            _requestIdKeyCreator = new Mock<IRequestIdKeyCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
                 _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
-                _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object);
+                _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object);
         }
 
         [Fact]
@@ -279,7 +281,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_set_global_request_id_key()
+        public void should_call_request_id_creator()
         {
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
@@ -298,7 +300,8 @@ namespace Ocelot.UnitTests.Configuration
                     RequestIdKey = "blahhhh"
                 }
             }))
-                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheConfigIsValid())    
+                .And(x => x.GivenTheRequestIdCreatorReturns("blahhhh"))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
@@ -309,6 +312,7 @@ namespace Ocelot.UnitTests.Configuration
                         .WithRequestIdKey("blahhhh")
                         .Build()
                 }))
+                .And(x => x.ThenTheRequestIdKeyCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -465,6 +469,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.ClaimsToClaims.Count.ShouldBe(expected.ClaimsToClaims.Count);
                 result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
                 result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
+                result.RequestIdKey.ShouldBe(expected.RequestIdKey);
             }
         }
 
@@ -549,5 +554,19 @@ namespace Ocelot.UnitTests.Configuration
                 .Setup(x => x.Create(It.IsAny<FileReRoute>()))
                 .Returns(pattern);
         }
+
+        private void ThenTheRequestIdKeyCreatorIsCalledCorrectly()
+        {
+            _requestIdKeyCreator
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0], _fileConfiguration.GlobalConfiguration), Times.Once);
+        }
+
+        private void GivenTheRequestIdCreatorReturns(string requestId)
+        {
+            _requestIdKeyCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<FileGlobalConfiguration>()))
+                .Returns(requestId);
+        }
+
     }
 }

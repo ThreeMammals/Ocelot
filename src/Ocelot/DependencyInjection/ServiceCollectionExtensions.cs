@@ -63,6 +63,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             services.AddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             services.AddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
+            services.AddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
 
             var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
             

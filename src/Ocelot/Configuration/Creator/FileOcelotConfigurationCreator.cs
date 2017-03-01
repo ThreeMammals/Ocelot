@@ -31,6 +31,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IClaimsToThingCreator _claimsToThingCreator;
         private readonly IAuthenticationOptionsCreator _authOptionsCreator;
         private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
+        private IRequestIdKeyCreator _requestIdKeyCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -42,8 +43,10 @@ namespace Ocelot.Configuration.Creator
             IQosProviderHouse qosProviderHouse,
             IClaimsToThingCreator claimsToThingCreator,
             IAuthenticationOptionsCreator authOptionsCreator,
-            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator)
+            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
+            IRequestIdKeyCreator requestIdKeyCreator)
         {
+            _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
             _authOptionsCreator = authOptionsCreator;
             _loadBalanceFactory = loadBalancerFactory;
@@ -105,7 +108,7 @@ namespace Ocelot.Configuration.Creator
 
             var isCached = IsCached(fileReRoute);
 
-            var requestIdKey = BuildRequestId(fileReRoute, globalConfiguration);
+            var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
 
             var reRouteKey = BuildReRouteKey(fileReRoute);
 
@@ -208,17 +211,6 @@ namespace Ocelot.Configuration.Creator
         private bool IsCached(FileReRoute fileReRoute)
         {
             return fileReRoute.FileCacheOptions.TtlSeconds > 0;
-        }
-
-        private string BuildRequestId(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
-
-             var requestIdKey = globalRequestIdConfiguration
-                ? globalConfiguration.RequestIdKey
-                : fileReRoute.RequestIdKey;
-
-                return requestIdKey;
         }
 
         private string BuildReRouteKey(FileReRoute fileReRoute)
