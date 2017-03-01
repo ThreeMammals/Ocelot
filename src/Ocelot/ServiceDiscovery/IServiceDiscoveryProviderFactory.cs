@@ -1,4 +1,3 @@
-using System;
 using Ocelot.Configuration;
 
 namespace Ocelot.ServiceDiscovery

@@ -22,7 +22,6 @@ namespace Ocelot.Configuration.Creator
     {
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
-
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;

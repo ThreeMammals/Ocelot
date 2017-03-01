@@ -6,7 +6,6 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Requester.QoS;
@@ -490,7 +489,6 @@ namespace Ocelot.UnitTests.Configuration
                 result.ServiceProviderConfiguraion.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
             }
         }
-
 
         private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {
