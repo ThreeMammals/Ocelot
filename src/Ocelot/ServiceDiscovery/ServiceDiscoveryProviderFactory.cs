@@ -6,7 +6,7 @@ namespace Ocelot.ServiceDiscovery
 {
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguraion serviceConfig)
+        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig)
         {
             if (serviceConfig.UseServiceDiscovery)
             {

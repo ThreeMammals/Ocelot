@@ -53,9 +53,9 @@ namespace Ocelot.Configuration.Builder
         }
 
         
-        public ServiceProviderConfiguraion Build()
+        public ServiceProviderConfiguration Build()
         {
-            return new ServiceProviderConfiguraion(_serviceName, _downstreamHost, _downstreamPort, _userServiceDiscovery,
+            return new ServiceProviderConfiguration(_serviceName, _downstreamHost, _downstreamPort, _userServiceDiscovery,
             _serviceDiscoveryProvider, _serviceDiscoveryProviderHost,_serviceDiscoveryProviderPort);
         }
     }

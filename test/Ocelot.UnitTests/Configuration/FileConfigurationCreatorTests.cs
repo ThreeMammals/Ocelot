@@ -35,6 +35,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
         private Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
+        private Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -51,12 +52,14 @@ namespace Ocelot.UnitTests.Configuration
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
             _requestIdKeyCreator = new Mock<IRequestIdKeyCreator>();
+            _serviceProviderConfigCreator = new Mock<IServiceProviderConfigurationCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
                 _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
-                _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object);
+                _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
+                _serviceProviderConfigCreator.Object);
         }
 
         [Fact]
@@ -470,8 +473,24 @@ namespace Ocelot.UnitTests.Configuration
                 result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
                 result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
                 result.RequestIdKey.ShouldBe(expected.RequestIdKey);
+            
             }
         }
+
+        private void ThenTheServiceConfigurationIs(ServiceProviderConfiguration expected)
+        {
+            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
+            {
+                var result = _config.Data.ReRoutes[i];
+                result.ServiceProviderConfiguraion.DownstreamHost.ShouldBe(expected.DownstreamHost);
+                result.ServiceProviderConfiguraion.DownstreamPort.ShouldBe(expected.DownstreamPort);
+                result.ServiceProviderConfiguraion.ServiceDiscoveryProvider.ShouldBe(expected.ServiceDiscoveryProvider);
+                result.ServiceProviderConfiguraion.ServiceName.ShouldBe(expected.ServiceName);
+                result.ServiceProviderConfiguraion.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
+                result.ServiceProviderConfiguraion.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
+            }
+        }
+
 
         private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {

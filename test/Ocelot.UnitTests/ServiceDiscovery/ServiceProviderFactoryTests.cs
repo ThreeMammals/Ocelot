@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceProviderFactoryTests
     {
-        private ServiceProviderConfiguraion _serviceConfig;
+        private ServiceProviderConfiguration _serviceConfig;
         private IServiceDiscoveryProvider _result;
         private readonly ServiceDiscoveryProviderFactory _factory;
 
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        private void GivenTheReRoute(ServiceProviderConfiguraion serviceConfig)
+        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig)
         {
             _serviceConfig = serviceConfig;
         }

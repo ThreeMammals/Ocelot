@@ -5,6 +5,6 @@ namespace Ocelot.ServiceDiscovery
 {
     public interface IServiceDiscoveryProviderFactory
     {
-        IServiceDiscoveryProvider Get(ServiceProviderConfiguraion serviceConfig);
+        IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig);
     }
 }

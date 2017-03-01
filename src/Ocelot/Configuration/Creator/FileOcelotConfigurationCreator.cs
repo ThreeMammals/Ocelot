@@ -32,6 +32,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IAuthenticationOptionsCreator _authOptionsCreator;
         private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
         private IRequestIdKeyCreator _requestIdKeyCreator;
+        private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -44,7 +45,8 @@ namespace Ocelot.Configuration.Creator
             IClaimsToThingCreator claimsToThingCreator,
             IAuthenticationOptionsCreator authOptionsCreator,
             IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
-            IRequestIdKeyCreator requestIdKeyCreator)
+            IRequestIdKeyCreator requestIdKeyCreator,
+            IServiceProviderConfigurationCreator serviceProviderConfigCreator)
         {
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
@@ -57,6 +59,7 @@ namespace Ocelot.Configuration.Creator
             _configurationValidator = configurationValidator;
             _logger = logger;
             _claimsToThingCreator = claimsToThingCreator;
+            _serviceProviderConfigCreator = serviceProviderConfigCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -110,13 +113,13 @@ namespace Ocelot.Configuration.Creator
 
             var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
 
-            var reRouteKey = BuildReRouteKey(fileReRoute);
+            var reRouteKey = CreateReRouteKey(fileReRoute);
 
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var isQos = IsQoS(fileReRoute);
 
-            var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
+            var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
             var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
 
@@ -213,7 +216,7 @@ namespace Ocelot.Configuration.Creator
             return fileReRoute.FileCacheOptions.TtlSeconds > 0;
         }
 
-        private string BuildReRouteKey(FileReRoute fileReRoute)
+        private string CreateReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
             var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
@@ -230,24 +233,6 @@ namespace Ocelot.Configuration.Creator
         {
             var loadBalancer = _qoSProviderFactory.Get(reRoute);
             _qosProviderHouse.Add(reRoute.ReRouteKey, loadBalancer);
-        }
-
-        private ServiceProviderConfiguraion BuildServiceProviderConfiguration(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName)
-                && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
-
-            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
-
-            return new ServiceProviderConfiguraionBuilder()
-                    .WithServiceName(fileReRoute.ServiceName)
-                    .WithDownstreamHost(fileReRoute.DownstreamHost)
-                    .WithDownstreamPort(fileReRoute.DownstreamPort)
-                    .WithUseServiceDiscovery(useServiceDiscovery)
-                    .WithServiceDiscoveryProvider(globalConfiguration?.ServiceDiscoveryProvider?.Provider)
-                    .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
-                    .WithServiceDiscoveryProviderPort(serviceProviderPort)
-                    .Build();
         }
 
         private bool IsPlaceHolder(string upstreamTemplate, int i)
