@@ -22,36 +22,38 @@ namespace Ocelot.Configuration.Creator
     {
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
-        private const string RegExMatchEverything = ".*";
-        private const string RegExMatchEndString = "$";
-        private const string RegExIgnoreCase = "(?i)";
-        private const string RegExForwardSlashOnly = "^/$";
 
-        private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly IQoSProviderFactory _qoSProviderFactory;
         private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly IClaimsToThingCreator _claimsToThingCreator;
+        private readonly IAuthenticationOptionsCreator _authOptionsCreator;
+        private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator, 
-            IClaimToThingConfigurationParser claimToThingConfigurationParser, 
             ILogger<FileOcelotConfigurationCreator> logger,
             ILoadBalancerFactory loadBalancerFactory,
             ILoadBalancerHouse loadBalancerHouse, 
             IQoSProviderFactory qoSProviderFactory, 
-            IQosProviderHouse qosProviderHouse)
+            IQosProviderHouse qosProviderHouse,
+            IClaimsToThingCreator claimsToThingCreator,
+            IAuthenticationOptionsCreator authOptionsCreator,
+            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator)
         {
+            _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
+            _authOptionsCreator = authOptionsCreator;
             _loadBalanceFactory = loadBalancerFactory;
             _loadBalancerHouse = loadBalancerHouse;
             _qoSProviderFactory = qoSProviderFactory;
             _qosProviderHouse = qosProviderHouse;
             _options = options;
             _configurationValidator = configurationValidator;
-            _claimToThingConfigurationParser = claimToThingConfigurationParser;
             _logger = logger;
+            _claimsToThingCreator = claimsToThingCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -107,19 +109,19 @@ namespace Ocelot.Configuration.Creator
 
             var reRouteKey = BuildReRouteKey(fileReRoute);
 
-            var upstreamTemplatePattern = BuildUpstreamTemplatePattern(fileReRoute);
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var isQos = IsQoS(fileReRoute);
 
             var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
 
-            var authOptionsForRoute = BuildAuthenticationOptions(fileReRoute);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
 
-            var claimsToHeaders = BuildAddThingsToRequest(fileReRoute.AddHeadersToRequest);
+            var claimsToHeaders = _claimsToThingCreator.Create(fileReRoute.AddHeadersToRequest);
 
-            var claimsToClaims = BuildAddThingsToRequest(fileReRoute.AddClaimsToRequest);
+            var claimsToClaims = _claimsToThingCreator.Create(fileReRoute.AddClaimsToRequest);
 
-            var claimsToQueries = BuildAddThingsToRequest(fileReRoute.AddQueriesToRequest);
+            var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
             var qosOptions = BuildQoSOptions(fileReRoute);
 
@@ -153,6 +155,7 @@ namespace Ocelot.Configuration.Creator
                 .WithEnableRateLimiting(enableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .Build();
+
             await SetupLoadBalancer(reRoute);
             SetupQosProvider(reRoute);
             return reRoute;
@@ -225,18 +228,6 @@ namespace Ocelot.Configuration.Creator
             return loadBalancerKey;
         }
 
-        private AuthenticationOptions BuildAuthenticationOptions(FileReRoute fileReRoute)
-        {
-            return new AuthenticationOptionsBuilder()
-                                        .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
-                                        .WithProviderRootUrl(fileReRoute.AuthenticationOptions?.ProviderRootUrl)
-                                        .WithScopeName(fileReRoute.AuthenticationOptions?.ScopeName)
-                                        .WithRequireHttps(fileReRoute.AuthenticationOptions.RequireHttps)
-                                        .WithAdditionalScopes(fileReRoute.AuthenticationOptions?.AdditionalScopes)
-                                        .WithScopeSecret(fileReRoute.AuthenticationOptions?.ScopeSecret)
-                                        .Build();
-        }
-
         private async Task SetupLoadBalancer(ReRoute reRoute)
         {
             var loadBalancer = await _loadBalanceFactory.Get(reRoute);
@@ -265,63 +256,6 @@ namespace Ocelot.Configuration.Creator
                     .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
                     .WithServiceDiscoveryProviderPort(serviceProviderPort)
                     .Build();
-        }
-
-        private string BuildUpstreamTemplatePattern(FileReRoute reRoute)
-        {
-            var upstreamTemplate = reRoute.UpstreamPathTemplate;
-
-            upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
-
-            var placeholders = new List<string>();
-
-            for (var i = 0; i < upstreamTemplate.Length; i++)
-            {
-                if (IsPlaceHolder(upstreamTemplate, i))
-                {
-                    var postitionOfPlaceHolderClosingBracket = upstreamTemplate.IndexOf('}', i);
-                    var difference = postitionOfPlaceHolderClosingBracket - i + 1;
-                    var variableName = upstreamTemplate.Substring(i, difference);
-                    placeholders.Add(variableName);
-                }
-            }
-
-            foreach (var placeholder in placeholders)
-            {
-                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
-            }
-
-            if (upstreamTemplate == "/")
-            {
-                return RegExForwardSlashOnly;
-            }
-
-            var route = reRoute.ReRouteIsCaseSensitive 
-                ? $"{upstreamTemplate}{RegExMatchEndString}" 
-                : $"{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
-
-            return route;
-        }
-
-        private List<ClaimToThing> BuildAddThingsToRequest(Dictionary<string,string> thingBeingAdded)
-        {
-            var claimsToTHings = new List<ClaimToThing>();
-
-            foreach (var add in thingBeingAdded)
-            {
-                var claimToHeader = _claimToThingConfigurationParser.Extract(add.Key, add.Value);
-
-                if (claimToHeader.IsError)
-                {
-                    _logger.LogCritical(new EventId(1, "Application Failed to start"),
-                        $"Unable to extract configuration for key: {add.Key} and value: {add.Value} your configuration file is incorrect");
-
-                    throw new Exception(claimToHeader.Errors[0].Message);
-                }
-                claimsToTHings.Add(claimToHeader.Data);
-            }
-
-            return claimsToTHings;
         }
 
         private bool IsPlaceHolder(string upstreamTemplate, int i)
