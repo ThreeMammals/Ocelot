@@ -36,6 +36,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
         private Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
+        private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -54,13 +55,14 @@ namespace Ocelot.UnitTests.Configuration
             _requestIdKeyCreator = new Mock<IRequestIdKeyCreator>();
             _serviceProviderConfigCreator = new Mock<IServiceProviderConfigurationCreator>();
             _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
+            _fileReRouteOptionsCreator = new Mock<IReRouteOptionsCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
                 _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
-                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object);
+                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object);
         }
 
         [Fact]
@@ -70,6 +72,10 @@ namespace Ocelot.UnitTests.Configuration
                 .WithDurationOfBreak(1)
                 .WithExceptionsAllowedBeforeBreaking(1)
                 .WithTimeoutValue(1)
+                .Build();
+
+            var serviceOptions = new ReRouteOptionsBuilder()
+                .WithIsQos(true)
                 .Build();
 
              this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -92,16 +98,22 @@ namespace Ocelot.UnitTests.Configuration
                 },
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
                 .And(x => x.GivenTheQosProviderFactoryReturns())
                 .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheQosOptionsAre(expected))
+                .And(x => x.TheQosProviderFactoryIsCalledCorrectly())
+                .And(x => x.ThenTheQosProviderHouseIsCalledCorrectly())
                 .BDDfy();
         }
 
         [Fact]
         public void should_create_load_balancer()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                             {
                                 ReRoutes = new List<FileReRoute>
@@ -116,6 +128,7 @@ namespace Ocelot.UnitTests.Configuration
                                 },
                             }))
                                 .And(x => x.GivenTheConfigIsValid())
+                                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                                 .When(x => x.WhenICreateTheConfig())
                                 .Then(x => x.TheLoadBalancerFactoryIsCalledCorrectly())
@@ -124,68 +137,45 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_qos_provider()
-        {
-            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        DownstreamHost = "127.0.0.1",
-                        UpstreamPathTemplate = "/api/products/{productId}",
-                        DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1,
-                            DurationOfBreak = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
-                        }
-                    }
-                },
-            }))
-                .And(x => x.GivenTheConfigIsValid())
-                .And(x => x.GivenTheQosProviderFactoryReturns())
-                .When(x => x.WhenICreateTheConfig())
-                .Then(x => x.TheQosProviderFactoryIsCalledCorrectly())
-                .And(x => x.ThenTheQosProviderHouseIsCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_use_downstream_host()
         {
-                this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                        {
+                            ReRoutes = new List<FileReRoute>
                             {
-                                ReRoutes = new List<FileReRoute>
+                                new FileReRoute
                                 {
-                                    new FileReRoute
-                                    {
-                                        DownstreamHost = "127.0.0.1",
-                                        UpstreamPathTemplate = "/api/products/{productId}",
-                                        DownstreamPathTemplate = "/products/{productId}",
-                                        UpstreamHttpMethod = "Get",
-                                    }
-                                },
+                                    DownstreamHost = "127.0.0.1",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = "Get",
+                                }
+                            },
+                        }))
+                            .And(x => x.GivenTheConfigIsValid())
+                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                            .When(x => x.WhenICreateTheConfig())
+                            .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                            {
+                                new ReRouteBuilder()
+                                    .WithDownstreamHost("127.0.0.1")
+                                    .WithDownstreamPathTemplate("/products/{productId}")
+                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamHttpMethod("Get")
+                                    .Build()
                             }))
-                                .And(x => x.GivenTheConfigIsValid())
-                                .When(x => x.WhenICreateTheConfig())
-                                .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
-                                {
-                                    new ReRouteBuilder()
-                                        .WithDownstreamHost("127.0.0.1")
-                                        .WithDownstreamPathTemplate("/products/{productId}")
-                                        .WithUpstreamPathTemplate("/api/products/{productId}")
-                                        .WithUpstreamHttpMethod("Get")
-                                        .Build()
-                                }))
-                    .BDDfy();
+                .BDDfy();
         }
 
         [Fact]
         public void should_use_downstream_scheme()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                                         {
                                             ReRoutes = new List<FileReRoute>
@@ -200,6 +190,7 @@ namespace Ocelot.UnitTests.Configuration
                                             },
                                         }))
                                             .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                                             .When(x => x.WhenICreateTheConfig())
                                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                                             {
@@ -216,6 +207,9 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_service_discovery_for_downstream_service_host()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                         {
                             ReRoutes = new List<FileReRoute>
@@ -239,6 +233,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
@@ -260,6 +255,9 @@ namespace Ocelot.UnitTests.Configuration
          [Fact]
         public void should_not_use_service_discovery_for_downstream_host_url_when_no_service_name()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+                
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                         {
                             ReRoutes = new List<FileReRoute>
@@ -274,6 +272,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
@@ -292,6 +291,9 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_call_template_pattern_creator_correctly()
         {
+             var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+                
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -306,6 +308,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheUpstreamTemplatePatternCreatorReturns("(?i)/api/products/.*/$"))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -323,6 +326,9 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_call_request_id_creator()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -341,6 +347,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())    
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheRequestIdCreatorReturns("blahhhh"))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -359,6 +366,10 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_with_headers_to_extract()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .WithIsAuthenticated(true)
+                .Build();
+
             var authenticationOptions = new AuthenticationOptionsBuilder()
                     .WithProvider("IdentityServer")
                     .WithProviderRootUrl("http://localhost:51888")
@@ -410,6 +421,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing>{new ClaimToThing("CustomerId", "CustomerId", "", 0)}))
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
@@ -424,6 +436,10 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_with_authentication_properties()
         {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .WithIsAuthenticated(true)
+                .Build();
+
              var authenticationOptions = new AuthenticationOptionsBuilder()
                     .WithProvider("IdentityServer")
                     .WithProviderRootUrl("http://localhost:51888")
@@ -466,6 +482,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
@@ -474,6 +491,14 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
         }
+
+        private void GivenTheFollowingOptionsAreReturned(ReRouteOptions fileReRouteOptions)
+        {
+            _fileReRouteOptionsCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(fileReRouteOptions);
+        }
+
 
         private void GivenTheConfigIsValid()
         {

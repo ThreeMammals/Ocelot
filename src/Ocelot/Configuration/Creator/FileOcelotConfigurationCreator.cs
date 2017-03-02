@@ -33,6 +33,7 @@ namespace Ocelot.Configuration.Creator
         private IRequestIdKeyCreator _requestIdKeyCreator;
         private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
         private IQoSOptionsCreator _qosOptionsCreator;
+        private IReRouteOptionsCreator _fileReRouteOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -47,7 +48,8 @@ namespace Ocelot.Configuration.Creator
             IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
             IRequestIdKeyCreator requestIdKeyCreator,
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
-            IQoSOptionsCreator qosOptionsCreator
+            IQoSOptionsCreator qosOptionsCreator,
+            IReRouteOptionsCreator fileReRouteOptionsCreator
             )
         {
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -63,6 +65,7 @@ namespace Ocelot.Configuration.Creator
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
+            _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -108,19 +111,13 @@ namespace Ocelot.Configuration.Creator
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var isAuthenticated = IsAuthenticated(fileReRoute);
-
-            var isAuthorised = IsAuthorised(fileReRoute);
-
-            var isCached = IsCached(fileReRoute);
+            var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
             var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
 
             var reRouteKey = CreateReRouteKey(fileReRoute);
 
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
-
-            var isQos = IsQoS(fileReRoute);
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
@@ -134,24 +131,22 @@ namespace Ocelot.Configuration.Creator
 
             var qosOptions = _qosOptionsCreator.Create(fileReRoute);
 
-            var enableRateLimiting = IsEnableRateLimiting(fileReRoute);
-
-            var rateLimitOption = BuildRateLimitOptions(fileReRoute, globalConfiguration, enableRateLimiting);
+            var rateLimitOption = BuildRateLimitOptions(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
-                .WithIsAuthenticated(isAuthenticated)
+                .WithIsAuthenticated(fileReRouteOptions.IsAuthenticated)
                 .WithAuthenticationOptions(authOptionsForRoute)
                 .WithClaimsToHeaders(claimsToHeaders)
                 .WithClaimsToClaims(claimsToClaims)
                 .WithRouteClaimsRequirement(fileReRoute.RouteClaimsRequirement)
-                .WithIsAuthorised(isAuthorised)
+                .WithIsAuthorised(fileReRouteOptions.IsAuthorised)
                 .WithClaimsToQueries(claimsToQueries)
                 .WithRequestIdKey(requestIdKey)
-                .WithIsCached(isCached)
+                .WithIsCached(fileReRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
@@ -159,9 +154,9 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamPort(fileReRoute.DownstreamPort)
                 .WithLoadBalancerKey(reRouteKey)
                 .WithServiceProviderConfiguraion(serviceProviderConfiguration)
-                .WithIsQos(isQos)
+                .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)
-                .WithEnableRateLimiting(enableRateLimiting)
+                .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .Build();
 
@@ -185,31 +180,6 @@ namespace Ocelot.Configuration.Creator
             return rateLimitOption;
         }
 
-        private static bool IsEnableRateLimiting(FileReRoute fileReRoute)
-        {
-            return (fileReRoute.RateLimitOptions != null && fileReRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
-        }
-
-        private bool IsQoS(FileReRoute fileReRoute)
-        {
-            return fileReRoute.QoSOptions?.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions?.TimeoutValue > 0;
-        }
-
-        private bool IsAuthenticated(FileReRoute fileReRoute)
-        {
-            return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
-        }
-      
-        private bool IsAuthorised(FileReRoute fileReRoute)
-        {
-            return fileReRoute.RouteClaimsRequirement?.Count > 0;
-        }
-
-        private bool IsCached(FileReRoute fileReRoute)
-        {
-            return fileReRoute.FileCacheOptions.TtlSeconds > 0;
-        }
-
         private string CreateReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
@@ -227,11 +197,6 @@ namespace Ocelot.Configuration.Creator
         {
             var loadBalancer = _qoSProviderFactory.Get(reRoute);
             _qosProviderHouse.Add(reRoute.ReRouteKey, loadBalancer);
-        }
-
-        private bool IsPlaceHolder(string upstreamTemplate, int i)
-        {
-            return upstreamTemplate[i] == '{';
         }
     }
 }
