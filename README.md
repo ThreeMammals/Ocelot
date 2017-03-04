@@ -35,6 +35,28 @@ That is basically it with a bunch of other features.
 Pull requests, issues and commentary welcome! No special process just create a request and get in 
 touch either via gitter or create an issue. 
 
+## Building Ocelot
+
+You should be able to just build Ocelot using the ./build.ps1 or ./build.sh scripts if you are on 
+windows or mac. Alternatively you can build the project in VS2015 with the latest .NET Core SDK.
+
+The tests should all just run and work apart from the integration tests which need the following 
+environmental variables setting. This is a manual step at the moment.
+
+    OCELOT_USERNAME=admin
+    OCELOT_HASH=kE/mxd1hO9h9Sl2VhGhwJUd9xZEv4NP6qXoN39nIqM4=
+    OCELOT_SALT=zzWITpnDximUNKYLiUam/w==
+
+On windows you can use..
+
+	SETX OCELOT_USERNAME admin
+
+On mac..
+	
+	export OCELOT_USERNAME=admin
+
+I need to work out a nicer way of doing this in the future.
+
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
