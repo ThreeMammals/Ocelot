@@ -25,7 +25,7 @@ namespace Ocelot.Configuration
             string downstreamHost, 
             int downstreamPort, 
             string reRouteKey, 
-            ServiceProviderConfiguraion serviceProviderConfiguraion,
+            ServiceProviderConfiguration serviceProviderConfiguraion,
             bool isQos,
             QoSOptions qos,
             bool enableRateLimit,
@@ -81,7 +81,7 @@ namespace Ocelot.Configuration
         public string LoadBalancer {get;private set;}
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
-        public ServiceProviderConfiguraion ServiceProviderConfiguraion { get; private set; }
+        public ServiceProviderConfiguration ServiceProviderConfiguraion { get; private set; }
         public bool EnableEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
     }
