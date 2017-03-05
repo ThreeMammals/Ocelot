@@ -52,6 +52,10 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 Please click [here](https://github.com/TomPallister/Ocelot/wiki) for the Ocleot documentation.
 
+## Coming up
+
+You can see what we are working on [here](https://github.com/TomPallister/Ocelot/projects/1)
+
 ## Things that are currently annoying me
 
 + The ReRoute configuration object is too large.
@@ -61,10 +65,6 @@ and doesnt check the response is OK. I think the fact you can even call stuff
 that isnt available is annoying. Let alone it be null.
 
 [![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
-
-## Coming up
-
-You can see what we are working on [here](https://github.com/TomPallister/Ocelot/projects/1)
 
 
 
