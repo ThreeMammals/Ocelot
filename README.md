@@ -30,11 +30,6 @@ and retrieved as the requests goes back up the Ocelot pipeline. There is a piece
 that maps the HttpResponseMessage onto the HttpResponse object and that is returned to the client.
 That is basically it with a bunch of other features.
 
-## Contributing
-
-Pull requests, issues and commentary welcome! No special process just create a request and get in 
-touch either via gitter or create an issue. 
-
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
@@ -48,11 +43,17 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 ## Documentation
 
-Please click [here](https://github.com/TomPallister/Ocelot/wiki) for the Ocleot documentation.
+Please click [here](https://github.com/TomPallister/Ocelot/wiki) for the Ocleot documentation. This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
 
 ## Coming up
 
 You can see what we are working on [here](https://github.com/TomPallister/Ocelot/projects/1)
+
+## Contributing
+
+Pull requests, issues and commentary welcome! No special process just create a request and get in 
+touch either via gitter or create an issue. 
+
 
 ## Things that are currently annoying me
 
