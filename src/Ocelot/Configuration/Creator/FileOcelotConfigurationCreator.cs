@@ -22,36 +22,53 @@ namespace Ocelot.Configuration.Creator
     {
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
-        private const string RegExMatchEverything = ".*";
-        private const string RegExMatchEndString = "$";
-        private const string RegExIgnoreCase = "(?i)";
-        private const string RegExForwardSlashOnly = "^/$";
-
-        private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
         private readonly ILogger<FileOcelotConfigurationCreator> _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly IQoSProviderFactory _qoSProviderFactory;
         private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly IClaimsToThingCreator _claimsToThingCreator;
+        private readonly IAuthenticationOptionsCreator _authOptionsCreator;
+        private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
+        private IRequestIdKeyCreator _requestIdKeyCreator;
+        private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
+        private IQoSOptionsCreator _qosOptionsCreator;
+        private IReRouteOptionsCreator _fileReRouteOptionsCreator;
+        private IRateLimitOptionsCreator _rateLimitOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator, 
-            IClaimToThingConfigurationParser claimToThingConfigurationParser, 
             ILogger<FileOcelotConfigurationCreator> logger,
             ILoadBalancerFactory loadBalancerFactory,
             ILoadBalancerHouse loadBalancerHouse, 
             IQoSProviderFactory qoSProviderFactory, 
-            IQosProviderHouse qosProviderHouse)
+            IQosProviderHouse qosProviderHouse,
+            IClaimsToThingCreator claimsToThingCreator,
+            IAuthenticationOptionsCreator authOptionsCreator,
+            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
+            IRequestIdKeyCreator requestIdKeyCreator,
+            IServiceProviderConfigurationCreator serviceProviderConfigCreator,
+            IQoSOptionsCreator qosOptionsCreator,
+            IReRouteOptionsCreator fileReRouteOptionsCreator,
+            IRateLimitOptionsCreator rateLimitOptionsCreator
+            )
         {
+            _rateLimitOptionsCreator = rateLimitOptionsCreator;
+            _requestIdKeyCreator = requestIdKeyCreator;
+            _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
+            _authOptionsCreator = authOptionsCreator;
             _loadBalanceFactory = loadBalancerFactory;
             _loadBalancerHouse = loadBalancerHouse;
             _qoSProviderFactory = qoSProviderFactory;
             _qosProviderHouse = qosProviderHouse;
             _options = options;
             _configurationValidator = configurationValidator;
-            _claimToThingConfigurationParser = claimToThingConfigurationParser;
             _logger = logger;
+            _claimsToThingCreator = claimsToThingCreator;
+            _serviceProviderConfigCreator = serviceProviderConfigCreator;
+            _qosOptionsCreator = qosOptionsCreator;
+            _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -97,50 +114,42 @@ namespace Ocelot.Configuration.Creator
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var isAuthenticated = IsAuthenticated(fileReRoute);
+            var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
-            var isAuthorised = IsAuthorised(fileReRoute);
+            var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
 
-            var isCached = IsCached(fileReRoute);
+            var reRouteKey = CreateReRouteKey(fileReRoute);
 
-            var requestIdKey = BuildRequestId(fileReRoute, globalConfiguration);
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
-            var reRouteKey = BuildReRouteKey(fileReRoute);
+            var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
-            var upstreamTemplatePattern = BuildUpstreamTemplatePattern(fileReRoute);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
 
-            var isQos = IsQoS(fileReRoute);
+            var claimsToHeaders = _claimsToThingCreator.Create(fileReRoute.AddHeadersToRequest);
 
-            var serviceProviderConfiguration = BuildServiceProviderConfiguration(fileReRoute, globalConfiguration);
+            var claimsToClaims = _claimsToThingCreator.Create(fileReRoute.AddClaimsToRequest);
 
-            var authOptionsForRoute = BuildAuthenticationOptions(fileReRoute);
+            var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
-            var claimsToHeaders = BuildAddThingsToRequest(fileReRoute.AddHeadersToRequest);
+            var qosOptions = _qosOptionsCreator.Create(fileReRoute);
 
-            var claimsToClaims = BuildAddThingsToRequest(fileReRoute.AddClaimsToRequest);
-
-            var claimsToQueries = BuildAddThingsToRequest(fileReRoute.AddQueriesToRequest);
-
-            var qosOptions = BuildQoSOptions(fileReRoute);
-
-            var enableRateLimiting = IsEnableRateLimiting(fileReRoute);
-
-            var rateLimitOption = BuildRateLimitOptions(fileReRoute, globalConfiguration, enableRateLimiting);
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
-                .WithIsAuthenticated(isAuthenticated)
+                .WithIsAuthenticated(fileReRouteOptions.IsAuthenticated)
                 .WithAuthenticationOptions(authOptionsForRoute)
                 .WithClaimsToHeaders(claimsToHeaders)
                 .WithClaimsToClaims(claimsToClaims)
                 .WithRouteClaimsRequirement(fileReRoute.RouteClaimsRequirement)
-                .WithIsAuthorised(isAuthorised)
+                .WithIsAuthorised(fileReRouteOptions.IsAuthorised)
                 .WithClaimsToQueries(claimsToQueries)
                 .WithRequestIdKey(requestIdKey)
-                .WithIsCached(isCached)
+                .WithIsCached(fileReRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
@@ -148,93 +157,22 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamPort(fileReRoute.DownstreamPort)
                 .WithLoadBalancerKey(reRouteKey)
                 .WithServiceProviderConfiguraion(serviceProviderConfiguration)
-                .WithIsQos(isQos)
+                .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)
-                .WithEnableRateLimiting(enableRateLimiting)
+                .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .Build();
+
             await SetupLoadBalancer(reRoute);
             SetupQosProvider(reRoute);
             return reRoute;
         }
 
-        private static RateLimitOptions BuildRateLimitOptions(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration, bool enableRateLimiting)
-        {
-            RateLimitOptions rateLimitOption = null;
-            if (enableRateLimiting)
-            {
-                rateLimitOption = new RateLimitOptions(enableRateLimiting, globalConfiguration.RateLimitOptions.ClientIdHeader,
-                   fileReRoute.RateLimitOptions.ClientWhitelist, globalConfiguration.RateLimitOptions.DisableRateLimitHeaders,
-                   globalConfiguration.RateLimitOptions.QuotaExceededMessage, globalConfiguration.RateLimitOptions.RateLimitCounterPrefix,
-                   new RateLimitRule(fileReRoute.RateLimitOptions.Period, TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.PeriodTimespan), fileReRoute.RateLimitOptions.Limit)
-                   , globalConfiguration.RateLimitOptions.HttpStatusCode);
-            }
-
-            return rateLimitOption;
-        }
-
-        private static bool IsEnableRateLimiting(FileReRoute fileReRoute)
-        {
-            return (fileReRoute.RateLimitOptions != null && fileReRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
-        }
-
-        private QoSOptions BuildQoSOptions(FileReRoute fileReRoute)
-        {
-            return new QoSOptionsBuilder()
-                .WithExceptionsAllowedBeforeBreaking(fileReRoute.QoSOptions.ExceptionsAllowedBeforeBreaking)
-                .WithDurationOfBreak(fileReRoute.QoSOptions.DurationOfBreak)
-                .WithTimeoutValue(fileReRoute.QoSOptions.TimeoutValue)
-                .Build();
-        }
-
-        private bool IsQoS(FileReRoute fileReRoute)
-        {
-            return fileReRoute.QoSOptions?.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions?.TimeoutValue > 0;
-        }
-
-        private bool IsAuthenticated(FileReRoute fileReRoute)
-        {
-            return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
-        }
-      
-        private bool IsAuthorised(FileReRoute fileReRoute)
-        {
-            return fileReRoute.RouteClaimsRequirement?.Count > 0;
-        }
-
-        private bool IsCached(FileReRoute fileReRoute)
-        {
-            return fileReRoute.FileCacheOptions.TtlSeconds > 0;
-        }
-
-        private string BuildRequestId(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
-
-             var requestIdKey = globalRequestIdConfiguration
-                ? globalConfiguration.RequestIdKey
-                : fileReRoute.RequestIdKey;
-
-                return requestIdKey;
-        }
-
-        private string BuildReRouteKey(FileReRoute fileReRoute)
+        private string CreateReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
             var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
             return loadBalancerKey;
-        }
-
-        private AuthenticationOptions BuildAuthenticationOptions(FileReRoute fileReRoute)
-        {
-            return new AuthenticationOptionsBuilder()
-                                        .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
-                                        .WithProviderRootUrl(fileReRoute.AuthenticationOptions?.ProviderRootUrl)
-                                        .WithScopeName(fileReRoute.AuthenticationOptions?.ScopeName)
-                                        .WithRequireHttps(fileReRoute.AuthenticationOptions.RequireHttps)
-                                        .WithAdditionalScopes(fileReRoute.AuthenticationOptions?.AdditionalScopes)
-                                        .WithScopeSecret(fileReRoute.AuthenticationOptions?.ScopeSecret)
-                                        .Build();
         }
 
         private async Task SetupLoadBalancer(ReRoute reRoute)
@@ -247,86 +185,6 @@ namespace Ocelot.Configuration.Creator
         {
             var loadBalancer = _qoSProviderFactory.Get(reRoute);
             _qosProviderHouse.Add(reRoute.ReRouteKey, loadBalancer);
-        }
-
-        private ServiceProviderConfiguraion BuildServiceProviderConfiguration(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName)
-                && !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Provider);
-
-            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
-
-            return new ServiceProviderConfiguraionBuilder()
-                    .WithServiceName(fileReRoute.ServiceName)
-                    .WithDownstreamHost(fileReRoute.DownstreamHost)
-                    .WithDownstreamPort(fileReRoute.DownstreamPort)
-                    .WithUseServiceDiscovery(useServiceDiscovery)
-                    .WithServiceDiscoveryProvider(globalConfiguration?.ServiceDiscoveryProvider?.Provider)
-                    .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
-                    .WithServiceDiscoveryProviderPort(serviceProviderPort)
-                    .Build();
-        }
-
-        private string BuildUpstreamTemplatePattern(FileReRoute reRoute)
-        {
-            var upstreamTemplate = reRoute.UpstreamPathTemplate;
-
-            upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
-
-            var placeholders = new List<string>();
-
-            for (var i = 0; i < upstreamTemplate.Length; i++)
-            {
-                if (IsPlaceHolder(upstreamTemplate, i))
-                {
-                    var postitionOfPlaceHolderClosingBracket = upstreamTemplate.IndexOf('}', i);
-                    var difference = postitionOfPlaceHolderClosingBracket - i + 1;
-                    var variableName = upstreamTemplate.Substring(i, difference);
-                    placeholders.Add(variableName);
-                }
-            }
-
-            foreach (var placeholder in placeholders)
-            {
-                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
-            }
-
-            if (upstreamTemplate == "/")
-            {
-                return RegExForwardSlashOnly;
-            }
-
-            var route = reRoute.ReRouteIsCaseSensitive 
-                ? $"{upstreamTemplate}{RegExMatchEndString}" 
-                : $"{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
-
-            return route;
-        }
-
-        private List<ClaimToThing> BuildAddThingsToRequest(Dictionary<string,string> thingBeingAdded)
-        {
-            var claimsToTHings = new List<ClaimToThing>();
-
-            foreach (var add in thingBeingAdded)
-            {
-                var claimToHeader = _claimToThingConfigurationParser.Extract(add.Key, add.Value);
-
-                if (claimToHeader.IsError)
-                {
-                    _logger.LogCritical(new EventId(1, "Application Failed to start"),
-                        $"Unable to extract configuration for key: {add.Key} and value: {add.Value} your configuration file is incorrect");
-
-                    throw new Exception(claimToHeader.Errors[0].Message);
-                }
-                claimsToTHings.Add(claimToHeader.Data);
-            }
-
-            return claimsToTHings;
-        }
-
-        private bool IsPlaceHolder(string upstreamTemplate, int i)
-        {
-            return upstreamTemplate[i] == '{';
         }
     }
 }

@@ -60,6 +60,14 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.AddSingleton<IConfigurationValidator, FileConfigurationValidator>();
             services.AddSingleton<IBaseUrlFinder, BaseUrlFinder>();
+            services.AddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
+            services.AddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
+            services.AddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
+            services.AddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
+            services.AddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
+            services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+            services.AddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
+            services.AddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
 
             var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
             
