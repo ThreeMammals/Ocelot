@@ -21,7 +21,6 @@ namespace Ocelot.Request.Builder
         private string _contentType;
         private IHeaderDictionary _headers;
         private RequestId.RequestId _requestId;
-        private IRequestCookieCollection _cookies;
         private readonly string[] _unsupportedHeaders = {"host"};
         private bool _isQos;
         private IQoSProvider _qoSProvider;
@@ -68,12 +67,6 @@ namespace Ocelot.Request.Builder
             return this;
         }
 
-        public RequestBuilder WithCookies(IRequestCookieCollection cookies)
-        {
-            _cookies = cookies;
-            return this;
-        }
-
         public RequestBuilder WithIsQos(bool isqos)
         {
             _isQos = isqos;
@@ -103,9 +96,7 @@ namespace Ocelot.Request.Builder
                 AddRequestIdHeader(_requestId, httpRequestMessage);
             }
 
-            var cookieContainer = CreateCookieContainer(uri);
-
-            return new Request(httpRequestMessage, cookieContainer,_isQos, _qoSProvider);
+            return new Request(httpRequestMessage,_isQos, _qoSProvider);
         }
 
         private Uri CreateUri()
@@ -151,21 +142,6 @@ namespace Ocelot.Request.Builder
         private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
         {
             return !_unsupportedHeaders.Contains(header.Key.ToLower());
-        }
-
-        private CookieContainer CreateCookieContainer(Uri uri)
-        {
-            var cookieContainer = new CookieContainer();
-
-            if (_cookies != null)
-            {
-                foreach (var cookie in _cookies)
-                {
-                    cookieContainer.Add(uri, new Cookie(cookie.Key, cookie.Value));
-                }
-            }
-
-            return cookieContainer;
         }
 
         private void AddRequestIdHeader(RequestId.RequestId requestId, HttpRequestMessage httpRequestMessage)

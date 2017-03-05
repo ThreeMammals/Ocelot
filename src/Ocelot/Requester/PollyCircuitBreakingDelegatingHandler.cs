@@ -16,9 +16,7 @@ namespace Ocelot.Requester
 
         public PollyCircuitBreakingDelegatingHandler(
             IQoSProvider qoSProvider,
-            IOcelotLogger logger, 
-            HttpMessageHandler innerHandler)
-            : base(innerHandler)
+            IOcelotLogger logger)
         {
             _qoSProvider = qoSProvider;
             _logger = logger;
