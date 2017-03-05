@@ -34,6 +34,7 @@ namespace Ocelot.Configuration.Creator
         private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
         private IQoSOptionsCreator _qosOptionsCreator;
         private IReRouteOptionsCreator _fileReRouteOptionsCreator;
+        private IRateLimitOptionsCreator _rateLimitOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -49,9 +50,11 @@ namespace Ocelot.Configuration.Creator
             IRequestIdKeyCreator requestIdKeyCreator,
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
             IQoSOptionsCreator qosOptionsCreator,
-            IReRouteOptionsCreator fileReRouteOptionsCreator
+            IReRouteOptionsCreator fileReRouteOptionsCreator,
+            IRateLimitOptionsCreator rateLimitOptionsCreator
             )
         {
+            _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
             _authOptionsCreator = authOptionsCreator;
@@ -131,7 +134,7 @@ namespace Ocelot.Configuration.Creator
 
             var qosOptions = _qosOptionsCreator.Create(fileReRoute);
 
-            var rateLimitOption = BuildRateLimitOptions(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
@@ -163,21 +166,6 @@ namespace Ocelot.Configuration.Creator
             await SetupLoadBalancer(reRoute);
             SetupQosProvider(reRoute);
             return reRoute;
-        }
-
-        private static RateLimitOptions BuildRateLimitOptions(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration, bool enableRateLimiting)
-        {
-            RateLimitOptions rateLimitOption = null;
-            if (enableRateLimiting)
-            {
-                rateLimitOption = new RateLimitOptions(enableRateLimiting, globalConfiguration.RateLimitOptions.ClientIdHeader,
-                   fileReRoute.RateLimitOptions.ClientWhitelist, globalConfiguration.RateLimitOptions.DisableRateLimitHeaders,
-                   globalConfiguration.RateLimitOptions.QuotaExceededMessage, globalConfiguration.RateLimitOptions.RateLimitCounterPrefix,
-                   new RateLimitRule(fileReRoute.RateLimitOptions.Period, TimeSpan.FromSeconds(fileReRoute.RateLimitOptions.PeriodTimespan), fileReRoute.RateLimitOptions.Limit)
-                   , globalConfiguration.RateLimitOptions.HttpStatusCode);
-            }
-
-            return rateLimitOption;
         }
 
         private string CreateReRouteKey(FileReRoute fileReRoute)

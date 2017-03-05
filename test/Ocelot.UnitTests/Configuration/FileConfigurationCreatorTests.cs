@@ -37,6 +37,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
+        private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
 
         public FileConfigurationCreatorTests()
         {
@@ -56,13 +57,41 @@ namespace Ocelot.UnitTests.Configuration
             _serviceProviderConfigCreator = new Mock<IServiceProviderConfigurationCreator>();
             _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
             _fileReRouteOptionsCreator = new Mock<IReRouteOptionsCreator>();
+            _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
                 _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
-                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object);
+                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
+                _rateLimitOptions.Object);
+        }
+
+        [Fact]
+        public void should_call_rate_limit_options_creator()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    DownstreamHost = "127.0.0.1",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = "Get",
+                                }
+                            },
+            }))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheRateLimitOptionsCreatorIsCalledCorrectly())
+                .BDDfy();
         }
 
         [Fact]
@@ -431,8 +460,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-   
-
         [Fact]
         public void should_create_with_authentication_properties()
         {
@@ -499,6 +526,11 @@ namespace Ocelot.UnitTests.Configuration
                 .Returns(fileReRouteOptions);
         }
 
+        private void ThenTheRateLimitOptionsCreatorIsCalledCorrectly()
+        {
+            _rateLimitOptions
+                .Verify(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<bool>()), Times.Once);
+        }
 
         private void GivenTheConfigIsValid()
         {
