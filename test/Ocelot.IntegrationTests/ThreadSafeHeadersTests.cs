@@ -30,14 +30,14 @@ namespace Ocelot.IntegrationTests
         private BearerToken _token;
         private IWebHost _downstreamBuilder;
         private readonly Random _random;
-        private ConcurrentBag<ThreadSafeHeadersTestResult> _results;
+        private readonly ConcurrentBag<ThreadSafeHeadersTestResult> _results;
 
         public ThreadSafeHeadersTests()
         {
             _results = new ConcurrentBag<ThreadSafeHeadersTestResult>();
             _random = new Random();
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5000";
+            _ocelotBaseUrl = "http://localhost:5001";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
 
@@ -63,10 +63,11 @@ namespace Ocelot.IntegrationTests
             this.Given(x => GivenThereIsAConfiguration(configuration))
                .And(x => GivenThereIsAServiceRunningOn("http://localhost:51879"))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 100))
+                .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300))
                 .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
                 .BDDfy();
         }
+
         private void GivenThereIsAServiceRunningOn(string url)
         {
             _downstreamBuilder = new WebHostBuilder()
@@ -88,59 +89,6 @@ namespace Ocelot.IntegrationTests
                 .Build();
 
             _downstreamBuilder.Start();
-        }
-        private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
-        {
-            var json = JsonConvert.SerializeObject(updatedConfiguration);
-            var content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = _httpClient.PostAsync(url, content).Result;
-        }
-
-        private void ThenTheResponseShouldBe(FileConfiguration expected)
-        {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
-
-            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
-
-            for (var i = 0; i < response.ReRoutes.Count; i++)
-            {
-                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
-            }
-        }
-
-        private void GivenIHaveAddedATokenToMyRequest()
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-        }
-
-        private void GivenIHaveAnOcelotToken(string adminPath)
-        {
-            var tokenUrl = $"{adminPath}/connect/token";
-            var formData = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("client_id", "admin"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "secret"),
-                new KeyValuePair<string, string>("grant_type", "password")
-            };
-            var content = new FormUrlEncodedContent(formData);
-
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-            response.EnsureSuccessStatusCode();
-            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
         private void GivenOcelotIsRunning()
