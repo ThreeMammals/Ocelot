@@ -19,36 +19,33 @@ namespace Ocelot.Requester
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            var builder = new HttpClientBuilder();    
+            var builder = new HttpClientBuilder();
 
-            using (var handler = new HttpClientHandler { CookieContainer = request.CookieContainer })
+            if (request.IsQos)
             {
-                if (request.IsQos)
-                {
-                    builder.WithQoS(request.QosProvider, _logger, handler);
-                }           
+                builder.WithQoS(request.QosProvider, _logger);
+            }
 
-                using (var httpClient = builder.Build(handler))
+            using (var httpClient = builder.Build())
+            {
+                try
                 {
-                    try
-                    {
-                        var response = await httpClient.SendAsync(request.HttpRequestMessage);
-                        return new OkResponse<HttpResponseMessage>(response);
-                    }
-                    catch (TimeoutRejectedException exception)
-                    {
-                        return
-                            new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-                    }
-                    catch (BrokenCircuitException exception)
-                    {
-                        return
-                            new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-                    }
-                    catch (Exception exception)
-                    {
-                        return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
-                    }
+                    var response = await httpClient.SendAsync(request.HttpRequestMessage);
+                    return new OkResponse<HttpResponseMessage>(response);
+                }
+                catch (TimeoutRejectedException exception)
+                {
+                    return
+                        new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                }
+                catch (BrokenCircuitException exception)
+                {
+                    return
+                        new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                }
+                catch (Exception exception)
+                {
+                    return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
                 }
             }
         }

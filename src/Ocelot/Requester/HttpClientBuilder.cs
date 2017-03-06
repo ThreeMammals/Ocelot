@@ -11,17 +11,17 @@ namespace Ocelot.Requester
     {
         private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
 
-        public HttpClientBuilder WithQoS(IQoSProvider qoSProvider, IOcelotLogger logger, HttpMessageHandler innerHandler)
+        public HttpClientBuilder WithQoS(IQoSProvider qoSProvider, IOcelotLogger logger)
         {
-            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qoSProvider, logger, innerHandler));
+            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qoSProvider, logger));
             return this;
         }
 
-        internal HttpClient Build(HttpMessageHandler innerHandler)
+        internal HttpClient Build()
         {
             return _handlers.Any() ? 
                 new HttpClient(CreateHttpMessageHandler()) : 
-                new HttpClient(innerHandler);
+                new HttpClient();
         }
 
         private HttpMessageHandler CreateHttpMessageHandler()
