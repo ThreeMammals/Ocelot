@@ -63,7 +63,7 @@ namespace Ocelot.IntegrationTests
             this.Given(x => GivenThereIsAConfiguration(configuration))
                .And(x => GivenThereIsAServiceRunningOn("http://localhost:51879"))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 50))
+                .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 100))
                 .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
                 .BDDfy();
         }
