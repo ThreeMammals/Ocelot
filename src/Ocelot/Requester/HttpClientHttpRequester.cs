@@ -11,10 +11,10 @@ namespace Ocelot.Requester
 {
     public class HttpClientHttpRequester : IHttpRequester
     {
-        private IHttpClientMessageCacheHandler _cacheHandlers;
+        private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
 
-        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, IHttpClientMessageCacheHandler cacheHandlers)
+        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, IHttpClientCache cacheHandlers)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
@@ -24,23 +24,15 @@ namespace Ocelot.Requester
         {
             var builder = new HttpClientBuilder();
 
-            builder.WithCookieContainer(request.CookieContainer);
+            var cacheKey = GetCacheKey(request, builder);
 
-            string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
-
-            if (request.IsQos)
-            {
-                builder.WithHandler(new PollyCircuitBreakingDelegatingHandler(request.QosProvider, _logger));
-                baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
-            }
-
-            IHttpClient httpClient = _cacheHandlers.Get(baseUrl);
+            var httpClient = _cacheHandlers.Get(cacheKey);
             if (httpClient == null)
             {
                 httpClient = builder.Create();
-                _cacheHandlers.Set(baseUrl, httpClient, TimeSpan.FromMinutes(30));
-            } 
-   
+                _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(6));
+            }
+
             try
             {
                 var response = await httpClient.SendAsync(request.HttpRequestMessage);
@@ -61,6 +53,19 @@ namespace Ocelot.Requester
                 return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
             }
 
+        }
+
+        private string GetCacheKey(Request.Request request, HttpClientBuilder builder)
+        {
+            string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
+
+            if (request.IsQos)
+            {
+                builder.WithQos(request.QosProvider, _logger);
+                baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
+            }
+
+            return baseUrl;
         }
     }
 }

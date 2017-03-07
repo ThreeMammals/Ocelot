@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
-    public interface IHttpClientMessageCacheHandler
+    public interface IHttpClientCache
     {
         bool Exists(string id);
         IHttpClient Get(string id);

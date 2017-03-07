@@ -11,61 +11,23 @@ namespace Ocelot.Requester
 {
     internal class HttpClientBuilder : IHttpClientBuilder
     {
-        private TimeSpan? _timeout;
-        private readonly List<DelegatingHandler> _handlers = new List<DelegatingHandler>();
+        private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
         private Dictionary<string, string> _defaultHeaders;
-        private CookieContainer _cookieContainer;
-        private IQoSProvider _qoSProvider;
 
-        public IHttpClientBuilder WithCookieContainer(CookieContainer cookieContainer)
+        public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
         {
-            _cookieContainer = cookieContainer;
+            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
             return this;
-        }
 
-        public IHttpClientBuilder WithTimeout(TimeSpan timeout)
-        {
-            _timeout = timeout;
-            return this;
-        }
-
-        public IHttpClientBuilder WithHandler(DelegatingHandler handler)
-        {
-            _handlers.Add(handler);
-            return this;
-        }
-
-        public IHttpClientBuilder WithDefaultRequestHeaders(Dictionary<string, string> headers)
-        {
-            _defaultHeaders = headers;
-            return this;
-        }
+        }  
 
 
         public IHttpClient Create()
         {
-            HttpClientHandler httpclientHandler = null;
-            if (_cookieContainer != null)
-            {
-                httpclientHandler = new HttpClientHandler() { CookieContainer = _cookieContainer };
-            }
-            else
-            {
-                httpclientHandler = new HttpClientHandler();
-            }
-
-            if (httpclientHandler.SupportsAutomaticDecompression)
-            {
-                httpclientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            }
-
+            var httpclientHandler = new HttpClientHandler();
+            
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
-
-            if (_timeout.HasValue)
-            {
-                client.Timeout = _timeout.Value;
-            }
-           
+            
             if (_defaultHeaders == null)
             {
                 return new HttpClientWrapper(client);
@@ -81,11 +43,18 @@ namespace Ocelot.Requester
 
         private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {            
-            foreach (var handler in _handlers)
-            {
-                handler.InnerHandler = httpMessageHandler;
-                httpMessageHandler = handler;
-            }       
+   
+            _handlers
+                .OrderByDescending(handler => handler.Key)
+                .Select(handler => handler.Value)
+                .Reverse()
+                .ToList()
+                .ForEach(handler =>
+                {
+                    var delegatingHandler = handler();
+                    delegatingHandler.InnerHandler = httpMessageHandler;
+                    httpMessageHandler = delegatingHandler;
+                });
             return httpMessageHandler;
         }
     }

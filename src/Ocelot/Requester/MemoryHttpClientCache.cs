@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
-    public class MemoryHttpClientMessageCacheHandler : IHttpClientMessageCacheHandler
+    public class MemoryHttpClientCache : IHttpClientCache
     {
         private readonly IMemoryCache _memoryCache;
 
-        public MemoryHttpClientMessageCacheHandler(IMemoryCache memoryCache)
+        public MemoryHttpClientCache(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
         }
 
-        public void Set(string id, IHttpClient counter, TimeSpan expirationTime)
+        public void Set(string id, IHttpClient client, TimeSpan expirationTime)
         {
-            _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
+            _memoryCache.Set(id, client, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
         }
 
         public bool Exists(string id)

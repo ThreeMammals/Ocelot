@@ -135,7 +135,7 @@ namespace Ocelot.DependencyInjection
             services.AddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
             services.AddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
             services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-            services.AddSingleton<IHttpClientMessageCacheHandler, MemoryHttpClientMessageCacheHandler>();
+            services.AddSingleton<IHttpClientCache, MemoryHttpClientCache>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
