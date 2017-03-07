@@ -14,13 +14,13 @@ namespace Ocelot.Requester
         private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
         private Dictionary<string, string> _defaultHeaders;
 
+
         public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
         {
             _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
+
             return this;
-
         }  
-
 
         public IHttpClient Create()
         {

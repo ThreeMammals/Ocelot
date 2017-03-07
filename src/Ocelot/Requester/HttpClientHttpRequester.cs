@@ -55,7 +55,7 @@ namespace Ocelot.Requester
 
         }
 
-        private string GetCacheKey(Request.Request request, HttpClientBuilder builder)
+        private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
         {
             string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
 

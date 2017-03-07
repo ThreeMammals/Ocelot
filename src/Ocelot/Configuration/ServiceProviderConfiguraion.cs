@@ -1,8 +1,8 @@
 ﻿namespace Ocelot.Configuration
 {
-    public class ServiceProviderConfiguraion
+    public class ServiceProviderConfiguration
     {
-        public ServiceProviderConfiguraion(string serviceName, string downstreamHost,
+        public ServiceProviderConfiguration(string serviceName, string downstreamHost,
             int downstreamPort, bool useServiceDiscovery, string serviceDiscoveryProvider, string serviceProviderHost, int serviceProviderPort)
         {
             ServiceName = serviceName;

@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceProviderFactoryTests
     {
-        private ServiceProviderConfiguraion _serviceConfig;
+        private ServiceProviderConfiguration _serviceConfig;
         private IServiceDiscoveryProvider _result;
         private readonly ServiceDiscoveryProviderFactory _factory;
 
@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_no_service_provider()
         {
-            var serviceConfig = new ServiceProviderConfiguraionBuilder()
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .WithDownstreamHost("127.0.0.1")
                 .WithDownstreamPort(80)
                 .WithUseServiceDiscovery(false)
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_consul_service_provider()
         {
-            var serviceConfig = new ServiceProviderConfiguraionBuilder()
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .WithServiceName("product")
                 .WithUseServiceDiscovery(true)
                 .WithServiceDiscoveryProvider("Consul")
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        private void GivenTheReRoute(ServiceProviderConfiguraion serviceConfig)
+        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig)
         {
             _serviceConfig = serviceConfig;
         }

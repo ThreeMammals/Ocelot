@@ -25,7 +25,7 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamHost;
         private int _downstreamPort;
         private string _loadBalancer;
-        private ServiceProviderConfiguraion _serviceProviderConfiguraion;
+        private ServiceProviderConfiguration _serviceProviderConfiguraion;
         private bool _useQos;
         private QoSOptions _qosOptions;
         public bool _enableRateLimiting;
@@ -150,7 +150,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithServiceProviderConfiguraion(ServiceProviderConfiguraion serviceProviderConfiguraion)
+        public ReRouteBuilder WithServiceProviderConfiguraion(ServiceProviderConfiguration serviceProviderConfiguraion)
         {
             _serviceProviderConfiguraion = serviceProviderConfiguraion;
             return this;
