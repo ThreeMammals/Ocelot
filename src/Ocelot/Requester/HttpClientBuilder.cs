@@ -1,46 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester
 {
-    internal class HttpClientBuilder
+    internal class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
+        private Dictionary<string, string> _defaultHeaders;
 
-        public HttpClientBuilder WithQoS(IQoSProvider qoSProvider, IOcelotLogger logger)
+
+        public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
         {
-            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qoSProvider, logger));
+            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
+
             return this;
+        }  
+
+        public IHttpClient Create()
+        {
+            var httpclientHandler = new HttpClientHandler();
+            
+            var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
+            
+            if (_defaultHeaders == null)
+            {
+                return new HttpClientWrapper(client);
+            }
+
+            foreach (var header in _defaultHeaders)
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+
+            return new HttpClientWrapper(client);
         }
 
-        internal HttpClient Build()
-        {
-            return _handlers.Any() ? 
-                new HttpClient(CreateHttpMessageHandler()) : 
-                new HttpClient();
-        }
-
-        private HttpMessageHandler CreateHttpMessageHandler()
-        {
-            HttpMessageHandler httpMessageHandler = new HttpClientHandler();
-
+        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler)
+        {            
+   
             _handlers
                 .OrderByDescending(handler => handler.Key)
                 .Select(handler => handler.Value)
                 .Reverse()
                 .ToList()
                 .ForEach(handler =>
-            {
-                var delegatingHandler = handler();
-                delegatingHandler.InnerHandler = httpMessageHandler;
-                httpMessageHandler = delegatingHandler;
-            });
-
+                {
+                    var delegatingHandler = handler();
+                    delegatingHandler.InnerHandler = httpMessageHandler;
+                    httpMessageHandler = delegatingHandler;
+                });
             return httpMessageHandler;
+        }
+    }
+
+    /// <summary>
+    /// This class was made to make unit testing easier when HttpClient is used.
+    /// </summary>
+    internal class HttpClientWrapper : IHttpClient
+    {
+        public HttpClient Client { get; }
+
+        public HttpClientWrapper(HttpClient client)
+        {
+            Client = client;
+        }
+
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        {
+            return Client.SendAsync(request);
         }
     }
 }
