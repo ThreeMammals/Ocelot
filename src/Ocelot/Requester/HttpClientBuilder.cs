@@ -12,8 +12,6 @@ namespace Ocelot.Requester
     internal class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
-        private Dictionary<string, string> _defaultHeaders;
-
 
         public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
         {
@@ -28,16 +26,6 @@ namespace Ocelot.Requester
             
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
             
-            if (_defaultHeaders == null)
-            {
-                return new HttpClientWrapper(client);
-            }
-
-            foreach (var header in _defaultHeaders)
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-
             return new HttpClientWrapper(client);
         }
 
