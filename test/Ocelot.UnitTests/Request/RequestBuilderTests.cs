@@ -196,23 +196,6 @@ namespace Ocelot.UnitTests.Request
         }
 
         [Fact]
-        public void should_use_cookies()
-        {
-            this.Given(x => x.GivenIHaveHttpMethod("GET"))
-               .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
-               .And(x => x.GivenTheCookiesAre(new RequestCookieCollection(new Dictionary<string, string>
-               {
-                   { "TheCookie","Monster" }
-               })))
-               .When(x => x.WhenICreateARequest())
-               .And(x => x.ThenTheCorrectCookiesAreUsed(new RequestCookieCollection(new Dictionary<string, string>
-               {
-                   { "TheCookie","Monster" }
-               })))
-               .BDDfy();
-        }
-
-        [Fact]
         public void should_user_query_string()
         {
             this.Given(x => x.GivenIHaveHttpMethod("POST"))
@@ -240,14 +223,14 @@ namespace Ocelot.UnitTests.Request
 
         private void ThenTheCorrectCookiesAreUsed(IRequestCookieCollection expected)
         {
-            var resultCookies = _result.Data.CookieContainer.GetCookies(new Uri(_downstreamUrl + _query));
+           /* var resultCookies = _result.Data.CookieContainer.GetCookies(new Uri(_downstreamUrl + _query));
             var resultDictionary = resultCookies.Cast<Cookie>().ToDictionary(cook => cook.Name, cook => cook.Value);
 
             foreach (var expectedCookie in expected)
             {
                 var resultCookie = resultDictionary[expectedCookie.Key];
                 resultCookie.ShouldBe(expectedCookie.Value);
-            }
+            }*/
         }
 
         private void GivenTheCookiesAre(IRequestCookieCollection cookies)
@@ -305,7 +288,7 @@ namespace Ocelot.UnitTests.Request
         private void WhenICreateARequest()
         {
             _result = _requestCreator.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
-                _cookies, _query, _contentType, _requestId,_isQos,_qoSProvider).Result;
+                _query, _contentType, _requestId,_isQos,_qoSProvider).Result;
         }
 
 

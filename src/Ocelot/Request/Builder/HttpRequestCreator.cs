@@ -14,7 +14,6 @@ namespace Ocelot.Request.Builder
             string downstreamUrl, 
             Stream content, 
             IHeaderDictionary headers,
-            IRequestCookieCollection cookies, 
             QueryString queryString, 
             string contentType, 
             RequestId.RequestId requestId,
@@ -29,7 +28,6 @@ namespace Ocelot.Request.Builder
                 .WithContentType(contentType)
                 .WithHeaders(headers)
                 .WithRequestId(requestId)
-                .WithCookies(cookies)
                 .WithIsQos(isQos)
                 .WithQos(qosProvider)
                 .Build();
