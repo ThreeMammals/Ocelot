@@ -5,15 +5,19 @@
     <AssemblyTitle>Ocelot</AssemblyTitle>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+	<NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <AssemblyName>Ocelot</AssemblyName>
     <PackageId>Ocelot</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>
     <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+	<PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
     <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+	<Authors>Tom Pallister</Authors>
   </PropertyGroup>
 
   <ItemGroup>
