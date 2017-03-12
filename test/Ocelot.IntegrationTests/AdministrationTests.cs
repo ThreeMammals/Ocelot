@@ -245,6 +245,9 @@ namespace Ocelot.IntegrationTests
             var responseContent = response.Content.ReadAsStringAsync().Result;
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            var configPath = $"{adminPath}/.well-known/openid-configuration";
+            response = _httpClient.GetAsync(configPath).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         private void GivenOcelotIsRunning()

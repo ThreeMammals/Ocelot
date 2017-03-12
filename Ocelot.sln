@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -28,19 +28,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.ps1 = version.ps1
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot", "src\Ocelot\Ocelot.xproj", "{D6DF4206-0DBA-41D8-884D-C3E08290FDBB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5B401523-36DA-4491-B73A-7590A26E420B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.UnitTests", "test\Ocelot.UnitTests\Ocelot.UnitTests.xproj", "{54E84F1A-E525-4443-96EC-039CBD50C263}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "src\Ocelot\Ocelot.csproj", "{D6DF4206-0DBA-41D8-884D-C3E08290FDBB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.AcceptanceTests", "test\Ocelot.AcceptanceTests\Ocelot.AcceptanceTests.xproj", "{F8C224FE-36BE-45F5-9B0E-666D8F4A9B52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.UnitTests", "test\Ocelot.UnitTests\Ocelot.UnitTests.csproj", "{54E84F1A-E525-4443-96EC-039CBD50C263}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.ManualTest", "test\Ocelot.ManualTest\Ocelot.ManualTest.xproj", "{02BBF4C5-517E-4157-8D21-4B8B9E118B7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.AcceptanceTests", "test\Ocelot.AcceptanceTests\Ocelot.AcceptanceTests.csproj", "{F8C224FE-36BE-45F5-9B0E-666D8F4A9B52}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.Benchmarks", "test\Ocelot.Benchmarks\Ocelot.Benchmarks.xproj", "{106B49E6-95F6-4A7B-B81C-96BFA74AF035}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.ManualTest", "test\Ocelot.ManualTest\Ocelot.ManualTest.csproj", "{02BBF4C5-517E-4157-8D21-4B8B9E118B7A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.xproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Benchmarks", "test\Ocelot.Benchmarks\Ocelot.Benchmarks.csproj", "{106B49E6-95F6-4A7B-B81C-96BFA74AF035}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.csproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

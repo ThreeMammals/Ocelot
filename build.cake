@@ -1,26 +1,25 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
-#tool "nuget:?package=OpenCover"
-#tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=GitReleaseNotes"
-#addin "nuget:?package=Cake.DoInDirectory"
 #addin "nuget:?package=Cake.Json"
 
 // compile
 var compileConfig = Argument("configuration", "Release");
-var projectJson = "./src/Ocelot/project.json";
+var slnFile = "./Ocelot.sln";
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
-var unitTestAssemblies = @"./test/Ocelot.UnitTests";
+var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
+var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj";
 
 // integration testing
 var artifactsForIntegrationTestsDir = artifactsDir + Directory("IntegrationTests");
+var integrationTestAssemblies = @"./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj";
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -81,13 +80,12 @@ Task("Version")
 	{
 		versioning = GetNuGetVersionForCommit();
 		var nugetVersion = versioning.NuGetVersion;
-
 		Information("SemVer version number: " + nugetVersion);
 
 		if (AppVeyor.IsRunningOnAppVeyor)
 		{
 			Information("Persisting version number...");
-			PersistVersion(committedVersion, nugetVersion);
+			PersistVersion(nugetVersion);
 			buildVersion = nugetVersion;
 		}
 		else
@@ -101,102 +99,76 @@ Task("Restore")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
-		DotNetCoreRestore("./src");
-		DotNetCoreRestore("./test");
+		DotNetCoreRestore(slnFile);
+	});
+
+Task("Compile")
+	.IsDependentOn("Restore")
+	.Does(() =>
+	{	
+		var settings = new DotNetCoreBuildSettings
+		{
+			Configuration = compileConfig,
+		};
+		
+		DotNetCoreBuild(slnFile, settings);
 	});
 
 Task("RunUnitTests")
-	.IsDependentOn("Restore")
+	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var buildSettings = new DotNetCoreTestSettings
+		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetCoreTest(unitTestAssemblies, buildSettings);
+		DotNetCoreTest(unitTestAssemblies, settings);
 	});
 
 Task("RunAcceptanceTests")
-	.IsDependentOn("Restore")
+	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var buildSettings = new DotNetCoreTestSettings
-		{
-			Configuration = "Debug", //acceptance test config is hard-coded for debug
-		};
-
-		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-
-		DoInDirectory("test/Ocelot.AcceptanceTests", () =>
-		{
-			DotNetCoreTest(".", buildSettings);
-		});
-
-	});
-
-	Task("RunIntegrationTests")
-	.IsDependentOn("Restore")
-	.Does(() =>
-	{
-		var buildSettings = new DotNetCoreTestSettings
-		{
-			Configuration = "Debug", //int test config is hard-coded for debug
-		};
-
-		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-
-		DoInDirectory("test/Ocelot.IntegrationTests", () =>
-		{
-			DotNetCoreTest(".", buildSettings);
-		});
-
-	});
-
-Task("RunBenchmarkTests")
-	.IsDependentOn("Restore")
-	.Does(() =>
-	{
-		var buildSettings = new DotNetCoreRunSettings
+		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
 		};
 
-		EnsureDirectoryExists(artifactsForBenchmarkTestsDir);
+		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
+		DotNetCoreTest(acceptanceTestAssemblies, settings);
+	});
 
-		DoInDirectory(benchmarkTestAssemblies, () =>
+Task("RunIntegrationTests")
+	.IsDependentOn("Compile")
+	.Does(() =>
+	{
+		var settings = new DotNetCoreTestSettings
 		{
-			DotNetCoreRun(".", "", buildSettings);
-		});
+			Configuration = compileConfig,
+		};
+
+		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+		DotNetCoreTest(integrationTestAssemblies, settings);
 	});
 
 Task("RunTests")
 	.IsDependentOn("RunUnitTests")
 	.IsDependentOn("RunAcceptanceTests")
-	.IsDependentOn("RunIntegrationTests")
-	.Does(() =>
-	{
-	});
+	.IsDependentOn("RunIntegrationTests");
 
 Task("CreatePackages")
+	.IsDependentOn("Compile")
 	.Does(() => 
 	{
 		EnsureDirectoryExists(packagesDir);
-        
-		GenerateReleaseNotes(releaseNotesFile);
+		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
 
-		var settings = new DotNetCorePackSettings
-			{
-				OutputDirectory = packagesDir,
-				NoBuild = true
-			};
-
-		DotNetCorePack(projectJson, settings);
+		GenerateReleaseNotes();
 
         System.IO.File.WriteAllLines(artifactsFile, new[]{
             "nuget:Ocelot." + buildVersion + ".nupkg",
-            "nugetSymbols:Ocelot." + buildVersion + ".symbols.nupkg",
             "releaseNotes:releasenotes.md"
         });
 
@@ -215,9 +187,9 @@ Task("ReleasePackagesToUnstableFeed")
 	.IsDependentOn("CreatePackages")
 	.Does(() =>
 	{
-		if (ShouldPublishToUnstableFeed(nugetFeedUnstableBranchFilter, versioning.BranchName))
-		{		
-			PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+		if (ShouldPublishToUnstableFeed())
+		{
+			PublishPackages(nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
 		}
 	});
 
@@ -270,7 +242,7 @@ Task("ReleasePackagesToStableFeed")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		PublishPackages(nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
     });
 
 Task("Release")
@@ -290,43 +262,37 @@ private GitVersion GetNuGetVersionForCommit()
 }
 
 /// Updates project version in all of our projects
-private void PersistVersion(string committedVersion, string newVersion)
+private void PersistVersion(string version)
 {
-	Information(string.Format("We'll search all project.json files for {0} and replace with {1}...", committedVersion, newVersion));
+	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, version));
 
-	var projectJsonFiles = GetFiles("./**/project.json");
+	var projectFiles = GetFiles("./**/*.csproj");
 
-	foreach(var projectJsonFile in projectJsonFiles)
+	foreach(var projectFile in projectFiles)
 	{
-		var file = projectJsonFile.ToString();
+		var file = projectFile.ToString();
  
 		Information(string.Format("Updating {0}...", file));
 
-		var updatedProjectJson = System.IO.File.ReadAllText(file)
-			.Replace(committedVersion, newVersion);
+		var updatedProjectFile = System.IO.File.ReadAllText(file)
+			.Replace(committedVersion, version);
 
-		System.IO.File.WriteAllText(file, updatedProjectJson);
+		System.IO.File.WriteAllText(file, updatedProjectFile);
 	}
 }
 
 /// generates release notes based on issues closed in GitHub since the last release
-private void GenerateReleaseNotes(ConvertableFilePath file)
+private void GenerateReleaseNotes()
 {
-	if (!IsRunningOnWindows())
-	{
-		Warning("We can't generate release notes as we're not running on Windows.");
-		return;
-	}
-
-	Information("Generating release notes at " + file);
+	Information("Generating release notes at " + releaseNotesFile);
 
     var releaseNotesExitCode = StartProcess(
         @"tools/GitReleaseNotes/tools/gitreleasenotes.exe", 
-        new ProcessSettings { Arguments = ". /o " + file });
+        new ProcessSettings { Arguments = ". /o " + releaseNotesFile });
 
-    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(file)))
+    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
 	{
-        System.IO.File.WriteAllText(file, "No issues closed since last release");
+        System.IO.File.WriteAllText(releaseNotesFile, "No issues closed since last release");
 	}
 
     if (releaseNotesExitCode != 0) 
@@ -336,7 +302,7 @@ private void GenerateReleaseNotes(ConvertableFilePath file)
 }
 
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
-private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
+private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
@@ -345,7 +311,6 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 		var codePackage = packagesDir + File(artifacts["nuget"]);
 
-		Information("Pushing package " + codePackage);
         NuGetPush(
             codePackage,
             new NuGetPushSettings {
@@ -372,17 +337,17 @@ private string GetResource(string url)
     }
 }
 
-private bool ShouldPublishToUnstableFeed(string filter, string branchName)
+private bool ShouldPublishToUnstableFeed()
 {
-	var regex = new System.Text.RegularExpressions.Regex(filter);
-	var publish = regex.IsMatch(branchName);
+	var regex = new System.Text.RegularExpressions.Regex(nugetFeedUnstableBranchFilter);
+	var publish = regex.IsMatch(versioning.BranchName);
 	if (publish)
 	{
-		Information("Branch " + branchName + " will be published to the unstable feed");
+		Information("Branch " + versioning.BranchName + " will be published to the unstable feed");
 	}
 	else
 	{
-		Information("Branch " + branchName + " will not be published to the unstable feed");
+		Information("Branch " + versioning.BranchName + " will not be published to the unstable feed");
 	}
 	return publish;	
 }
