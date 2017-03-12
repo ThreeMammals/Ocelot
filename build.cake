@@ -4,7 +4,7 @@
 
 // compile
 var compileConfig = Argument("configuration", "Release");
-var slnFile = "Ocelot.sln";
+var slnFile = "./Ocelot.sln";
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
