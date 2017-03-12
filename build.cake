@@ -1,13 +1,10 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
-#tool "nuget:?package=OpenCover"
-#tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=GitReleaseNotes"
-#addin "nuget:?package=Cake.DoInDirectory"
 #addin "nuget:?package=Cake.Json"
 
 // compile
 var compileConfig = Argument("configuration", "Release");
-var slnFile = "./Ocelot.sln";
+var slnFile = "Ocelot.sln";
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
