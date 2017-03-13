@@ -9,6 +9,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Ocelot.Utilities;
@@ -22,7 +23,7 @@ namespace Ocelot.Configuration.Creator
     {
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
-        private readonly ILogger<FileOcelotConfigurationCreator> _logger;
+        private readonly IOcelotLogger _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly IQoSProviderFactory _qoSProviderFactory;
@@ -38,8 +39,8 @@ namespace Ocelot.Configuration.Creator
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
-            IConfigurationValidator configurationValidator, 
-            ILogger<FileOcelotConfigurationCreator> logger,
+            IConfigurationValidator configurationValidator,
+            IOcelotLoggerFactory loggerFactory,
             ILoadBalancerFactory loadBalancerFactory,
             ILoadBalancerHouse loadBalancerHouse, 
             IQoSProviderFactory qoSProviderFactory, 
@@ -64,7 +65,7 @@ namespace Ocelot.Configuration.Creator
             _qosProviderHouse = qosProviderHouse;
             _options = options;
             _configurationValidator = configurationValidator;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<FileOcelotConfigurationCreator>();
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
