@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -9,6 +8,9 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Responder.Middleware
 {
+    /// <summary>
+    /// Completes and returns the request and request body, if any pipeline errors occured then sets the appropriate HTTP status code instead.
+    /// </summary>
     public class ResponderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -32,28 +34,26 @@ namespace Ocelot.Responder.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started error responder middleware");
+            _logger.LogDebug($"entered {this.GetType().Name}");
+            _logger.LogDebug($"invoking next middleware from {this.GetType().Name}");
 
             await _next.Invoke(context);
-
-            _logger.LogDebug("calling next middleware");
+            
+            _logger.LogDebug($"returned to {this.GetType().Name} after next middleware completed");
 
             if (PipelineError)
             {
-                _logger.LogDebug("there is a pipeline error, getting errors");
-
                 var errors = PipelineErrors;
-
-                _logger.LogDebug("received errors setting error response");
+                _logger.LogDebug($"{errors.Count} pipeline errors found in {this.GetType().Name}. Setting error response status code");
 
                 SetErrorResponse(context, errors);
             }
             else
             {
-                _logger.LogDebug("no pipeline error, setting response");
-
+                _logger.LogDebug("no pipeline errors, setting and returning completed response");
                 await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
             }
+            _logger.LogDebug($"completed {this.GetType().Name}");
         }
 
         private void SetErrorResponse(HttpContext context, List<Error> errors)
