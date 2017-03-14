@@ -29,6 +29,7 @@ namespace Ocelot.Logging
 
     public interface IOcelotLogger
     {
+        void LogTrace(string message, params object[] args);
         void LogDebug(string message, params object[] args);
         void LogError(string message, Exception exception);
     }
@@ -42,6 +43,11 @@ namespace Ocelot.Logging
         {
             _logger = logger;
             _scopedDataRepository = scopedDataRepository;
+        }
+
+        public void LogTrace(string message, params object[] args)
+        {
+            _logger.LogTrace(GetMessageWithOcelotRequestId(message), args);
         }
 
         public void LogDebug(string message, params object[] args)
