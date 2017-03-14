@@ -35,16 +35,16 @@ namespace Ocelot.Responder.Middleware
         public async Task Invoke(HttpContext context)
         {
             _logger.LogTrace($"entered {MiddlwareName}");
-            _logger.LogDebug($"invoking next middleware from {MiddlwareName}");
+            _logger.LogTrace($"invoking next middleware from {MiddlwareName}");
 
             await _next.Invoke(context);
 
-            _logger.LogDebug($"returned to {MiddlwareName} after next middleware completed");
+            _logger.LogTrace($"returned to {MiddlwareName} after next middleware completed");
 
             if (PipelineError)
             {
                 var errors = PipelineErrors;
-                _logger.LogDebug($"{errors.Count} pipeline errors found in {MiddlwareName}. Setting error response status code");
+                _logger.LogError($"{errors.Count} pipeline errors found in {MiddlwareName}. Setting error response status code");
 
                 SetErrorResponse(context, errors);
             }
