@@ -15,12 +15,12 @@
             "AuthenticationOptions": {
                 "Provider": "IdentityServer",
                 "ProviderRootUrl": "http://localhost:52888",
-                "ScopeName": "api",
-                "AdditionalScopes": [
+                "ApiName": "api",
+                "AllowedScopes": [
                     "openid",
                     "offline_access"
                 ],
-                "ScopeSecret": "secret"
+                "ApiSecret": "secret"
             },
             "AddHeadersToRequest": {
                 "CustomerId": "Claims[CustomerId] > value",

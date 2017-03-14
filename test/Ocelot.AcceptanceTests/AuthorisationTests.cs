@@ -45,12 +45,12 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
-                                AdditionalScopes =  new List<string>(),
+								AllowedScopes =  new List<string>(),
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:51888",
                                 RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
+								ApiName = "api",
+                                ApiSecret = "secret"
                             },
                             AddHeadersToRequest =
                             {
@@ -102,12 +102,12 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = "Get",
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
-                                AdditionalScopes =  new List<string>(),
+								AllowedScopes =  new List<string>(),
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:51888",
                                 RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
+								ApiName = "api",
+                                ApiSecret = "secret"
                             },
                             AddHeadersToRequest =
                             {
@@ -161,7 +161,7 @@ namespace Ocelot.AcceptanceTests
             _servicebuilder.Start();
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string scopeName, AccessTokenType tokenType)
+        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -178,7 +178,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             new ApiResource
                             {
-                                Name = scopeName,
+                                Name = apiName,
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
@@ -209,7 +209,7 @@ namespace Ocelot.AcceptanceTests
                                 ClientId = "client",
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                                 ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
-                                AllowedScopes = new List<string> { scopeName, "openid", "offline_access" },
+                                AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
                                 RequireClientSecret = false

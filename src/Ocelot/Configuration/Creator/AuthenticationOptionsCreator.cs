@@ -10,10 +10,10 @@ namespace Ocelot.Configuration.Creator
             return new AuthenticationOptionsBuilder()
                                         .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
                                         .WithProviderRootUrl(fileReRoute.AuthenticationOptions?.ProviderRootUrl)
-                                        .WithScopeName(fileReRoute.AuthenticationOptions?.ScopeName)
+                                        .WithApiName(fileReRoute.AuthenticationOptions?.ApiName)
                                         .WithRequireHttps(fileReRoute.AuthenticationOptions.RequireHttps)
-                                        .WithAdditionalScopes(fileReRoute.AuthenticationOptions?.AdditionalScopes)
-                                        .WithScopeSecret(fileReRoute.AuthenticationOptions?.ScopeSecret)
+                                        .WithAllowedScopes(fileReRoute.AuthenticationOptions?.AllowedScopes)
+                                        .WithApiSecret(fileReRoute.AuthenticationOptions?.ApiSecret)
                                         .Build();
         }
     }
