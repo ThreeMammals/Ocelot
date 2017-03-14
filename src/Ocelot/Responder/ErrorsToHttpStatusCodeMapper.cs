@@ -27,6 +27,11 @@ namespace Ocelot.Responder
                 return new OkResponse<int>(503);
             }
 
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))
+            {
+                return new OkResponse<int>(404);
+            }
+
             return new OkResponse<int>(404);
         }
     }
