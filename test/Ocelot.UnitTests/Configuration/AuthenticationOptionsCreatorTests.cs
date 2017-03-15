@@ -29,20 +29,20 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     Provider = "Geoff",
                     ProviderRootUrl = "http://www.bbc.co.uk/",
-                    ScopeName = "Laura",
+					ApiName = "Laura",
                     RequireHttps = true,
-                    AdditionalScopes = new List<string> {"cheese"},
-                    ScopeSecret = "secret"
+					AllowedScopes = new List<string> {"cheese"},
+                    ApiSecret = "secret"
                 }
             };
 
             var expected = new AuthenticationOptionsBuilder()
                     .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
                     .WithProviderRootUrl(fileReRoute.AuthenticationOptions?.ProviderRootUrl)
-                    .WithScopeName(fileReRoute.AuthenticationOptions?.ScopeName)
+                    .WithApiName(fileReRoute.AuthenticationOptions?.ApiName)
                     .WithRequireHttps(fileReRoute.AuthenticationOptions.RequireHttps)
-                    .WithAdditionalScopes(fileReRoute.AuthenticationOptions?.AdditionalScopes)
-                    .WithScopeSecret(fileReRoute.AuthenticationOptions?.ScopeSecret)
+                    .WithAllowedScopes(fileReRoute.AuthenticationOptions?.AllowedScopes)
+                    .WithApiSecret(fileReRoute.AuthenticationOptions?.ApiSecret)
                     .Build();
 
             this.Given(x => x.GivenTheFollowing(fileReRoute))
@@ -63,12 +63,12 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingIsReturned(AuthenticationOptions expected)
         {
-            _result.AdditionalScopes.ShouldBe(expected.AdditionalScopes);
+            _result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             _result.Provider.ShouldBe(expected.Provider);
             _result.ProviderRootUrl.ShouldBe(expected.ProviderRootUrl);
             _result.RequireHttps.ShouldBe(expected.RequireHttps);
-            _result.ScopeName.ShouldBe(expected.ScopeName);
-            _result.ScopeSecret.ShouldBe(expected.ScopeSecret);
+            _result.ApiName.ShouldBe(expected.ApiName);
+            _result.ApiSecret.ShouldBe(expected.ApiSecret);
         }
     }
 }
