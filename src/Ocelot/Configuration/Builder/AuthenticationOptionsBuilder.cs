@@ -7,10 +7,10 @@ namespace Ocelot.Configuration.Builder
 
         private string _provider;
         private string _providerRootUrl;
-        private string _scopeName;
-        private string _scopeSecret;
+        private string _apiName;
+        private string _apiSecret;
         private bool _requireHttps;
-        private List<string> _additionalScopes;
+        private List<string> _allowedScopes;
 
         public AuthenticationOptionsBuilder WithProvider(string provider)
         {
@@ -24,15 +24,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithScopeName(string scopeName)
+        public AuthenticationOptionsBuilder WithApiName(string apiName)
         {
-            _scopeName = scopeName;
+            _apiName = apiName;
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithScopeSecret(string scopeSecret)
+        public AuthenticationOptionsBuilder WithApiSecret(string apiSecret)
         {
-            _scopeSecret = scopeSecret;
+            _apiSecret = apiSecret;
             return this;
         }
 
@@ -42,15 +42,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithAdditionalScopes(List<string> additionalScopes)
+        public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
-            _additionalScopes = additionalScopes;
+            _allowedScopes = allowedScopes;
             return this;
         }
 
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_provider, _providerRootUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret);
+            return new AuthenticationOptions(_provider, _providerRootUrl, _apiName, _requireHttps, _allowedScopes, _apiSecret);
         }
     }
 }

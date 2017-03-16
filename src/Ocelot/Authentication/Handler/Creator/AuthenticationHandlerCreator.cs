@@ -19,11 +19,11 @@ namespace Ocelot.Authentication.Handler.Creator
             builder.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
                 Authority = authOptions.ProviderRootUrl,
-                ApiName = authOptions.ScopeName,
+                ApiName = authOptions.ApiName,
                 RequireHttpsMetadata = authOptions.RequireHttps,
-                AllowedScopes = authOptions.AdditionalScopes,
+                AllowedScopes = authOptions.AllowedScopes,
                 SupportedTokens = SupportedTokens.Both,
-                ApiSecret = authOptions.ScopeSecret
+                ApiSecret = authOptions.ApiSecret
             });
 
             var authenticationNext = builder.Build();

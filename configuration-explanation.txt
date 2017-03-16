@@ -22,13 +22,13 @@
 			"AuthenticationOptions": {
 				"Provider": "IdentityServer",
 				"ProviderRootUrl": "http://localhost:52888",
-				"ScopeName": "api",
-				"AdditionalScopes": [
+				"ApiName": "api",
+				"AllowedScopes": [
 					"openid",
 					"offline_access"
 				],
 			# Required if using reference tokens
-				"ScopeSecret": "secret"
+				"ApiSecret": "secret"
 			},
 			# WARNING - will overwrite any headers already in the request with these values.
 			# Ocelot will look in the user claims for the key in [] then return the value and save
