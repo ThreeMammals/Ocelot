@@ -9,8 +9,11 @@ namespace Ocelot.Logging
         private readonly ILogger _logger;
         private readonly IRequestScopedDataRepository _scopedDataRepository;
 
-        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
+        public string Name { get; }
+
+        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository, string typeName)
         {
+            Name = typeName;
             _logger = logger;
             _scopedDataRepository = scopedDataRepository;
         }

@@ -15,5 +15,10 @@ namespace Ocelot.Logging
         void LogDebug(string message, params object[] args);
         void LogError(string message, Exception exception);
         void LogError(string message, params object[] args);
+
+        /// <summary>
+        /// The name of the type the logger has been built for.
+        /// </summary>
+        string Name { get; }
     }
 }
