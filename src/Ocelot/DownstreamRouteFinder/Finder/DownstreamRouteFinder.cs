@@ -25,7 +25,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             var configuration = _configProvider.Get();
 
-            var applicableReRoutes = configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod.Method, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase));
+            var applicableReRoutes = configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod.Method.ToLower(), upstreamHttpMethod.ToLower(), StringComparison.CurrentCultureIgnoreCase));
 
             foreach (var reRoute in applicableReRoutes)
             {
