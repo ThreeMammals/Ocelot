@@ -26,18 +26,16 @@ namespace Ocelot.RequestId.Middleware
 
         public async Task Invoke(HttpContext context)
         {         
-            _logger.LogTrace($"entered {MiddlwareName}");
+            _logger.TraceMiddlewareEntry();
 
             SetOcelotRequestId(context);
 
             _logger.LogDebug("set requestId");
 
-            _logger.LogTrace($"invoking next middleware from {MiddlwareName}");
-
-            await _next.Invoke(context);
-
-            _logger.LogTrace($"returned to {MiddlwareName} after next middleware completed");
-            _logger.LogTrace($"completed {MiddlwareName}");
+            _logger.TraceInvokeNext();
+                await _next.Invoke(context);
+            _logger.TraceInvokeNextCompleted();
+            _logger.TraceMiddlewareCompleted();
         }
 
         private void SetOcelotRequestId(HttpContext context)

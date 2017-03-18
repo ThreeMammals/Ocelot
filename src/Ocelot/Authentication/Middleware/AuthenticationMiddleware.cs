@@ -34,7 +34,7 @@ namespace Ocelot.Authentication.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogTrace($"entered {MiddlwareName}");
+            _logger.TraceMiddlewareEntry();
 
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
@@ -46,6 +46,7 @@ namespace Ocelot.Authentication.Middleware
                 {
                     _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
                     SetPipelineError(authenticationHandler.Errors);
+                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
 
@@ -55,12 +56,11 @@ namespace Ocelot.Authentication.Middleware
                 if (context.User.Identity.IsAuthenticated)
                 {
                     _logger.LogDebug($"Client has been authenticated for {context.Request.Path}");
-                    _logger.LogTrace($"{MiddlwareName} invoking next middleware");
 
-                    await _next.Invoke(context);
-
-                    _logger.LogTrace($"returned to {MiddlwareName} after next middleware completed");
-                    _logger.LogTrace($"completed {MiddlwareName}");
+                    _logger.TraceInvokeNext();
+                        await _next.Invoke(context);
+                    _logger.TraceInvokeNextCompleted();
+                    _logger.TraceMiddlewareCompleted();
                 }
                 else
                 {
@@ -73,18 +73,18 @@ namespace Ocelot.Authentication.Middleware
                     _logger.LogError($"Client has NOT been authenticated for {context.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     SetPipelineError(error);
 
-                    _logger.LogTrace($"completed {MiddlwareName}");
+                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
             }
             else
             {
-                _logger.LogTrace($"No authentication needed for {context.Request.Path}. Invoking next middleware from {MiddlwareName}");
+                _logger.LogTrace($"No authentication needed for {context.Request.Path}");
 
-                await _next.Invoke(context);
-
-                _logger.LogTrace($"returned to {MiddlwareName} after next middleware completed");
-                _logger.LogTrace($"completed {MiddlwareName}");
+                _logger.TraceInvokeNext();
+                    await _next.Invoke(context);
+                _logger.TraceInvokeNextCompleted();
+                _logger.TraceMiddlewareCompleted();
             }
         }
 
