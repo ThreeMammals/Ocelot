@@ -16,12 +16,12 @@ namespace Ocelot.Responder.Middleware
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
         private readonly IOcelotLogger _logger;
 
-        public ResponderMiddleware(RequestDelegate next, 
+        public ResponderMiddleware(RequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository requestScopedDataRepository, 
+            IRequestScopedDataRepository requestScopedDataRepository,
             IErrorsToHttpStatusCodeMapper codeMapper)
-            :base(requestScopedDataRepository)
+            : base(requestScopedDataRepository)
         {
             _next = next;
             _responder = responder;
@@ -60,14 +60,7 @@ namespace Ocelot.Responder.Middleware
         {
             var statusCode = _codeMapper.Map(errors);
 
-            if (!statusCode.IsError)
-            {
-                _responder.SetErrorResponseOnContext(context, statusCode.Data);
-            }
-            else
-            {
-                _responder.SetErrorResponseOnContext(context, 500);
-            }
+            _responder.SetErrorResponseOnContext(context, statusCode);
         }
     }
 }

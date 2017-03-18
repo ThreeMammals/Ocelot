@@ -4,7 +4,6 @@ using Ocelot.Errors;
 using Ocelot.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responder;
-using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -14,7 +13,7 @@ namespace Ocelot.UnitTests.Responder
     public class ErrorsToHttpStatusCodeMapperTests
     {
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
-        private Response<int> _result;
+        private int _result;
         private List<Error> _errors;
 
         public ErrorsToHttpStatusCodeMapperTests()
@@ -77,7 +76,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void ThenTheResponseIsStatusCodeIs(int expectedCode)
         {
-            _result.Data.ShouldBe(expectedCode);
+            _result.ShouldBe(expectedCode);
         }    
     }
 }

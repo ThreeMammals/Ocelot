@@ -403,9 +403,9 @@ namespace Ocelot.UnitTests.Configuration
                     .WithProvider("IdentityServer")
                     .WithProviderRootUrl("http://localhost:51888")
                     .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithScopeName("api")
-                    .WithAdditionalScopes(new List<string>())
+                    .WithApiSecret("secret")
+                    .WithApiName("api")
+                    .WithAllowedScopes(new List<string>())
                     .Build();
 
             var expected = new List<ReRoute>
@@ -434,12 +434,12 @@ namespace Ocelot.UnitTests.Configuration
                         ReRouteIsCaseSensitive = true,
                         AuthenticationOptions = new FileAuthenticationOptions
                             {
-                                AdditionalScopes =  new List<string>(),
+								AllowedScopes=  new List<string>(),
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:51888",
                                 RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
+								ApiName= "api",
+                                ApiSecret = "secret"
                             },
                         AddHeadersToRequest =
                         {
@@ -471,9 +471,9 @@ namespace Ocelot.UnitTests.Configuration
                     .WithProvider("IdentityServer")
                     .WithProviderRootUrl("http://localhost:51888")
                     .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithScopeName("api")
-                    .WithAdditionalScopes(new List<string>())
+                    .WithApiSecret("secret")
+                    .WithApiName("api")
+                    .WithAllowedScopes(new List<string>())
                     .Build();
 
             var expected = new List<ReRoute>
@@ -498,12 +498,12 @@ namespace Ocelot.UnitTests.Configuration
                         ReRouteIsCaseSensitive = true,
                         AuthenticationOptions = new FileAuthenticationOptions
                             {
-                                AdditionalScopes =  new List<string>(),
+								AllowedScopes =  new List<string>(),
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:51888",
                                 RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
+								ApiName= "api",
+                                ApiSecret = "secret"
                             }
                     }
                 }
@@ -592,12 +592,12 @@ namespace Ocelot.UnitTests.Configuration
                 var result = _config.Data.ReRoutes[i].AuthenticationOptions;
                 var expected = expectedReRoutes[i].AuthenticationOptions;
 
-                result.AdditionalScopes.ShouldBe(expected.AdditionalScopes);
+                result.AllowedScopes.ShouldBe(expected.AllowedScopes);
                 result.Provider.ShouldBe(expected.Provider);
                 result.ProviderRootUrl.ShouldBe(expected.ProviderRootUrl);
                 result.RequireHttps.ShouldBe(expected.RequireHttps);
-                result.ScopeName.ShouldBe(expected.ScopeName);
-                result.ScopeSecret.ShouldBe(expected.ScopeSecret);
+                result.ApiName.ShouldBe(expected.ApiName);
+                result.ApiSecret.ShouldBe(expected.ApiSecret);
 
             }
         }
