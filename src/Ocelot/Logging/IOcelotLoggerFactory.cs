@@ -1,6 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
-using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Logging
 {
@@ -8,62 +6,19 @@ namespace Ocelot.Logging
     {
         IOcelotLogger CreateLogger<T>();
     }
-
-    public class AspDotNetLoggerFactory : IOcelotLoggerFactory
-    {
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly IRequestScopedDataRepository _scopedDataRepository;
-
-        public AspDotNetLoggerFactory(ILoggerFactory loggerFactory, IRequestScopedDataRepository scopedDataRepository)
-        {
-            _loggerFactory = loggerFactory;
-            _scopedDataRepository = scopedDataRepository;
-        }
-
-        public IOcelotLogger CreateLogger<T>()
-        {
-            var logger = _loggerFactory.CreateLogger<T>();
-            return new AspDotNetLogger(logger, _scopedDataRepository);
-        }
-    }
-
+    /// <summary>
+    /// Thin wrapper around the DotNet core logging framework, used to allow the scopedDataRepository to be injected giving access to the Ocelot RequestId
+    /// </summary>
     public interface IOcelotLogger
     {
+        void LogTrace(string message, params object[] args);
         void LogDebug(string message, params object[] args);
         void LogError(string message, Exception exception);
-    }
+        void LogError(string message, params object[] args);
 
-    public class AspDotNetLogger : IOcelotLogger
-    {
-        private readonly ILogger _logger;
-        private readonly IRequestScopedDataRepository _scopedDataRepository;
-
-        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
-        {
-            _logger = logger;
-            _scopedDataRepository = scopedDataRepository;
-        }
-
-        public void LogDebug(string message, params object[] args)
-        {
-            _logger.LogDebug(GetMessageWithOcelotRequestId(message), args);
-        }
-
-        public void LogError(string message, Exception exception)
-        {
-            _logger.LogError(GetMessageWithOcelotRequestId(message), exception);
-        }
-
-        private string GetMessageWithOcelotRequestId(string message)
-        {
-            var requestId = _scopedDataRepository.Get<string>("RequestId");
-
-            if (requestId != null && !requestId.IsError)
-            {
-                return $"{message} : OcelotRequestId - {requestId.Data}";
-                
-            }
-            return $"{message} : OcelotRequestId - not set";
-        }
+        /// <summary>
+        /// The name of the type the logger has been built for.
+        /// </summary>
+        string Name { get; }
     }
 }

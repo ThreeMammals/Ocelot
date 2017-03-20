@@ -26,6 +26,11 @@ namespace Ocelot.Responder
                 return 503;
             }
 
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))
+            {
+                return 404;
+            }
+
             return 404;
         }
     }

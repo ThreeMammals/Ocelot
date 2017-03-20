@@ -1,6 +1,9 @@
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -27,7 +30,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling downstream route finder middleware");
+            _logger.TraceMiddlewareEntry();
 
             var upstreamUrlPath = context.Request.Path.ToString().SetLastCharacterAs('/');
 
@@ -37,9 +40,11 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             if (downstreamRoute.IsError)
             {
-                _logger.LogDebug("IDownstreamRouteFinder returned an error, setting pipeline error");
+                _logger.LogError($"{MiddlwareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(downstreamRoute.Errors);
+
+                _logger.TraceMiddlewareCompleted();
                 return;
             }
 
@@ -47,12 +52,12 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 
-            _logger.LogDebug("calling next middleware");
+            _logger.TraceInvokeNext();
 
             await _next.Invoke(context);
 
-            _logger.LogDebug("succesfully called next middleware");
-
+            _logger.TraceInvokeNextCompleted();
+            _logger.TraceMiddlewareCompleted();
         }
     }
 }
