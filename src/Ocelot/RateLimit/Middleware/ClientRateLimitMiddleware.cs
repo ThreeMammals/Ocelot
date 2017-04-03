@@ -31,12 +31,18 @@ namespace Ocelot.RateLimit.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling RateLimit middleware");
+            _logger.TraceMiddlewareEntry();
+
             var options = DownstreamRoute.ReRoute.RateLimitOptions;
             // check if rate limiting is enabled
             if (!DownstreamRoute.ReRoute.EnableEndpointRateLimiting)
             {
-                await _next.Invoke(context);
+                _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamPathTemplate}");
+
+                _logger.TraceInvokeNext();
+                    await _next.Invoke(context);
+                _logger.TraceInvokeNextCompleted();
+                _logger.TraceMiddlewareCompleted();
                 return;
             }
             // compute identity from request
@@ -45,7 +51,12 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                await _next.Invoke(context);
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate} is white listed from rate limiting");
+
+                _logger.TraceInvokeNext();
+                    await _next.Invoke(context);
+                _logger.TraceInvokeNextCompleted();
+                _logger.TraceMiddlewareCompleted();
                 return;
             }
 
@@ -66,6 +77,7 @@ namespace Ocelot.RateLimit.Middleware
 
                     // break execution
                     await ReturnQuotaExceededResponse(context, options, retryAfter);
+                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
             }
@@ -76,7 +88,10 @@ namespace Ocelot.RateLimit.Middleware
                 context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
-            await _next.Invoke(context);
+            _logger.TraceInvokeNext();
+                await _next.Invoke(context);
+            _logger.TraceInvokeNextCompleted();
+            _logger.TraceMiddlewareCompleted();
         }
 
         public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext, RateLimitOptions option)

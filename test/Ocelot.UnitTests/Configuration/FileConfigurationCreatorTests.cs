@@ -8,6 +8,7 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
@@ -22,7 +23,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IConfigurationValidator> _validator;
         private Response<IOcelotConfiguration> _config;
         private FileConfiguration _fileConfiguration;
-        private readonly Mock<ILogger<FileOcelotConfigurationCreator>> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
         private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
@@ -44,7 +45,7 @@ namespace Ocelot.UnitTests.Configuration
             _qosProviderFactory = new Mock<IQoSProviderFactory>();
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _qosProvider = new Mock<IQoSProvider>();
-            _logger = new Mock<ILogger<FileOcelotConfigurationCreator>>();
+            _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
             _loadBalancerFactory = new Mock<ILoadBalancerFactory>();
