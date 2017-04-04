@@ -22,17 +22,7 @@ namespace Ocelot.Requester
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            var builder = new HttpClientBuilder();
-
-            var cacheKey = GetCacheKey(request, builder);
-
-            var httpClient = _cacheHandlers.Get(cacheKey);
-            if (httpClient == null)
-            {
-                httpClient = builder.Create();
-                _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(6));
-            }
-
+            IHttpClient httpClient = GetHttpClient(request);
             try
             {
                 var response = await httpClient.SendAsync(request.HttpRequestMessage);
@@ -53,6 +43,19 @@ namespace Ocelot.Requester
                 return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
             }
 
+        }
+
+        private IHttpClient GetHttpClient(Request.Request request)
+        {
+            var builder = new HttpClientBuilder();
+            var cacheKey = GetCacheKey(request, builder);
+            var httpClient = _cacheHandlers.Get(cacheKey);
+            if (httpClient == null)
+            {
+                httpClient = builder.Create();
+            }
+            _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(6));
+            return httpClient;
         }
 
         private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
