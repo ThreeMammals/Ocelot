@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -9,38 +10,44 @@ namespace Ocelot.Requester
 {
     public class MemoryHttpClientCache : IHttpClientCache
     {
-        private readonly IMemoryCache _memoryCache;
-
-        public MemoryHttpClientCache(IMemoryCache memoryCache)
-        {
-            _memoryCache = memoryCache;
-        }
+        private readonly ConcurrentDictionary<string, ConcurrentQueue<IHttpClient>> _httpClientsCache = new ConcurrentDictionary<string, ConcurrentQueue<IHttpClient>>();
 
         public void Set(string id, IHttpClient client, TimeSpan expirationTime)
         {
-            _memoryCache.Set(id, client, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
+            ConcurrentQueue<IHttpClient> connectionQueue;
+            if (_httpClientsCache.TryGetValue(id, out connectionQueue))
+            {
+                connectionQueue.Enqueue(client);
+            }
+            else
+            {
+                connectionQueue = new ConcurrentQueue<IHttpClient>();
+                connectionQueue.Enqueue(client);
+                _httpClientsCache.TryAdd(id, connectionQueue);
+            }
         }
 
         public bool Exists(string id)
         {
-            IHttpClient counter;
-            return _memoryCache.TryGetValue(id, out counter);
+            ConcurrentQueue<IHttpClient> connectionQueue;
+            return _httpClientsCache.TryGetValue(id, out connectionQueue);
         }
 
         public IHttpClient Get(string id)
         {
-            IHttpClient counter;
-            if (_memoryCache.TryGetValue(id, out counter))
+            IHttpClient client= null;
+            ConcurrentQueue<IHttpClient> connectionQueue;
+            if (_httpClientsCache.TryGetValue(id, out connectionQueue))
             {
-                return counter;
+                connectionQueue.TryDequeue(out client);
             }
-
-            return null;
+            return client;
         }
 
         public void Remove(string id)
         {
-            _memoryCache.Remove(id);
-        }
+            ConcurrentQueue<IHttpClient> connectionQueue;
+            _httpClientsCache.TryRemove(id, out connectionQueue);
+        }        
     }
 }
