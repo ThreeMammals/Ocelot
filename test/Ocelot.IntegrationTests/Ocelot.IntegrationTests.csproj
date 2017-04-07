@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Rafty" Version="0.1.2" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
   </ItemGroup>

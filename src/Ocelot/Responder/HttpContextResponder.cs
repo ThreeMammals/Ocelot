@@ -62,7 +62,7 @@ namespace Ocelot.Responder
             }
         }
 
-        private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
+        private void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
         {
             if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
             {

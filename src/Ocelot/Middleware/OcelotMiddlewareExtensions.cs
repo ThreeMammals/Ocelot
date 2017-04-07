@@ -22,12 +22,19 @@ namespace Ocelot.Middleware
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Ocelot.Cluster;
     using Ocelot.Configuration;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Logging;
+    using Rafty.Infrastructure;
+    using Rafty.Messaging;
+    using Rafty.Raft;
+    using Rafty.ServiceDiscovery;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -185,6 +192,18 @@ namespace Ocelot.Middleware
                     });
 
                     app.UseIdentityServer();
+
+                    var uri = new Uri(baseSchemeUrlAndPort);
+                    var logger = (ILogger)builder.ApplicationServices.GetService(typeof(ILogger));
+                    var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+                    var loggerFactory = (IOcelotLoggerFactory)builder.ApplicationServices.GetService(typeof(IOcelotLoggerFactory));
+                    var serviceRegistry = new ServiceRegistry();
+                    var messageSender = new HttpClientMessageSender(serviceRegistry, logger);
+                    var messageBus = new InMemoryBus(messageSender);
+                    var stateMachine = new SimpleStateMachine(fileConfigSetter, loggerFactory);
+                    var serversInCluster = new InMemoryServersInCluster();
+
+                    app.UseRafty(uri, messageSender, messageBus, stateMachine, serviceRegistry, logger, serversInCluster);
 
                     app.UseMvc();
                 });

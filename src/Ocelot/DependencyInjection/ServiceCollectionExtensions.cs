@@ -41,6 +41,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+using System.Threading;
 
 namespace Ocelot.DependencyInjection
 {
@@ -116,11 +117,11 @@ namespace Ocelot.DependencyInjection
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
             services.AddMvcCore()
-                .AddApplicationPart(assembly)
-                .AddControllersAsServices()
-                .AddAuthorization()
-                .AddJsonFormatters();
-
+                            .AddApplicationPart(assembly)
+                            .AddControllersAsServices()
+                            .AddAuthorization()
+                            .AddJsonFormatters();
+           
             services.AddLogging();
             services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
