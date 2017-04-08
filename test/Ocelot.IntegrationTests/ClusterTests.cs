@@ -24,12 +24,12 @@ namespace Ocelot.IntegrationTests
         private HttpResponseMessage _response;
         private BearerToken _token;
         private List<string> _remoteServerLocations;
-        private List<IWebHost> _builders;
+        private List<IWebHost> _webHosts;
 
         public ClusterTests()
         {
             _remoteServerLocations = new List<string>();
-            _builders = new List<IWebHost>();
+            _webHosts = new List<IWebHost>();
             _httpClient = new HttpClient();
         }
 
@@ -230,25 +230,32 @@ namespace Ocelot.IntegrationTests
 
         private async Task GivenAnOcelotIsRunning(string baseUrl)
         {
-            IWebHost webHost = new WebHostBuilder();
-            webHost
+            var webHostBuilder = new WebHostBuilder();
+            
+            webHostBuilder
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureServices(x =>
                 {
-                    x.AddSingleton(webHost);
+                    x.AddSingleton<IWebHostBuilder>(webHostBuilder);
                 })
-                .UseStartup<Startup>()
-                .Build();
+                .UseStartup<Startup>();
+
+                IWebHost webHost = webHostBuilder.Build();
 
                 webHost.Start();
 
-            _builders.Add(webHost);
+            _webHosts.Add(webHost);
         }
 
         public void Dispose()
         {
+            foreach(var webHost in _webHosts)
+            {
+                webHost?.Dispose();
+            }
+
             _httpClient?.Dispose();
         }
     }
