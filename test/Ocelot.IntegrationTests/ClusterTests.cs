@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.ManualTest;
+using Rafty.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -25,9 +26,11 @@ namespace Ocelot.IntegrationTests
         private BearerToken _token;
         private List<string> _remoteServerLocations;
         private List<IWebHost> _webHosts;
+        private IServiceRegistry _serviceRegistry;
 
         public ClusterTests()
         {
+            _serviceRegistry = new InMemoryServiceRegistry();
             _remoteServerLocations = new List<string>();
             _webHosts = new List<IWebHost>();
             _httpClient = new HttpClient();
@@ -239,6 +242,7 @@ namespace Ocelot.IntegrationTests
                 .ConfigureServices(x =>
                 {
                     x.AddSingleton<IWebHostBuilder>(webHostBuilder);
+                    x.AddSingleton<IServiceRegistry>(_serviceRegistry);
                 })
                 .UseStartup<Startup>();
 

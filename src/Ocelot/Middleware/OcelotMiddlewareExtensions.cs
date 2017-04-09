@@ -18,6 +18,7 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
@@ -35,6 +36,7 @@ namespace Ocelot.Middleware
     using Rafty.Messaging;
     using Rafty.Raft;
     using Rafty.ServiceDiscovery;
+    using Rafty.State;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -192,18 +194,15 @@ namespace Ocelot.Middleware
                     });
 
                     app.UseIdentityServer();
-
                     var uri = new Uri(baseSchemeUrlAndPort);
-                    var logger = (ILogger)builder.ApplicationServices.GetService(typeof(ILogger));
                     var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
-                    var loggerFactory = (IOcelotLoggerFactory)builder.ApplicationServices.GetService(typeof(IOcelotLoggerFactory));
-                    var serviceRegistry = new ServiceRegistry();
-                    var messageSender = new HttpClientMessageSender(serviceRegistry, logger);
-                    var messageBus = new InMemoryBus(messageSender);
-                    var stateMachine = new SimpleStateMachine(fileConfigSetter, loggerFactory);
-                    var serversInCluster = new InMemoryServersInCluster();
-
-                    app.UseRafty(uri, messageSender, messageBus, stateMachine, serviceRegistry, logger, serversInCluster);
+                    var messageSender = (IMessageSender)builder.ApplicationServices.GetService(typeof(IMessageSender));
+                    var serviceRegistry = (IServiceRegistry)builder.ApplicationServices.GetService(typeof(IServiceRegistry));
+                    var messageBus = (IMessageBus)builder.ApplicationServices.GetService(typeof(IMessageBus));
+                    var stateMachine = (IStateMachine)builder.ApplicationServices.GetService(typeof(IStateMachine));
+                    var serversInCluster = (IServersInCluster)builder.ApplicationServices.GetService(typeof(IServersInCluster));
+                    var loggerFactory = (ILoggerFactory)builder.ApplicationServices.GetService(typeof(ILoggerFactory));
+                    app.UseRafty(uri, messageSender, messageBus, stateMachine, serviceRegistry, loggerFactory, serversInCluster);
 
                     app.UseMvc();
                 });

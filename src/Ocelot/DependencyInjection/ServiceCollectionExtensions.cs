@@ -42,6 +42,12 @@ using System.Net.Http;
 using System.Reflection;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 using System.Threading;
+using Rafty.ServiceDiscovery;
+using Ocelot.Cluster;
+using Rafty.Messaging;
+using Microsoft.Extensions.Logging;
+using Rafty.Raft;
+using Rafty.State;
 
 namespace Ocelot.DependencyInjection
 {
@@ -159,6 +165,14 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IRequestScopedDataRepository, HttpDataRepository>();
             services.AddMemoryCache();
+
+            //todo - is this the right place for RAFTY dependencies...
+            services.TryAddSingleton<IServiceRegistry, InMemoryServiceRegistry>();
+            services.TryAddSingleton<IMessageSender, HttpClientMessageSender>();
+            services.TryAddSingleton<IMessageBus, InMemoryBus>();
+            services.TryAddSingleton<IStateMachine, SimpleStateMachine>();
+            services.TryAddSingleton<IServersInCluster, InMemoryServersInCluster>();         
+
             return services;
         }
     }
