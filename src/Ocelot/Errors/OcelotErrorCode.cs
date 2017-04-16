@@ -27,6 +27,7 @@
         UnableToFindServiceDiscoveryProviderError,
         UnableToFindLoadBalancerError,
         RequestTimedOutError,
-        UnableToFindQoSProviderError
+        UnableToFindQoSProviderError,
+        UnableToSetConfigInConsulError
     }
 }

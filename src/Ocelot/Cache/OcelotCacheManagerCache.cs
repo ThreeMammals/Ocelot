@@ -17,6 +17,18 @@ namespace Ocelot.Cache
             _cacheManager.Add(new CacheItem<T>(key, value, ExpirationMode.Absolute, ttl));
         }
 
+        public void AddAndDelete(string key, T value, TimeSpan ttl)
+        {
+            var exists = _cacheManager.Get(key);
+
+            if (exists != null)
+            {
+                _cacheManager.Remove(key);
+            }
+
+            _cacheManager.Add(new CacheItem<T>(key, value, ExpirationMode.Absolute, ttl));
+        }
+
         public T Get(string key)
         {
             return _cacheManager.Get<T>(key);

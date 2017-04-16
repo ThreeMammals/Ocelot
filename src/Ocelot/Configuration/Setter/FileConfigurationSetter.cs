@@ -33,7 +33,7 @@ namespace Ocelot.Configuration.Setter
 
             if(!config.IsError)
             {
-                _configRepo.AddOrReplace(config.Data);
+                await _configRepo.AddOrReplace(config.Data);
             }
 
             return new ErrorResponse(config.Errors);

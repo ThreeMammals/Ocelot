@@ -7,12 +7,12 @@ namespace Ocelot.Configuration
     public class ReRoute
     {
         public ReRoute(PathTemplate downstreamPathTemplate, 
-            PathTemplate upstreamTemplate, 
+            PathTemplate upstreamPathTemplate, 
             HttpMethod upstreamHttpMethod, 
             string upstreamTemplatePattern, 
             bool isAuthenticated, 
             AuthenticationOptions authenticationOptions, 
-            List<ClaimToThing> configurationHeaderExtractorProperties, 
+            List<ClaimToThing> claimsToHeaders, 
             List<ClaimToThing> claimsToClaims, 
             Dictionary<string, string> routeClaimsRequirement, 
             bool isAuthorised, 
@@ -27,8 +27,8 @@ namespace Ocelot.Configuration
             string reRouteKey, 
             ServiceProviderConfiguration serviceProviderConfiguraion,
             bool isQos,
-            QoSOptions qos,
-            bool enableRateLimit,
+            QoSOptions qosOptions,
+            bool enableEndpointRateLimiting,
             RateLimitOptions ratelimitOptions)
         {
             ReRouteKey = reRouteKey;
@@ -37,7 +37,7 @@ namespace Ocelot.Configuration
             DownstreamHost = downstreamHost;
             DownstreamPort = downstreamPort;
             DownstreamPathTemplate = downstreamPathTemplate;
-            UpstreamPathTemplate = upstreamTemplate;
+            UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             IsAuthenticated = isAuthenticated;
@@ -51,12 +51,12 @@ namespace Ocelot.Configuration
                 ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims 
                 ?? new List<ClaimToThing>();
-            ClaimsToHeaders = configurationHeaderExtractorProperties 
+            ClaimsToHeaders = claimsToHeaders 
                 ?? new List<ClaimToThing>();
-                DownstreamScheme = downstreamScheme;
+            DownstreamScheme = downstreamScheme;
             IsQos = isQos;
-            QosOptions = qos;
-            EnableEndpointRateLimiting = enableRateLimit;
+            QosOptionsOptions = qosOptions;
+            EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
             RateLimitOptions = ratelimitOptions;
         }
 
@@ -77,12 +77,12 @@ namespace Ocelot.Configuration
         public CacheOptions FileCacheOptions { get; private set; }
         public string DownstreamScheme {get;private set;}
         public bool IsQos { get; private set; }
-        public QoSOptions QosOptions { get; private set; }
+        public QoSOptions QosOptionsOptions { get; private set; }
         public string LoadBalancer {get;private set;}
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
         public ServiceProviderConfiguration ServiceProviderConfiguraion { get; private set; }
-        public bool EnableEndpointRateLimiting { get; private set; }
+        public bool EnableEndpointEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
     }
 }

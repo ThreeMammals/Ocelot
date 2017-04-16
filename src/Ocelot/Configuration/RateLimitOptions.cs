@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -58,26 +57,5 @@ namespace Ocelot.Configuration
         /// Disables X-Rate-Limit and Rety-After headers
         /// </summary>
         public bool DisableRateLimitHeaders { get; private set; }
-    }
-
-    public class RateLimitRule
-    {
-        public RateLimitRule(string period, TimeSpan periodTimespan, long limit)
-        {
-            Period = period;
-            PeriodTimespan = periodTimespan;
-            Limit = limit;
-        }
-
-        /// <summary>
-        /// Rate limit period as in 1s, 1m, 1h,1d
-        /// </summary>
-        public string Period { get; private set; }
-
-        public TimeSpan PeriodTimespan { get; private set; }
-        /// <summary>
-        /// Maximum number of requests that a client can make in a defined period
-        /// </summary>
-        public long Limit { get; private set; }
     }
 }

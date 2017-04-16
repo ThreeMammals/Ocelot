@@ -15,9 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.ManualTest;
 using Ocelot.Middleware;
+using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
@@ -84,6 +86,22 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddOcelotStoreConfigurationInConsul(consulConfig);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         internal void ThenTheResponseShouldBe(FileConfiguration expected)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
@@ -138,8 +156,7 @@ namespace Ocelot.AcceptanceTests
                         .WithDictionaryHandle();
                     };
                     
-                    s.AddOcelotOutputCaching(settings);
-                    s.AddOcelot(configuration);
+                    s.AddOcelot(configuration, settings);
                 })
                 .ConfigureLogging(l =>
                 {
