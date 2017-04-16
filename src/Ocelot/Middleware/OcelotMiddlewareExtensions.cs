@@ -18,16 +18,25 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Ocelot.Cluster;
     using Ocelot.Configuration;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Logging;
+    using Rafty.Infrastructure;
+    using Rafty.Messaging;
+    using Rafty.Raft;
+    using Rafty.ServiceDiscovery;
+    using Rafty.State;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -190,6 +199,15 @@ namespace Ocelot.Middleware
                     });
 
                     app.UseIdentityServer();
+                    var uri = new Uri(baseSchemeUrlAndPort);
+                    var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+                    var messageSender = (IMessageSender)builder.ApplicationServices.GetService(typeof(IMessageSender));
+                    var serviceRegistry = (IServiceRegistry)builder.ApplicationServices.GetService(typeof(IServiceRegistry));
+                    var messageBus = (IMessageBus)builder.ApplicationServices.GetService(typeof(IMessageBus));
+                    var stateMachine = (IStateMachine)builder.ApplicationServices.GetService(typeof(IStateMachine));
+                    var serversInCluster = (IServersInCluster)builder.ApplicationServices.GetService(typeof(IServersInCluster));
+                    var loggerFactory = (ILoggerFactory)builder.ApplicationServices.GetService(typeof(ILoggerFactory));
+                    app.UseRafty(uri, messageSender, messageBus, stateMachine, serviceRegistry, loggerFactory, serversInCluster);
 
                     app.UseMvc();
                 });

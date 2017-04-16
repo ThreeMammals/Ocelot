@@ -42,6 +42,13 @@ using System.Net.Http;
 using System.Reflection;
 using Ocelot.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+using System.Threading;
+using Rafty.ServiceDiscovery;
+using Ocelot.Cluster;
+using Rafty.Messaging;
+using Microsoft.Extensions.Logging;
+using Rafty.Raft;
+using Rafty.State;
 
 namespace Ocelot.DependencyInjection
 {
@@ -124,11 +131,11 @@ namespace Ocelot.DependencyInjection
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
             services.AddMvcCore()
-                .AddApplicationPart(assembly)
-                .AddControllersAsServices()
-                .AddAuthorization()
-                .AddJsonFormatters();
-
+                            .AddApplicationPart(assembly)
+                            .AddControllersAsServices()
+                            .AddAuthorization()
+                            .AddJsonFormatters();
+           
             services.AddLogging();
             services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
@@ -166,6 +173,14 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IRequestScopedDataRepository, HttpDataRepository>();
             services.AddMemoryCache();
+
+            //todo - is this the right place for RAFTY dependencies...
+            services.TryAddSingleton<IServiceRegistry, InMemoryServiceRegistry>();
+            services.TryAddSingleton<IMessageSender, HttpClientMessageSender>();
+            services.TryAddSingleton<IMessageBus, InMemoryBus>();
+            services.TryAddSingleton<IStateMachine, SimpleStateMachine>();
+            services.TryAddSingleton<IServersInCluster, InMemoryServersInCluster>();         
+
             return services;
         }
     }

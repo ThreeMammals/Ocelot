@@ -24,7 +24,7 @@ namespace Ocelot.Configuration.Creator
             return options;
         }
 
-        private static bool IsEnableRateLimiting(FileReRoute fileReRoute)
+        private bool IsEnableRateLimiting(FileReRoute fileReRoute)
         {
             return (fileReRoute.RateLimitOptions != null && fileReRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
         }

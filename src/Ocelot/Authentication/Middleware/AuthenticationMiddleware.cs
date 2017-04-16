@@ -88,7 +88,7 @@ namespace Ocelot.Authentication.Middleware
             }
         }
 
-        private static bool IsAuthenticatedRoute(ReRoute reRoute)
+        private bool IsAuthenticatedRoute(ReRoute reRoute)
         {
             return reRoute.IsAuthenticated;
         }

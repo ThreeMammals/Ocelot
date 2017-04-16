@@ -74,7 +74,7 @@ namespace Ocelot.Authorisation.Middleware
             }
         }
 
-        private static bool IsAuthorised(Response<bool> authorised)
+        private bool IsAuthorised(Response<bool> authorised)
         {
             return authorised.Data;
         }
