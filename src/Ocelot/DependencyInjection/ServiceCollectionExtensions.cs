@@ -40,24 +40,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using Ocelot.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddOcelotOutputCaching(this IServiceCollection services, Action<ConfigurationBuilderCachePart> settings)
+        public static IServiceCollection AddOcelotStoreConfigurationInConsul(this IServiceCollection services, ConsulRegistryConfiguration consulConfig)
         {
-            var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
-            var ocelotCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
-            services.TryAddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
-            services.TryAddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotCacheManager);
-
+            services.AddSingleton<ConsulRegistryConfiguration>(consulConfig);
+            services.AddSingleton<IOcelotConfigurationRepository, ConsulOcelotConfigurationRepository>();
             return services;
         }
 
-        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot)
+        public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot, Action<ConfigurationBuilderCachePart> settings)
         {
+            var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
+            var ocelotOutputCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
+            services.TryAddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
+            services.TryAddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotOutputCacheManager);
+
+            var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IOcelotConfiguration>("OcelotConfigurationCache", settings);
+            var ocelotConfigCacheManager = new OcelotCacheManagerCache<IOcelotConfiguration>(ocelotConfigCacheManagerOutputCache);
+            services.TryAddSingleton<ICacheManager<IOcelotConfiguration>>(ocelotConfigCacheManagerOutputCache);
+            services.TryAddSingleton<IOcelotCache<IOcelotConfiguration>>(ocelotConfigCacheManager);
+
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();

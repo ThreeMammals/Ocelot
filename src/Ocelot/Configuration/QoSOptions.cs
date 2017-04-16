@@ -1,5 +1,4 @@
-﻿using System;
-using Polly.Timeout;
+﻿using Polly.Timeout;
 
 namespace Ocelot.Configuration
 {
@@ -12,17 +11,17 @@ namespace Ocelot.Configuration
             TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-            DurationOfBreak = TimeSpan.FromMilliseconds(durationofBreak);
-            TimeoutValue = TimeSpan.FromMilliseconds(timeoutValue);
+            DurationOfBreak = durationofBreak;
+            TimeoutValue = timeoutValue;
             TimeoutStrategy = timeoutStrategy;
         }
          
 
         public int ExceptionsAllowedBeforeBreaking { get; private set; }
 
-        public TimeSpan DurationOfBreak { get; private set; }
+        public int DurationOfBreak { get; private set; }
 
-        public TimeSpan TimeoutValue { get; private set; }
+        public int TimeoutValue { get; private set; }
 
         public TimeoutStrategy TimeoutStrategy { get; private set; }
 
