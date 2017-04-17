@@ -30,8 +30,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.TraceMiddlewareEntry();
-
             var upstreamUrlPath = context.Request.Path.ToString().SetLastCharacterAs('/');
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
@@ -43,8 +41,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 _logger.LogError($"{MiddlwareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(downstreamRoute.Errors);
-
-                _logger.TraceMiddlewareCompleted();
                 return;
             }
 
@@ -52,12 +48,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 
-            _logger.TraceInvokeNext();
-
             await _next.Invoke(context);
-
-            _logger.TraceInvokeNextCompleted();
-            _logger.TraceMiddlewareCompleted();
         }
     }
 }

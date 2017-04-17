@@ -29,8 +29,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling downstream url creator middleware");
-
             var dsPath = _replacer
                 .Replace(DownstreamRoute.ReRoute.DownstreamPathTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
 
@@ -60,11 +58,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             SetDownstreamUrlForThisRequest(dsUrl.Data.Value);
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }

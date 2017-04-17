@@ -31,18 +31,13 @@ namespace Ocelot.RateLimit.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.TraceMiddlewareEntry();
-
             var options = DownstreamRoute.ReRoute.RateLimitOptions;
             // check if rate limiting is enabled
             if (!DownstreamRoute.ReRoute.EnableEndpointEndpointRateLimiting)
             {
                 _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamPathTemplate}");
+                await _next.Invoke(context);
 
-                _logger.TraceInvokeNext();
-                    await _next.Invoke(context);
-                _logger.TraceInvokeNextCompleted();
-                _logger.TraceMiddlewareCompleted();
                 return;
             }
             // compute identity from request
@@ -52,11 +47,8 @@ namespace Ocelot.RateLimit.Middleware
             if (IsWhitelisted(identity, options))
             {
                 _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate} is white listed from rate limiting");
+                await _next.Invoke(context);
 
-                _logger.TraceInvokeNext();
-                    await _next.Invoke(context);
-                _logger.TraceInvokeNextCompleted();
-                _logger.TraceMiddlewareCompleted();
                 return;
             }
 
@@ -77,21 +69,18 @@ namespace Ocelot.RateLimit.Middleware
 
                     // break execution
                     await ReturnQuotaExceededResponse(context, options, retryAfter);
-                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
             }
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _processor.GetRateLimitHeaders( context,identity, options);
+                var headers = _processor.GetRateLimitHeaders(context, identity, options);
                 context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
-            _logger.TraceInvokeNext();
-                await _next.Invoke(context);
-            _logger.TraceInvokeNextCompleted();
-            _logger.TraceMiddlewareCompleted();
+            await _next.Invoke(context);
+
         }
 
         public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext, RateLimitOptions option)
@@ -104,10 +93,10 @@ namespace Ocelot.RateLimit.Middleware
 
             return new ClientRequestIdentity(
                 clientId,
-                httpContext.Request.Path.ToString().ToLowerInvariant(), 
+                httpContext.Request.Path.ToString().ToLowerInvariant(),
                 httpContext.Request.Method.ToLowerInvariant()
                 );
-         }
+        }
 
         public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {

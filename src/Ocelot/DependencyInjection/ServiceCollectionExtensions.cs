@@ -166,6 +166,11 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IRequestScopedDataRepository, HttpDataRepository>();
             services.AddMemoryCache();
+
+            //Used to log the the start and ending of middleware
+            services.TryAddSingleton<OcelotDiagnosticListener>();
+            services.AddMiddlewareAnalysis();
+
             return services;
         }
     }

@@ -26,11 +26,9 @@ namespace Ocelot.QueryStrings.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling query string builder middleware");
-
             if (DownstreamRoute.ReRoute.ClaimsToQueries.Any())
             {
-                _logger.LogDebug("this route has instructions to convert claims to queries");
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
                 var response = _addQueriesToRequest.SetQueriesOnContext(DownstreamRoute.ReRoute.ClaimsToQueries, context);
 
@@ -43,11 +41,7 @@ namespace Ocelot.QueryStrings.Middleware
                 }
             }
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }
