@@ -129,7 +129,9 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenIAddHeadersToTheRequest()
         {
-            _result = _addHeadersToRequest.SetHeadersOnContext(_configuration, _context);
+            //_result = _addHeadersToRequest.SetHeadersOnContext(_configuration, _context);
+            //TODO: pass in DownstreamRequest
+            _result = _addHeadersToRequest.SetHeadersOnDownstreamRequest(_configuration, _context.User.Claims, null);
         }
 
         private void ThenTheResultIsSuccess()

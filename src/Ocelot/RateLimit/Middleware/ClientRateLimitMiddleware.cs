@@ -111,11 +111,7 @@ namespace Ocelot.RateLimit.Middleware
 
         public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            if (option.ClientWhitelist.Contains(requestIdentity.ClientId))
-            {
-                return true;
-            }
-            return false;
+            return option.ClientWhitelist.Contains(requestIdentity.ClientId);
         }
 
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)

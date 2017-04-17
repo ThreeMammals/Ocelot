@@ -27,7 +27,7 @@ namespace Ocelot.Cache.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamUrlKey = DownstreamUrl;
+            var downstreamUrlKey = DownstreamRequest.RequestUri.OriginalString;
 
             if (!DownstreamRoute.ReRoute.IsCached)
             {

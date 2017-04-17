@@ -32,7 +32,8 @@ namespace Ocelot.QueryStrings.Middleware
             {
                 _logger.LogDebug("this route has instructions to convert claims to queries");
 
-                var response = _addQueriesToRequest.SetQueriesOnContext(DownstreamRoute.ReRoute.ClaimsToQueries, context);
+                //var response = _addQueriesToRequest.SetQueriesOnContext(DownstreamRoute.ReRoute.ClaimsToQueries, context);
+                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(DownstreamRoute.ReRoute.ClaimsToQueries, context.User.Claims, DownstreamRequest);
 
                 if (response.IsError)
                 {

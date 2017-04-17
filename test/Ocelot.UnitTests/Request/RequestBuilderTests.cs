@@ -287,8 +287,11 @@ namespace Ocelot.UnitTests.Request
 
         private void WhenICreateARequest()
         {
-            _result = _requestCreator.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
-                _query, _contentType, _requestId,_isQos,_qoSProvider).Result;
+            //_result = _requestCreator.Build(_httpMethod, _downstreamUrl, _content?.ReadAsStreamAsync().Result, _headers,
+            //    _query, _contentType, _requestId,_isQos,_qoSProvider).Result;
+
+            //todo: add httprequestmessage
+            _result = _requestCreator.Build(null, _isQos, _qoSProvider).Result;
         }
 
 

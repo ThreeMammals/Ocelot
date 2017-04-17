@@ -84,17 +84,28 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheAddHeadersToRequestReturns()
         {
+            //_addHeaders
+            //    .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(), 
+            //    It.IsAny<HttpContext>()))
+            //    .Returns(new OkResponse());
             _addHeaders
-                .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(), 
-                It.IsAny<HttpContext>()))
+                .Setup(x => x.SetHeadersOnDownstreamRequest(
+                    It.IsAny<List<ClaimToThing>>(),
+                    It.IsAny<IEnumerable<System.Security.Claims.Claim>>(),
+                    It.IsAny<HttpRequestMessage>()))
                 .Returns(new OkResponse());
         }
 
         private void ThenTheAddHeadersToRequestIsCalledCorrectly()
         {
+            //_addHeaders
+            //    .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(),
+            //    It.IsAny<HttpContext>()), Times.Once);
             _addHeaders
-                .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<HttpContext>()), Times.Once);
+                .Verify(x => x.SetHeadersOnDownstreamRequest(
+                    It.IsAny<List<ClaimToThing>>(),
+                    It.IsAny<IEnumerable<System.Security.Claims.Claim>>(), 
+                    It.IsAny<HttpRequestMessage>()), Times.Once);
         }
 
         private void WhenICallTheMiddleware()

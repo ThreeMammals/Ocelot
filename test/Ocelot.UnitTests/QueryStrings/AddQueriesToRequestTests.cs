@@ -128,7 +128,9 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void WhenIAddQueriesToTheRequest()
         {
-            _result = _addQueriesToRequest.SetQueriesOnContext(_configuration, _context);
+            //_result = _addQueriesToRequest.SetQueriesOnContext(_configuration, _context);
+            //TODO: set downstreamRequest
+            _result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(_configuration, _context.User.Claims, null);
         }
 
         private void ThenTheResultIsSuccess()

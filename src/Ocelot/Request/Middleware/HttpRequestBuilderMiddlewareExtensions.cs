@@ -8,5 +8,10 @@ namespace Ocelot.Request.Middleware
         {
             return builder.UseMiddleware<HttpRequestBuilderMiddleware>();
         }
+
+        public static IApplicationBuilder UseDownstreamRequestInitialiser(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+        }
     }
 }

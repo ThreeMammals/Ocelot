@@ -4,6 +4,7 @@ using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -42,23 +43,31 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
-            
-            var dsHostAndPort = HostAndPort;
+            //var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
 
-            var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
+            //var dsHostAndPort = HostAndPort;
 
-            if (dsUrl.IsError)
+            //var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
+
+            //if (dsUrl.IsError)
+            //{
+            //    _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
+
+            //    SetPipelineError(dsUrl.Errors);
+            //    return;
+            //}
+
+            var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri)
             {
-                _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
+                Path = dsPath.Data.Value,
+                Scheme = DownstreamRoute.ReRoute.DownstreamScheme
+            };
 
-                SetPipelineError(dsUrl.Errors);
-                return;
-            }
+            DownstreamRequest.RequestUri = uriBuilder.Uri;
 
-            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", dsUrl.Data.Value);
+            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", DownstreamRequest.RequestUri);
 
-            SetDownstreamUrlForThisRequest(dsUrl.Data.Value);
+            //SetDownstreamUrlForThisRequest(dsUrl.Data.Value);
 
             _logger.LogDebug("calling next middleware");
 

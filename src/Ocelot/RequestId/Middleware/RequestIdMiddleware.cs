@@ -5,6 +5,9 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Collections.Generic;
 
 namespace Ocelot.RequestId.Middleware
 {
@@ -30,8 +33,6 @@ namespace Ocelot.RequestId.Middleware
 
             SetOcelotRequestId(context);
 
-            _logger.LogDebug("set requestId");
-
             _logger.TraceInvokeNext();
                 await _next.Invoke(context);
             _logger.TraceInvokeNextCompleted();
@@ -46,15 +47,28 @@ namespace Ocelot.RequestId.Middleware
             {
                 key = DownstreamRoute.ReRoute.RequestIdKey;
             }
+            
+            StringValues requestIds;
 
-            StringValues requestId;
-
-            if (context.Request.Headers.TryGetValue(key, out requestId))
+            if (context.Request.Headers.TryGetValue(key, out requestIds))
             {
-                _requestScopedDataRepository.Add("RequestId", requestId.First());
+                var requestId = requestIds.First();
+                var downstreamRequestHeaders = DownstreamRequest.Headers;
+
+                if (!string.IsNullOrEmpty(requestId) && 
+                    !HeaderExists(key, downstreamRequestHeaders))
+                {
+                    downstreamRequestHeaders.Add(key, requestId);
+                }
 
                 context.TraceIdentifier = requestId;
             }
+        }
+
+        private bool HeaderExists(string headerKey, HttpRequestHeaders headers)
+        {
+            IEnumerable<string> value;
+            return headers.TryGetValues(headerKey, out value);
         }
     }
 }

@@ -20,6 +20,7 @@ using Ocelot.QueryStrings.Middleware;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
+using System.Security.Claims;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
@@ -82,17 +83,28 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void GivenTheAddHeadersToRequestReturns()
         {
+            //_addQueries
+            //    .Setup(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(), 
+            //    It.IsAny<HttpContext>()))
+            //    .Returns(new OkResponse());
             _addQueries
-                .Setup(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(), 
-                It.IsAny<HttpContext>()))
+                .Setup(x => x.SetQueriesOnDownstreamRequest(
+                    It.IsAny<List<ClaimToThing>>(),
+                    It.IsAny<IEnumerable<Claim>>(),
+                    It.IsAny<HttpRequestMessage>()))
                 .Returns(new OkResponse());
         }
 
         private void ThenTheAddQueriesToRequestIsCalledCorrectly()
         {
+            //_addQueries
+            //    .Verify(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(),
+            //    It.IsAny<HttpContext>()), Times.Once);
             _addQueries
-                .Verify(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<HttpContext>()), Times.Once);
+                .Verify(x => x.SetQueriesOnDownstreamRequest(
+                    It.IsAny<List<ClaimToThing>>(),
+                    It.IsAny<IEnumerable<Claim>>(),
+                    It.IsAny<HttpRequestMessage>()), Times.Once);
         }
 
         private void WhenICallTheMiddleware()

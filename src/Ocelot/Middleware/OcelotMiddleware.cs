@@ -46,14 +46,16 @@ namespace Ocelot.Middleware
             }
         }
 
-        public string DownstreamUrl
-        {
-            get
-            {
-                var downstreamUrl = _requestScopedDataRepository.Get<string>("DownstreamUrl");
-                return downstreamUrl.Data;
-            }
-        }
+        //public string DownstreamUrl
+        //{
+        //    get
+        //    {
+        //        var downstreamUrl = _requestScopedDataRepository.Get<string>("DownstreamUrl");
+        //        return downstreamUrl.Data;
+        //    }
+        //}
+
+        public HttpRequestMessage DownstreamRequest => _requestScopedDataRepository.Get<HttpRequestMessage>("DownstreamRequest").Data;
 
         public Request.Request Request
         {
@@ -73,18 +75,23 @@ namespace Ocelot.Middleware
             }
         }
 
-        public HostAndPort HostAndPort 
-        {
-            get
-            {
-                var hostAndPort = _requestScopedDataRepository.Get<HostAndPort>("HostAndPort");
-                return hostAndPort.Data;
-            }
-        }
+        //public HostAndPort HostAndPort 
+        //{
+        //    get
+        //    {
+        //        var hostAndPort = _requestScopedDataRepository.Get<HostAndPort>("HostAndPort");
+        //        return hostAndPort.Data;
+        //    }
+        //}
 
-        public void SetHostAndPortForThisRequest(HostAndPort hostAndPort)
+        //public void SetHostAndPortForThisRequest(HostAndPort hostAndPort)
+        //{
+        //    _requestScopedDataRepository.Add("HostAndPort", hostAndPort);
+        //}
+
+        public void SetDownstreamRequest(HttpRequestMessage request)
         {
-            _requestScopedDataRepository.Add("HostAndPort", hostAndPort);
+            _requestScopedDataRepository.Add("DownstreamRequest", request);
         }
 
         public void SetDownstreamRouteForThisRequest(DownstreamRoute downstreamRoute)
@@ -92,10 +99,10 @@ namespace Ocelot.Middleware
             _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute);
         }
 
-        public void SetDownstreamUrlForThisRequest(string downstreamUrl)
-        {
-            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl);
-        }
+        //public void SetDownstreamUrlForThisRequest(string downstreamUrl)
+        //{
+        //    _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl);
+        //}
 
         public void SetUpstreamRequestForThisRequest(Request.Request request)
         {
