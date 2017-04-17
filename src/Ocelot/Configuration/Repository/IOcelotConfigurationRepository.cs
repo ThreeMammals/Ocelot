@@ -1,10 +1,11 @@
-﻿using Ocelot.Responses;
+﻿using System.Threading.Tasks;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository
 {
     public interface IOcelotConfigurationRepository
     {
-        Response<IOcelotConfiguration> Get();
-        Response AddOrReplace(IOcelotConfiguration ocelotConfiguration);
+        Task<Response<IOcelotConfiguration>> Get();
+        Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration);
     }
 }

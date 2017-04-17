@@ -690,10 +690,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].QosOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
 
-            _config.Data.ReRoutes[0].QosOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].QosOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
     }
 }

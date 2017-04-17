@@ -1,4 +1,5 @@
-﻿using Ocelot.Responses;
+﻿using System.Threading.Tasks;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository
 {
@@ -11,12 +12,12 @@ namespace Ocelot.Configuration.Repository
 
         private IOcelotConfiguration _ocelotConfiguration;
 
-        public Response<IOcelotConfiguration> Get()
+        public async Task<Response<IOcelotConfiguration>> Get()
         {
             return new OkResponse<IOcelotConfiguration>(_ocelotConfiguration);
         }
 
-        public Response AddOrReplace(IOcelotConfiguration ocelotConfiguration)
+        public async Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration)
         {
             lock (LockObject)
             {

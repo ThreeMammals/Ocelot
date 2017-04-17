@@ -34,7 +34,7 @@ namespace Ocelot.RateLimit
                 if (entry.HasValue)
                 {
                     // entry has not expired
-                    if (entry.Value.Timestamp + rule.PeriodTimespan >= DateTime.UtcNow)
+                    if (entry.Value.Timestamp + TimeSpan.FromSeconds(rule.PeriodTimespan) >= DateTime.UtcNow)
                     {
                         // increment request count
                         var totalRequests = entry.Value.TotalRequests + 1;
@@ -45,7 +45,7 @@ namespace Ocelot.RateLimit
                     }
                 }
                 // stores: id (string) - timestamp (datetime) - total_requests (long)
-                _counterHandler.Set(counterId, counter, rule.PeriodTimespan);
+                _counterHandler.Set(counterId, counter, TimeSpan.FromSeconds(rule.PeriodTimespan));
             }
 
             return counter;
@@ -95,7 +95,7 @@ namespace Ocelot.RateLimit
         public string RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            var retryAfter = Convert.ToInt32(rule.PeriodTimespan.TotalSeconds);
+            var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
             retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
             return retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }

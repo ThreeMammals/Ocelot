@@ -35,7 +35,7 @@ namespace Ocelot.RateLimit.Middleware
 
             var options = DownstreamRoute.ReRoute.RateLimitOptions;
             // check if rate limiting is enabled
-            if (!DownstreamRoute.ReRoute.EnableEndpointRateLimiting)
+            if (!DownstreamRoute.ReRoute.EnableEndpointEndpointRateLimiting)
             {
                 _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamPathTemplate}");
 

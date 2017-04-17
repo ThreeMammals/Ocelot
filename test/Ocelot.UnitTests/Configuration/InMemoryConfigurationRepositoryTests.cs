@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenIGetTheConfiguration()
         {
-            _getResult = _repo.Get();
+            _getResult = _repo.Get().Result;
         }
 
         private void GivenThereIsASavedConfiguration()
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenIAddOrReplaceTheConfig()
         {
-            _result = _repo.AddOrReplace(_config);
+            _result = _repo.AddOrReplace(_config).Result;
         }
 
         private void ThenNoErrorsAreReturned()

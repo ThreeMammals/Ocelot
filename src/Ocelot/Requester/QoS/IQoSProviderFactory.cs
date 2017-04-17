@@ -57,15 +57,15 @@ namespace Ocelot.Requester.QoS
         {
             _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
 
-            _timeoutPolicy = Policy.TimeoutAsync(reRoute.QosOptions.TimeoutValue, reRoute.QosOptions.TimeoutStrategy);
+            _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(reRoute.QosOptionsOptions.TimeoutValue), reRoute.QosOptionsOptions.TimeoutStrategy);
 
             _circuitBreakerPolicy = Policy
                 .Handle<HttpRequestException>()
                 .Or<TimeoutRejectedException>()
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(
-                    exceptionsAllowedBeforeBreaking: reRoute.QosOptions.ExceptionsAllowedBeforeBreaking,
-                    durationOfBreak: reRoute.QosOptions.DurationOfBreak,
+                    exceptionsAllowedBeforeBreaking: reRoute.QosOptionsOptions.ExceptionsAllowedBeforeBreaking,
+                    durationOfBreak: TimeSpan.FromMilliseconds(reRoute.QosOptionsOptions.DurationOfBreak),
                     onBreak: (ex, breakDelay) =>
                     {
                         _logger.LogError(

@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration.Repository;
+﻿using System.Threading.Tasks;
+using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Provider
@@ -15,9 +16,9 @@ namespace Ocelot.Configuration.Provider
             _repo = repo;
         }
 
-        public Response<IOcelotConfiguration> Get()
+        public async Task<Response<IOcelotConfiguration>> Get()
         {
-            var repoConfig = _repo.Get();
+            var repoConfig = await _repo.Get();
 
             if (repoConfig.IsError)
             {
