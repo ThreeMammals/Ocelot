@@ -25,11 +25,15 @@
 //        private bool _isQos;
 //        private IQoSProvider _qoSProvider;
 
+// ---- sets Method
+
 //        public RequestBuilder WithHttpMethod(string httpMethod)
 //        {
 //            _method = new HttpMethod(httpMethod);
 //            return this;
 //        }
+
+// ---- sets RequestUri
 
 //        public RequestBuilder WithDownstreamUrl(string downstreamUrl)
 //        {
@@ -43,6 +47,14 @@
 //            return this;
 //        }
 
+//        private Uri CreateUri()
+//        {
+//            var uri = new Uri(string.Format("{0}{1}", _downstreamUrl, _queryString.ToUriComponent()));
+//            return uri;
+//        }
+
+// ---- Content and ContentType
+
 //        public RequestBuilder WithContent(Stream content)
 //        {
 //            _content = content;
@@ -55,61 +67,23 @@
 //            return this;
 //        }
 
-//        public RequestBuilder WithHeaders(IHeaderDictionary headers)
-//        {
-//            _headers = headers;
-//            return this;
-//        }
-
-//        public RequestBuilder WithRequestId(RequestId.RequestId requestId)
-//        {
-//            _requestId = requestId;
-//            return this;
-//        }
-
-//        public RequestBuilder WithIsQos(bool isqos)
-//        {
-//            _isQos = isqos;
-//            return this;
-//        }
-
-//        public RequestBuilder WithQos(IQoSProvider qoSProvider)
-//        {
-//            _qoSProvider = qoSProvider;
-//            return this;
-//        }
-
-//        public async Task<Request> Build()
-//        {
-//            var uri = CreateUri();
-
-//            var httpRequestMessage = new HttpRequestMessage(_method, uri);
-
-//            await AddContentToRequest(httpRequestMessage);
-
-//            AddContentTypeToRequest(httpRequestMessage);
-
-//            AddHeadersToRequest(httpRequestMessage);
-
-//            if (ShouldAddRequestId(_requestId, httpRequestMessage.Headers))
-//            {
-//                AddRequestIdHeader(_requestId, httpRequestMessage);
-//            }
-
-//            return new Request(httpRequestMessage,_isQos, _qoSProvider);
-//        }
-
-//        private Uri CreateUri()
-//        {
-//            var uri = new Uri(string.Format("{0}{1}", _downstreamUrl, _queryString.ToUriComponent()));
-//            return uri;
-//        }
-
 //        private async Task AddContentToRequest(HttpRequestMessage httpRequestMessage)
 //        {
 //            if (_content != null)
 //            {
 //                httpRequestMessage.Content = new ByteArrayContent(await ToByteArray(_content));
+//            }
+//        }
+
+//        private async Task<byte[]> ToByteArray(Stream stream)
+//        {
+//            using (stream)
+//            {
+//                using (var memStream = new MemoryStream())
+//                {
+//                    await stream.CopyToAsync(memStream);
+//                    return memStream.ToArray();
+//                }
 //            }
 //        }
 
@@ -120,6 +94,14 @@
 //                httpRequestMessage.Content.Headers.Remove("Content-Type");
 //                httpRequestMessage.Content.Headers.TryAddWithoutValidation("Content-Type", _contentType);
 //            }
+//        }
+
+// ---- Headers
+
+//        public RequestBuilder WithHeaders(IHeaderDictionary headers)
+//        {
+//            _headers = headers;
+//            return this;
 //        }
 
 //        private void AddHeadersToRequest(HttpRequestMessage httpRequestMessage)
@@ -144,6 +126,14 @@
 //            return !_unsupportedHeaders.Contains(header.Key.ToLower());
 //        }
 
+// ---- Request ID
+
+//        public RequestBuilder WithRequestId(RequestId.RequestId requestId)
+//        {
+//            _requestId = requestId;
+//            return this;
+//        }
+
 //        private void AddRequestIdHeader(RequestId.RequestId requestId, HttpRequestMessage httpRequestMessage)
 //        {
 //            httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
@@ -162,16 +152,40 @@
 //                   && !RequestIdInHeaders(requestId, headers);
 //        }
 
-//        private async Task<byte[]> ToByteArray(Stream stream)
+// ---- QoS
+
+//        public RequestBuilder WithIsQos(bool isqos)
 //        {
-//            using (stream)
+//            _isQos = isqos;
+//            return this;
+//        }
+
+//        public RequestBuilder WithQos(IQoSProvider qoSProvider)
+//        {
+//            _qoSProvider = qoSProvider;
+//            return this;
+//        }
+
+// ----
+
+//        public async Task<Request> Build()
+//        {
+//            var uri = CreateUri();
+
+//            var httpRequestMessage = new HttpRequestMessage(_method, uri);
+
+//            await AddContentToRequest(httpRequestMessage);
+
+//            AddContentTypeToRequest(httpRequestMessage);
+
+//            AddHeadersToRequest(httpRequestMessage);
+
+//            if (ShouldAddRequestId(_requestId, httpRequestMessage.Headers))
 //            {
-//                using (var memStream = new MemoryStream())
-//                {
-//                    await stream.CopyToAsync(memStream);
-//                    return memStream.ToArray();
-//                }
+//                AddRequestIdHeader(_requestId, httpRequestMessage);
 //            }
+
+//            return new Request(httpRequestMessage,_isQos, _qoSProvider);
 //        }
 //    }
 //}
