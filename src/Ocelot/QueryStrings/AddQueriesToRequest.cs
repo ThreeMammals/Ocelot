@@ -51,7 +51,6 @@ namespace Ocelot.QueryStrings
 
         public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, HttpRequestMessage downstreamRequest)
         {
-
             var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.RequestUri.Query);
 
             foreach (var config in claimsToThings)

@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Headers.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.QueryStrings;
@@ -31,6 +28,7 @@ namespace Ocelot.UnitTests.QueryStrings
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
+        private readonly HttpRequestMessage _downstreamRequest;
         private Response<DownstreamRoute> _downstreamRoute;
         private HttpResponseMessage _result;
 
@@ -57,6 +55,11 @@ namespace Ocelot.UnitTests.QueryStrings
                   app.UseQueryStringBuilderMiddleware();
               });
 
+            _downstreamRequest = new HttpRequestMessage();
+
+            _scopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
+
             _server = new TestServer(builder);
             _client = _server.CreateClient();
         }
@@ -75,18 +78,14 @@ namespace Ocelot.UnitTests.QueryStrings
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheAddHeadersToRequestReturns())
+                .And(x => x.GivenTheAddHeadersToRequestReturnsOk())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAddQueriesToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void GivenTheAddHeadersToRequestReturns()
+        private void GivenTheAddHeadersToRequestReturnsOk()
         {
-            //_addQueries
-            //    .Setup(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(), 
-            //    It.IsAny<HttpContext>()))
-            //    .Returns(new OkResponse());
             _addQueries
                 .Setup(x => x.SetQueriesOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
@@ -97,14 +96,11 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void ThenTheAddQueriesToRequestIsCalledCorrectly()
         {
-            //_addQueries
-            //    .Verify(x => x.SetQueriesOnContext(It.IsAny<List<ClaimToThing>>(),
-            //    It.IsAny<HttpContext>()), Times.Once);
             _addQueries
                 .Verify(x => x.SetQueriesOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<Claim>>(),
-                    It.IsAny<HttpRequestMessage>()), Times.Once);
+                    _downstreamRequest), Times.Once);
         }
 
         private void WhenICallTheMiddleware()

@@ -5,12 +5,9 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.DownstreamUrlCreator.Middleware;
@@ -62,6 +59,10 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
               {
                   app.UseDownstreamUrlCreatorMiddleware();
               });
+
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123")));
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();

@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -19,7 +16,6 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Configuration;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.UnitTests.Request
