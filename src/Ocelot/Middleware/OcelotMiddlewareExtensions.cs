@@ -72,7 +72,7 @@ namespace Ocelot.Middleware
             builder.UseRateLimiting();
 
             // Now we can look for the requestId
-            builder.UseRequestIdMiddleware(); //obsolete?
+            builder.UseRequestIdMiddleware();
 
             // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
             builder.UseIfNotNull(middlewareConfiguration.PreAuthenticationMiddleware);
