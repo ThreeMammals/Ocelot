@@ -30,7 +30,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private HostAndPort _hostAndPort;
-        private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
         private ErrorResponse<HostAndPort> _getHostAndPortError;

@@ -106,10 +106,7 @@ namespace Ocelot.UnitTests.Request
         private void GivenTheRequestBuilderReturns(Ocelot.Request.Request request)
         {
             _request = new OkResponse<Ocelot.Request.Request>(request);
-            //_requestBuilder
-            //    .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(), 
-            //    It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
-            //    .ReturnsAsync(_request);
+
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(), It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
                 .ReturnsAsync(_request);

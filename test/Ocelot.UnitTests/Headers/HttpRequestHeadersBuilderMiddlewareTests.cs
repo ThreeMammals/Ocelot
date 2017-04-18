@@ -56,6 +56,8 @@ namespace Ocelot.UnitTests.Headers
                   app.UseHttpRequestHeadersBuilderMiddleware();
               });
 
+            _downstreamRequest = new HttpRequestMessage();
+
             _scopedRepository
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));

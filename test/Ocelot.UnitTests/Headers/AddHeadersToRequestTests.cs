@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
@@ -23,7 +21,6 @@ namespace Ocelot.UnitTests.Headers
         private readonly HttpRequestMessage _downstreamRequest;
         private List<Claim> _claims;
         private List<ClaimToThing> _configuration;
-        private HttpContext _context;
         private Response _result;
         private Response<string> _claimValue;
 

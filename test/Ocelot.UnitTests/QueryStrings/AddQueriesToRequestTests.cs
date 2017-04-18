@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
@@ -144,7 +143,6 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void ThenTheResultIsError()
         {
-
             _result.IsError.ShouldBe(true);
         }
 

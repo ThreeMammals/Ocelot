@@ -9,9 +9,6 @@ namespace Ocelot.QueryStrings
 {
     public interface IAddQueriesToRequest
     {
-        //Response SetQueriesOnContext(List<ClaimToThing> claimsToThings,
-        //    HttpContext context);
-
         Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, HttpRequestMessage downstreamRequest);
     }
 }

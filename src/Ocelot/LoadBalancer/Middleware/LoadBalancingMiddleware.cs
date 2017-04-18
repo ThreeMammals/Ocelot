@@ -44,7 +44,6 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            //SetHostAndPortForThisRequest(hostAndPort.Data);
             var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri);
             uriBuilder.Host = hostAndPort.Data.DownstreamHost;
             if (hostAndPort.Data.DownstreamPort > 0)
