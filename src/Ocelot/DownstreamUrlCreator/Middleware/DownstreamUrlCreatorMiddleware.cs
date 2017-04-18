@@ -43,20 +43,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            //var dsScheme = DownstreamRoute.ReRoute.DownstreamScheme;
-
-            //var dsHostAndPort = HostAndPort;
-
-            //var dsUrl = _urlBuilder.Build(dsPath.Data.Value, dsScheme, dsHostAndPort);
-
-            //if (dsUrl.IsError)
-            //{
-            //    _logger.LogDebug("IUrlBuilder returned an error, setting pipeline error");
-
-            //    SetPipelineError(dsUrl.Errors);
-            //    return;
-            //}
-
             var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri)
             {
                 Path = dsPath.Data.Value,
@@ -66,8 +52,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             DownstreamRequest.RequestUri = uriBuilder.Uri;
 
             _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", DownstreamRequest.RequestUri);
-
-            //SetDownstreamUrlForThisRequest(dsUrl.Data.Value);
 
             _logger.LogDebug("calling next middleware");
 

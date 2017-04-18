@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Headers;
 using Ocelot.Headers.Middleware;
 using Ocelot.Infrastructure.RequestData;
@@ -27,6 +24,7 @@ namespace Ocelot.UnitTests.Headers
     {
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
+        private readonly HttpRequestMessage _downstreamRequest;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -58,6 +56,10 @@ namespace Ocelot.UnitTests.Headers
                   app.UseHttpRequestHeadersBuilderMiddleware();
               });
 
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
+
             _server = new TestServer(builder);
             _client = _server.CreateClient();
         }
@@ -76,18 +78,14 @@ namespace Ocelot.UnitTests.Headers
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheAddHeadersToRequestReturns())
+                .And(x => x.GivenTheAddHeadersToDownstreamRequestReturnsOk())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAddHeadersToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void GivenTheAddHeadersToRequestReturns()
+        private void GivenTheAddHeadersToDownstreamRequestReturnsOk()
         {
-            //_addHeaders
-            //    .Setup(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(), 
-            //    It.IsAny<HttpContext>()))
-            //    .Returns(new OkResponse());
             _addHeaders
                 .Setup(x => x.SetHeadersOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
@@ -98,14 +96,11 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheAddHeadersToRequestIsCalledCorrectly()
         {
-            //_addHeaders
-            //    .Verify(x => x.SetHeadersOnContext(It.IsAny<List<ClaimToThing>>(),
-            //    It.IsAny<HttpContext>()), Times.Once);
             _addHeaders
                 .Verify(x => x.SetHeadersOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<System.Security.Claims.Claim>>(), 
-                    It.IsAny<HttpRequestMessage>()), Times.Once);
+                    _downstreamRequest), Times.Once);
         }
 
         private void WhenICallTheMiddleware()

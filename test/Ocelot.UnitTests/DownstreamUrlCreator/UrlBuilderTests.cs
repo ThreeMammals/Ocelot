@@ -1,7 +1,5 @@
 ﻿using System;
-using Ocelot.Configuration;
 using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;

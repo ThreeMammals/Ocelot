@@ -25,6 +25,7 @@ namespace Ocelot.UnitTests.Request
         private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly HttpRequestMessage _downstreamRequest;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -57,6 +58,12 @@ namespace Ocelot.UnitTests.Request
               {
                   app.UseHttpRequestBuilderMiddleware();
               });
+
+            _downstreamRequest = new HttpRequestMessage();
+
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();
