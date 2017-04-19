@@ -28,6 +28,7 @@
         UnableToFindLoadBalancerError,
         RequestTimedOutError,
         UnableToFindQoSProviderError,
-        UnableToSetConfigInConsulError
+        UnableToSetConfigInConsulError,
+        UnmappableRequestError
     }
 }

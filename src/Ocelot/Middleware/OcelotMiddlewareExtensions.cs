@@ -53,9 +53,6 @@ namespace Ocelot.Middleware
         {
             await CreateAdministrationArea(builder);
 
-            // Initialises downstream request
-            builder.UseDownstreamRequestInitialiser();
-
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
 
@@ -64,6 +61,9 @@ namespace Ocelot.Middleware
 
             // This is registered first so it can catch any errors and issue an appropriate response
             builder.UseResponderMiddleware();
+
+            // Initialises downstream request
+            builder.UseDownstreamRequestInitialiser();
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();

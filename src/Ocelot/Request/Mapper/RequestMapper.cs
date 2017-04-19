@@ -1,33 +1,40 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace Ocelot.Request
+﻿namespace Ocelot.Request.Mapper
 {
-    public class Mapper
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Extensions;
+    using Microsoft.Extensions.Primitives;
+    using Ocelot.Responses;
+
+    public class RequestMapper : IRequestMapper
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 
-        public async Task<HttpRequestMessage> Map(HttpRequest request)
+        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request)
         {
-            var requestMessage = new HttpRequestMessage()
+            try
             {
-                Content = await MapContent(request),
-                Method = MapMethod(request),
-                RequestUri = MapUri(request),
-                //Properties = null
-                //Version = null
-            };
+                var requestMessage = new HttpRequestMessage()
+                {
+                    Content = await MapContent(request),
+                    Method = MapMethod(request),
+                    RequestUri = MapUri(request)
+                };
 
-            MapHeaders(request, requestMessage);
+                MapHeaders(request, requestMessage);
 
-            return requestMessage;
+                return new OkResponse<HttpRequestMessage>(requestMessage);
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex));
+            }
         }
 
         private async Task<HttpContent> MapContent(HttpRequest request)
@@ -36,7 +43,6 @@ namespace Ocelot.Request
             {
                 return null;
             }
-
 
             return new ByteArrayContent(await ToByteArray(request.Body));
         }
