@@ -27,13 +27,13 @@ namespace Ocelot.Cache.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var downstreamUrlKey = DownstreamUrl;
-
             if (!DownstreamRoute.ReRoute.IsCached)
             {
                 await _next.Invoke(context);
                 return;
             }
+
+            var downstreamUrlKey = DownstreamRequest.RequestUri.OriginalString;
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
   

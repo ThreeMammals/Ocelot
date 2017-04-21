@@ -5,6 +5,9 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Collections.Generic;
 
 namespace Ocelot.RequestId.Middleware
 {
@@ -30,8 +33,6 @@ namespace Ocelot.RequestId.Middleware
 
             SetOcelotRequestId(context);
 
-            _logger.LogDebug("set requestId");
-
             _logger.TraceInvokeNext();
                 await _next.Invoke(context);
             _logger.TraceInvokeNextCompleted();
@@ -40,21 +41,40 @@ namespace Ocelot.RequestId.Middleware
 
         private void SetOcelotRequestId(HttpContext context)
         {
-            var key = DefaultRequestIdKey.Value;
-
-            if (DownstreamRoute.ReRoute.RequestIdKey != null)
+            // if get request ID is set on upstream request then retrieve it
+            var key = DownstreamRoute.ReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
+            
+            StringValues upstreamRequestIds;
+            if (context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
             {
-                key = DownstreamRoute.ReRoute.RequestIdKey;
+                context.TraceIdentifier = upstreamRequestIds.First();
             }
 
-            StringValues requestId;
+            // set request ID on downstream request, if required
+            var requestId = new RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier);
 
-            if (context.Request.Headers.TryGetValue(key, out requestId))
+            if (ShouldAddRequestId(requestId, DownstreamRequest.Headers))
             {
-                _requestScopedDataRepository.Add("RequestId", requestId.First());
-
-                context.TraceIdentifier = requestId;
+                AddRequestIdHeader(requestId, DownstreamRequest);
             }
+        }
+
+        private bool ShouldAddRequestId(RequestId requestId, HttpRequestHeaders headers)
+        {
+            return !string.IsNullOrEmpty(requestId?.RequestIdKey)
+                   && !string.IsNullOrEmpty(requestId.RequestIdValue)
+                   && !RequestIdInHeaders(requestId, headers);
+        }
+
+        private bool RequestIdInHeaders(RequestId requestId, HttpRequestHeaders headers)
+        {
+            IEnumerable<string> value;
+            return headers.TryGetValues(requestId.RequestIdKey, out value);
+        }
+
+        private void AddRequestIdHeader(RequestId requestId, HttpRequestMessage httpRequestMessage)
+        {
+            httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
         }
     }
 }

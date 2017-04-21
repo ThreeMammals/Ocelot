@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
+using System.Security.Claims;
+using System.Net.Http;
+using System;
 
 namespace Ocelot.QueryStrings
 {
@@ -16,13 +19,13 @@ namespace Ocelot.QueryStrings
             _claimsParser = claimsParser;
         }
 
-        public Response SetQueriesOnContext(List<ClaimToThing> claimsToThings, HttpContext context)
+        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, HttpRequestMessage downstreamRequest)
         {
-            var queryDictionary = ConvertQueryStringToDictionary(context);
+            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.RequestUri.Query);
 
             foreach (var config in claimsToThings)
             {
-                var value = _claimsParser.GetValue(context.User.Claims, config.NewKey, config.Delimiter, config.Index);
+                var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
 
                 if (value.IsError)
                 {
@@ -41,22 +44,24 @@ namespace Ocelot.QueryStrings
                 }
             }
 
-            context.Request.QueryString = ConvertDictionaryToQueryString(queryDictionary);
+            var uriBuilder = new UriBuilder(downstreamRequest.RequestUri);
+            uriBuilder.Query = ConvertDictionaryToQueryString(queryDictionary);
+
+            downstreamRequest.RequestUri = uriBuilder.Uri;
 
             return new OkResponse();
         }
 
-        private Dictionary<string, string> ConvertQueryStringToDictionary(HttpContext context)
+        private Dictionary<string, string> ConvertQueryStringToDictionary(string queryString)
         {
-            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(context.Request.QueryString.Value)
+            return Microsoft.AspNetCore.WebUtilities.QueryHelpers
+                .ParseQuery(queryString)
                 .ToDictionary(q => q.Key, q => q.Value.FirstOrDefault() ?? string.Empty);
         }
 
-        private Microsoft.AspNetCore.Http.QueryString ConvertDictionaryToQueryString(Dictionary<string, string> queryDictionary)
+        private string ConvertDictionaryToQueryString(Dictionary<string, string> queryDictionary)
         {
-            var newQueryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDictionary);
-
-            return new Microsoft.AspNetCore.Http.QueryString(newQueryString);
+            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDictionary);
         }
     }
 }

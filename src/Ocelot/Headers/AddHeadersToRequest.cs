@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
+using System.Net.Http;
 
 namespace Ocelot.Headers
 {
@@ -17,25 +16,25 @@ namespace Ocelot.Headers
             _claimsParser = claimsParser;
         }
 
-        public Response SetHeadersOnContext(List<ClaimToThing> claimsToThings, HttpContext context)
+        public Response SetHeadersOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<System.Security.Claims.Claim> claims, HttpRequestMessage downstreamRequest)
         {
             foreach (var config in claimsToThings)
             {
-                var value = _claimsParser.GetValue(context.User.Claims, config.NewKey, config.Delimiter, config.Index);
+                var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
 
                 if (value.IsError)
                 {
                     return new ErrorResponse(value.Errors);
                 }
 
-                var exists = context.Request.Headers.FirstOrDefault(x => x.Key == config.ExistingKey);
+                var exists = downstreamRequest.Headers.FirstOrDefault(x => x.Key == config.ExistingKey);
 
                 if (!string.IsNullOrEmpty(exists.Key))
                 {
-                    context.Request.Headers.Remove(exists);
+                    downstreamRequest.Headers.Remove(exists.Key);
                 }
 
-                context.Request.Headers.Add(config.ExistingKey, new StringValues(value.Data));
+                downstreamRequest.Headers.Add(config.ExistingKey, value.Data);
             }
 
             return new OkResponse();

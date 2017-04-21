@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Cache;
 using Ocelot.Cache.Middleware;
@@ -37,7 +35,6 @@ namespace Ocelot.UnitTests.Cache
             _cacheManager = new Mock<IOcelotCache<HttpResponseMessage>>();
             _scopedRepo = new Mock<IRequestScopedDataRepository>();
 
-
             _url = "http://localhost:51879";
             var builder = new WebHostBuilder()
                 .ConfigureServices(x =>
@@ -56,6 +53,10 @@ namespace Ocelot.UnitTests.Cache
                 {
                     app.UseOutputCacheMiddleware();
                 });
+
+            _scopedRepo
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();

@@ -8,14 +8,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Request.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responses;
 using Shouldly;
@@ -27,6 +25,7 @@ namespace Ocelot.UnitTests.RequestId
     public class RequestIdMiddlewareTests
     {
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
+        private readonly HttpRequestMessage _downstreamRequest;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -64,10 +63,16 @@ namespace Ocelot.UnitTests.RequestId
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();
+
+            _downstreamRequest = new HttpRequestMessage();
+
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
         }
 
         [Fact]
-        public void should_add_request_id_to_repository()
+        public void should_pass_down_request_id_from_upstream_request()
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
@@ -86,7 +91,7 @@ namespace Ocelot.UnitTests.RequestId
         }
 
         [Fact]
-        public void should_add_trace_indentifier_to_repository()
+        public void should_add_request_id_when_not_on_upstream_request()
         {
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
@@ -101,14 +106,12 @@ namespace Ocelot.UnitTests.RequestId
                 .BDDfy();
         }
 
-        private void ThenTheTraceIdIsAnything()
+        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _result.Headers.GetValues("LSRequestId").First().ShouldNotBeNullOrEmpty();
-        }
-
-        private void ThenTheTraceIdIs(string expected)
-        {
-            _result.Headers.GetValues("LSRequestId").First().ShouldBe(expected);
+            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
+            _scopedRepository
+                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
+                .Returns(_downstreamRoute);
         }
 
         private void GivenTheRequestIdIsAddedToTheRequest(string key, string value)
@@ -123,12 +126,14 @@ namespace Ocelot.UnitTests.RequestId
             _result = _client.GetAsync(_url).Result;
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void ThenTheTraceIdIsAnything()
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _result.Headers.GetValues("LSRequestId").First().ShouldNotBeNullOrEmpty();
+        }
+
+        private void ThenTheTraceIdIs(string expected)
+        {
+            _result.Headers.GetValues("LSRequestId").First().ShouldBe(expected);
         }
 
         public void Dispose()
