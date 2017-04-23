@@ -43,14 +43,8 @@ namespace Ocelot.Request.Middleware
                 return;
             }
 
-            var buildResult = await _requestCreator
-                .Build(context.Request.Method,
-                    DownstreamUrl,
-                    context.Request.Body,
-                    context.Request.Headers,
-                    context.Request.QueryString,
-                    context.Request.ContentType,
-                    new RequestId.RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier),
+            var buildResult = await _requestCreator.Build(
+                    DownstreamRequest,
                     DownstreamRoute.ReRoute.IsQos,
                     qosProvider.Data);
 

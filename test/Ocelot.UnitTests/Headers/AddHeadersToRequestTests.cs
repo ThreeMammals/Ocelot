@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
@@ -12,6 +10,7 @@ using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using System.Net.Http;
 
 namespace Ocelot.UnitTests.Headers
 {
@@ -19,8 +18,9 @@ namespace Ocelot.UnitTests.Headers
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private readonly Mock<IClaimsParser> _parser;
+        private readonly HttpRequestMessage _downstreamRequest;
+        private List<Claim> _claims;
         private List<ClaimToThing> _configuration;
-        private HttpContext _context;
         private Response _result;
         private Response<string> _claimValue;
 
@@ -28,17 +28,15 @@ namespace Ocelot.UnitTests.Headers
         {
             _parser = new Mock<IClaimsParser>();
             _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
+            _downstreamRequest = new HttpRequestMessage();
         }
 
         [Fact]
-        public void should_add_headers_to_context()
+        public void should_add_headers_to_downstreamRequest()
         {
-            var context = new DefaultHttpContext
+            var claims = new List<Claim>
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim("test", "data")
-                }))
+                new Claim("test", "data")
             };
 
             this.Given(
@@ -46,7 +44,7 @@ namespace Ocelot.UnitTests.Headers
                 {
                     new ClaimToThing("header-key", "", "", 0)
                 }))
-                .Given(x => x.GivenHttpContext(context))
+                .Given(x => x.GivenClaims(claims))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
                 .When(x => x.WhenIAddHeadersToTheRequest())
                 .Then(x => x.ThenTheResultIsSuccess())
@@ -55,25 +53,19 @@ namespace Ocelot.UnitTests.Headers
         }
 
         [Fact]
-        public void if_header_exists_should_replace_it()
+        public void should_replace_existing_headers_on_request()
         {
-            var context = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim("test", "data")
-                })),
-            };
-
-            context.Request.Headers.Add("header-key", new StringValues("initial"));
-
             this.Given(
                 x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
                 {
                     new ClaimToThing("header-key", "", "", 0)
                 }))
-                .Given(x => x.GivenHttpContext(context))
+                .Given(x => x.GivenClaims(new List<Claim>
+                {
+                    new Claim("test", "data")
+                }))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
+                .And(x => x.GivenThatTheRequestContainsHeader("header-key", "initial"))
                 .When(x => x.WhenIAddHeadersToTheRequest())
                 .Then(x => x.ThenTheResultIsSuccess())
                 .And(x => x.ThenTheHeaderIsAdded())
@@ -88,7 +80,7 @@ namespace Ocelot.UnitTests.Headers
                {
                     new ClaimToThing("", "", "", 0)
                }))
-               .Given(x => x.GivenHttpContext(new DefaultHttpContext()))
+               .Given(x => x.GivenClaims(new List<Claim>()))
                .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
                {
                    new AnyError()
@@ -98,10 +90,9 @@ namespace Ocelot.UnitTests.Headers
                .BDDfy();
         }
 
-        private void ThenTheHeaderIsAdded()
+        private void GivenClaims(List<Claim> claims)
         {
-            var header = _context.Request.Headers.First(x => x.Key == "header-key");
-            header.Value.First().ShouldBe(_claimValue.Data);
+            _claims = claims;
         }
 
         private void GivenConfigurationHeaderExtractorProperties(List<ClaimToThing> configuration)
@@ -109,9 +100,9 @@ namespace Ocelot.UnitTests.Headers
             _configuration = configuration;
         }
 
-        private void GivenHttpContext(HttpContext context)
+        private void GivenThatTheRequestContainsHeader(string key, string value)
         {
-            _context = context;
+            _downstreamRequest.Headers.Add(key, value);
         }
 
         private void GivenTheClaimParserReturns(Response<string> claimValue)
@@ -129,7 +120,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenIAddHeadersToTheRequest()
         {
-            _result = _addHeadersToRequest.SetHeadersOnContext(_configuration, _context);
+            _result = _addHeadersToRequest.SetHeadersOnDownstreamRequest(_configuration, _claims, _downstreamRequest);
         }
 
         private void ThenTheResultIsSuccess()
@@ -141,6 +132,12 @@ namespace Ocelot.UnitTests.Headers
         {
 
             _result.IsError.ShouldBe(true);
+        }
+
+        private void ThenTheHeaderIsAdded()
+        {
+            var header = _downstreamRequest.Headers.First(x => x.Key == "header-key");
+            header.Value.First().ShouldBe(_claimValue.Data);
         }
 
         class AnyError : Error

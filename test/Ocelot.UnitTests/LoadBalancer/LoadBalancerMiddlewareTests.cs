@@ -16,6 +16,7 @@ using Ocelot.Responses;
 using Ocelot.Values;
 using TestStack.BDDfy;
 using Xunit;
+using Shouldly;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
@@ -29,10 +30,10 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private HostAndPort _hostAndPort;
-        private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
         private ErrorResponse<HostAndPort> _getHostAndPortError;
+        private HttpRequestMessage _downstreamRequest;
 
         public LoadBalancerMiddlewareTests()
         {
@@ -59,6 +60,10 @@ namespace Ocelot.UnitTests.LoadBalancer
                   app.UseLoadBalancingMiddleware();
               });
 
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "");
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
             _server = new TestServer(builder);
             _client = _server.CreateClient();
         }
@@ -71,12 +76,12 @@ namespace Ocelot.UnitTests.LoadBalancer
                     .WithUpstreamHttpMethod("Get")
                     .Build());
 
-            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+            this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturns())
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
+                .Then(x => x.ThenTheDownstreamUrlIsReplacedWith("http://127.0.0.1:80/abc?q=123"))
                 .BDDfy();
         }
 
@@ -88,7 +93,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                     .WithUpstreamHttpMethod("Get")
                     .Build());
 
-            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+            this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturnsAnError())
                 .When(x => x.WhenICallTheMiddleware())
@@ -104,13 +109,18 @@ namespace Ocelot.UnitTests.LoadBalancer
                     .WithUpstreamHttpMethod("Get")
                     .Build());
 
-            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+            this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturnsAnError())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline())
                 .BDDfy();
+        }
+
+        private void GivenTheDownStreamUrlIs(string downstreamUrl)
+        {
+            _downstreamRequest.RequestUri = new System.Uri(downstreamUrl);
         }
 
         private void GivenTheLoadBalancerReturnsAnError()
@@ -157,10 +167,9 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Returns(_getLoadBalancerHouseError);
         }
 
-        private void ThenTheScopedDataRepositoryIsCalledCorrectly()
+        private void WhenICallTheMiddleware()
         {
-            _scopedRepository
-                .Verify(x => x.Add("HostAndPort", _hostAndPort), Times.Once());
+            _result = _client.GetAsync(_url).Result;
         }
 
         private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()
@@ -190,17 +199,11 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Verify(x => x.Add("OcelotMiddlewareErrors", _getHostAndPortError.Errors), Times.Once);
         }
 
-        private void WhenICallTheMiddleware()
-        {
-            _result = _client.GetAsync(_url).Result;
-        }
 
-        private void GivenTheDownStreamUrlIs(string downstreamUrl)
+
+        private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)
         {
-            _downstreamUrl = new OkResponse<string>(downstreamUrl);
-            _scopedRepository
-                .Setup(x => x.Get<string>(It.IsAny<string>()))
-                .Returns(_downstreamUrl);
+            _downstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
         }
 
         public void Dispose()

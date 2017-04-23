@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -19,7 +16,6 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Configuration;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.UnitTests.Request
@@ -29,6 +25,7 @@ namespace Ocelot.UnitTests.Request
         private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly HttpRequestMessage _downstreamRequest;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -61,6 +58,12 @@ namespace Ocelot.UnitTests.Request
               {
                   app.UseHttpRequestBuilderMiddleware();
               });
+
+            _downstreamRequest = new HttpRequestMessage();
+
+            _scopedRepository
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();
@@ -103,9 +106,9 @@ namespace Ocelot.UnitTests.Request
         private void GivenTheRequestBuilderReturns(Ocelot.Request.Request request)
         {
             _request = new OkResponse<Ocelot.Request.Request>(request);
+
             _requestBuilder
-                .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(), 
-                It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
+                .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(), It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
                 .ReturnsAsync(_request);
         }
 

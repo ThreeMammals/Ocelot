@@ -3,7 +3,6 @@ using System.Net.Http;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.Values;
 
 namespace Ocelot.Middleware
 {
@@ -17,89 +16,33 @@ namespace Ocelot.Middleware
             MiddlwareName = this.GetType().Name;
         }
 
-        public string MiddlwareName { get; } 
+        public string MiddlwareName { get; }
 
-        public bool PipelineError
-        {
-            get
-            {
-                var response = _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError");
-                return response.Data;
-            }
-        }
+        public bool PipelineError => _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError").Data;
 
-        public List<Error> PipelineErrors
-        {
-            get
-            {
-                var response = _requestScopedDataRepository.Get<List<Error>>("OcelotMiddlewareErrors");
-                return response.Data;
-            }
-        }
+        public List<Error> PipelineErrors => _requestScopedDataRepository.Get<List<Error>>("OcelotMiddlewareErrors").Data;
 
-        public DownstreamRoute DownstreamRoute
-        {
-            get
-            {
-                var downstreamRoute = _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute");
-                return downstreamRoute.Data;
-            }
-        }
+        public DownstreamRoute DownstreamRoute => _requestScopedDataRepository.Get<DownstreamRoute>("DownstreamRoute").Data;
 
-        public string DownstreamUrl
-        {
-            get
-            {
-                var downstreamUrl = _requestScopedDataRepository.Get<string>("DownstreamUrl");
-                return downstreamUrl.Data;
-            }
-        }
+        public Request.Request Request => _requestScopedDataRepository.Get<Request.Request>("Request").Data;
 
-        public Request.Request Request
-        {
-            get
-            {
-                var request = _requestScopedDataRepository.Get<Request.Request>("Request");
-                return request.Data;
-            }
-        }
+        public HttpRequestMessage DownstreamRequest => _requestScopedDataRepository.Get<HttpRequestMessage>("DownstreamRequest").Data;
 
-        public HttpResponseMessage HttpResponseMessage
-        {
-            get
-            {
-                var request = _requestScopedDataRepository.Get<HttpResponseMessage>("HttpResponseMessage");
-                return request.Data;
-            }
-        }
-
-        public HostAndPort HostAndPort 
-        {
-            get
-            {
-                var hostAndPort = _requestScopedDataRepository.Get<HostAndPort>("HostAndPort");
-                return hostAndPort.Data;
-            }
-        }
-
-        public void SetHostAndPortForThisRequest(HostAndPort hostAndPort)
-        {
-            _requestScopedDataRepository.Add("HostAndPort", hostAndPort);
-        }
+        public HttpResponseMessage HttpResponseMessage => _requestScopedDataRepository.Get<HttpResponseMessage>("HttpResponseMessage").Data;
 
         public void SetDownstreamRouteForThisRequest(DownstreamRoute downstreamRoute)
         {
             _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute);
         }
 
-        public void SetDownstreamUrlForThisRequest(string downstreamUrl)
-        {
-            _requestScopedDataRepository.Add("DownstreamUrl", downstreamUrl);
-        }
-
         public void SetUpstreamRequestForThisRequest(Request.Request request)
         {
             _requestScopedDataRepository.Add("Request", request);
+        }
+
+        public void SetDownstreamRequest(HttpRequestMessage request)
+        {
+            _requestScopedDataRepository.Add("DownstreamRequest", request);
         }
 
         public void SetHttpResponseMessageThisRequest(HttpResponseMessage responseMessage)
