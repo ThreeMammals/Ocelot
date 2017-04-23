@@ -18,8 +18,8 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                     if (IsPlaceholder(upstreamUrlPathTemplate[counterForTemplate]))
                     {
                         var variableName = GetPlaceholderVariableName(upstreamUrlPathTemplate, counterForTemplate);
-                        
-                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPath, counterForUrl);
+
+                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPathTemplate, variableName, upstreamUrlPath, counterForUrl);
 
                         var templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, variableValue);
 
@@ -40,15 +40,15 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
             return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
         }
 
-        private string GetPlaceholderVariableValue(string urlPath, int counterForUrl)
+        private string GetPlaceholderVariableValue(string urlPathTemplate, string variableName, string urlPath, int counterForUrl)
         {
             var positionOfNextSlash = urlPath.IndexOf('/', counterForUrl);
 
-            if(positionOfNextSlash == -1)
+            if (positionOfNextSlash == -1 || urlPathTemplate.Trim('/').EndsWith(variableName))
             {
                 positionOfNextSlash = urlPath.Length;
             }
-            
+
             var variableValue = urlPath.Substring(counterForUrl, positionOfNextSlash - counterForUrl);
 
             return variableValue;

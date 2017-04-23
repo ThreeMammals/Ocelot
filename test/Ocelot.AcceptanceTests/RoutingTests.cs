@@ -46,7 +46,6 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51879,
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
- 
                         }
                     }
             };
@@ -289,6 +288,34 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/newThing?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_with_placeholder_for_final_url_path()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/{urlPath}",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/myApp1Name/api/{urlPath}",
+                            UpstreamHttpMethod = "Get",
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/myApp1Name/api/products/1", 200, "Some Product"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/myApp1Name/api/products/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
 

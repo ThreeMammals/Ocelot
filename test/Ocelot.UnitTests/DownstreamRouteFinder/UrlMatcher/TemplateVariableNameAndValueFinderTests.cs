@@ -140,6 +140,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                  .BDDfy();
         }
 
+        [Fact]
+        public void can_match_down_stream_url_with_downstream_template_with_place_holder_to_final_url_path()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue>
+            {
+                new UrlPathPlaceholderNameAndValue("{finalUrlPath}", "product/products/categories/"),
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/categories/"))
+                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/{finalUrlPath}/"))
+                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                 .BDDfy();
+        }
+
         private void ThenTheTemplatesVariablesAre(List<UrlPathPlaceholderNameAndValue> expectedResults)
         {
             foreach (var expectedResult in expectedResults)
