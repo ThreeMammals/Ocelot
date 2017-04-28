@@ -118,6 +118,35 @@
         }
 
         [Fact]
+        public void Should_map_content_type_header()
+        {
+            this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
+                .And(_ => GivenTheContentTypeIs("application/json"))
+                .And(_ => GivenTheInputRequestHasMethod("GET"))
+                .And(_ => GivenTheInputRequestHasAValidUri())
+                .When(_ => WhenMapped())
+                .Then(_ => ThenNoErrorIsReturned())
+                .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
+                .And(_ => ThenTheMappedRequestHasContentSize("This is my content".Length))
+                .BDDfy();
+        }
+
+        private void GivenTheContentTypeIs(string contentType)
+        {
+            _inputRequest.ContentType = contentType;
+        }
+
+        private void ThenTheMappedRequestHasContentTypeHeader(string expected)
+        {
+            _mappedRequest.Data.Content.Headers.ContentType.MediaType.ShouldBe(expected);
+        }
+
+        private void ThenTheMappedRequestHasContentSize(long expected)
+        {
+            _mappedRequest.Data.Content.Headers.ContentLength.ShouldBe(expected);
+        }
+
+        [Fact]
         public void Should_handle_no_content()
         {
             this.Given(_ => GivenTheInputRequestHasNoContent())

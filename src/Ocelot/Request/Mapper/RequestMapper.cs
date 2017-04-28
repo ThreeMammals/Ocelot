@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
@@ -44,7 +45,11 @@
                 return null;
             }
 
-            return new ByteArrayContent(await ToByteArray(request.Body));
+            var content = new ByteArrayContent(await ToByteArray(request.Body));
+
+            content.Headers.TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+
+            return content;
         }
 
         private HttpMethod MapMethod(HttpRequest request)
