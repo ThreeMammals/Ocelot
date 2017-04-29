@@ -2,8 +2,6 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb)
 
-[![Join the chat at https://gitter.im/Ocelotey/Lobby](https://badges.gitter.im/Ocelotey/Lobby.svg)](https://gitter.im/Ocelotey/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 Attempt at a .NET Api Gateway
 
 This project is aimed at people using .NET running 
