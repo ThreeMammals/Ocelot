@@ -8,7 +8,7 @@ namespace Ocelot.Configuration
     {
         public ReRoute(PathTemplate downstreamPathTemplate, 
             PathTemplate upstreamPathTemplate, 
-            HttpMethod upstreamHttpMethod, 
+            List<HttpMethod> upstreamHttpMethod, 
             string upstreamTemplatePattern, 
             bool isAuthenticated, 
             AuthenticationOptions authenticationOptions, 
@@ -64,7 +64,7 @@ namespace Ocelot.Configuration
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamPathTemplate { get; private set; }
         public string UpstreamTemplatePattern { get; private set; }
-        public HttpMethod UpstreamHttpMethod { get; private set; }
+        public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
         public bool IsAuthorised { get; private set; }
         public AuthenticationOptions AuthenticationOptions { get; private set; }

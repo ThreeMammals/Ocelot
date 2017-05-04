@@ -157,6 +157,95 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                  .BDDfy();
         }
 
+        [Fact]
+        public void should_return_correct_route_for_http_verb_setting_multiple_upstream_http_method()
+        {
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
+                .And(
+                    x =>
+                        x.GivenTheTemplateVariableAndNameFinderReturns(
+                            new OkResponse<List<UrlPathPlaceholderNameAndValue>>(new List<UrlPathPlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithUpstreamPathTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("Get, Post")
+                        .WithUpstreamTemplatePattern("")
+                        .Build()
+                }, string.Empty
+                    ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod("Post")
+                            .Build()
+                        )))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_correct_route_for_http_verb_setting_all_upstream_http_method()
+        {
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
+                .And(
+                    x =>
+                        x.GivenTheTemplateVariableAndNameFinderReturns(
+                            new OkResponse<List<UrlPathPlaceholderNameAndValue>>(new List<UrlPathPlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithUpstreamPathTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("")
+                        .WithUpstreamTemplatePattern("")
+                        .Build()
+                }, string.Empty
+                    ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod("Post")
+                            .Build()
+                        )))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_return_route_for_http_verb_not_setting_in_upstream_http_method()
+        {
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
+                .And(
+                    x =>
+                        x.GivenTheTemplateVariableAndNameFinderReturns(
+                            new OkResponse<List<UrlPathPlaceholderNameAndValue>>(new List<UrlPathPlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithUpstreamPathTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod("Get, Patch, Delete")
+                        .WithUpstreamTemplatePattern("")
+                        .Build()
+                }, string.Empty
+                    ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
+                .When(x => x.WhenICallTheFinder())
+                 .Then(
+                     x => x.ThenAnErrorResponseIsReturned())
+                 .And(x => x.ThenTheUrlMatcherIsNotCalled())
+                 .BDDfy();
+        }
+
         private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<UrlPathPlaceholderNameAndValue>> response)
         {
             _finder
