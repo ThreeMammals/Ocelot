@@ -48,7 +48,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = _downstreamServiceHost,
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Post",
+                            UpstreamHttpMethod = new List<string> { "Post" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),
@@ -86,7 +86,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = _downstreamServiceHost,
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Post",
+                            UpstreamHttpMethod = new List<string> { "Post" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = _downstreamServiceHost,
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),
@@ -164,8 +164,8 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = _downstreamServiceHost,
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Post",
-                            
+                            UpstreamHttpMethod = new List<string> { "Post" },
+
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),
@@ -205,8 +205,8 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = _downstreamServiceHost,
                             DownstreamScheme = _downstreamServiceScheme,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Post",
-                             AuthenticationOptions = new FileAuthenticationOptions
+                            UpstreamHttpMethod = new List<string> { "Post" },
+                            AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes = new List<string>(),
                                 Provider = "IdentityServer",

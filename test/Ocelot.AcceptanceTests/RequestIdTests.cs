@@ -38,7 +38,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
                          }
                     }
@@ -66,8 +66,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
- 
+                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     }
             };
@@ -96,7 +95,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration

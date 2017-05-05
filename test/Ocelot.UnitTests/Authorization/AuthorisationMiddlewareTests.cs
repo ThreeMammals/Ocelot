@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Authorization
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), 
                 new ReRouteBuilder()
                     .WithIsAuthorised(true)
-                    .WithUpstreamHttpMethod("Get")                                                                                                                                                                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())

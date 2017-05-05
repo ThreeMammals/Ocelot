@@ -4,6 +4,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -29,7 +30,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new ReRouteBuilder()
                 .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -44,7 +45,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 
@@ -60,7 +61,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("LeastConnection")
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 
@@ -76,7 +77,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 

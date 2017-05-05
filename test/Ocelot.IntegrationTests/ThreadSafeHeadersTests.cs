@@ -55,7 +55,7 @@ namespace Ocelot.IntegrationTests
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     }
             };

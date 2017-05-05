@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.QueryStrings
                     {
                         new ClaimToThing("UserId", "Subject", "", 0)
                     })
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

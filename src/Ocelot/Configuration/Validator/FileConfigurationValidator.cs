@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.Validator
     {
         public Response<ConfigurationValidationResult> IsValid(FileConfiguration configuration)
         {
-            var result = CheckForDupliateReRoutes(configuration);
+            var result = CheckForDuplicateReRoutes(configuration);
 
             if (result.IsError)
             {
@@ -91,25 +91,41 @@ namespace Ocelot.Configuration.Validator
             return new ConfigurationValidationResult(false, errors);
         }
 
-        private ConfigurationValidationResult CheckForDupliateReRoutes(FileConfiguration configuration)
-        {
-            var hasDupes = configuration.ReRoutes
-                   .GroupBy(x => new { x.UpstreamPathTemplate, x.UpstreamHttpMethod }).Any(x => x.Skip(1).Any());
+        private ConfigurationValidationResult CheckForDuplicateReRoutes(FileConfiguration configuration)
+        {         
+            var duplicatedUpstreamPathTemplates = new List<string>();
 
-            if (!hasDupes)
+            var distinctUpstreamPathTemplates = configuration.ReRoutes.Select(x => x.UpstreamPathTemplate).Distinct();
+            
+            foreach (string upstreamPathTemplate in distinctUpstreamPathTemplates)
+            {
+                var reRoutesWithUpstreamPathTemplate = configuration.ReRoutes.Where(x => x.UpstreamPathTemplate == upstreamPathTemplate);
+
+                var hasEmptyListToAllowAllHttpVerbs = reRoutesWithUpstreamPathTemplate.Where(x => x.UpstreamHttpMethod.Count() == 0).Any();
+                var hasDuplicateEmptyListToAllowAllHttpVerbs = reRoutesWithUpstreamPathTemplate.Where(x => x.UpstreamHttpMethod.Count() == 0).Count() > 1;
+                var hasSpecificHttpVerbs = reRoutesWithUpstreamPathTemplate.Where(x => x.UpstreamHttpMethod.Count() > 0).Any();
+                var hasDuplicateSpecificHttpVerbs = reRoutesWithUpstreamPathTemplate.SelectMany(x => x.UpstreamHttpMethod).GroupBy(x => x.ToLower()).SelectMany(x => x.Skip(1)).Any();
+
+                if (hasDuplicateEmptyListToAllowAllHttpVerbs || hasDuplicateSpecificHttpVerbs || (hasEmptyListToAllowAllHttpVerbs && hasSpecificHttpVerbs))
+                {
+                    duplicatedUpstreamPathTemplates.Add(upstreamPathTemplate);
+                }
+            }
+
+            if (duplicatedUpstreamPathTemplates.Count() == 0)
             {
                 return new ConfigurationValidationResult(false);
             }
+            else
+            {
+                var errors = duplicatedUpstreamPathTemplates
+                    .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d)))
+                    .Cast<Error>()
+                    .ToList();
 
-            var dupes = configuration.ReRoutes.GroupBy(x => new { x.UpstreamPathTemplate, x.UpstreamHttpMethod })
-                               .Where(x => x.Skip(1).Any());
+                return new ConfigurationValidationResult(true, errors);
+            }
 
-            var errors = dupes
-                .Select(d => new DownstreamPathTemplateAlreadyUsedError(string.Format("Duplicate DownstreamPath: {0}", d.Key.UpstreamPathTemplate)))
-                .Cast<Error>()
-                .ToList();
-
-            return new ConfigurationValidationResult(true, errors);
         }
     }
 }

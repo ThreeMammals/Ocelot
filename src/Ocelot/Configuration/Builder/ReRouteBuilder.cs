@@ -67,11 +67,13 @@ namespace Ocelot.Configuration.Builder
             _upstreamTemplatePattern = input;
             return this;
         }
-        public ReRouteBuilder WithUpstreamHttpMethod(string input)
+
+        public ReRouteBuilder WithUpstreamHttpMethod(List<string> input)
         {
-            _upstreamHttpMethod = string.IsNullOrWhiteSpace(input) ? new List<HttpMethod>() : input.Split(',').Select(x => new HttpMethod(x.Trim())).ToList();
+            _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
             return this;
         }
+
         public ReRouteBuilder WithIsAuthenticated(bool input)
         {
             _isAuthenticated = input;
@@ -144,7 +146,6 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;

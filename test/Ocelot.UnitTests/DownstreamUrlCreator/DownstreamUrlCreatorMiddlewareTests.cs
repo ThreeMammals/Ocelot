@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     new List<UrlPathPlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithDownstreamScheme("https")
                         .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123"))

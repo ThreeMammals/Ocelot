@@ -39,7 +39,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamHost = "localhost",
                         DownstreamPort = 51879,
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamHost = "localhost",
                         DownstreamPort = 51879,
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
@@ -98,7 +98,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamHost = "localhost",
                         DownstreamPort = 51880,
                         UpstreamPathTemplate = "working",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     }
                 }
             };
