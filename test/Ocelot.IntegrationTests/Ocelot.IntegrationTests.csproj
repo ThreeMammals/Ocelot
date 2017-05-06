@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta1-build1309" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="1.1.1" />
@@ -42,7 +42,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.1.1" />
     <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
-    <PackageReference Include="xunit" Version="2.2.0-beta5-build3474" />
+    <PackageReference Include="xunit" Version="2.3.0-beta1-build3642" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.1.1" />
     <PackageReference Include="IdentityServer4" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
