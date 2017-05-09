@@ -94,7 +94,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 80,
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "get",
+                        UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/"
                     },
                     new FileReRoute()
@@ -103,7 +103,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 80,
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "get",
+                        UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test"
                     }
                 }
@@ -136,7 +136,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 80,
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "get",
+                        UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/"
                     },
                     new FileReRoute()
@@ -145,7 +145,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 80,
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = "get",
+                        UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test"
                     }
                 }
@@ -165,7 +165,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 80,
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
-                        UpstreamHttpMethod = "get",
+                        UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/"
                     },
                     new FileReRoute()
@@ -174,7 +174,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPort = 443,
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
-                        UpstreamHttpMethod = "post",
+                        UpstreamHttpMethod = new List<string> { "post" },
                         UpstreamPathTemplate = "/test"
                     }
                 }

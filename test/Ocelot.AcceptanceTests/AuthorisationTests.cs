@@ -42,7 +42,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes =  new List<string>(),

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using Ocelot.Values;
+using System.Linq;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -11,7 +12,7 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamPathTemplate;
         private string _upstreamTemplate;
         private string _upstreamTemplatePattern;
-        private string _upstreamHttpMethod;
+        private List<HttpMethod> _upstreamHttpMethod;
         private bool _isAuthenticated;
         private List<ClaimToThing> _configHeaderExtractorProperties;
         private List<ClaimToThing> _claimToClaims;
@@ -66,11 +67,13 @@ namespace Ocelot.Configuration.Builder
             _upstreamTemplatePattern = input;
             return this;
         }
-        public ReRouteBuilder WithUpstreamHttpMethod(string input)
+
+        public ReRouteBuilder WithUpstreamHttpMethod(List<string> input)
         {
-            _upstreamHttpMethod = input;
+            _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
             return this;
         }
+
         public ReRouteBuilder WithIsAuthenticated(bool input)
         {
             _isAuthenticated = input;
@@ -143,7 +146,6 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
@@ -180,7 +182,7 @@ namespace Ocelot.Configuration.Builder
             return new ReRoute(
                 new PathTemplate(_downstreamPathTemplate), 
                 new PathTemplate(_upstreamTemplate), 
-                new HttpMethod(_upstreamHttpMethod), 
+                _upstreamHttpMethod, 
                 _upstreamTemplatePattern, 
                 _isAuthenticated, 
                 _authenticationOptions,

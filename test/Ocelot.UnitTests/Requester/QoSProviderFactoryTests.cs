@@ -4,6 +4,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -31,7 +32,7 @@ namespace Ocelot.UnitTests.Requester
         public void should_return_no_qos_provider()
         {
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamHttpMethod("get")
+                .WithUpstreamHttpMethod(new List<string> { "get" })
                 .WithIsQos(false)
                 .Build();
 
@@ -51,7 +52,7 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var reRoute = new ReRouteBuilder()
-               .WithUpstreamHttpMethod("get")
+               .WithUpstreamHttpMethod(new List<string> { "get" })
                .WithIsQos(true)
                .WithQosOptions(qosOptions)
                .Build();
