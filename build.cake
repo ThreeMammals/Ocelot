@@ -147,7 +147,7 @@ Task("RunUnitTests")
         
 			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		
-			if (!AppVeyor.IsRunningOnAppVeyor)
+			if (AppVeyor.IsRunningOnAppVeyor)
 			{
 				var repoToken = EnvironmentVariable(coverallsRepoToken);
 				if (string.IsNullOrEmpty(repoToken))
