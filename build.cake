@@ -18,6 +18,7 @@ var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var minCodeCoverage = 75d;
 var coverallsRepoToken = "coveralls-repo-token-ocelot";
+var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
@@ -155,7 +156,7 @@ Task("RunUnitTests")
 					throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
 				}
 
-				Information("Uploading test coverage to coveralls.io");
+				Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
 				CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
 				{
 					RepoToken = repoToken
@@ -173,7 +174,8 @@ Task("RunUnitTests")
 		
 			if(double.Parse(sequenceCoverage) < minCodeCoverage)
 			{
-				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%", minCodeCoverage));
+				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
+				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
 			};
 		
 		}
