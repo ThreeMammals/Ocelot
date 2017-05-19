@@ -48,7 +48,7 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="0.9.2" />
     <PackageReference Include="Consul" Version="0.7.2.1" />
     <PackageReference Include="Polly" Version="5.0.3" />
-    <PackageReference Include="IdentityServer4" Version="1.0.1" />
+    <PackageReference Include="IdentityServer4" Version="1.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="1.1.1" />
   </ItemGroup>
 
