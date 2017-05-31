@@ -190,45 +190,6 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_403_using_identity_server_with_scope_not_allowed()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = _downstreamServicePath,
-                            DownstreamPort = _downstreamServicePort,
-                            DownstreamHost = _downstreamServiceHost,
-                            DownstreamScheme = _downstreamServiceScheme,
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = _identityServerRootUrl,
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                            }
-                        }
-                    }
-            };
-
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_return_201_using_identity_server_access_token()
         {
             var configuration = new FileConfiguration
