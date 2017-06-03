@@ -32,6 +32,12 @@ namespace Ocelot.Configuration.Validator
             {
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
+            result = CheckForReRoutesRateLimitOptions(configuration);
+
+            if (result.IsError)
+            {
+                return new OkResponse<ConfigurationValidationResult>(result);
+            }
 
             return new OkResponse<ConfigurationValidationResult>(result);
         }
@@ -110,6 +116,36 @@ namespace Ocelot.Configuration.Validator
                 .ToList();
 
             return new ConfigurationValidationResult(true, errors);
+        }
+
+        private ConfigurationValidationResult CheckForReRoutesRateLimitOptions(FileConfiguration configuration)
+        {
+            var errors = new List<Error>();
+
+            foreach (var reRoute in configuration.ReRoutes)
+            {
+                if (reRoute.RateLimitOptions.EnableRateLimiting)
+                {
+                    if (!IsValidPeriod(reRoute))
+                    {
+                        errors.Add(new RateLimitOptionsValidationError($"{reRoute.RateLimitOptions.Period} not contains scheme"));
+                    }
+                }
+            }
+
+            if (errors.Any())
+            {
+                return new ConfigurationValidationResult(true, errors);
+            }
+
+            return new ConfigurationValidationResult(false, errors);
+        }
+
+        private static bool IsValidPeriod(FileReRoute reRoute)
+        {
+            string period = reRoute.RateLimitOptions.Period;
+
+            return period.Contains("s") || period.Contains("m") || period.Contains("h") || period.Contains("d");
         }
     }
 }

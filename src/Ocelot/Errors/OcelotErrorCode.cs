@@ -29,6 +29,7 @@
         RequestTimedOutError,
         UnableToFindQoSProviderError,
         UnableToSetConfigInConsulError,
-        UnmappableRequestError
+        UnmappableRequestError,
+        RateLimitOptionsError
     }
 }
