@@ -6,6 +6,7 @@ using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
@@ -24,7 +25,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new Service("product", new HostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, new string[0])
             };
 
-            _roundRobin = new RoundRobinLoadBalancer(_services);
+            _roundRobin = new RoundRobinLoadBalancer(() => Task.FromResult(_services));
         }
 
         [Fact]
