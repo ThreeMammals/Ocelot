@@ -22,7 +22,9 @@ namespace Ocelot.Requester
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            IHttpClient httpClient = GetHttpClient(request);
+            var cacheKey = GetCacheKey(request);
+
+            IHttpClient httpClient = GetHttpClient(cacheKey);
             try
             {
                 var response = await httpClient.SendAsync(request.HttpRequestMessage);
@@ -42,32 +44,28 @@ namespace Ocelot.Requester
             {
                 return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
             }
+            finally
+            {
+                _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(24));
+            }
 
         }
 
-        private IHttpClient GetHttpClient(Request.Request request)
+        private IHttpClient GetHttpClient(string cacheKey)
         {
             var builder = new HttpClientBuilder();
-            var cacheKey = GetCacheKey(request, builder);
+
             var httpClient = _cacheHandlers.Get(cacheKey);
             if (httpClient == null)
             {
                 httpClient = builder.Create();
             }
-            _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(6));
             return httpClient;
         }
 
-        private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
+        private string GetCacheKey(Request.Request request)
         {
             string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
-
-            if (request.IsQos)
-            {
-                builder.WithQos(request.QosProvider, _logger);
-                baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
-            }
-
             return baseUrl;
         }
     }
