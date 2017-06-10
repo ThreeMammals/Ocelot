@@ -45,7 +45,8 @@ namespace Ocelot.AcceptanceTests
                             ExceptionsAllowedBeforeBreaking = 1,
                             TimeoutValue = 500,
                             DurationOfBreak = 1000
-                        }
+                        },
+                        
                     }
                 }
             };
