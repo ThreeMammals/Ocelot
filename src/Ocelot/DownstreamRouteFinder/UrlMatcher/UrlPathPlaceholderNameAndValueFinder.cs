@@ -70,7 +70,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
         private bool CharactersDontMatch(char characterOne, char characterTwo)
         {
-            return characterOne != characterTwo;
+            return char.ToLower(characterOne) != char.ToLower(characterTwo);
         }
 
         private bool ContinueScanningUrl(int counterForUrl, int urlLength)
