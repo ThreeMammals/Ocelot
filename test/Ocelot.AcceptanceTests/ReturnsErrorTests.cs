@@ -31,7 +31,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             DownstreamPort = 53876,
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost"

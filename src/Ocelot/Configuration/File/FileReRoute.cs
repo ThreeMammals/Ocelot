@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.File
     {
         public FileReRoute()
         {
+            UpstreamHttpMethod = new List<string>();
             AddHeadersToRequest = new Dictionary<string, string>();
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
@@ -18,7 +19,7 @@ namespace Ocelot.Configuration.File
 
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
-        public string UpstreamHttpMethod { get; set; }
+        public List<string> UpstreamHttpMethod { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }

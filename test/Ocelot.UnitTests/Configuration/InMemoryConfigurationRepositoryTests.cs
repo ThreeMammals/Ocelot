@@ -87,7 +87,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new ReRouteBuilder()
                 .WithDownstreamPathTemplate(_downstreamTemplatePath)
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build()
             };
 

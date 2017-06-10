@@ -35,7 +35,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     }
             };
@@ -62,7 +62,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = false,
                         }
                     }
@@ -90,7 +90,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
                         }
                     }
@@ -118,7 +118,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/PRODUCTS/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
                         }
                     }
@@ -146,7 +146,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
                         }
                     }
@@ -174,7 +174,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/PRODUCTS/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
                         }
                     }

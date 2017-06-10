@@ -1,6 +1,7 @@
 ﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using Ocelot.Configuration;
 
 namespace Ocelot.Authorisation.Middleware
 {
@@ -13,17 +14,20 @@ namespace Ocelot.Authorisation.Middleware
     public class AuthorisationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IAuthoriser _authoriser;
+        private readonly IClaimsAuthoriser _claimsAuthoriser;
+        private readonly IScopesAuthoriser _scopesAuthoriser;
         private readonly IOcelotLogger _logger;
 
         public AuthorisationMiddleware(RequestDelegate next,
             IRequestScopedDataRepository requestScopedDataRepository,
-            IAuthoriser authoriser,
+            IClaimsAuthoriser claimsAuthoriser,
+            IScopesAuthoriser scopesAuthoriser,
             IOcelotLoggerFactory loggerFactory)
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _authoriser = authoriser;
+            _claimsAuthoriser = claimsAuthoriser;
+            _scopesAuthoriser = scopesAuthoriser;
             _logger = loggerFactory.CreateLogger<AuthorisationMiddleware>();
         }
 
@@ -31,11 +35,41 @@ namespace Ocelot.Authorisation.Middleware
         {
             _logger.LogDebug("started authorisation");
 
-            if (DownstreamRoute.ReRoute.IsAuthorised)
+            if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
+            {
+                _logger.LogDebug("route is authenticated scopes must be checked");
+
+                var authorised = _scopesAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.AuthenticationOptions.AllowedScopes);
+
+                if (authorised.IsError)
+                {
+                    _logger.LogDebug("error authorising user scopes");
+
+                    SetPipelineError(authorised.Errors);
+                    return;
+                }
+
+                if (IsAuthorised(authorised))
+                {
+                    _logger.LogDebug("user scopes is authorised calling next authorisation checks");
+                }
+                else
+                {
+                    _logger.LogDebug("user scopes is not authorised setting pipeline error");
+
+                    SetPipelineError(new List<Error>
+                    {
+                        new UnauthorisedError(
+                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
+                    });
+                }
+            }
+
+            if (IsAuthorisedRoute(DownstreamRoute.ReRoute))
             {
                 _logger.LogDebug("route is authorised");
 
-                var authorised = _authoriser.Authorise(context.User, DownstreamRoute.ReRoute.RouteClaimsRequirement);
+                var authorised = _claimsAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.RouteClaimsRequirement);
 
                 if (authorised.IsError)
                 {
@@ -77,6 +111,16 @@ namespace Ocelot.Authorisation.Middleware
         private static bool IsAuthorised(Response<bool> authorised)
         {
             return authorised.Data;
+        }
+
+        private static bool IsAuthenticatedRoute(ReRoute reRoute)
+        {
+            return reRoute.IsAuthenticated;
+        }
+
+        private static bool IsAuthorisedRoute(ReRoute reRoute)
+        {
+            return reRoute.IsAuthorised;
         }
     }
 }

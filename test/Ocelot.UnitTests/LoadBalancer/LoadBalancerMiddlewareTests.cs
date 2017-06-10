@@ -73,7 +73,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
@@ -90,7 +90,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {         
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))

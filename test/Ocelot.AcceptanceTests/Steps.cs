@@ -199,6 +199,52 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
+        public void GivenIHaveATokenForApiReadOnlyScope(string url)
+        {
+            var tokenUrl = $"{url}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "client"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api.readOnly"),
+                new KeyValuePair<string, string>("username", "test"),
+                new KeyValuePair<string, string>("password", "test"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
+        public void GivenIHaveATokenForApi2(string url)
+        {
+            var tokenUrl = $"{url}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "client"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api2"),
+                new KeyValuePair<string, string>("username", "test"),
+                new KeyValuePair<string, string>("password", "test"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
         public void GivenIHaveAnOcelotToken(string adminPath)
         {
             var tokenUrl = $"{adminPath}/connect/token";

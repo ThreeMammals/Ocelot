@@ -91,7 +91,7 @@ namespace Ocelot.UnitTests.Cache
             var reRoute = new ReRouteBuilder()
                 .WithIsCached(true)
                 .WithCacheOptions(new CacheOptions(100))
-                .WithUpstreamHttpMethod("Get")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
                 
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), reRoute);

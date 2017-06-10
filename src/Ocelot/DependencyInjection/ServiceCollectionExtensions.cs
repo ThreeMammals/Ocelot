@@ -144,7 +144,8 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             services.TryAddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
-            services.TryAddSingleton<IAuthoriser, ClaimsAuthoriser>();
+            services.TryAddSingleton<IClaimsAuthoriser, ClaimsAuthoriser>();
+            services.TryAddSingleton<IScopesAuthoriser, ScopesAuthoriser>();
             services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
             services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();

@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Configuration
                                     DownstreamHost = "127.0.0.1",
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                 }
                             },
             }))
@@ -117,7 +117,7 @@ namespace Ocelot.UnitTests.Configuration
                         DownstreamHost = "127.0.0.1",
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
@@ -153,7 +153,7 @@ namespace Ocelot.UnitTests.Configuration
                                         DownstreamHost = "127.0.0.1",
                                         UpstreamPathTemplate = "/api/products/{productId}",
                                         DownstreamPathTemplate = "/products/{productId}",
-                                        UpstreamHttpMethod = "Get",
+                                        UpstreamHttpMethod = new List<string> { "Get" },
                                     }
                                 },
                             }))
@@ -181,7 +181,7 @@ namespace Ocelot.UnitTests.Configuration
                                     DownstreamHost = "127.0.0.1",
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                 }
                             },
                         }))
@@ -194,7 +194,7 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamHost("127.0.0.1")
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
                 .BDDfy();
@@ -215,7 +215,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     DownstreamScheme = "https",
                                                     UpstreamPathTemplate = "/api/products/{productId}",
                                                     DownstreamPathTemplate = "/products/{productId}",
-                                                    UpstreamHttpMethod = "Get",
+                                                    UpstreamHttpMethod = new List<string> { "Get" },
                                                 }
                                             },
                                         }))
@@ -228,7 +228,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     .WithDownstreamScheme("https")
                                                     .WithDownstreamPathTemplate("/products/{productId}")
                                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                                    .WithUpstreamHttpMethod("Get")
+                                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                                     .Build()
                                             }))
                                 .BDDfy();
@@ -248,7 +248,7 @@ namespace Ocelot.UnitTests.Configuration
                                 {
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                     ReRouteIsCaseSensitive = false,
                                     ServiceName = "ProductService"
                                 }
@@ -270,7 +270,7 @@ namespace Ocelot.UnitTests.Configuration
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
                                         .WithUseServiceDiscovery(true)
                                         .WithServiceDiscoveryProvider("consul")
@@ -296,7 +296,7 @@ namespace Ocelot.UnitTests.Configuration
                                 {
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                     ReRouteIsCaseSensitive = false,
                                 }
                             }
@@ -309,7 +309,7 @@ namespace Ocelot.UnitTests.Configuration
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
                                         .WithUseServiceDiscovery(false)
                                         .Build())
@@ -332,7 +332,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = false
                     }
                 }
@@ -346,7 +346,7 @@ namespace Ocelot.UnitTests.Configuration
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                         .Build()
                 }))
@@ -367,7 +367,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = true
                     }
                 },
@@ -385,7 +385,7 @@ namespace Ocelot.UnitTests.Configuration
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithRequestIdKey("blahhhh")
                         .Build()
                 }))
@@ -414,7 +414,7 @@ namespace Ocelot.UnitTests.Configuration
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .WithAuthenticationOptions(authenticationOptions)
                     .WithClaimsToHeaders(new List<ClaimToThing>
                     {
@@ -431,7 +431,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = true,
                         AuthenticationOptions = new FileAuthenticationOptions
                             {
@@ -482,7 +482,7 @@ namespace Ocelot.UnitTests.Configuration
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .WithAuthenticationOptions(authenticationOptions)
                     .Build()
             };
@@ -495,7 +495,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = true,
                         AuthenticationOptions = new FileAuthenticationOptions
                             {
