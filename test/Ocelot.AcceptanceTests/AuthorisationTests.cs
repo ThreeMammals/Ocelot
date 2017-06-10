@@ -140,6 +140,84 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_response_200_using_identity_server_with_allowed_scope()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51876,
+                            DownstreamHost = "localhost",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            AuthenticationOptions = new FileAuthenticationOptions
+                            {
+                                AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_403_using_identity_server_with_scope_not_allowed()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51876,
+                            DownstreamHost = "localhost",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            AuthenticationOptions = new FileAuthenticationOptions
+                            {
+                                AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
+                                Provider = "IdentityServer",
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
             _servicebuilder = new WebHostBuilder()
@@ -185,6 +263,7 @@ namespace Ocelot.AcceptanceTests
                                 Scopes = new List<Scope>()
                                 {
                                     new Scope("api"),
+                                    new Scope("api.readOnly"),
                                     new Scope("openid"),
                                     new Scope("offline_access")
                                 },
@@ -209,7 +288,7 @@ namespace Ocelot.AcceptanceTests
                                 ClientId = "client",
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                                 ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
-                                AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
+                                AllowedScopes = new List<string> { apiName, "api.readOnly", "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
                                 RequireClientSecret = false

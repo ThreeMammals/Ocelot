@@ -7,7 +7,7 @@ namespace Ocelot.Authorisation
 {
     using Infrastructure.Claims.Parser;
 
-    public class ClaimsAuthoriser : IAuthoriser
+    public class ClaimsAuthoriser : IClaimsAuthoriser
     {
         private readonly IClaimsParser _claimsParser;
 

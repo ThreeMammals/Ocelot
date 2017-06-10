@@ -17,6 +17,7 @@
         InstructionNotForClaimsError,
         UnauthorizedError,
         ClaimValueNotAuthorisedError,
+        ScopeNotAuthorisedError,
         UserDoesNotHaveClaimError,
         DownstreamPathTemplateContainsSchemeError,
         DownstreamPathNullOrEmptyError,

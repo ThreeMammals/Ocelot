@@ -61,7 +61,7 @@ namespace Ocelot.AcceptanceTests
                             {
 								AllowedScopes = new List<string>
                                 {
-                                    "openid", "offline_access"
+                                    "openid", "offline_access", "api"
                                 },
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:57888",
