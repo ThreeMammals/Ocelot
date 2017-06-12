@@ -56,12 +56,12 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
+                            UpstreamHttpMethod = new List<string> { "Get" },
                             AuthenticationOptions = new FileAuthenticationOptions
                             {
 								AllowedScopes = new List<string>
                                 {
-                                    "openid", "offline_access"
+                                    "openid", "offline_access", "api"
                                 },
                                 Provider = "IdentityServer",
                                 ProviderRootUrl = "http://localhost:57888",

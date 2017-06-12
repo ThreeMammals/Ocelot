@@ -44,8 +44,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             DownstreamPort = 51779,
                             UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = "Get",
-
+                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration()

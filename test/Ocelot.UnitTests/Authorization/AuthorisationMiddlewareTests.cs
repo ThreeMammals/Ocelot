@@ -25,7 +25,8 @@ namespace Ocelot.UnitTests.Authorization
     public class AuthorisationMiddlewareTests : IDisposable
     {
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly Mock<IAuthoriser> _authService;
+        private readonly Mock<IClaimsAuthoriser> _authService;
+        private readonly Mock<IScopesAuthoriser> _authScopesService;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -36,7 +37,8 @@ namespace Ocelot.UnitTests.Authorization
         {
             _url = "http://localhost:51879";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-            _authService = new Mock<IAuthoriser>();
+            _authService = new Mock<IClaimsAuthoriser>();
+            _authScopesService = new Mock<IScopesAuthoriser>();
 
             var builder = new WebHostBuilder()
               .ConfigureServices(x =>
@@ -44,6 +46,7 @@ namespace Ocelot.UnitTests.Authorization
                   x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
                   x.AddLogging();
                   x.AddSingleton(_authService.Object);
+                  x.AddSingleton(_authScopesService.Object);
                   x.AddSingleton(_scopedRepository.Object);
               })
               .UseUrls(_url)
@@ -66,7 +69,7 @@ namespace Ocelot.UnitTests.Authorization
             this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), 
                 new ReRouteBuilder()
                     .WithIsAuthorised(true)
-                    .WithUpstreamHttpMethod("Get")                                                                                                                                                                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
