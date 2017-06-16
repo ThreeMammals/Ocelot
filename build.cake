@@ -229,11 +229,11 @@ Task("CreatePackages")
 		EnsureDirectoryExists(packagesDir);
 		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
 
-		GenerateReleaseNotes(releaseNotesFile);
+		//GenerateReleaseNotes(releaseNotesFile);
 
         System.IO.File.WriteAllLines(artifactsFile, new[]{
             "nuget:Ocelot." + buildVersion + ".nupkg",
-            "releaseNotes:releasenotes.md"
+            //"releaseNotes:releasenotes.md"
         });
 
 		if (AppVeyor.IsRunningOnAppVeyor)
