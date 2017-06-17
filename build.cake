@@ -92,7 +92,7 @@ Task("Version")
 		if (AppVeyor.IsRunningOnAppVeyor)
 		{
 			Information("Persisting version number...");
-			PersistVersion(committedVersion, nugetVersion);
+			PersistVersion(nugetVersion);
 			buildVersion = nugetVersion;
 		}
 		else
@@ -229,7 +229,7 @@ Task("CreatePackages")
 		EnsureDirectoryExists(packagesDir);
 		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
 
-		GenerateReleaseNotes(releaseNotesFile);
+		GenerateReleaseNotes();
 
         System.IO.File.WriteAllLines(artifactsFile, new[]{
             "nuget:Ocelot." + buildVersion + ".nupkg",
@@ -251,9 +251,9 @@ Task("ReleasePackagesToUnstableFeed")
 	.IsDependentOn("CreatePackages")
 	.Does(() =>
 	{
-		if (ShouldPublishToUnstableFeed(nugetFeedUnstableBranchFilter, versioning.BranchName))
+		if (ShouldPublishToUnstableFeed())
 		{
-			PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+			PublishPackages(nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
 		}
 	});
 
@@ -306,7 +306,7 @@ Task("ReleasePackagesToStableFeed")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		PublishPackages(nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
     });
 
 Task("Release")
@@ -326,9 +326,9 @@ private GitVersion GetNuGetVersionForCommit()
 }
 
 /// Updates project version in all of our projects
-private void PersistVersion(string committedVersion, string newVersion)
+private void PersistVersion(string version)
 {
-	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, newVersion));
+	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, version));
 
 	var projectFiles = GetFiles("./**/*.csproj");
 
@@ -339,30 +339,24 @@ private void PersistVersion(string committedVersion, string newVersion)
 		Information(string.Format("Updating {0}...", file));
 
 		var updatedProjectFile = System.IO.File.ReadAllText(file)
-			.Replace(committedVersion, newVersion);
+			.Replace(committedVersion, version);
 
 		System.IO.File.WriteAllText(file, updatedProjectFile);
 	}
 }
 
 /// generates release notes based on issues closed in GitHub since the last release
-private void GenerateReleaseNotes(ConvertableFilePath file)
+private void GenerateReleaseNotes()
 {
-	if(!IsRunningOnWindows())
-	{
-        Warning("We are not running on Windows so we cannot generate release notes.");
-        return;		
-	}
-
-	Information("Generating release notes at " + file);
+	Information("Generating release notes at " + releaseNotesFile);
 
     var releaseNotesExitCode = StartProcess(
         @"tools/GitReleaseNotes/tools/gitreleasenotes.exe", 
-        new ProcessSettings { Arguments = ". /o " + file });
+        new ProcessSettings { Arguments = ". /o " + releaseNotesFile });
 
-    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(file)))
+    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
 	{
-        System.IO.File.WriteAllText(file, "No issues closed since last release");
+        System.IO.File.WriteAllText(releaseNotesFile, "No issues closed since last release");
 	}
 
     if (releaseNotesExitCode != 0) 
@@ -372,7 +366,7 @@ private void GenerateReleaseNotes(ConvertableFilePath file)
 }
 
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
-private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
+private void PublishPackages(string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
@@ -380,8 +374,6 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
             .ToDictionary(v => v[0], v => v[1]);
 
 		var codePackage = packagesDir + File(artifacts["nuget"]);
-
-		Information("Pushing package " + codePackage);
 
         NuGetPush(
             codePackage,
@@ -409,17 +401,17 @@ private string GetResource(string url)
     }
 }
 
-private bool ShouldPublishToUnstableFeed(string filter, string branchName)
+private bool ShouldPublishToUnstableFeed()
 {
-	var regex = new System.Text.RegularExpressions.Regex(filter);
-	var publish = regex.IsMatch(branchName);
+	var regex = new System.Text.RegularExpressions.Regex(nugetFeedUnstableBranchFilter);
+	var publish = regex.IsMatch(versioning.BranchName);
 	if (publish)
 	{
-		Information("Branch " + branchName + " will be published to the unstable feed");
+		Information("Branch " + versioning.BranchName + " will be published to the unstable feed");
 	}
 	else
 	{
-		Information("Branch " + branchName + " will not be published to the unstable feed");
+		Information("Branch " + versioning.BranchName + " will not be published to the unstable feed");
 	}
 	return publish;	
 }
