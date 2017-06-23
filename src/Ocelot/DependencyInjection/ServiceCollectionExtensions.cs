@@ -89,7 +89,10 @@ namespace Ocelot.DependencyInjection
             {
                 services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
                 services.TryAddSingleton<IHashMatcher, HashMatcher>();
-                var identityServerBuilder = services.AddIdentityServer()
+                var identityServerBuilder = services
+                    .AddIdentityServer(options => {
+                        options.IssuerUri = "Ocelot";
+                    })
                     .AddInMemoryApiResources(new List<ApiResource>
                     {
                         new ApiResource

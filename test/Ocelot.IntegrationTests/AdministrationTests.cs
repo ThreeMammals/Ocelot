@@ -86,9 +86,9 @@ namespace Ocelot.IntegrationTests
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
                 .And(x => GivenOcelotIsRunning())
                 .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
                 .And(x => GivenAnotherOcelotIsRunning("http://localhost:5007"))
                 .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -227,7 +227,7 @@ namespace Ocelot.IntegrationTests
                .UseKestrel()
                .UseContentRoot(Directory.GetCurrentDirectory())
                .ConfigureServices(x => {
-                   x.AddSingleton(_webHostBuilder);
+                   x.AddSingleton(_webHostBuilderTwo);
                })
                .UseStartup<Startup>();
 
@@ -236,8 +236,15 @@ namespace Ocelot.IntegrationTests
             _builderTwo.Start();
         }
 
+        private void GivenIdentityServerSigningEnvironmentalVariablesAreSet()
+        {
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "idsrv3test.pfx");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "idsrv3test");
+        }
+
         private void WhenIGetUrlOnTheSecondOcelot(string url)
         {
+            _httpClientTwo.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
             _response = _httpClientTwo.GetAsync(url).Result;
         }
 
@@ -353,6 +360,8 @@ namespace Ocelot.IntegrationTests
 
         public void Dispose()
         {
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "");
             _builder?.Dispose();
             _httpClient?.Dispose();
         }
