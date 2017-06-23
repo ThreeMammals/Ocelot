@@ -19,15 +19,19 @@ namespace Ocelot.IntegrationTests
     public class AdministrationTests : IDisposable
     {
         private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClientTwo;
         private HttpResponseMessage _response;
         private IWebHost _builder;
         private IWebHostBuilder _webHostBuilder;
         private readonly string _ocelotBaseUrl;
         private BearerToken _token;
+        private IWebHostBuilder _webHostBuilderTwo;
+        private IWebHost _builderTwo;
 
         public AdministrationTests()
         {
             _httpClient = new HttpClient();
+            _httpClientTwo = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5000";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
@@ -69,6 +73,27 @@ namespace Ocelot.IntegrationTests
                  .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                  .BDDfy();
          }
+
+        [Fact]
+        public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                }
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5007"))
+                .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
 
         [Fact]
         public void should_return_file_configuration()
@@ -191,6 +216,29 @@ namespace Ocelot.IntegrationTests
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .BDDfy();
+        }
+
+        private void GivenAnotherOcelotIsRunning(string baseUrl)
+        {
+            _httpClientTwo.BaseAddress = new Uri(baseUrl);
+
+            _webHostBuilderTwo = new WebHostBuilder()
+               .UseUrls(baseUrl)
+               .UseKestrel()
+               .UseContentRoot(Directory.GetCurrentDirectory())
+               .ConfigureServices(x => {
+                   x.AddSingleton(_webHostBuilder);
+               })
+               .UseStartup<Startup>();
+
+            _builderTwo = _webHostBuilderTwo.Build();
+
+            _builderTwo.Start();
+        }
+
+        private void WhenIGetUrlOnTheSecondOcelot(string url)
+        {
+            _response = _httpClientTwo.GetAsync(url).Result;
         }
 
         private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)

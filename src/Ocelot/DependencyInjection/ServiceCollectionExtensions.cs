@@ -41,6 +41,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
@@ -87,8 +89,7 @@ namespace Ocelot.DependencyInjection
             {
                 services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
                 services.TryAddSingleton<IHashMatcher, HashMatcher>();
-                services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                var identityServerBuilder = services.AddIdentityServer()
                     .AddInMemoryApiResources(new List<ApiResource>
                     {
                         new ApiResource
@@ -120,6 +121,16 @@ namespace Ocelot.DependencyInjection
                             RequireClientSecret = identityServerConfiguration.RequireClientSecret
                         }
                     }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+
+                if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
+                {
+                    identityServerBuilder.AddTemporarySigningCredential();
+                }
+                else
+                {
+                    var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
+                    identityServerBuilder.AddSigningCredential(cert);
+                }
             }
 
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
