@@ -13,6 +13,8 @@ namespace Ocelot.Configuration.Creator
             var username = Environment.GetEnvironmentVariable("OCELOT_USERNAME");
             var hash = Environment.GetEnvironmentVariable("OCELOT_HASH");
             var salt = Environment.GetEnvironmentVariable("OCELOT_SALT");
+            var credentialsSigningCertificateLocation = Environment.GetEnvironmentVariable("OCELOT_CERTIFICATE");
+            var credentialsSigningCertificatePassword = Environment.GetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD");
 
             return new IdentityServerConfiguration(
                 "admin",
@@ -28,7 +30,9 @@ namespace Ocelot.Configuration.Creator
                 new List<User>
                 {
                     new User("admin", username, hash, salt)
-                }
+                },
+                credentialsSigningCertificateLocation,
+                credentialsSigningCertificatePassword
             );
         }
     }

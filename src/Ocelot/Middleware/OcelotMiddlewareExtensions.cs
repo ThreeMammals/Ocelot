@@ -181,7 +181,6 @@ namespace Ocelot.Middleware
                 builder.Map(configuration.AdministrationPath, app =>
                 {
                     var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
-
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
                         Authority = identityServerUrl,
