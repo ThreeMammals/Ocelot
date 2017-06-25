@@ -37,8 +37,6 @@ namespace Ocelot.RateLimit.Middleware
             {
                 _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamPathTemplate}");
                 await _next.Invoke(context);
-
-                await _next.Invoke(context);
                 return;
             }
             // compute identity from request
@@ -48,8 +46,6 @@ namespace Ocelot.RateLimit.Middleware
             if (IsWhitelisted(identity, options))
             {
                 _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate} is white listed from rate limiting");
-                await _next.Invoke(context);
-
                 await _next.Invoke(context);
                 return;
             }
