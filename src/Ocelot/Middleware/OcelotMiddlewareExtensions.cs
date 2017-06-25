@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
@@ -8,6 +9,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
+using Ocelot.Logging;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
@@ -52,6 +54,8 @@ namespace Ocelot.Middleware
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             await CreateAdministrationArea(builder);
+
+            ConfigureDiagnosticListener(builder);
 
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
@@ -205,5 +209,22 @@ namespace Ocelot.Middleware
                 builder.Use(middleware);
             }
         }
+
+        /// <summary>
+         /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
+         /// </summary>
+         /// <param name="builder"></param>
+         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
+         {
+             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+
+            //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
+            if (!env.IsProduction())
+             {
+                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+                 diagnosticListener.SubscribeWithAdapter(listener);
+             }
+         }
     }
 }

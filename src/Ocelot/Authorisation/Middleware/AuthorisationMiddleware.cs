@@ -33,8 +33,6 @@ namespace Ocelot.Authorisation.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started authorisation");
-
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
                 _logger.LogDebug("route is authenticated scopes must be checked");
@@ -73,7 +71,7 @@ namespace Ocelot.Authorisation.Middleware
 
                 if (authorised.IsError)
                 {
-                    _logger.LogDebug("error authorising user");
+                    _logger.LogDebug($"Error whilst authorising {context.User.Identity.Name} for {context.User.Identity.Name}. Setting pipeline error");
 
                     SetPipelineError(authorised.Errors);
                     return;
@@ -81,30 +79,23 @@ namespace Ocelot.Authorisation.Middleware
 
                 if (IsAuthorised(authorised))
                 {
-                    _logger.LogDebug("user is authorised calling next middleware");
-
+                    _logger.LogDebug($"{context.User.Identity.Name} has succesfully been authorised for {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}. Calling next middleware");
                     await _next.Invoke(context);
-
-                    _logger.LogDebug("succesfully called next middleware");
                 }
                 else
                 {
-                    _logger.LogDebug("user is not authorised setting pipeline error");
+                    _logger.LogDebug($"{context.User.Identity.Name} is not authorised to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
 
                     SetPipelineError(new List<Error>
                     {
-                        new UnauthorisedError(
-                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
+                        new UnauthorisedError($"{context.User.Identity.Name} is not authorised to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
                     });
                 }
             }
             else
             {
-                _logger.LogDebug("AuthorisationMiddleware.Invoke route is not authorised calling next middleware");
-
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
                 await _next.Invoke(context);
-
-                _logger.LogDebug("succesfully called next middleware");
             }
         }
 

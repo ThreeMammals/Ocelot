@@ -26,17 +26,15 @@ namespace Ocelot.Headers.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling headers builder middleware");
-
             if (DownstreamRoute.ReRoute.ClaimsToHeaders.Any())
             {
-                _logger.LogDebug("this route has instructions to convert claims to headers");
+                _logger.LogDebug($"{ DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
                 var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(DownstreamRoute.ReRoute.ClaimsToHeaders, context.User.Claims, DownstreamRequest);
 
                 if (response.IsError)
                 {
-                    _logger.LogDebug("there was an error setting headers on context, setting pipeline error");
+                    _logger.LogDebug("Error setting headers on context, setting pipeline error");
 
                     SetPipelineError(response.Errors);
                     return;
@@ -45,11 +43,7 @@ namespace Ocelot.Headers.Middleware
                 _logger.LogDebug("headers have been set on context");
             }
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }

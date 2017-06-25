@@ -34,8 +34,6 @@ namespace Ocelot.Authentication.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.TraceMiddlewareEntry();
-
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
                 _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlwareName} checking if client is authenticated");
@@ -46,7 +44,6 @@ namespace Ocelot.Authentication.Middleware
                 {
                     _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
                     SetPipelineError(authenticationHandler.Errors);
-                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
 
@@ -56,11 +53,7 @@ namespace Ocelot.Authentication.Middleware
                 if (context.User.Identity.IsAuthenticated)
                 {
                     _logger.LogDebug($"Client has been authenticated for {context.Request.Path}");
-
-                    _logger.TraceInvokeNext();
-                        await _next.Invoke(context);
-                    _logger.TraceInvokeNextCompleted();
-                    _logger.TraceMiddlewareCompleted();
+                    await _next.Invoke(context);
                 }
                 else
                 {
@@ -72,8 +65,6 @@ namespace Ocelot.Authentication.Middleware
 
                     _logger.LogError($"Client has NOT been authenticated for {context.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     SetPipelineError(error);
-
-                    _logger.TraceMiddlewareCompleted();
                     return;
                 }
             }
@@ -81,10 +72,7 @@ namespace Ocelot.Authentication.Middleware
             {
                 _logger.LogTrace($"No authentication needed for {context.Request.Path}");
 
-                _logger.TraceInvokeNext();
-                    await _next.Invoke(context);
-                _logger.TraceInvokeNextCompleted();
-                _logger.TraceMiddlewareCompleted();
+                await _next.Invoke(context);
             }
         }
 
