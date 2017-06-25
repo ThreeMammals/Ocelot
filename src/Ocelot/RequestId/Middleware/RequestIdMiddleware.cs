@@ -20,7 +20,7 @@ namespace Ocelot.RequestId.Middleware
         public RequestIdMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
-            :base(requestScopedDataRepository)
+            : base(requestScopedDataRepository)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestIdMiddleware>();
@@ -28,15 +28,9 @@ namespace Ocelot.RequestId.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {         
-            _logger.TraceMiddlewareEntry();
-
+        {
             SetOcelotRequestId(context);
-
-            _logger.TraceInvokeNext();
-                await _next.Invoke(context);
-            _logger.TraceInvokeNextCompleted();
-            _logger.TraceMiddlewareCompleted();
+            await _next.Invoke(context);
         }
 
         private void SetOcelotRequestId(HttpContext context)

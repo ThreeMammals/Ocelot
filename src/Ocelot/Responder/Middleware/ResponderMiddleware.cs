@@ -34,10 +34,7 @@ namespace Ocelot.Responder.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.TraceMiddlewareEntry();
-            _logger.TraceInvokeNext();
-                await _next.Invoke(context);
-            _logger.TraceInvokeNextCompleted();
+            await _next.Invoke(context);
 
             if (PipelineError)
             {
@@ -51,7 +48,6 @@ namespace Ocelot.Responder.Middleware
                 _logger.LogDebug("no pipeline errors, setting and returning completed response");
                 await _responder.SetResponseOnHttpContext(context, HttpResponseMessage);
             }
-            _logger.TraceMiddlewareCompleted();
         }
 
         private void SetErrorResponse(HttpContext context, List<Error> errors)
