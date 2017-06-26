@@ -17,5 +17,7 @@ namespace Ocelot.Configuration.Provider
         AccessTokenType AccessTokenType {get;}
         bool RequireClientSecret {get;}
         List<User> Users {get;}
+        string CredentialsSigningCertificateLocation { get; }
+        string CredentialsSigningCertificatePassword { get; }
     }
 }

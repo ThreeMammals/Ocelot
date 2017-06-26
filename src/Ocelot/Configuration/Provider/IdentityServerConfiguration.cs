@@ -17,7 +17,7 @@ namespace Ocelot.Configuration.Provider
             IEnumerable<string>  grantType,
             AccessTokenType accessTokenType,
             bool requireClientSecret,
-            List<User> users)
+            List<User> users, string credentialsSigningCertificateLocation, string credentialsSigningCertificatePassword)
         {
             ApiName = apiName;
             RequireHttps = requireHttps;
@@ -30,6 +30,8 @@ namespace Ocelot.Configuration.Provider
             AccessTokenType = accessTokenType;
             RequireClientSecret = requireClientSecret;
             Users = users;
+            CredentialsSigningCertificateLocation = credentialsSigningCertificateLocation;
+            CredentialsSigningCertificatePassword = credentialsSigningCertificatePassword;
         }
 
         public string ApiName { get; private set; }
@@ -43,5 +45,7 @@ namespace Ocelot.Configuration.Provider
         public AccessTokenType AccessTokenType {get;private set;}
         public bool RequireClientSecret {get;private set;}
         public List<User> Users {get;private set;}
+        public string CredentialsSigningCertificateLocation { get; private set; }
+        public string CredentialsSigningCertificatePassword { get; private set; }
     }
 }

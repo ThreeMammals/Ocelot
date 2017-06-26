@@ -26,8 +26,6 @@ namespace Ocelot.Claims.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started claims middleware");
-
             if (DownstreamRoute.ReRoute.ClaimsToClaims.Any())
             {
                 _logger.LogDebug("this route has instructions to convert claims to other claims");
@@ -42,12 +40,7 @@ namespace Ocelot.Claims.Middleware
                     return;
                 }
             }
-
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }
