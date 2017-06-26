@@ -7,19 +7,19 @@ namespace Ocelot.Configuration.Creator
     {
         public AuthenticationOptions Create(FileReRoute fileReRoute)
         {
-            var authenticationConfig = new AuthenticationConfigCreator().Create(fileReRoute.AuthenticationOptions);
+            var authenticationConfig = new IdentityServerConfigCreator().Create(fileReRoute.AuthenticationOptions);
 
             return new AuthenticationOptionsBuilder()
                 .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
                 .WithAllowedScopes(fileReRoute.AuthenticationOptions?.AllowedScopes)
-                .WithConfiguration(authenticationConfig)
+                .WithIdntityServerConfigConfiguration(authenticationConfig)
                 .Build();
         } 
     }
 
-    public class AuthenticationConfigCreator
+    public class IdentityServerConfigCreator
     {
-        public IAuthenticationConfig Create(FileAuthenticationOptions authenticationOptions)
+        public IdentityServerConfig Create(FileAuthenticationOptions authenticationOptions)
         {
             return new IdentityServerConfigBuilder()
                 .WithApiName(authenticationOptions.IdentityServerConfig?.ApiName)

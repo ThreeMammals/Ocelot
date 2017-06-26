@@ -2,9 +2,11 @@
 
 namespace Ocelot.Configuration
 {
+    using Newtonsoft.Json;
+
     public class AuthenticationOptions
     {
-        public AuthenticationOptions(string provider, List<string> allowedScopes, IAuthenticationConfig config)
+        public AuthenticationOptions(string provider, List<string> allowedScopes, IdentityServerConfig config)
         {
             Provider = provider;
             AllowedScopes = allowedScopes;
@@ -15,15 +17,10 @@ namespace Ocelot.Configuration
         
         public List<string> AllowedScopes { get; private set; }
 
-        public IAuthenticationConfig Config { get; }
+        public IdentityServerConfig Config { get; private set; }
     }
 
-
-    public interface IAuthenticationConfig
-    {
-    }
-
-    public class IdentityServerConfig : IAuthenticationConfig
+    public class IdentityServerConfig
     {
         public IdentityServerConfig(string providerRootUrl, string apiName, bool requireHttps, string apiSecret)
         {

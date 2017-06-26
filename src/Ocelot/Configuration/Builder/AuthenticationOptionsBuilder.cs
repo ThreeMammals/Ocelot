@@ -9,7 +9,7 @@ namespace Ocelot.Configuration.Builder
 
         private List<string> _allowedScopes;
 
-        private IAuthenticationConfig _config;
+        private IdentityServerConfig _identityServerConfig;
 
         public AuthenticationOptionsBuilder WithProvider(string provider)
         {
@@ -23,15 +23,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithConfiguration(IAuthenticationConfig config)
+        public AuthenticationOptionsBuilder WithIdntityServerConfigConfiguration(IdentityServerConfig config)
         {
-            _config = config;
+            _identityServerConfig = config;
             return this;
         }
 
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_provider, _allowedScopes, _config);
+            return new AuthenticationOptions(_provider, _allowedScopes, _identityServerConfig);
         }
     }
 

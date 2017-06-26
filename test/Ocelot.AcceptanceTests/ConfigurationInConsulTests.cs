@@ -29,7 +29,6 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
