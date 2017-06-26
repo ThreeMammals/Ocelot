@@ -34,241 +34,213 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        //[Fact]
-        //public void should_return_401_using_identity_server_access_token()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Post" },
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
+        [Fact]
+        public void should_return_401_using_identity_server_access_token()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = _downstreamServicePath,
+                           DownstreamPort = _downstreamServicePort,
+                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamScheme = _downstreamServiceScheme,
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Post" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AllowedScopes =  new List<string>(),
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                    ProviderRootUrl = _identityServerRootUrl,
+                                    RequireHttps = false,
+                                    ApiName = "api",
+                                    ApiSecret = "secret"
+                               }                               
+                           }
+                       }
+                   }
+           };
 
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenThePostHasContent("postContent"))
-        //        .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-        //        .BDDfy();
-        //}
+           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenThePostHasContent("postContent"))
+               .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+               .BDDfy();
+        }
 
-        //[Fact]
-        //public void should_return_401_using_identity_server_reference_token()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Post" },
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
+        [Fact]
+        public void should_return_response_200_using_identity_server()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = _downstreamServicePath,
+                           DownstreamPort = _downstreamServicePort,
+                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamScheme = _downstreamServiceScheme,
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Get" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AllowedScopes =  new List<string>(),
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                    ProviderRootUrl = _identityServerRootUrl,
+                                    RequireHttps = false,
+                                    ApiName = "api",
+                                    ApiSecret = "secret"
+                               }
+                           }
+                       }
+                   }
+           };
 
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenThePostHasContent("postContent"))
-        //        .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-        //        .BDDfy();
-        //}
+           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
+               .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+               .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+               .BDDfy();
+        }
 
-        //[Fact]
-        //public void should_return_response_200_using_identity_server()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Get" },
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
+        [Fact]
+        public void should_return_response_401_using_identity_server_with_token_requested_for_other_api()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = _downstreamServicePath,
+                           DownstreamPort = _downstreamServicePort,
+                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamScheme = _downstreamServiceScheme,
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Get" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AllowedScopes =  new List<string>(),
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                    ProviderRootUrl = _identityServerRootUrl,
+                                    RequireHttps = false,
+                                    ApiName = "api",
+                                    ApiSecret = "secret"
+                               }
+                           }
+                       }
+                   }
+           };
 
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
-        //        .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        //        .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-        //        .BDDfy();
-        //}
+           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
+               .And(x => _steps.GivenIHaveATokenForApi2(_identityServerRootUrl))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+               .BDDfy();
+        }
 
-        //[Fact]
-        //public void should_return_response_401_using_identity_server_with_token_requested_for_other_api()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Get" },
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
+        [Fact]
+        public void should_return_201_using_identity_server_access_token()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = _downstreamServicePath,
+                           DownstreamPort = _downstreamServicePort,
+                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamScheme = _downstreamServiceScheme,
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Post" },
 
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
-        //        .And(x => _steps.GivenIHaveATokenForApi2(_identityServerRootUrl))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-        //        .BDDfy();
-        //}
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AllowedScopes =  new List<string>(),
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                    ProviderRootUrl = _identityServerRootUrl,
+                                    RequireHttps = false,
+                                    ApiName = "api",
+                                    ApiSecret = "secret"
+                               }
+                           }
+                       }
+                   }
+           };
 
-        //[Fact]
-        //public void should_return_201_using_identity_server_access_token()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Post" },
+           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .And(x => _steps.GivenThePostHasContent("postContent"))
+               .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+               .BDDfy();
+        }
 
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
+        [Fact]
+        public void should_return_201_using_identity_server_reference_token()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = _downstreamServicePath,
+                           DownstreamPort = _downstreamServicePort,
+                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamScheme = _downstreamServiceScheme,
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Post" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AllowedScopes = new List<string>(),
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                    ProviderRootUrl = _identityServerRootUrl,
+                                    RequireHttps = false,
+                                    ApiName = "api",
+                                    ApiSecret = "secret"
+                               }
+                           }
+                       }
+                   }
+           };
 
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
-        //        .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-        //        .And(x => _steps.GivenThePostHasContent("postContent"))
-        //        .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-        //        .BDDfy();
-        //}
-
-        //[Fact]
-        //public void should_return_201_using_identity_server_reference_token()
-        //{
-        //    var configuration = new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //            {
-        //                new FileReRoute
-        //                {
-        //                    DownstreamPathTemplate = _downstreamServicePath,
-        //                    DownstreamPort = _downstreamServicePort,
-        //                    DownstreamHost = _downstreamServiceHost,
-        //                    DownstreamScheme = _downstreamServiceScheme,
-        //                    UpstreamPathTemplate = "/",
-        //                    UpstreamHttpMethod = new List<string> { "Post" },
-        //                    AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-        //                        AllowedScopes = new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = _identityServerRootUrl,
-        //                        RequireHttps = false,
-        //                        ApiName = "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //                }
-        //            }
-        //    };
-
-        //    this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
-        //        .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
-        //        .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunning())
-        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-        //        .And(x => _steps.GivenThePostHasContent("postContent"))
-        //        .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-        //        .BDDfy();
-        //}
+           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
+               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .And(x => _steps.GivenThePostHasContent("postContent"))
+               .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+               .BDDfy();
+        }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {

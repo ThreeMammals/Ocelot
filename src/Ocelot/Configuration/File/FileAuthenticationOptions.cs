@@ -7,6 +7,7 @@ namespace Ocelot.Configuration.File
         public FileAuthenticationOptions()
         {
             AllowedScopes = new List<string>();
+            IdentityServerConfig = new FileIdentityServerConfig();
         }
 
         public string Provider { get; set; }
