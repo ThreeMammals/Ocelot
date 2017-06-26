@@ -63,7 +63,9 @@ namespace Ocelot.Cache.Middleware
 
             var response = HttpResponseMessage;
 
-            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.FileCacheOptions.TtlSeconds));
+            var region = $"{DownstreamRoute.ReRoute.UpstreamHttpMethod}-{DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}";
+
+            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.FileCacheOptions.TtlSeconds), region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }

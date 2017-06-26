@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CacheManager.Core;
 
 namespace Ocelot.Cache
@@ -6,18 +8,21 @@ namespace Ocelot.Cache
     public class OcelotCacheManagerCache<T> : IOcelotCache<T>
     {
         private readonly ICacheManager<T> _cacheManager;
+        private HashSet<string> _keys;
 
         public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
         {
             _cacheManager = cacheManager;
+            _keys = new HashSet<string>();
         }
 
-        public void Add(string key, T value, TimeSpan ttl)
+        public void Add(string key, T value, TimeSpan ttl, string region)
         {
-            _cacheManager.Add(new CacheItem<T>(key, value, ExpirationMode.Absolute, ttl));
+            _cacheManager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
+            _keys.Add(key);
         }
 
-        public void AddAndDelete(string key, T value, TimeSpan ttl)
+        public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
         {
             var exists = _cacheManager.Get(key);
 
@@ -26,12 +31,17 @@ namespace Ocelot.Cache
                 _cacheManager.Remove(key);
             }
 
-            _cacheManager.Add(new CacheItem<T>(key, value, ExpirationMode.Absolute, ttl));
+            Add(key, value, ttl, region);
         }
 
         public T Get(string key)
         {
             return _cacheManager.Get<T>(key);
+        }
+
+        public void ClearRegion(string region)
+        {
+            _cacheManager.ClearRegion(region);
         }
     }
 }

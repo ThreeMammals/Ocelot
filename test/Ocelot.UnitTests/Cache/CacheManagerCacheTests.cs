@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CacheManager.Core;
 using Moq;
 using Ocelot.Cache;
@@ -16,12 +17,14 @@ namespace Ocelot.UnitTests.Cache
         private string _value;
         private string _resultGet;
         private TimeSpan _ttlSeconds;
+        private List<string> _resultKeys;
 
         public CacheManagerCacheTests()
         {
             _mockCacheManager = new Mock<ICacheManager<string>>();
             _ocelotOcelotCacheManager = new OcelotCacheManagerCache<string>(_mockCacheManager.Object);
         }
+
         [Fact]
         public void should_get_from_cache()
         {
@@ -29,7 +32,6 @@ namespace Ocelot.UnitTests.Cache
                 .When(x => x.WhenIGetFromTheCache())
                 .Then(x => x.ThenTheResultIs("someValue"))
                 .BDDfy();
-
         }
 
         [Fact]
@@ -40,13 +42,37 @@ namespace Ocelot.UnitTests.Cache
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_delete_key_from_cache()
+        {
+            this.Given(_ => GivenTheFollowingRegion("fookey"))
+                .When(_ => WhenIDeleteTheRegion("fookey"))
+                .Then(_ => ThenTheRegionIsDeleted("fookey"))
+                .BDDfy();
+        }
+
+        private void WhenIDeleteTheRegion(string region)
+        {
+            _ocelotOcelotCacheManager.ClearRegion(region);
+        }
+
+        private void ThenTheRegionIsDeleted(string region)
+        {
+            _mockCacheManager
+                .Verify(x => x.ClearRegion(region), Times.Once);
+        }
+
+        private void GivenTheFollowingRegion(string key)
+        {
+            _ocelotOcelotCacheManager.Add(key, "doesnt matter", TimeSpan.FromSeconds(10), "region");
+        }
+
         private void WhenIAddToTheCache(string key, string value, TimeSpan ttlSeconds)
         {
             _key = key;
             _value = value;
             _ttlSeconds = ttlSeconds;
-
-            _ocelotOcelotCacheManager.Add(_key, _value, _ttlSeconds);
+            _ocelotOcelotCacheManager.Add(_key, _value, _ttlSeconds, "region");
         }
 
         private void ThenTheCacheIsCalledCorrectly()

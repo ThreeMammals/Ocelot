@@ -68,7 +68,7 @@ namespace Ocelot.Configuration.Repository
 
             if (result.Response)
             {
-                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3));
+                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), "OcelotConfiguration");
 
                 return new OkResponse();
             }

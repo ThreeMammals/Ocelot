@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.Cache
         private void ThenTheCacheAddIsCalledCorrectly()
         {
             _cacheManager
-                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<HttpResponseMessage>(), It.IsAny<TimeSpan>()), Times.Once);
+                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<HttpResponseMessage>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
         }
 
         private void GivenResponseIsNotCached()
