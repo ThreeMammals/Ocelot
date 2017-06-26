@@ -28,195 +28,195 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        [Fact]
-        public void should_return_response_200_authorising_route()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamPort = 51876,
-                            DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-								AllowedScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-								ApiName = "api",
-                                ApiSecret = "secret"
-                            },
-                            AddHeadersToRequest =
-                            {
-                                {"CustomerId", "Claims[CustomerId] > value"},
-                                {"LocationId", "Claims[LocationId] > value"},
-                                {"UserType", "Claims[sub] > value[0] > |"},
-                                {"UserId", "Claims[sub] > value[1] > |"}
-                            },
-                            AddClaimsToRequest =
-                            {
-                                {"CustomerId", "Claims[CustomerId] > value"},
-                                {"UserType", "Claims[sub] > value[0] > |"},
-                                {"UserId", "Claims[sub] > value[1] > |"}
-                            },
-                            RouteClaimsRequirement =
-                            {
-                                {"UserType", "registered"}
-                            }
-                        }
-                    }
-            };
+        //[Fact]
+        //public void should_return_response_200_authorising_route()
+        //{
+        //    var configuration = new FileConfiguration
+        //    {
+        //        ReRoutes = new List<FileReRoute>
+        //            {
+        //                new FileReRoute
+        //                {
+        //                    DownstreamPathTemplate = "/",
+        //                    DownstreamPort = 51876,
+        //                    DownstreamScheme = "http",
+        //                    DownstreamHost = "localhost",
+        //                    UpstreamPathTemplate = "/",
+        //                    UpstreamHttpMethod = new List<string> { "Get" },
+        //                    AuthenticationOptions = new FileAuthenticationOptions
+        //                    {
+								//AllowedScopes =  new List<string>(),
+        //                        Provider = "IdentityServer",
+        //                        ProviderRootUrl = "http://localhost:51888",
+        //                        RequireHttps = false,
+								//ApiName = "api",
+        //                        ApiSecret = "secret"
+        //                    },
+        //                    AddHeadersToRequest =
+        //                    {
+        //                        {"CustomerId", "Claims[CustomerId] > value"},
+        //                        {"LocationId", "Claims[LocationId] > value"},
+        //                        {"UserType", "Claims[sub] > value[0] > |"},
+        //                        {"UserId", "Claims[sub] > value[1] > |"}
+        //                    },
+        //                    AddClaimsToRequest =
+        //                    {
+        //                        {"CustomerId", "Claims[CustomerId] > value"},
+        //                        {"UserType", "Claims[sub] > value[0] > |"},
+        //                        {"UserId", "Claims[sub] > value[1] > |"}
+        //                    },
+        //                    RouteClaimsRequirement =
+        //                    {
+        //                        {"UserType", "registered"}
+        //                    }
+        //                }
+        //            }
+        //    };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
+        //    this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+        //        .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+        //        .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        //        .And(x => _steps.GivenOcelotIsRunning())
+        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        //        .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        //        .BDDfy();
+        //}
 
-        [Fact]
-        public void should_return_response_403_authorising_route()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamPort = 51876,
-                            DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-								AllowedScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-								ApiName = "api",
-                                ApiSecret = "secret"
-                            },
-                            AddHeadersToRequest =
-                            {
-                                {"CustomerId", "Claims[CustomerId] > value"},
-                                {"LocationId", "Claims[LocationId] > value"},
-                                {"UserType", "Claims[sub] > value[0] > |"},
-                                {"UserId", "Claims[sub] > value[1] > |"}
-                            },
-                            AddClaimsToRequest =
-                            {
-                                {"CustomerId", "Claims[CustomerId] > value"},
-                                {"UserId", "Claims[sub] > value[1] > |"}
-                            },
-                            RouteClaimsRequirement =
-                            {
-                                {"UserType", "registered"}
-                            }
-                        }
-                    }
-            };
+        //[Fact]
+        //public void should_return_response_403_authorising_route()
+        //{
+        //    var configuration = new FileConfiguration
+        //    {
+        //        ReRoutes = new List<FileReRoute>
+        //            {
+        //                new FileReRoute
+        //                {
+        //                    DownstreamPathTemplate = "/",
+        //                    DownstreamPort = 51876,
+        //                    DownstreamScheme = "http",
+        //                    DownstreamHost = "localhost",
+        //                    UpstreamPathTemplate = "/",
+        //                    UpstreamHttpMethod = new List<string> { "Get" },
+        //                    AuthenticationOptions = new FileAuthenticationOptions
+        //                    {
+								//AllowedScopes =  new List<string>(),
+        //                        Provider = "IdentityServer",
+        //                        ProviderRootUrl = "http://localhost:51888",
+        //                        RequireHttps = false,
+								//ApiName = "api",
+        //                        ApiSecret = "secret"
+        //                    },
+        //                    AddHeadersToRequest =
+        //                    {
+        //                        {"CustomerId", "Claims[CustomerId] > value"},
+        //                        {"LocationId", "Claims[LocationId] > value"},
+        //                        {"UserType", "Claims[sub] > value[0] > |"},
+        //                        {"UserId", "Claims[sub] > value[1] > |"}
+        //                    },
+        //                    AddClaimsToRequest =
+        //                    {
+        //                        {"CustomerId", "Claims[CustomerId] > value"},
+        //                        {"UserId", "Claims[sub] > value[1] > |"}
+        //                    },
+        //                    RouteClaimsRequirement =
+        //                    {
+        //                        {"UserType", "registered"}
+        //                    }
+        //                }
+        //            }
+        //    };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-                .BDDfy();
-        }
+        //    this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+        //        .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+        //        .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        //        .And(x => _steps.GivenOcelotIsRunning())
+        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+        //        .BDDfy();
+        //}
 
-        [Fact]
-        public void should_return_response_200_using_identity_server_with_allowed_scope()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamPort = 51876,
-                            DownstreamHost = "localhost",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                            }
-                        }
-                    }
-            };
+        //[Fact]
+        //public void should_return_response_200_using_identity_server_with_allowed_scope()
+        //{
+        //    var configuration = new FileConfiguration
+        //    {
+        //        ReRoutes = new List<FileReRoute>
+        //            {
+        //                new FileReRoute
+        //                {
+        //                    DownstreamPathTemplate = "/",
+        //                    DownstreamPort = 51876,
+        //                    DownstreamHost = "localhost",
+        //                    DownstreamScheme = "http",
+        //                    UpstreamPathTemplate = "/",
+        //                    UpstreamHttpMethod = new List<string> { "Get" },
+        //                    AuthenticationOptions = new FileAuthenticationOptions
+        //                    {
+        //                        AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+        //                        Provider = "IdentityServer",
+        //                        ProviderRootUrl = "http://localhost:51888",
+        //                        RequireHttps = false,
+        //                        ApiName = "api",
+        //                        ApiSecret = "secret"
+        //                    }
+        //                }
+        //            }
+        //    };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
+        //    this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+        //        .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+        //        .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        //        .And(x => _steps.GivenOcelotIsRunning())
+        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        //        .BDDfy();
+        //}
 
-        [Fact]
-        public void should_return_response_403_using_identity_server_with_scope_not_allowed()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamPort = 51876,
-                            DownstreamHost = "localhost",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                            }
-                        }
-                    }
-            };
+        //[Fact]
+        //public void should_return_response_403_using_identity_server_with_scope_not_allowed()
+        //{
+        //    var configuration = new FileConfiguration
+        //    {
+        //        ReRoutes = new List<FileReRoute>
+        //            {
+        //                new FileReRoute
+        //                {
+        //                    DownstreamPathTemplate = "/",
+        //                    DownstreamPort = 51876,
+        //                    DownstreamHost = "localhost",
+        //                    DownstreamScheme = "http",
+        //                    UpstreamPathTemplate = "/",
+        //                    UpstreamHttpMethod = new List<string> { "Get" },
+        //                    AuthenticationOptions = new FileAuthenticationOptions
+        //                    {
+        //                        AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
+        //                        Provider = "IdentityServer",
+        //                        ProviderRootUrl = "http://localhost:51888",
+        //                        RequireHttps = false,
+        //                        ApiName = "api",
+        //                        ApiSecret = "secret"
+        //                    }
+        //                }
+        //            }
+        //    };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-                .BDDfy();
-        }
+        //    this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+        //        .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+        //        .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        //        .And(x => _steps.GivenOcelotIsRunning())
+        //        .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+        //        .BDDfy();
+        //}
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {

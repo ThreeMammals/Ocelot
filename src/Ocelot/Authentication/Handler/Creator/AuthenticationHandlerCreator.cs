@@ -5,6 +5,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.Authentication.Handler.Creator
 {
+    using Ocelot.Configuration;
+
     using AuthenticationOptions = Configuration.AuthenticationOptions;
 
     /// <summary>
@@ -16,14 +18,16 @@ namespace Ocelot.Authentication.Handler.Creator
         {
             var builder = app.New();
 
+            var authenticationConfig = authOptions.Config as IdentityServerConfig;
+
             builder.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
-                Authority = authOptions.ProviderRootUrl,
-                ApiName = authOptions.ApiName,
-                RequireHttpsMetadata = authOptions.RequireHttps,
+                Authority = authenticationConfig.ProviderRootUrl,
+                ApiName = authenticationConfig.ApiName,
+                RequireHttpsMetadata = authenticationConfig.RequireHttps,
                 AllowedScopes = authOptions.AllowedScopes,
                 SupportedTokens = SupportedTokens.Both,
-                ApiSecret = authOptions.ApiSecret
+                ApiSecret = authenticationConfig.ApiSecret
             });
 
             var authenticationNext = builder.Build();

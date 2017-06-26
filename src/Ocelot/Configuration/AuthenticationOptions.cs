@@ -4,22 +4,38 @@ namespace Ocelot.Configuration
 {
     public class AuthenticationOptions
     {
-        public AuthenticationOptions(string provider, string providerRootUrl, string apiName, bool requireHttps, List<string> allowedScopes, string apiSecret)
+        public AuthenticationOptions(string provider, List<string> allowedScopes, IAuthenticationConfig config)
         {
             Provider = provider;
-            ProviderRootUrl = providerRootUrl;
-			ApiName = apiName;
-            RequireHttps = requireHttps;
-			AllowedScopes = allowedScopes;
-            ApiSecret = apiSecret;
+            AllowedScopes = allowedScopes;
+            Config = config;
         }
 
         public string Provider { get; private set; }
+        
+        public List<string> AllowedScopes { get; private set; }
+
+        public IAuthenticationConfig Config { get; }
+    }
+
+
+    public interface IAuthenticationConfig
+    {
+    }
+
+    public class IdentityServerConfig : IAuthenticationConfig
+    {
+        public IdentityServerConfig(string providerRootUrl, string apiName, bool requireHttps, string apiSecret)
+        {
+            ProviderRootUrl = providerRootUrl;
+            ApiName = apiName;
+            RequireHttps = requireHttps;
+            ApiSecret = apiSecret;
+        }
+
         public string ProviderRootUrl { get; private set; }
         public string ApiName { get; private set; }
         public string ApiSecret { get; private set; }
         public bool RequireHttps { get; private set; }
-        public List<string> AllowedScopes { get; private set; }
-
     }
 }
