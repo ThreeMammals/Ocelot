@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Ocelot.Configuration.Provider;
 using Ocelot.Logging;
@@ -33,9 +34,11 @@ namespace Ocelot.Cache
                 return new List<string>();
             }
 
+            var cachedReRoutes = config.Data.ReRoutes.Where(x => x.IsCached);
+            
             var regions = new List<string>();
 
-            foreach(var reRoute in config.Data.ReRoutes)
+            foreach(var reRoute in cachedReRoutes)
             {
                 var region = _creator.Region(reRoute);
                 regions.Add(region);

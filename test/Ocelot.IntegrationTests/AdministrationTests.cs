@@ -218,6 +218,63 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_regions()
+        {
+
+            var initialConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/test",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    }
+                }
+            };
+
+            var expected = new List<string>
+            {
+                "get /",
+                "get /test"
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/outputcache"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseShouldBe(expected))
+                .BDDfy();
+        }
+
         private void GivenAnotherOcelotIsRunning(string baseUrl)
         {
             _httpClientTwo.BaseAddress = new Uri(baseUrl);
@@ -254,6 +311,13 @@ namespace Ocelot.IntegrationTests
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             _response = _httpClient.PostAsync(url, content).Result;
+        }
+
+        private void ThenTheResponseShouldBe(List<string> expected)
+        {
+            var content = _response.Content.ReadAsStringAsync().Result;
+            var result = JsonConvert.DeserializeObject<List<string>>(content);
+            result.ShouldBe(expected);
         }
 
         private void ThenTheResponseShouldBe(FileConfiguration expected)

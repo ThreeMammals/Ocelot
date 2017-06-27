@@ -7,7 +7,7 @@ using Ocelot.Configuration.Provider;
 namespace Ocelot.Controllers
 {
     [Authorize]
-    [Route("cache")]
+    [Route("outputcache")]
     public class OutputCacheController : Controller
     {
         private IOcelotCache<HttpResponseMessage> _cache;

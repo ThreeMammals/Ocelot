@@ -38,9 +38,13 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_get_regions()
         {
+            var cacheOptions = new CacheOptions(12);
+
             var reRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string>{"Get"})
                 .WithUpstreamPathTemplate("/")
+                .WithCacheOptions(cacheOptions)
+                .WithIsCached(true)
                 .Build();
 
             var reRoutes = new List<ReRoute>
@@ -62,7 +66,7 @@ namespace Ocelot.UnitTests.Cache
                 .BDDfy();
         }
 
-           [Fact]
+        [Fact]
         public void should_return_empty_regions()
         {
             var expected = new List<string>();
