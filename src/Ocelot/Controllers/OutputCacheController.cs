@@ -2,6 +2,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Cache;
+using Ocelot.Configuration.Provider;
 
 namespace Ocelot.Controllers
 {
@@ -10,16 +11,19 @@ namespace Ocelot.Controllers
     public class OutputCacheController : Controller
     {
         private IOcelotCache<HttpResponseMessage> _cache;
+        private IRegionsGetter _regionsGetter;
 
-        public OutputCacheController(IOcelotCache<HttpResponseMessage> cache)
+        public OutputCacheController(IOcelotCache<HttpResponseMessage> cache, IRegionsGetter regionsGetter)
         {
             _cache = cache;
+            _regionsGetter = regionsGetter;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            return new NotFoundResult();
+            var regions = _regionsGetter.Regions();
+            return new OkObjectResult(regions);
         }
 
         [HttpDelete]

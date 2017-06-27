@@ -145,6 +145,8 @@ namespace Ocelot.DependencyInjection
                 .AddJsonFormatters();
 
             services.AddLogging();
+            services.TryAddSingleton<IRegionsGetter, RegionsGetter>();
+            services.TryAddSingleton<IRegionCreator, RegionCreator>();
             services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
             services.TryAddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,16 +14,19 @@ namespace Ocelot.Cache.Middleware
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IOcelotCache<HttpResponseMessage> _outputCache;
+        private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository scopedDataRepository,
-            IOcelotCache<HttpResponseMessage> outputCache)
+            IOcelotCache<HttpResponseMessage> outputCache,
+            IRegionCreator regionCreator)
             :base(scopedDataRepository)
         {
             _next = next;
             _outputCache = outputCache;
             _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
+            _regionCreator = regionCreator;
         }
 
         public async Task Invoke(HttpContext context)
@@ -63,7 +67,7 @@ namespace Ocelot.Cache.Middleware
 
             var response = HttpResponseMessage;
 
-            var region = $"{DownstreamRoute.ReRoute.UpstreamHttpMethod}-{DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}";
+            var region = _regionCreator.Region(DownstreamRoute.ReRoute);
 
             _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.FileCacheOptions.TtlSeconds), region);
 

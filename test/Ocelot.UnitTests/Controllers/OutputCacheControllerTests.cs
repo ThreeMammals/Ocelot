@@ -15,12 +15,14 @@ namespace Ocelot.UnitTests.Controllers
     {
         private OutputCacheController _controller;
         private Mock<IOcelotCache<HttpResponseMessage>> _cache;
+        private Mock<IRegionsGetter> _getter;
         private IActionResult _result;
 
         public OutputCacheControllerTests()
         {
             _cache = new Mock<IOcelotCache<HttpResponseMessage>>();
-            _controller = new OutputCacheController(_cache.Object);
+            _getter = new Mock<IRegionsGetter>();
+            _controller = new OutputCacheController(_cache.Object, _getter.Object);
         }
 
         [Fact]

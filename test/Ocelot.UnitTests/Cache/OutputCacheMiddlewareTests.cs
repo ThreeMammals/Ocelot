@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using Ocelot.Cache;
 using Ocelot.Cache.Middleware;
@@ -43,6 +44,7 @@ namespace Ocelot.UnitTests.Cache
                     x.AddLogging();
                     x.AddSingleton(_cacheManager.Object);
                     x.AddSingleton(_scopedRepo.Object);
+                    x.AddSingleton<IRegionCreator, RegionCreator>();
                 })
                 .UseUrls(_url)
                 .UseKestrel()
