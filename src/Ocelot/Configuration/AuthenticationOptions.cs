@@ -6,7 +6,7 @@ namespace Ocelot.Configuration
 
     public class AuthenticationOptions
     {
-        public AuthenticationOptions(string provider, List<string> allowedScopes, IdentityServerConfig config)
+        public AuthenticationOptions(string provider, List<string> allowedScopes, IAuthenticationConfig config)
         {
             Provider = provider;
             AllowedScopes = allowedScopes;
@@ -17,10 +17,10 @@ namespace Ocelot.Configuration
         
         public List<string> AllowedScopes { get; private set; }
 
-        public IdentityServerConfig Config { get; private set; }
+        public IAuthenticationConfig Config { get; private set; }
     }
 
-    public class IdentityServerConfig
+    public class IdentityServerConfig : IAuthenticationConfig
     {
         public IdentityServerConfig(string providerRootUrl, string apiName, bool requireHttps, string apiSecret)
         {
@@ -35,4 +35,6 @@ namespace Ocelot.Configuration
         public string ApiSecret { get; private set; }
         public bool RequireHttps { get; private set; }
     }
+
+    public interface IAuthenticationConfig {}
 }

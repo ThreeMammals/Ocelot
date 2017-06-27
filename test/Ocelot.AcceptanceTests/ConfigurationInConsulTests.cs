@@ -104,7 +104,9 @@ namespace Ocelot.AcceptanceTests
 
                                             var json = reader.ReadToEnd();
 
-                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+                                            var settings = new JsonSerializerSettings();
+                                            settings.Converters.Add(new AuthenticationConfigConverter());
+                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
 
                                             var response = JsonConvert.SerializeObject(true);
 

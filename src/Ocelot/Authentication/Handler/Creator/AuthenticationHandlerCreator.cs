@@ -19,7 +19,7 @@ namespace Ocelot.Authentication.Handler.Creator
         {
             var builder = app.New();
 
-            var authenticationConfig = authOptions.Config;
+            var authenticationConfig = authOptions.Config as IdentityServerConfig;
 
             builder.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
