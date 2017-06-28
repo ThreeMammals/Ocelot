@@ -2,6 +2,7 @@
 {
     public enum SupportedAuthenticationProviders
     {
-        IdentityServer
+        IdentityServer,
+        Jwt
     }
 }

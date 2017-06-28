@@ -9,7 +9,7 @@ namespace Ocelot.Configuration.Builder
 
         private List<string> _allowedScopes;
 
-        private IdentityServerConfig _identityServerConfig;
+        private IAuthenticationConfig _identityServerConfig;
 
         public AuthenticationOptionsBuilder WithProvider(string provider)
         {
@@ -23,7 +23,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithIdntityServerConfigConfiguration(IdentityServerConfig config)
+        public AuthenticationOptionsBuilder WithConfig(IAuthenticationConfig config)
         {
             _identityServerConfig = config;
             return this;
@@ -66,11 +66,33 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-       
-
         public IdentityServerConfig Build()
         {
             return new IdentityServerConfig(_providerRootUrl, _apiName, _requireHttps, _apiSecret);
+        }
+    }
+
+    public class JwtConfigBuilder
+    {
+        public string _authority;
+
+        public string _audience;
+
+        public JwtConfigBuilder WithAuthority(string authority)
+        {
+            _authority = authority;
+            return this;
+        }
+
+        public JwtConfigBuilder WithAudience(string audience)
+        {
+            _audience = audience;
+            return this;
+        }
+
+        public JwtConfig Build()
+        {
+            return new JwtConfig(_authority, _audience);
         }
     }
 }

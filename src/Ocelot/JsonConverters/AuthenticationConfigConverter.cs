@@ -25,8 +25,12 @@ namespace Ocelot.AcceptanceTests
             {
                 switch (jsonObject["Provider"].Value<string>())
                 {
-                    //case "Jwt":
-                    //    setting = new 
+                    case "Jwt":
+                        setting = new JwtConfig(
+                            jsonObject["Authority"].Value<string>(),
+                            jsonObject["Audience"].Value<string>());
+                        break;
+
                     default:
                         setting = new IdentityServerConfig(
                             jsonObject["ProviderRootUrl"].Value<string>(),

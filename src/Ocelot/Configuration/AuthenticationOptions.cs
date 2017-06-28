@@ -36,5 +36,18 @@ namespace Ocelot.Configuration
         public bool RequireHttps { get; private set; }
     }
 
+    public class JwtConfig : IAuthenticationConfig
+    {
+        public JwtConfig(string authority, string audience)
+        {
+            Audience = audience;
+            Authority = authority;
+        }
+
+        public string Audience { get; }
+
+        public string Authority { get; }
+    }
+
     public interface IAuthenticationConfig {}
 }
