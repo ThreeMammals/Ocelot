@@ -121,7 +121,12 @@ namespace Ocelot.IntegrationTests
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10,
+                            Region = "Geoff"
+                        }
                     },
                     new FileReRoute()
                     {
@@ -130,7 +135,12 @@ namespace Ocelot.IntegrationTests
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/test"
+                        UpstreamPathTemplate = "/test",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10,
+                            Region = "Dave"
+                        }
                     }
                 }
             };
@@ -216,62 +226,6 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_regions()
-        {
-            var initialConfiguration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    AdministrationPath = "/administration"
-                },
-                ReRoutes = new List<FileReRoute>()
-                {
-                    new FileReRoute()
-                    {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
-                        DownstreamScheme = "https",
-                        DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/",
-                        FileCacheOptions = new FileCacheOptions
-                        {
-                            TtlSeconds = 10
-                        }
-                    },
-                    new FileReRoute()
-                    {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
-                        DownstreamScheme = "https",
-                        DownstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/test",
-                        FileCacheOptions = new FileCacheOptions
-                        {
-                            TtlSeconds = 10
-                        }
-                    }
-                }
-            };
-
-            var expected = new List<string>
-            {
-                "get",
-                "gettest"
-            };
-
-            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/outputcache"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseShouldBe(expected))
                 .BDDfy();
         }
 
