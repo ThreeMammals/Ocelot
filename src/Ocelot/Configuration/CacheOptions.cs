@@ -8,5 +8,6 @@
         }
 
         public int TtlSeconds { get; private set; }
+        public string Region {get;private set;}
     }
 }

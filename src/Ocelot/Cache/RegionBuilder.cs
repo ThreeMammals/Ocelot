@@ -12,9 +12,9 @@ namespace Ocelot.Cache
     {
         public string Region(ReRoute reRoute)
         {
-            var methods = string.Join(",", reRoute.UpstreamHttpMethod.Select(m => m.Method));
+            var methods = string.Join("", reRoute.UpstreamHttpMethod.Select(m => m.Method));
 
-            var region = $"{methods} {reRoute.UpstreamPathTemplate.Value}";
+            var region = $"{methods}{reRoute.UpstreamPathTemplate.Value.Replace("/", "")}";
             
             return region;
         }

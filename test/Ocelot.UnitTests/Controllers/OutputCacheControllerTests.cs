@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void WhenIGetTheKeys()
         {
-            _result = _controller.Get();
+            _result = _controller.Get().Result;
         }
 
         private void ThenTheKeysAreReturned()

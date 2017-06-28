@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.ManualTest;
 using Shouldly;
@@ -221,7 +222,6 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_return_regions()
         {
-
             var initialConfiguration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -261,8 +261,8 @@ namespace Ocelot.IntegrationTests
 
             var expected = new List<string>
             {
-                "get /",
-                "get /test"
+                "get",
+                "gettest"
             };
 
             this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
@@ -272,6 +272,57 @@ namespace Ocelot.IntegrationTests
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/outputcache"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseShouldBe(expected))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_clear_region()
+        {
+            var initialConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/test",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    }
+                }
+            };
+
+            var regionToClear = "gettest";
+
+            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent))
                 .BDDfy();
         }
 
@@ -316,8 +367,8 @@ namespace Ocelot.IntegrationTests
         private void ThenTheResponseShouldBe(List<string> expected)
         {
             var content = _response.Content.ReadAsStringAsync().Result;
-            var result = JsonConvert.DeserializeObject<List<string>>(content);
-            result.ShouldBe(expected);
+            var result = JsonConvert.DeserializeObject<Regions>(content);
+            result.Value.ShouldBe(expected);
         }
 
         private void ThenTheResponseShouldBe(FileConfiguration expected)
@@ -415,6 +466,11 @@ namespace Ocelot.IntegrationTests
         private void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _httpClient.GetAsync(url).Result;
+        }
+
+        private void WhenIDeleteOnTheApiGateway(string url)
+        {
+            _response = _httpClient.DeleteAsync(url).Result;
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

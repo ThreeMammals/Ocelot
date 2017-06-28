@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Cache;
@@ -20,10 +21,10 @@ namespace Ocelot.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var regions = _regionsGetter.Regions();
-            return new OkObjectResult(regions);
+            var regions = await _regionsGetter.Regions();
+            return new OkObjectResult(new Regions(regions));
         }
 
         [HttpDelete]

@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.Cache
 
             this.Given(_ => GivenTheReRoute(reRoute))
                 .When(_ => WhenICreateTheRegion())
-                .Then(_ => ThenTheRegionIs("Get /test/dummy"))
+                .Then(_ => ThenTheRegionIs("Gettestdummy"))
                 .BDDfy();
         }
         
