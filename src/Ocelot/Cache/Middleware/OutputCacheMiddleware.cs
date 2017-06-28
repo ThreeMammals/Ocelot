@@ -37,11 +37,11 @@ namespace Ocelot.Cache.Middleware
                 return;
             }
 
-            var downstreamUrlKey = DownstreamRequest.RequestUri.OriginalString;
+            var downstreamUrlKey = $"{DownstreamRequest.Method.Method}-{DownstreamRequest.RequestUri.OriginalString}";
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
   
-            var cached = _outputCache.Get(downstreamUrlKey);
+            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -67,9 +67,7 @@ namespace Ocelot.Cache.Middleware
 
             var response = HttpResponseMessage;
 
-            var region = _regionCreator.Region(DownstreamRoute.ReRoute);
-
-            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.FileCacheOptions.TtlSeconds), region);
+            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }

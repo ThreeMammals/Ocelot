@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Cache;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
@@ -36,6 +37,7 @@ namespace Ocelot.Configuration.Creator
         private IQoSOptionsCreator _qosOptionsCreator;
         private IReRouteOptionsCreator _fileReRouteOptionsCreator;
         private IRateLimitOptionsCreator _rateLimitOptionsCreator;
+        private IRegionCreator _regionCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -52,9 +54,11 @@ namespace Ocelot.Configuration.Creator
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
             IQoSOptionsCreator qosOptionsCreator,
             IReRouteOptionsCreator fileReRouteOptionsCreator,
-            IRateLimitOptionsCreator rateLimitOptionsCreator
+            IRateLimitOptionsCreator rateLimitOptionsCreator,
+            IRegionCreator regionCreator
             )
         {
+            _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
@@ -137,6 +141,8 @@ namespace Ocelot.Configuration.Creator
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
+            var region = _regionCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -151,7 +157,7 @@ namespace Ocelot.Configuration.Creator
                 .WithClaimsToQueries(claimsToQueries)
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileReRouteOptions.IsCached)
-                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds))
+                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
                 .WithDownstreamHost(fileReRoute.DownstreamHost)

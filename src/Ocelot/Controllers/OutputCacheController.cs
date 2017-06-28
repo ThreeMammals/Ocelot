@@ -12,19 +12,10 @@ namespace Ocelot.Controllers
     public class OutputCacheController : Controller
     {
         private IOcelotCache<HttpResponseMessage> _cache;
-        private IRegionsGetter _regionsGetter;
 
-        public OutputCacheController(IOcelotCache<HttpResponseMessage> cache, IRegionsGetter regionsGetter)
+        public OutputCacheController(IOcelotCache<HttpResponseMessage> cache)
         {
             _cache = cache;
-            _regionsGetter = regionsGetter;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var regions = await _regionsGetter.Regions();
-            return new OkObjectResult(new Regions(regions));
         }
 
         [HttpDelete]

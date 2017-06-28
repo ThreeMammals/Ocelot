@@ -30,7 +30,7 @@ namespace Ocelot.Configuration.Repository
 
         public async Task<Response<IOcelotConfiguration>> Get()
         {
-            var config = _cache.Get(_ocelotConfiguration);
+            var config = _cache.Get(_ocelotConfiguration, _ocelotConfiguration);
 
             if (config != null)
             {
@@ -68,7 +68,7 @@ namespace Ocelot.Configuration.Repository
 
             if (result.Response)
             {
-                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), "OcelotConfiguration");
+                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), _ocelotConfiguration);
 
                 return new OkResponse();
             }

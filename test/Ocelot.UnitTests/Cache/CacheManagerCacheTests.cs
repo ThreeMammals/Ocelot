@@ -18,6 +18,7 @@ namespace Ocelot.UnitTests.Cache
         private string _resultGet;
         private TimeSpan _ttlSeconds;
         private List<string> _resultKeys;
+        private string _region;
 
         public CacheManagerCacheTests()
         {
@@ -28,7 +29,7 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_get_from_cache()
         {
-            this.Given(x => x.GivenTheFollowingIsCached("someKey", "someValue"))
+            this.Given(x => x.GivenTheFollowingIsCached("someKey", "someRegion", "someValue"))
                 .When(x => x.WhenIGetFromTheCache())
                 .Then(x => x.ThenTheResultIs("someValue"))
                 .BDDfy();
@@ -88,15 +89,16 @@ namespace Ocelot.UnitTests.Cache
 
         private void WhenIGetFromTheCache()
         {
-            _resultGet = _ocelotOcelotCacheManager.Get(_key);
+            _resultGet = _ocelotOcelotCacheManager.Get(_key, _region);
         }
 
-        private void GivenTheFollowingIsCached(string key, string value)
+        private void GivenTheFollowingIsCached(string key, string region, string value)
         {
             _key = key;
             _value = value;
+            _region = region;
             _mockCacheManager
-                .Setup(x => x.Get<string>(It.IsAny<string>()))
+                .Setup(x => x.Get<string>(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(value);
         }
     }

@@ -92,7 +92,7 @@ namespace Ocelot.UnitTests.Cache
         {
             var reRoute = new ReRouteBuilder()
                 .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100))
+                .WithCacheOptions(new CacheOptions(100, "kanken"))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
                 
@@ -120,7 +120,7 @@ namespace Ocelot.UnitTests.Cache
         private void ThenTheCacheGetIsCalledCorrectly()
         {
             _cacheManager
-                .Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+                .Verify(x => x.Get(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         private void ThenTheCacheAddIsCalledCorrectly()
@@ -140,7 +140,7 @@ namespace Ocelot.UnitTests.Cache
         {
             _response = response;
             _cacheManager
-              .Setup(x => x.Get(It.IsAny<string>()))
+              .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>()))
               .Returns(_response);
         }
 

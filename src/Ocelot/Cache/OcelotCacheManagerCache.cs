@@ -8,18 +8,15 @@ namespace Ocelot.Cache
     public class OcelotCacheManagerCache<T> : IOcelotCache<T>
     {
         private readonly ICacheManager<T> _cacheManager;
-        private HashSet<string> _keys;
 
         public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
         {
             _cacheManager = cacheManager;
-            _keys = new HashSet<string>();
         }
 
         public void Add(string key, T value, TimeSpan ttl, string region)
         {
             _cacheManager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
-            _keys.Add(key);
         }
 
         public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
@@ -34,9 +31,9 @@ namespace Ocelot.Cache
             Add(key, value, ttl, region);
         }
 
-        public T Get(string key)
+        public T Get(string key, string region)
         {
-            return _cacheManager.Get<T>(key);
+            return _cacheManager.Get<T>(key, region);
         }
 
         public void ClearRegion(string region)

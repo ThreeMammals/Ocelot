@@ -15,23 +15,12 @@ namespace Ocelot.UnitTests.Controllers
     {
         private OutputCacheController _controller;
         private Mock<IOcelotCache<HttpResponseMessage>> _cache;
-        private Mock<IRegionsGetter> _getter;
         private IActionResult _result;
 
         public OutputCacheControllerTests()
         {
             _cache = new Mock<IOcelotCache<HttpResponseMessage>>();
-            _getter = new Mock<IRegionsGetter>();
-            _controller = new OutputCacheController(_cache.Object, _getter.Object);
-        }
-
-        [Fact]
-        public void should_get_all_keys_from_server()
-        {
-            this.Given(_ => GivenTheFollowingKeys(new List<string>{"b", "a"}))
-                .When(_ => WhenIGetTheKeys())
-                .Then(_ => ThenTheKeysAreReturned())
-                .BDDfy();
+            _controller = new OutputCacheController(_cache.Object);
         }
 
         [Fact]
@@ -52,21 +41,6 @@ namespace Ocelot.UnitTests.Controllers
         private void WhenIDeleteTheKey(string key)
         {
             _result = _controller.Delete(key);
-        }
-
-        private void GivenTheFollowingKeys(List<string> keys)
-        {
-            
-        }
-
-        private void WhenIGetTheKeys()
-        {
-            _result = _controller.Get().Result;
-        }
-
-        private void ThenTheKeysAreReturned()
-        {
-            _result.ShouldBeOfType<OkObjectResult>();
         }
     }
 }

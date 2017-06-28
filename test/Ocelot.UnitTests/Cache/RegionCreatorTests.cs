@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -11,23 +12,41 @@ namespace Ocelot.UnitTests.Cache
     public class RegionCreatorTests
     {
         private string _result;
-        private ReRoute _reRoute;
+        private FileReRoute _reRoute;
 
         [Fact]
         public void should_create_region()
         {
-            var reRoute = new ReRouteBuilder()
-                                .WithUpstreamHttpMethod(new List<string>{"Get"})
-                                .WithUpstreamPathTemplate("/test/dummy")
-                                .Build();
+            var reRoute = new FileReRoute
+            {
+                UpstreamHttpMethod = new List<string> { "Get" },
+                UpstreamPathTemplate = "/testdummy"
+            };
 
             this.Given(_ => GivenTheReRoute(reRoute))
                 .When(_ => WhenICreateTheRegion())
                 .Then(_ => ThenTheRegionIs("Gettestdummy"))
                 .BDDfy();
         }
+
+        [Fact]
+        public void should_use_region()
+        {
+            var reRoute = new FileReRoute
+            {
+                FileCacheOptions = new FileCacheOptions
+                {
+                    Region = "region"
+                }
+            };
+
+            this.Given(_ => GivenTheReRoute(reRoute))
+                .When(_ => WhenICreateTheRegion())
+                .Then(_ => ThenTheRegionIs("region"))
+                .BDDfy();
+        }
         
-        private void GivenTheReRoute(ReRoute reRoute)
+        private void GivenTheReRoute(FileReRoute reRoute)
         {
             _reRoute = reRoute;
         }
@@ -35,7 +54,7 @@ namespace Ocelot.UnitTests.Cache
         private void WhenICreateTheRegion()
         {            
             RegionCreator regionCreator = new RegionCreator();
-            _result = regionCreator.Region(_reRoute);
+            _result = regionCreator.Create(_reRoute);
         }
 
         private void ThenTheRegionIs(string expected)

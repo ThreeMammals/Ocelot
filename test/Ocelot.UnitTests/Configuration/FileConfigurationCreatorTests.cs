@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -39,6 +40,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
+        private Mock<IRegionCreator> _regionCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -59,6 +61,7 @@ namespace Ocelot.UnitTests.Configuration
             _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
             _fileReRouteOptionsCreator = new Mock<IReRouteOptionsCreator>();
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
+            _regionCreator = new Mock<IRegionCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
@@ -66,7 +69,51 @@ namespace Ocelot.UnitTests.Configuration
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
-                _rateLimitOptions.Object);
+                _rateLimitOptions.Object, _regionCreator.Object);
+        }
+
+        [Fact]
+        public void should_call_region_creator()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+                
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    DownstreamHost = "127.0.0.1",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
+                                    FileCacheOptions = new FileCacheOptions
+                                    {
+                                        Region = "region"
+                                    }
+                                }
+                            },
+            }))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingRegionIsReturned("region"))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
+                .BDDfy();
+        }
+
+        private void GivenTheFollowingRegionIsReturned(string region)
+        {
+            _regionCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(region);
+        }
+
+        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
+        {
+            _regionCreator
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
         [Fact]
