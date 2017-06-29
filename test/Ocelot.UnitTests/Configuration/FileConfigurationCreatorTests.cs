@@ -17,6 +17,10 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections;
+
+    using Ocelot.UnitTests.TestData;
+
     public class FileConfigurationCreatorTests
     {
         private readonly Mock<IOptions<FileConfiguration>> _fileConfig;
@@ -393,132 +397,82 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        //[Fact]
-        //public void should_create_with_headers_to_extract()
-        //{
-        //    var reRouteOptions = new ReRouteOptionsBuilder()
-        //        .WithIsAuthenticated(true)
-        //        .Build();
+        [Theory]
+        [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
+        public void should_create_with_headers_to_extract(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .WithIsAuthenticated(true)
+                .Build();
 
-        //    var authenticationOptions = new AuthenticationOptionsBuilder()
-        //            .WithProvider("IdentityServer")
-        //            .WithProviderRootUrl("http://localhost:51888")
-        //            .WithRequireHttps(false)
-        //            .WithApiSecret("secret")
-        //            .WithApiName("api")
-        //            .WithAllowedScopes(new List<string>())
-        //            .Build();
+            var authenticationOptions = new AuthenticationOptionsBuilder()
+                    .WithProvider(provider)
+                    .WithAllowedScopes(new List<string>())
+                    .WithConfig(config)
+                    .Build();
 
-        //    var expected = new List<ReRoute>
-        //    {
-        //        new ReRouteBuilder()
-        //            .WithDownstreamPathTemplate("/products/{productId}")
-        //            .WithUpstreamPathTemplate("/api/products/{productId}")
-        //            .WithUpstreamHttpMethod(new List<string> { "Get" })
-        //            .WithAuthenticationOptions(authenticationOptions)
-        //            .WithClaimsToHeaders(new List<ClaimToThing>
-        //            {
-        //                new ClaimToThing("CustomerId", "CustomerId", "", 0),
-        //            })
-        //            .Build()
-        //    };
+            var expected = new List<ReRoute>
+            {
+                new ReRouteBuilder()
+                    .WithDownstreamPathTemplate("/products/{productId}")
+                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithAuthenticationOptions(authenticationOptions)
+                    .WithClaimsToHeaders(new List<ClaimToThing>
+                    {
+                        new ClaimToThing("CustomerId", "CustomerId", "", 0),
+                    })
+                    .Build()
+            };
 
-        //    this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //        {
-        //            new FileReRoute
-        //            {
-        //                UpstreamPathTemplate = "/api/products/{productId}",
-        //                DownstreamPathTemplate = "/products/{productId}",
-        //                UpstreamHttpMethod = new List<string> { "Get" },
-        //                ReRouteIsCaseSensitive = true,
-        //                AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-								//AllowedScopes=  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = "http://localhost:51888",
-        //                        RequireHttps = false,
-								//ApiName= "api",
-        //                        ApiSecret = "secret"
-        //                    },
-        //                AddHeadersToRequest =
-        //                {
-        //                    {"CustomerId", "Claims[CustomerId] > value"},
-        //                }
-        //            }
-        //        }
-        //    }))
-        //        .And(x => x.GivenTheConfigIsValid())
-        //        .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
-        //        .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-        //        .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing>{new ClaimToThing("CustomerId", "CustomerId", "", 0)}))
-        //        .And(x => x.GivenTheLoadBalancerFactoryReturns())
-        //        .When(x => x.WhenICreateTheConfig())
-        //        .Then(x => x.ThenTheReRoutesAre(expected))
-        //        .And(x => x.ThenTheAuthenticationOptionsAre(expected))
-        //        .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
-        //        .BDDfy();
-        //}
+            this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing> { new ClaimToThing("CustomerId", "CustomerId", "", 0) }))
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
+                .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
+                .BDDfy();
+        }
 
-        //[Fact]
-        //public void should_create_with_authentication_properties()
-        //{
-        //    var reRouteOptions = new ReRouteOptionsBuilder()
-        //        .WithIsAuthenticated(true)
-        //        .Build();
+        [Theory]
+        [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
+        public void should_create_with_authentication_properties(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .WithIsAuthenticated(true)
+                .Build();
 
-        //     var authenticationOptions = new AuthenticationOptionsBuilder()
-        //            .WithProvider("IdentityServer")
-        //            .WithProviderRootUrl("http://localhost:51888")
-        //            .WithRequireHttps(false)
-        //            .WithApiSecret("secret")
-        //            .WithApiName("api")
-        //            .WithAllowedScopes(new List<string>())
-        //            .Build();
+            var authenticationOptions = new AuthenticationOptionsBuilder()
+                   .WithProvider(provider)
+                   .WithAllowedScopes(new List<string>())
+                   .WithConfig(config)
+                   .Build();
 
-        //    var expected = new List<ReRoute>
-        //    {
-        //        new ReRouteBuilder()
-        //            .WithDownstreamPathTemplate("/products/{productId}")
-        //            .WithUpstreamPathTemplate("/api/products/{productId}")
-        //            .WithUpstreamHttpMethod(new List<string> { "Get" })
-        //            .WithAuthenticationOptions(authenticationOptions)
-        //            .Build()
-        //    };
+            var expected = new List<ReRoute>
+            {
+                new ReRouteBuilder()
+                    .WithDownstreamPathTemplate("/products/{productId}")
+                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithAuthenticationOptions(authenticationOptions)
+                    .Build()
+            };
 
-        //    this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-        //    {
-        //        ReRoutes = new List<FileReRoute>
-        //        {
-        //            new FileReRoute
-        //            {
-        //                UpstreamPathTemplate = "/api/products/{productId}",
-        //                DownstreamPathTemplate = "/products/{productId}",
-        //                UpstreamHttpMethod = new List<string> { "Get" },
-        //                ReRouteIsCaseSensitive = true,
-        //                AuthenticationOptions = new FileAuthenticationOptions
-        //                    {
-								//AllowedScopes =  new List<string>(),
-        //                        Provider = "IdentityServer",
-        //                        ProviderRootUrl = "http://localhost:51888",
-        //                        RequireHttps = false,
-								//ApiName= "api",
-        //                        ApiSecret = "secret"
-        //                    }
-        //            }
-        //        }
-        //    }))
-        //        .And(x => x.GivenTheConfigIsValid())
-        //        .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-        //        .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
-        //        .And(x => x.GivenTheLoadBalancerFactoryReturns())
-        //        .When(x => x.WhenICreateTheConfig())
-        //        .Then(x => x.ThenTheReRoutesAre(expected))
-        //        .And(x => x.ThenTheAuthenticationOptionsAre(expected))
-        //        .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
-        //        .BDDfy();
-        //}
+            this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
+                .And(x => x.GivenTheLoadBalancerFactoryReturns())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
+                .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
+                .BDDfy();
+        }
 
         private void GivenTheFollowingOptionsAreReturned(ReRouteOptions fileReRouteOptions)
         {
@@ -586,22 +540,36 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        //private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
-        //{
-        //    for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
-        //    {
-        //        var result = _config.Data.ReRoutes[i].AuthenticationOptions;
-        //        var expected = expectedReRoutes[i].AuthenticationOptions;
+        private void ThenTheAuthenticationOptionsAre(string provider, List<ReRoute> expectedReRoutes)
+        {
+            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
+            {
+                var result = _config.Data.ReRoutes[i].AuthenticationOptions;
+                var expected = expectedReRoutes[i].AuthenticationOptions;
 
-        //        result.AllowedScopes.ShouldBe(expected.AllowedScopes);
-        //        result.Provider.ShouldBe(expected.Provider);
-        //        result.ProviderRootUrl.ShouldBe(expected.ProviderRootUrl);
-        //        result.RequireHttps.ShouldBe(expected.RequireHttps);
-        //        result.ApiName.ShouldBe(expected.ApiName);
-        //        result.ApiSecret.ShouldBe(expected.ApiSecret);
+                result.AllowedScopes.ShouldBe(expected.AllowedScopes);
+                result.Provider.ShouldBe(expected.Provider);
 
-        //    }
-        //}
+                if (provider.ToLower() == "identityserver")
+                {
+                    var config = result.Config as IdentityServerConfig;
+                    var expectedConfig = expected.Config as IdentityServerConfig;
+
+                    config.ProviderRootUrl.ShouldBe(expectedConfig.ProviderRootUrl);
+                    config.RequireHttps.ShouldBe(expectedConfig.RequireHttps);
+                    config.ApiName.ShouldBe(expectedConfig.ApiName);
+                    config.ApiSecret.ShouldBe(expectedConfig.ApiSecret);
+                }
+                else
+                {
+                    var config = result.Config as JwtConfig;
+                    var expectedConfig = expected.Config as JwtConfig;
+
+                    config.Audience.ShouldBe(expectedConfig.Audience);
+                    config.Authority.ShouldBe(expectedConfig.Authority);
+                }
+            }
+        }
 
         private void GivenTheLoadBalancerFactoryReturns()
         {
