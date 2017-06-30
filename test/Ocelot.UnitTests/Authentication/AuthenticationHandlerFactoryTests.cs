@@ -31,17 +31,19 @@ namespace Ocelot.UnitTests.Authentication
             _authenticationHandlerFactory = new AuthenticationHandlerFactory(_creator.Object);
         }
 
-        [Fact]
-        public void should_return_identity_server_access_token_handler()
+        [Theory]
+        [InlineData("IdentityServer")]
+        [InlineData("Jwt")]
+        public void should_return_access_token_handler(string provider)
         {
             var authenticationOptions = new AuthenticationOptionsBuilder()
-                .WithProvider("IdentityServer")
+                .WithProvider(provider)
                 .Build();
 
             this.Given(x => x.GivenTheAuthenticationOptionsAre(authenticationOptions))
                 .And(x => x.GivenTheCreatorReturns())
                 .When(x => x.WhenIGetFromTheFactory())
-                .Then(x => x.ThenTheHandlerIsReturned("IdentityServer"))
+                .Then(x => x.ThenTheHandlerIsReturned(provider))
                 .BDDfy();
         }
 

@@ -33,63 +33,65 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_and_foward_claim_as_query_string()
         {
-            var user = new TestUser()
-            {
-                Username = "test",
-                Password = "test",
-                SubjectId = "registered|1231231",
-                Claims = new List<Claim>
-                {
-                    new Claim("CustomerId", "123"),
-                    new Claim("LocationId", "1")
-                }
-            };
+           var user = new TestUser()
+           {
+               Username = "test",
+               Password = "test",
+               SubjectId = "registered|1231231",
+               Claims = new List<Claim>
+               {
+                   new Claim("CustomerId", "123"),
+                   new Claim("LocationId", "1")
+               }
+           };
 
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamPort = 57876,
-                            DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = "/",
+                           DownstreamPort = 57876,
+                           DownstreamScheme = "http",
+                           DownstreamHost = "localhost",
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Get" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
 								AllowedScopes = new List<string>
-                                {
-                                    "openid", "offline_access", "api"
-                                },
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:57888",
-                                RequireHttps = false,
-								ApiName = "api",
-                                ApiSecret = "secret",
-                            },
-                            AddQueriesToRequest =
-                            {
-                                {"CustomerId", "Claims[CustomerId] > value"},
-                                {"LocationId", "Claims[LocationId] > value"},
-                                {"UserType", "Claims[sub] > value[0] > |"},
-                                {"UserId", "Claims[sub] > value[1] > |"}
-                            }
-                        }
-                    }
-            };
+                               {
+                                   "openid", "offline_access", "api"
+                               },
+                               Provider = "IdentityServer",
+                               IdentityServerConfig = new FileIdentityServerConfig{
+                                        ProviderRootUrl = "http://localhost:57888",
+                                        RequireHttps = false,
+                                        ApiName = "api",
+                                        ApiSecret = "secret"
+                                }
+                           },
+                           AddQueriesToRequest =
+                           {
+                               {"CustomerId", "Claims[CustomerId] > value"},
+                               {"LocationId", "Claims[LocationId] > value"},
+                               {"UserType", "Claims[sub] > value[0] > |"},
+                               {"UserId", "Claims[sub] > value[1] > |"}
+                           }
+                       }
+                   }
+           };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:57888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
-                .BDDfy();
+           this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:57888", "api", AccessTokenType.Jwt, user))
+               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
+               .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+               .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+               .BDDfy();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)

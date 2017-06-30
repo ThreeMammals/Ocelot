@@ -9,6 +9,8 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Repository
 {
+    using Ocelot.AcceptanceTests;
+
     public class ConsulOcelotConfigurationRepository : IOcelotConfigurationRepository
     {
         private readonly ConsulClient _consul;
@@ -48,7 +50,9 @@ namespace Ocelot.Configuration.Repository
 
             var json = Encoding.UTF8.GetString(bytes);
 
-            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new AuthenticationConfigConverter());
+            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
 
             return new OkResponse<IOcelotConfiguration>(consulConfig);
         }
