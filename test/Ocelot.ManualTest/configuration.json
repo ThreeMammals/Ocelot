@@ -14,13 +14,16 @@
       },
       "AuthenticationOptions": {
         "Provider": "IdentityServer",
-        "ProviderRootUrl": "http://localhost:52888",
-        "ApiName": "api",
         "AllowedScopes": [
           "openid",
           "offline_access"
         ],
-        "ApiSecret": "secret"
+        "IdentityServerConfig": {
+          "ProviderRootUrl": "http://localhost:52888",
+          "ApiName": "api",
+          "ApiSecret": "secret",
+          "RequireHttps": false
+        }
       },
       "AddHeadersToRequest": {
         "CustomerId": "Claims[CustomerId] > value",

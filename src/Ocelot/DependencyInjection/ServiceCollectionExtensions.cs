@@ -44,6 +44,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
+using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
@@ -71,6 +72,7 @@ namespace Ocelot.DependencyInjection
 
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
+            services.TryAddSingleton<IAuthenticationProviderConfigCreator, AuthenticationProviderConfigCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
             services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();

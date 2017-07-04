@@ -11,13 +11,13 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class AuthenticationOptionsCreatorTests
     {
-        private AuthenticationOptionsCreator _authOptionsCreator;
+        private readonly AuthenticationOptionsCreator _authOptionsCreator;
         private FileReRoute _fileReRoute;
         private AuthenticationOptions _result;
 
         public AuthenticationOptionsCreatorTests()
         {
-            _authOptionsCreator = new AuthenticationOptionsCreator();
+            _authOptionsCreator = new AuthenticationOptionsCreator(new AuthenticationProviderConfigCreator());
         }
 
         [Fact]

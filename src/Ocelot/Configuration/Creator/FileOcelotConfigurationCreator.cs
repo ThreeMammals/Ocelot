@@ -31,13 +31,13 @@ namespace Ocelot.Configuration.Creator
         private readonly IQosProviderHouse _qosProviderHouse;
         private readonly IClaimsToThingCreator _claimsToThingCreator;
         private readonly IAuthenticationOptionsCreator _authOptionsCreator;
-        private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
-        private IRequestIdKeyCreator _requestIdKeyCreator;
-        private IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
-        private IQoSOptionsCreator _qosOptionsCreator;
-        private IReRouteOptionsCreator _fileReRouteOptionsCreator;
-        private IRateLimitOptionsCreator _rateLimitOptionsCreator;
-        private IRegionCreator _regionCreator;
+        private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
+        private readonly IRequestIdKeyCreator _requestIdKeyCreator;
+        private readonly IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
+        private readonly IQoSOptionsCreator _qosOptionsCreator;
+        private readonly IReRouteOptionsCreator _fileReRouteOptionsCreator;
+        private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+        private readonly IRegionCreator _regionCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 

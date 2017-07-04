@@ -1,13 +1,15 @@
+using Ocelot.Creator.Configuration;
+
 namespace Ocelot.Configuration.Creator
 {
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.File;
 
-    public class ConfigCreator
+    public class AuthenticationProviderConfigCreator : IAuthenticationProviderConfigCreator
     {
         public IAuthenticationConfig Create(FileAuthenticationOptions authenticationOptions)
         {
-            if (authenticationOptions.Provider == "Jwt")
+            if (authenticationOptions.Provider?.ToLower() == "jwt")
             {
                 return CreateJwt(authenticationOptions);
             }
