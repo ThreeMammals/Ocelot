@@ -1,10 +1,10 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.Authentication.JsonConverters
 {
-    using Newtonsoft.Json.Linq;
     public class AuthenticationConfigConverter : JsonConverter
     {
         public override bool CanWrite => false;

@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Ocelot.Authentication.JsonConverters;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Repository
 {
-    using Ocelot.AcceptanceTests;
-
     public class ConsulOcelotConfigurationRepository : IOcelotConfigurationRepository
     {
         private readonly ConsulClient _consul;
