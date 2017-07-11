@@ -39,7 +39,7 @@ namespace Ocelot.Responder.Middleware
             if (PipelineError)
             {
                 var errors = PipelineErrors;
-                _logger.LogError($"{errors.Count} pipeline errors found in {MiddlwareName}. Setting error response status code");
+                _logger.LogError($"{PipelineErrors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
 
                 SetErrorResponse(context, errors);
             }
@@ -53,7 +53,6 @@ namespace Ocelot.Responder.Middleware
         private void SetErrorResponse(HttpContext context, List<Error> errors)
         {
             var statusCode = _codeMapper.Map(errors);
-
             _responder.SetErrorResponseOnContext(context, statusCode);
         }
     }
