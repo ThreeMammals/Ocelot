@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using CacheManager.Core;
 using Moq;
 using Ocelot.Cache;
@@ -17,7 +16,6 @@ namespace Ocelot.UnitTests.Cache
         private string _value;
         private string _resultGet;
         private TimeSpan _ttlSeconds;
-        private List<string> _resultKeys;
         private string _region;
 
         public CacheManagerCacheTests()
