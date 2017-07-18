@@ -13,6 +13,7 @@ using Ocelot.Logging;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace Ocelot.UnitTests.Errors
 {
@@ -67,6 +68,7 @@ namespace Ocelot.UnitTests.Errors
                   app.UseExceptionHandlerMiddleware();
                   app.Use(async (context, next) =>
                   {
+                      await Task.CompletedTask;
                       throw new Exception("BOOM");
                   });
               });
@@ -109,6 +111,7 @@ namespace Ocelot.UnitTests.Errors
                   app.UseExceptionHandlerMiddleware();
                   app.Run(async context =>
                     {
+                        await Task.CompletedTask;
                         context.Response.StatusCode = 200;
                     });
               });
