@@ -8,7 +8,6 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.Errors;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Logging;
@@ -21,7 +20,6 @@ namespace Ocelot.UnitTests.LoadBalancer
     public class LoadBalancerMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<ILoadBalancer> _loadBalancer;
         private HostAndPort _hostAndPort;
         private OkResponse<DownstreamRoute> _downstreamRoute;
@@ -32,12 +30,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         public LoadBalancerMiddlewareTests()
         {
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
 
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "");
-            _scopedRepository
+
+            ScopedRepository
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
@@ -99,7 +97,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_loadBalancerHouse.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -131,7 +129,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
@@ -157,28 +155,28 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()
         {
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
 
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareErrors", _getLoadBalancerHouseError.Errors), Times.Once);
         }
 
         private void ThenAnErrorSayingReleaseFailedIsSetOnThePipeline()
         {
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
 
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareErrors", It.IsAny<List<Error>>()), Times.Once);
         }
 
         private void ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline()
         {
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
 
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("OcelotMiddlewareErrors", _getHostAndPortError.Errors), Times.Once);
         }
 

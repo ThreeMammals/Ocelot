@@ -9,7 +9,6 @@
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using TestStack.BDDfy;
@@ -18,13 +17,11 @@
     public class DownstreamRouteFinderMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IDownstreamRouteFinder> _downstreamRouteFinder;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private Response<DownstreamRoute> _downstreamRoute;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
             _downstreamRouteFinder = new Mock<IDownstreamRouteFinder>();
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             GivenTheTestServerIsConfigured();
         }
@@ -49,7 +46,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_downstreamRouteFinder.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -67,7 +64,7 @@
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("DownstreamRoute", _downstreamRoute.Data), Times.Once());
         }
     }

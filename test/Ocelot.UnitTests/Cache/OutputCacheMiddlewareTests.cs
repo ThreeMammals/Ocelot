@@ -12,7 +12,6 @@
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using TestStack.BDDfy;
@@ -21,15 +20,13 @@
     public class OutputCacheMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IOcelotCache<HttpResponseMessage>> _cacheManager;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepo;
         private HttpResponseMessage _response;
 
         public OutputCacheMiddlewareTests()
         {
             _cacheManager = new Mock<IOcelotCache<HttpResponseMessage>>();
-            _scopedRepo = new Mock<IRequestScopedDataRepository>();
 
-            _scopedRepo
+            ScopedRepository
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
 
@@ -64,7 +61,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_cacheManager.Object);
-            services.AddSingleton(_scopedRepo.Object);
+            services.AddSingleton(ScopedRepository.Object);
             services.AddSingleton<IRegionCreator, RegionCreator>();
         }
 
@@ -83,7 +80,7 @@
 
         private void GivenResponseIsNotCached()
         {
-            _scopedRepo
+            ScopedRepository
                 .Setup(x => x.Get<HttpResponseMessage>("HttpResponseMessage"))
                 .Returns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage()));
         }
@@ -98,21 +95,21 @@
                 
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), reRoute);
 
-            _scopedRepo
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(new OkResponse<DownstreamRoute>(downstreamRoute));
         }
 
         private void GivenThereAreNoErrors()
         {
-            _scopedRepo
+            ScopedRepository
                 .Setup(x => x.Get<bool>("OcelotMiddlewareError"))
                 .Returns(new OkResponse<bool>(false));
         }
 
         private void GivenThereIsADownstreamUrl()
         {
-            _scopedRepo
+            ScopedRepository
                 .Setup(x => x.Get<string>("DownstreamUrl"))
                 .Returns(new OkResponse<string>("anything"));
         }

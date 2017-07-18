@@ -23,7 +23,6 @@
     public class DownstreamUrlCreatorMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IUrlBuilder> _urlBuilder;
         private Response<DownstreamRoute> _downstreamRoute;
         private OkResponse<DownstreamPath> _downstreamPath;
@@ -32,12 +31,11 @@
         public DownstreamUrlCreatorMiddlewareTests()
         {
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _urlBuilder = new Mock<IUrlBuilder>();
 
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
 
-            _scopedRepository
+            ScopedRepository
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
@@ -67,7 +65,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_downstreamUrlTemplateVariableReplacer.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
             services.AddSingleton(_urlBuilder.Object);
         }
 
@@ -79,7 +77,7 @@
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }

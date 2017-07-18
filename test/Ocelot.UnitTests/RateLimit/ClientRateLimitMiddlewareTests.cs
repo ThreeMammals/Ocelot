@@ -1,39 +1,30 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Http;
-using Moq;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.RateLimit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Logging;
-using System.IO;
-using Ocelot.RateLimit.Middleware;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.Responses;
-using Xunit;
-using TestStack.BDDfy;
-using Ocelot.Configuration.Builder;
-using Shouldly;
-using Ocelot.Configuration;
-
-namespace Ocelot.UnitTests.RateLimit
+﻿namespace Ocelot.UnitTests.RateLimit
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.Logging;
+    using Ocelot.RateLimit;
+    using Ocelot.RateLimit.Middleware;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ClientRateLimitMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private int responseStatusCode;
 
         public ClientRateLimitMiddlewareTests()
         {
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
-
             GivenTheTestServerIsConfigured();
         }
 
@@ -75,7 +66,7 @@ namespace Ocelot.UnitTests.RateLimit
             services.AddLogging();
             services.AddMemoryCache();
             services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -91,7 +82,7 @@ namespace Ocelot.UnitTests.RateLimit
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }

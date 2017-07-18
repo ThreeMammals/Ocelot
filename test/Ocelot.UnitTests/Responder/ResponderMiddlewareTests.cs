@@ -1,29 +1,27 @@
-﻿using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Responder;
-using Ocelot.Responder.Middleware;
-using Ocelot.Responses;
-using TestStack.BDDfy;
-using Xunit;
-using Microsoft.AspNetCore.Builder;
-using Shouldly;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using Ocelot.Errors;
-using System.Net;
-using Ocelot.Headers;
-
-namespace Ocelot.UnitTests.Responder
+﻿namespace Ocelot.UnitTests.Responder
 {
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Errors;
+    using Ocelot.Headers;
+    using Ocelot.Logging;
+    using Ocelot.Responder;
+    using Ocelot.Responder.Middleware;
+    using Ocelot.Responses;
+    using Shouldly;
+    using System.Collections.Generic;
+    using System.Net;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ResponderMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly IHttpResponder _responder;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IErrorsToHttpStatusCodeMapper> _codeMapper;
         private readonly Mock<IRemoveOutputHeaders> _outputHeaderRemover;
         private HttpStatusCode _httpStatusFromController;
@@ -35,9 +33,9 @@ namespace Ocelot.UnitTests.Responder
         public ResponderMiddlewareTests()
         {
             _outputHeaderRemover = new Mock<IRemoveOutputHeaders>();
-            _responder = new HttpContextResponder(_outputHeaderRemover.Object);
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _codeMapper = new Mock<IErrorsToHttpStatusCodeMapper>();
+
+            _responder = new HttpContextResponder(_outputHeaderRemover.Object);
 
             GivenTheTestServerIsConfigured();
         }
@@ -71,7 +69,7 @@ namespace Ocelot.UnitTests.Responder
             services.AddLogging();
             services.AddSingleton(_codeMapper.Object);
             services.AddSingleton(_responder);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -102,11 +100,11 @@ namespace Ocelot.UnitTests.Responder
         {
             _pipelineErrors = pipelineErrors;
 
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<bool>("OcelotMiddlewareError"))
                 .Returns(new OkResponse<bool>(_pipelineErrors.Count != 0));
 
-            _scopedRepository
+            ScopedRepository
                 .Setup(sr => sr.Get<List<Error>>("OcelotMiddlewareErrors"))
                 .Returns(new OkResponse<List<Error>>(_pipelineErrors));
         }
@@ -114,7 +112,7 @@ namespace Ocelot.UnitTests.Responder
         private void GivenTheIncomingHttpResponseMessageIs(HttpResponseMessage response)
         {
             _response = new OkResponse<HttpResponseMessage>(response);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<HttpResponseMessage>(It.IsAny<string>()))
                 .Returns(_response);
         }

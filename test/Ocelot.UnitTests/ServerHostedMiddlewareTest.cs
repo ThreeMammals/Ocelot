@@ -7,6 +7,8 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.AspNetCore.Builder;
+    using Moq;
+    using Ocelot.Infrastructure.RequestData;
 
     public abstract class ServerHostedMiddlewareTest : IDisposable
     {
@@ -14,10 +16,12 @@
         protected HttpClient Client { get; private set; }
         protected string Url { get; private set; }
         protected HttpResponseMessage ResponseMessage { get; private set; }
+        protected Mock<IRequestScopedDataRepository> ScopedRepository { get; private set; }
 
         public ServerHostedMiddlewareTest()
         {
             Url = "http://localhost:51879";
+            ScopedRepository = new Mock<IRequestScopedDataRepository>();
         }
 
         protected virtual void GivenTheTestServerIsConfigured()

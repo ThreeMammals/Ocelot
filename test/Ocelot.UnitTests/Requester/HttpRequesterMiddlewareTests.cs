@@ -4,7 +4,6 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Requester;
     using Ocelot.Requester.Middleware;
@@ -16,14 +15,12 @@
     public class HttpRequesterMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IHttpRequester> _requester;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private OkResponse<HttpResponseMessage> _response;
         private OkResponse<Ocelot.Request.Request> _request;
 
         public HttpRequesterMiddlewareTests()
         {
             _requester = new Mock<IHttpRequester>();
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             GivenTheTestServerIsConfigured();
         }
@@ -44,7 +41,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_requester.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -55,7 +52,7 @@
         private void GivenTheRequestIs(Ocelot.Request.Request request)
         {
             _request = new OkResponse<Ocelot.Request.Request>(request);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<Ocelot.Request.Request>(It.IsAny<string>()))
                 .Returns(_request);
         }
@@ -70,14 +67,14 @@
 
         private void GivenTheScopedRepoReturns()
         {
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Add(It.IsAny<string>(), _response.Data))
                 .Returns(new OkResponse());
         }
 
         private void ThenTheScopedRepoIsCalledCorrectly()
         {
-            _scopedRepository
+            ScopedRepository
                 .Verify(x => x.Add("HttpResponseMessage", _response.Data), Times.Once());
         }
     }

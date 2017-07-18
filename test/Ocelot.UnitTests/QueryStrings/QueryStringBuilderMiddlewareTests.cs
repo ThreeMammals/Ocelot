@@ -8,7 +8,6 @@
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.QueryStrings;
     using Ocelot.QueryStrings.Middleware;
@@ -20,18 +19,16 @@
 
     public class QueryStringBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAddQueriesToRequest> _addQueries;
         private readonly HttpRequestMessage _downstreamRequest;
         private Response<DownstreamRoute> _downstreamRoute;
 
         public QueryStringBuilderMiddlewareTests()
         {
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addQueries = new Mock<IAddQueriesToRequest>();
 
             _downstreamRequest = new HttpRequestMessage();
-            _scopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+            ScopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
             GivenTheTestServerIsConfigured();
@@ -62,7 +59,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_addQueries.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -92,7 +89,7 @@
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }

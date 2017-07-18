@@ -11,7 +11,6 @@
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using Shouldly;
@@ -20,13 +19,11 @@
 
     public class AuthenticationMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAuthenticationHandlerFactory> _authFactory;
         private OkResponse<DownstreamRoute> _downstreamRoute;
 
         public AuthenticationMiddlewareTests()
         {
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _authFactory = new Mock<IAuthenticationHandlerFactory>();
 
             GivenTheTestServerIsConfigured();
@@ -49,7 +46,7 @@
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_authFactory.Object);
-            services.AddSingleton(_scopedRepository.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
@@ -71,7 +68,7 @@
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
