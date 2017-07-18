@@ -24,47 +24,18 @@ using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.RateLimit
 {
-    public class ClientRateLimitMiddlewareTests
+    public class ClientRateLimitMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly string _url;
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private int responseStatusCode;
 
         public ClientRateLimitMiddlewareTests()
         {
-            _url = "http://localhost:51879/api/ClientRateLimit";
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-             var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddMemoryCache();
-                  x.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                  app.UseRateLimiting();
-                  app.Run(async context =>
-                  {
-                      context.Response.StatusCode = 200;
-                      await context.Response.WriteAsync("This is ratelimit test");
-                  });
-              });
 
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
+            GivenTheTestServerIsConfigured();
         }
-
 
         [Fact]
         public void should_call_middleware_and_ratelimiting()
@@ -98,6 +69,24 @@ namespace Ocelot.UnitTests.RateLimit
                 .BDDfy();
         }
 
+        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        {
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            services.AddLogging();
+            services.AddMemoryCache();
+            services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            services.AddSingleton(_scopedRepository.Object);
+        }
+
+        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        {
+            app.UseRateLimiting();
+            app.Run(async context =>
+            {
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync("This is ratelimit test");
+            });
+        }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
@@ -110,28 +99,27 @@ namespace Ocelot.UnitTests.RateLimit
         private void WhenICallTheMiddlewareMultipleTime(int times)
         {
             var clientId = "ocelotclient1";
-            // Act    
+  
             for (int i = 0; i < times; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
                 request.Headers.Add("ClientId", clientId);
 
-                var response = _client.SendAsync(request);
+                var response = Client.SendAsync(request);
                 responseStatusCode = (int)response.Result.StatusCode;
             }
-
         }
 
         private void WhenICallTheMiddlewareWithWhiteClient()
         {
             var clientId = "ocelotclient2";
-            // Act    
+ 
             for (int i = 0; i < 10; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
                 request.Headers.Add("ClientId", clientId);
 
-                var response = _client.SendAsync(request);
+                var response = Client.SendAsync(request);
                 responseStatusCode = (int)response.Result.StatusCode;
             }
          }      

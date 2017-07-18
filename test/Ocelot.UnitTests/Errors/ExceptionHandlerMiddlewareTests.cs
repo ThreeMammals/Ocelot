@@ -7,14 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Errors.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Responses;
-using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -51,6 +46,33 @@ namespace Ocelot.UnitTests.Errors
                 .When(_ => WhenIMakeTheRequest())
                 .Then(_ => ThenTheResponseIsError())
                 .BDDfy();
+        }
+
+        private void GivenAnError()
+        {
+            var builder = new WebHostBuilder()
+              .ConfigureServices(x =>
+              {
+                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+                  x.AddLogging();
+                  x.AddSingleton(_scopedRepository.Object);
+              })
+              .UseUrls(_url)
+              .UseKestrel()
+              .UseContentRoot(Directory.GetCurrentDirectory())
+              .UseIISIntegration()
+              .UseUrls(_url)
+              .Configure(app =>
+              {
+                  app.UseExceptionHandlerMiddleware();
+                  app.Use(async (context, next) =>
+                  {
+                      throw new Exception("BOOM");
+                  });
+              });
+
+            _server = new TestServer(builder);
+            _client = _server.CreateClient();
         }
 
         private void ThenTheResponseIsOk()
@@ -95,31 +117,6 @@ namespace Ocelot.UnitTests.Errors
             _client = _server.CreateClient();
         }
 
-        private void GivenAnError()
-        {
-            var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                    app.UseExceptionHandlerMiddleware();
-                    app.Use(async (context, next) =>
-                    {
-                        throw new Exception("BOOM");
-                    });
-              });
 
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
-        }
     }
 }

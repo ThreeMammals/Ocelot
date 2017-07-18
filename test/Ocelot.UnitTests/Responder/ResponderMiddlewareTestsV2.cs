@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Responder
 {
     public class ResponderMiddlewareTestsV2
     {
+        private readonly ResponderMiddleware _middleware;
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IErrorsToHttpStatusCodeMapper> _codeMapper;
@@ -22,7 +23,6 @@ namespace Ocelot.UnitTests.Responder
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private readonly Mock<IOcelotLogger> _logger;
         private readonly Mock<HttpContext> _httpContext;
-        private ResponderMiddleware _middleware;
         private OkResponse<HttpResponseMessage> _response;
         private int _mappedStatusCode;
         private List<Error> _pipelineErrors;
