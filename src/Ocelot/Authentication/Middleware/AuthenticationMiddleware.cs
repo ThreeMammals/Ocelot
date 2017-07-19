@@ -36,7 +36,7 @@ namespace Ocelot.Authentication.Middleware
         {
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
-                _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlwareName} checking if client is authenticated");
+                _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
                 var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
 

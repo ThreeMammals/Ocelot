@@ -28,6 +28,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             .BDDfy();
         }
 
+        [Fact]
         public void should_lookup_service()
         {
             this.Given(x => x.GivenAServiceIsRegistered("product", "localhost:600", 80))

@@ -1,67 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.QueryStrings;
-using Ocelot.QueryStrings.Middleware;
-using Ocelot.Responses;
-using TestStack.BDDfy;
-using Xunit;
-using System.Security.Claims;
-
-namespace Ocelot.UnitTests.QueryStrings
+﻿namespace Ocelot.UnitTests.QueryStrings
 {
-    public class QueryStringBuilderMiddlewareTests : IDisposable
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Ocelot.Logging;
+    using Ocelot.QueryStrings;
+    using Ocelot.QueryStrings.Middleware;
+    using Ocelot.Responses;
+    using TestStack.BDDfy;
+    using Xunit;
+    using System.Security.Claims;
+    using Microsoft.AspNetCore.Builder;
+
+    public class QueryStringBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IAddQueriesToRequest> _addQueries;
-        private readonly string _url;
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
         private readonly HttpRequestMessage _downstreamRequest;
         private Response<DownstreamRoute> _downstreamRoute;
-        private HttpResponseMessage _result;
 
         public QueryStringBuilderMiddlewareTests()
         {
-            _url = "http://localhost:51879";
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
             _addQueries = new Mock<IAddQueriesToRequest>();
-            var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddSingleton(_addQueries.Object);
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                  app.UseQueryStringBuilderMiddleware();
-              });
 
             _downstreamRequest = new HttpRequestMessage();
-
-            _scopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+            ScopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
+            GivenTheTestServerIsConfigured();
         }
 
         [Fact]
@@ -84,6 +54,19 @@ namespace Ocelot.UnitTests.QueryStrings
                 .BDDfy();
         }
 
+        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        {
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            services.AddLogging();
+            services.AddSingleton(_addQueries.Object);
+            services.AddSingleton(ScopedRepository.Object);
+        }
+
+        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        {
+            app.UseQueryStringBuilderMiddleware();
+        }
+
         private void GivenTheAddHeadersToRequestReturnsOk()
         {
             _addQueries
@@ -103,23 +86,12 @@ namespace Ocelot.UnitTests.QueryStrings
                     _downstreamRequest), Times.Once);
         }
 
-        private void WhenICallTheMiddleware()
-        {
-            _result = _client.GetAsync(_url).Result;
-        }
-
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
-            _server.Dispose();
         }
     }
 }

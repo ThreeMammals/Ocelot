@@ -62,14 +62,6 @@ namespace Ocelot.Responder
             }
         }
 
-        private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
-        {
-            if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
-            {
-                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
-            }
-        }
-
         public void SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
             context.Response.OnStarting(x =>
@@ -77,6 +69,14 @@ namespace Ocelot.Responder
                 context.Response.StatusCode = statusCode;
                 return Task.CompletedTask;
             }, context);
+        }
+
+        private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
+        {
+            if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
+            {
+                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
+            }
         }
     }
 }

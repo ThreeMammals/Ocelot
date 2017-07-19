@@ -38,7 +38,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             if (downstreamRoute.IsError)
             {
-                _logger.LogError($"{MiddlwareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
+                _logger.LogError($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(downstreamRoute.Errors);
                 return;
