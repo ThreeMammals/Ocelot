@@ -41,7 +41,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
+using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
@@ -69,6 +72,7 @@ namespace Ocelot.DependencyInjection
 
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
+            services.TryAddSingleton<IAuthenticationProviderConfigCreator, AuthenticationProviderConfigCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
             services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
@@ -87,8 +91,10 @@ namespace Ocelot.DependencyInjection
             {
                 services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
                 services.TryAddSingleton<IHashMatcher, HashMatcher>();
-                services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                var identityServerBuilder = services
+                    .AddIdentityServer(options => {
+                        options.IssuerUri = "Ocelot";
+                    })
                     .AddInMemoryApiResources(new List<ApiResource>
                     {
                         new ApiResource
@@ -120,6 +126,16 @@ namespace Ocelot.DependencyInjection
                             RequireClientSecret = identityServerConfiguration.RequireClientSecret
                         }
                     }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+
+                if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
+                {
+                    identityServerBuilder.AddTemporarySigningCredential();
+                }
+                else
+                {
+                    var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
+                    identityServerBuilder.AddSigningCredential(cert);
+                }
             }
 
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
@@ -131,6 +147,7 @@ namespace Ocelot.DependencyInjection
                 .AddJsonFormatters();
 
             services.AddLogging();
+            services.TryAddSingleton<IRegionCreator, RegionCreator>();
             services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
             services.TryAddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();
@@ -169,6 +186,11 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IRequestScopedDataRepository, HttpDataRepository>();
             services.AddMemoryCache();
+
+            //Used to log the the start and ending of middleware
+            services.TryAddSingleton<OcelotDiagnosticListener>();
+            services.AddMiddlewareAnalysis();
+
             return services;
         }
     }

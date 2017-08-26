@@ -16,7 +16,7 @@ var artifactsDir = Directory("artifacts");
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 75d;
+var minCodeCoverage = 76.4d;
 var coverallsRepoToken = "coveralls-repo-token-ocelot";
 var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
 
@@ -229,11 +229,11 @@ Task("CreatePackages")
 		EnsureDirectoryExists(packagesDir);
 		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
 
-		GenerateReleaseNotes(releaseNotesFile);
+		//GenerateReleaseNotes(releaseNotesFile);
 
         System.IO.File.WriteAllLines(artifactsFile, new[]{
             "nuget:Ocelot." + buildVersion + ".nupkg",
-            "releaseNotes:releasenotes.md"
+            //"releaseNotes:releasenotes.md"
         });
 
 		if (AppVeyor.IsRunningOnAppVeyor)

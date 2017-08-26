@@ -28,18 +28,18 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling load balancing middleware");
-
             var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.ReRouteKey);
             if(loadBalancer.IsError)
             {
+                _logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
                 SetPipelineError(loadBalancer.Errors);
                 return;
             }
 
             var hostAndPort = await loadBalancer.Data.Lease();
             if(hostAndPort.IsError)
-            { 
+            {
+                _logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
                 SetPipelineError(hostAndPort.Errors);
                 return;
             }
@@ -52,23 +52,19 @@ namespace Ocelot.LoadBalancer.Middleware
             }
             DownstreamRequest.RequestUri = uriBuilder.Uri;
 
-            _logger.LogDebug("calling next middleware");
-
             try
             {
                 await _next.Invoke(context);
-
-                loadBalancer.Data.Release(hostAndPort.Data);
             }
             catch (Exception)
             {
-                loadBalancer.Data.Release(hostAndPort.Data);
-                 
-                 _logger.LogDebug("error calling next middleware, exception will be thrown to global handler");
+                _logger.LogDebug("Exception calling next middleware, exception will be thrown to global handler");
                 throw;
             }
-
-            _logger.LogDebug("succesfully called next middleware");
+            finally
+            {
+                loadBalancer.Data.Release(hostAndPort.Data);
+            }
         }
     }
 }

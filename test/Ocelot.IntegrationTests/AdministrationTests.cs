@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.ManualTest;
 using Shouldly;
@@ -19,15 +20,19 @@ namespace Ocelot.IntegrationTests
     public class AdministrationTests : IDisposable
     {
         private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClientTwo;
         private HttpResponseMessage _response;
         private IWebHost _builder;
         private IWebHostBuilder _webHostBuilder;
         private readonly string _ocelotBaseUrl;
         private BearerToken _token;
+        private IWebHostBuilder _webHostBuilderTwo;
+        private IWebHost _builderTwo;
 
         public AdministrationTests()
         {
             _httpClient = new HttpClient();
+            _httpClientTwo = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5000";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
@@ -71,6 +76,27 @@ namespace Ocelot.IntegrationTests
          }
 
         [Fact]
+        public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                }
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5007"))
+                .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_file_configuration()
         {
             var configuration = new FileConfiguration
@@ -95,7 +121,12 @@ namespace Ocelot.IntegrationTests
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10,
+                            Region = "Geoff"
+                        }
                     },
                     new FileReRoute()
                     {
@@ -104,7 +135,12 @@ namespace Ocelot.IntegrationTests
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/test"
+                        UpstreamPathTemplate = "/test",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10,
+                            Region = "Dave"
+                        }
                     }
                 }
             };
@@ -193,12 +229,100 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_clear_region()
+        {
+            var initialConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/test",
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 10
+                        }
+                    }
+                }
+            };
+
+            var regionToClear = "gettest";
+
+            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent))
+                .BDDfy();
+        }
+
+        private void GivenAnotherOcelotIsRunning(string baseUrl)
+        {
+            _httpClientTwo.BaseAddress = new Uri(baseUrl);
+
+            _webHostBuilderTwo = new WebHostBuilder()
+               .UseUrls(baseUrl)
+               .UseKestrel()
+               .UseContentRoot(Directory.GetCurrentDirectory())
+               .ConfigureServices(x => {
+                   x.AddSingleton(_webHostBuilderTwo);
+               })
+               .UseStartup<Startup>();
+
+            _builderTwo = _webHostBuilderTwo.Build();
+
+            _builderTwo.Start();
+        }
+
+        private void GivenIdentityServerSigningEnvironmentalVariablesAreSet()
+        {
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "idsrv3test.pfx");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "idsrv3test");
+        }
+
+        private void WhenIGetUrlOnTheSecondOcelot(string url)
+        {
+            _httpClientTwo.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _response = _httpClientTwo.GetAsync(url).Result;
+        }
+
         private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
         {
             var json = JsonConvert.SerializeObject(updatedConfiguration);
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             _response = _httpClient.PostAsync(url, content).Result;
+        }
+
+        private void ThenTheResponseShouldBe(List<string> expected)
+        {
+            var content = _response.Content.ReadAsStringAsync().Result;
+            var result = JsonConvert.DeserializeObject<Regions>(content);
+            result.Value.ShouldBe(expected);
         }
 
         private void ThenTheResponseShouldBe(FileConfiguration expected)
@@ -298,6 +422,11 @@ namespace Ocelot.IntegrationTests
             _response = _httpClient.GetAsync(url).Result;
         }
 
+        private void WhenIDeleteOnTheApiGateway(string url)
+        {
+            _response = _httpClient.DeleteAsync(url).Result;
+        }
+
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
@@ -305,6 +434,8 @@ namespace Ocelot.IntegrationTests
 
         public void Dispose()
         {
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "");
             _builder?.Dispose();
             _httpClient?.Dispose();
         }

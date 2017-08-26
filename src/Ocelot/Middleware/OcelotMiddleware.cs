@@ -13,10 +13,10 @@ namespace Ocelot.Middleware
         protected OcelotMiddleware(IRequestScopedDataRepository requestScopedDataRepository)
         {
             _requestScopedDataRepository = requestScopedDataRepository;
-            MiddlwareName = this.GetType().Name;
+            MiddlewareName = this.GetType().Name;
         }
 
-        public string MiddlwareName { get; }
+        public string MiddlewareName { get; }
 
         public bool PipelineError => _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError").Data;
 

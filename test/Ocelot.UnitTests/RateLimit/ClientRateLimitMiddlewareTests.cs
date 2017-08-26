@@ -1,70 +1,32 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Http;
-using Moq;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.RateLimit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Logging;
-using System.IO;
-using Ocelot.RateLimit.Middleware;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.Responses;
-using Xunit;
-using TestStack.BDDfy;
-using Ocelot.Configuration.Builder;
-using Shouldly;
-using Ocelot.Configuration;
-
-namespace Ocelot.UnitTests.RateLimit
+﻿namespace Ocelot.UnitTests.RateLimit
 {
-    public class ClientRateLimitMiddlewareTests
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.Logging;
+    using Ocelot.RateLimit;
+    using Ocelot.RateLimit.Middleware;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
+    public class ClientRateLimitMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly string _url;
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private int responseStatusCode;
 
         public ClientRateLimitMiddlewareTests()
         {
-            _url = "http://localhost:51879/api/ClientRateLimit";
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
-             var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddMemoryCache();
-                  x.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                  app.UseRateLimiting();
-                  app.Run(async context =>
-                  {
-                      context.Response.StatusCode = 200;
-                      await context.Response.WriteAsync("This is ratelimit test");
-                  });
-              });
-
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
+            GivenTheTestServerIsConfigured();
         }
-
 
         [Fact]
         public void should_call_middleware_and_ratelimiting()
@@ -98,11 +60,29 @@ namespace Ocelot.UnitTests.RateLimit
                 .BDDfy();
         }
 
+        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        {
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            services.AddLogging();
+            services.AddMemoryCache();
+            services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            services.AddSingleton(ScopedRepository.Object);
+        }
+
+        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        {
+            app.UseRateLimiting();
+            app.Run(async context =>
+            {
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync("This is ratelimit test");
+            });
+        }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _scopedRepository
+            ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
@@ -110,28 +90,27 @@ namespace Ocelot.UnitTests.RateLimit
         private void WhenICallTheMiddlewareMultipleTime(int times)
         {
             var clientId = "ocelotclient1";
-            // Act    
+  
             for (int i = 0; i < times; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
                 request.Headers.Add("ClientId", clientId);
 
-                var response = _client.SendAsync(request);
+                var response = Client.SendAsync(request);
                 responseStatusCode = (int)response.Result.StatusCode;
             }
-
         }
 
         private void WhenICallTheMiddlewareWithWhiteClient()
         {
             var clientId = "ocelotclient2";
-            // Act    
+ 
             for (int i = 0; i < 10; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
                 request.Headers.Add("ClientId", clientId);
 
-                var response = _client.SendAsync(request);
+                var response = Client.SendAsync(request);
                 responseStatusCode = (int)response.Result.StatusCode;
             }
          }      

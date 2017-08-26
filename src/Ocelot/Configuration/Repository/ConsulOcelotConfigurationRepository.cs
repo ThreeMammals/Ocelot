@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Ocelot.Authentication.JsonConverters;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
@@ -30,7 +31,7 @@ namespace Ocelot.Configuration.Repository
 
         public async Task<Response<IOcelotConfiguration>> Get()
         {
-            var config = _cache.Get(_ocelotConfiguration);
+            var config = _cache.Get(_ocelotConfiguration, _ocelotConfiguration);
 
             if (config != null)
             {
@@ -48,7 +49,9 @@ namespace Ocelot.Configuration.Repository
 
             var json = Encoding.UTF8.GetString(bytes);
 
-            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new AuthenticationConfigConverter());
+            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
 
             return new OkResponse<IOcelotConfiguration>(consulConfig);
         }
@@ -68,7 +71,7 @@ namespace Ocelot.Configuration.Repository
 
             if (result.Response)
             {
-                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3));
+                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), _ocelotConfiguration);
 
                 return new OkResponse();
             }

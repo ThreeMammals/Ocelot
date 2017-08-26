@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Ocelot.Authentication.JsonConverters;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -28,7 +29,6 @@ namespace Ocelot.AcceptanceTests
         {
             _steps = new Steps();
         }
-
 
         [Fact]
         public void should_return_response_200_with_simple_url()
@@ -105,7 +105,9 @@ namespace Ocelot.AcceptanceTests
 
                                             var json = reader.ReadToEnd();
 
-                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+                                            var settings = new JsonSerializerSettings();
+                                            settings.Converters.Add(new AuthenticationConfigConverter());
+                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
 
                                             var response = JsonConvert.SerializeObject(true);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,16 +14,19 @@ namespace Ocelot.Cache.Middleware
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IOcelotCache<HttpResponseMessage> _outputCache;
+        private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository scopedDataRepository,
-            IOcelotCache<HttpResponseMessage> outputCache)
+            IOcelotCache<HttpResponseMessage> outputCache,
+            IRegionCreator regionCreator)
             :base(scopedDataRepository)
         {
             _next = next;
             _outputCache = outputCache;
             _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
+            _regionCreator = regionCreator;
         }
 
         public async Task Invoke(HttpContext context)
@@ -33,11 +37,11 @@ namespace Ocelot.Cache.Middleware
                 return;
             }
 
-            var downstreamUrlKey = DownstreamRequest.RequestUri.OriginalString;
+            var downstreamUrlKey = $"{DownstreamRequest.Method.Method}-{DownstreamRequest.RequestUri.OriginalString}";
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
   
-            var cached = _outputCache.Get(downstreamUrlKey);
+            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -54,8 +58,6 @@ namespace Ocelot.Cache.Middleware
 
             await _next.Invoke(context);
 
-            _logger.LogDebug("succesfully called next middleware");
-
             if (PipelineError)
             {
                 _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
@@ -65,7 +67,7 @@ namespace Ocelot.Cache.Middleware
 
             var response = HttpResponseMessage;
 
-            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.FileCacheOptions.TtlSeconds));
+            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }

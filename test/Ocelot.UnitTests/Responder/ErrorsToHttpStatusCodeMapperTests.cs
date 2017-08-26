@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using Ocelot.Errors;
-using Ocelot.Middleware;
-using Ocelot.Requester;
 using Ocelot.Responder;
 using Shouldly;
 using TestStack.BDDfy;
@@ -21,47 +20,127 @@ namespace Ocelot.UnitTests.Responder
             _codeMapper = new ErrorsToHttpStatusCodeMapper();
         }
 
-        [Fact]
-        public void should_return_timeout()
+        [Theory]
+        [InlineData(OcelotErrorCode.UnauthenticatedError)]
+        public void should_return_unauthorized(OcelotErrorCode errorCode)
         {
-            this.Given(x => x.GivenThereAreErrors(new List<Error>
-                {
-                    new RequestTimedOutError(new Exception())
-                }))
-               .When(x => x.WhenIGetErrorStatusCode())
-               .Then(x => x.ThenTheResponseIsStatusCodeIs(503))
-               .BDDfy();
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Unauthorized);
+        }
+
+        [Theory]
+        [InlineData(OcelotErrorCode.CannotFindClaimError)]
+        [InlineData(OcelotErrorCode.ClaimValueNotAuthorisedError)]
+        [InlineData(OcelotErrorCode.ScopeNotAuthorisedError)]
+        [InlineData(OcelotErrorCode.UnauthorizedError)]
+        [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)] 
+        public void should_return_forbidden(OcelotErrorCode errorCode)
+        {
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Forbidden);
+        }
+
+        [Theory]
+        [InlineData(OcelotErrorCode.RequestTimedOutError)]
+        public void should_return_service_unavailable(OcelotErrorCode errorCode)
+        {
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.ServiceUnavailable);
+        }
+
+
+        [Theory]
+        [InlineData(OcelotErrorCode.CannotAddDataError)]
+        [InlineData(OcelotErrorCode.CannotFindDataError)]
+        [InlineData(OcelotErrorCode.DownstreamHostNullOrEmptyError)]
+        [InlineData(OcelotErrorCode.DownstreamPathNullOrEmptyError)]
+        [InlineData(OcelotErrorCode.DownstreampathTemplateAlreadyUsedError)]
+        [InlineData(OcelotErrorCode.DownstreamPathTemplateContainsSchemeError)]
+        [InlineData(OcelotErrorCode.DownstreamSchemeNullOrEmptyError)]
+        [InlineData(OcelotErrorCode.InstructionNotForClaimsError)]
+        [InlineData(OcelotErrorCode.NoInstructionsError)]
+        [InlineData(OcelotErrorCode.ParsingConfigurationHeaderError)]
+        [InlineData(OcelotErrorCode.RateLimitOptionsError)]
+        [InlineData(OcelotErrorCode.ServicesAreEmptyError)]
+        [InlineData(OcelotErrorCode.ServicesAreNullError)]
+        [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
+        [InlineData(OcelotErrorCode.UnableToCreateAuthenticationHandlerError)]
+        [InlineData(OcelotErrorCode.UnableToFindDownstreamRouteError)]
+        [InlineData(OcelotErrorCode.UnableToFindLoadBalancerError)]
+        [InlineData(OcelotErrorCode.UnableToFindServiceDiscoveryProviderError)]
+        [InlineData(OcelotErrorCode.UnableToFindQoSProviderError)]
+        [InlineData(OcelotErrorCode.UnableToSetConfigInConsulError)]
+        [InlineData(OcelotErrorCode.UnknownError)]
+        [InlineData(OcelotErrorCode.UnmappableRequestError)]
+        [InlineData(OcelotErrorCode.UnsupportedAuthenticationProviderError)]
+        public void should_return_not_found(OcelotErrorCode errorCode)
+        {
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.NotFound);
         }
 
         [Fact]
-        public void should_create_unauthenticated_response_code()
+        public void AuthenticationErrorsHaveHighestPriority()
         {
-            this.Given(x => x.GivenThereAreErrors(new List<Error>
-                {
-                    new UnauthenticatedError("no matter")
-                }))
-                .When(x => x.WhenIGetErrorStatusCode())
-                .Then(x => x.ThenTheResponseIsStatusCodeIs(401))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_create_not_found_response_response_code()
-        {
-            this.Given(x => x.GivenThereAreErrors(new List<Error>
-                {
-                    new AnyError()
-                }))
-                .When(x => x.WhenIGetErrorStatusCode())
-                .Then(x => x.ThenTheResponseIsStatusCodeIs(404))
-                .BDDfy();
-        }
-
-        class AnyError : Error
-        {
-            public AnyError() : base("blahh", OcelotErrorCode.UnknownError)
+            var errors = new List<OcelotErrorCode>
             {
+                OcelotErrorCode.CannotAddDataError,
+                OcelotErrorCode.CannotFindClaimError,
+                OcelotErrorCode.UnauthenticatedError,
+                OcelotErrorCode.RequestTimedOutError,
+            };
+
+            ShouldMapErrorsToStatusCode(errors, HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public void AuthorisationErrorsHaveSecondHighestPriority()
+        {
+            var errors = new List<OcelotErrorCode>
+            {
+                OcelotErrorCode.CannotAddDataError,
+                OcelotErrorCode.CannotFindClaimError,
+                OcelotErrorCode.RequestTimedOutError
+            };
+
+            ShouldMapErrorsToStatusCode(errors, HttpStatusCode.Forbidden);
+        }
+
+        [Fact]
+        public void ServiceUnavailableErrorsHaveThirdHighestPriority()
+        {
+            var errors = new List<OcelotErrorCode>
+            {
+                OcelotErrorCode.CannotAddDataError,
+                OcelotErrorCode.RequestTimedOutError
+            };
+
+            ShouldMapErrorsToStatusCode(errors, HttpStatusCode.ServiceUnavailable);
+        }
+
+        [Fact]
+        public void check_we_have_considered_all_errors_in_these_tests()
+        {
+            // If this test fails then it's because the number of error codes has changed.
+            // You should make the appropriate changes to the test cases here to ensure
+            // they cover all the error codes, and then modify this assertion.
+            Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(30, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
+        }
+
+        private void ShouldMapErrorToStatusCode(OcelotErrorCode errorCode, HttpStatusCode expectedHttpStatusCode)
+        {
+            ShouldMapErrorsToStatusCode(new List<OcelotErrorCode> { errorCode }, expectedHttpStatusCode);
+        }
+
+        private void ShouldMapErrorsToStatusCode(List<OcelotErrorCode> errorCodes, HttpStatusCode expectedHttpStatusCode)
+        {
+            var errors = new List<Error>();
+
+            foreach(var errorCode in errorCodes)
+            {
+                errors.Add(new AnyError(errorCode));
             }
+
+            this.Given(x => x.GivenThereAreErrors(errors))
+               .When(x => x.WhenIGetErrorStatusCode())
+               .Then(x => x.ThenTheResponseIsStatusCodeIs(expectedHttpStatusCode))
+               .BDDfy();
         }
 
         private void GivenThereAreErrors(List<Error> errors)
@@ -77,6 +156,11 @@ namespace Ocelot.UnitTests.Responder
         private void ThenTheResponseIsStatusCodeIs(int expectedCode)
         {
             _result.ShouldBe(expectedCode);
-        }    
+        }
+
+        private void ThenTheResponseIsStatusCodeIs(HttpStatusCode expectedCode)
+        {
+            _result.ShouldBe((int)expectedCode);
+        }
     }
 }

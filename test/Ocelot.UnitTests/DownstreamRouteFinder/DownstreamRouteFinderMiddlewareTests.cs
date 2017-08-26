@@ -1,61 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Responses;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.DownstreamRouteFinder
+﻿namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    public class DownstreamRouteFinderMiddlewareTests : IDisposable
+    using System.Collections.Generic;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.Finder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Ocelot.Logging;
+    using Ocelot.Responses;
+    using TestStack.BDDfy;
+    using Xunit;
+
+    public class DownstreamRouteFinderMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IDownstreamRouteFinder> _downstreamRouteFinder;
-        private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly string _url;
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
         private Response<DownstreamRoute> _downstreamRoute;
-        private HttpResponseMessage _result;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
-            _url = "http://localhost:51879";
             _downstreamRouteFinder = new Mock<IDownstreamRouteFinder>();
-            _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
-            var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddSingleton(_downstreamRouteFinder.Object);
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                  app.UseDownstreamRouteFinderMiddleware();
-              });
-
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
+            GivenTheTestServerIsConfigured();
         }
 
         [Fact]
@@ -73,16 +41,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .BDDfy();
         }
 
-
-        private void ThenTheScopedDataRepositoryIsCalledCorrectly()
+        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
         {
-            _scopedRepository
-                .Verify(x => x.Add("DownstreamRoute", _downstreamRoute.Data), Times.Once());
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            services.AddLogging();
+            services.AddSingleton(_downstreamRouteFinder.Object);
+            services.AddSingleton(ScopedRepository.Object);
         }
 
-        private void WhenICallTheMiddleware()
+        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
         {
-            _result = _client.GetAsync(_url).Result;
+            app.UseDownstreamRouteFinderMiddleware();
         }
 
         private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)
@@ -93,10 +62,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .ReturnsAsync(_downstreamRoute);
         }
 
-        public void Dispose()
+        private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
-            _client.Dispose();
-            _server.Dispose();
+            ScopedRepository
+                .Verify(x => x.Add("DownstreamRoute", _downstreamRoute.Data), Times.Once());
         }
     }
 }

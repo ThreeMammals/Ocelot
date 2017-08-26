@@ -46,7 +46,7 @@ namespace Ocelot.Configuration
             IsAuthorised = isAuthorised;
             RequestIdKey = requestIdKey;
             IsCached = isCached;
-            FileCacheOptions = fileCacheOptions;
+            CacheOptions = fileCacheOptions;
             ClaimsToQueries = claimsToQueries
                 ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims 
@@ -74,7 +74,7 @@ namespace Ocelot.Configuration
         public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
-        public CacheOptions FileCacheOptions { get; private set; }
+        public CacheOptions CacheOptions { get; private set; }
         public string DownstreamScheme {get;private set;}
         public bool IsQos { get; private set; }
         public QoSOptions QosOptionsOptions { get; private set; }
