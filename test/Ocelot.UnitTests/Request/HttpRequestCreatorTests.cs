@@ -8,6 +8,7 @@
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Request;
 
     public class HttpRequestCreatorTests
     {
@@ -40,7 +41,8 @@
 
         private void ThenTheRequestContainsTheRequestMessage()
         {
-            _response.Data.HttpRequestMessage.ShouldBe(_requestMessage);
+            var httpRequest = _response.Data as HttpRequest;
+            httpRequest.HttpRequestMessage.ShouldBe(_requestMessage);
         }
 
         private void ThenTheRequestContainsTheIsQos()

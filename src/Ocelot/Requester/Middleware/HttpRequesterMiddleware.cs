@@ -26,9 +26,9 @@ namespace Ocelot.Requester.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling requester middleware");
+            _logger.LogDebug("started calling http requester middleware");
 
-            var response = await _requester.GetResponse(Request);
+            var response = await _requester.GetResponse(Request as Ocelot.Request.HttpRequest);
 
             if (response.IsError)
             {

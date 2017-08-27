@@ -31,6 +31,8 @@
         UnableToFindQoSProviderError,
         UnableToSetConfigInConsulError,
         UnmappableRequestError,
-        RateLimitOptionsError
+        RateLimitOptionsError,
+        UnableToCreateRequestBuilderError,
+        UnableToCreateRequesterHandlerError
     }
 }

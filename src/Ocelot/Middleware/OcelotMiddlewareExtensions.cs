@@ -132,10 +132,10 @@ namespace Ocelot.Middleware
             builder.UseOutputCacheMiddleware();
 
             // Everything should now be ready to build or HttpRequest
-            builder.UseHttpRequestBuilderMiddleware();
+            builder.UseRequestBuilderMiddleware();
 
             //We fire off the request and set the response on the scoped data repo
-            builder.UseHttpRequesterMiddleware();
+            builder.UseRequesterMiddleware();
 
             return builder;
         }

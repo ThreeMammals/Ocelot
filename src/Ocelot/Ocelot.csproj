@@ -26,6 +26,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Requester\Middleware\HttpRequesterMiddlewareExtensions.cs" />
+    <Compile Remove="Request\Builder\Creator\HttpRequestBuilder.cs" />
+    <Compile Remove="Request\Builder\HttpRequestCreator.cs" />
+    <Compile Remove="Request\Builder\IRequestCreator.cs" />
+    <Compile Remove="Request\Middleware\HttpRequestBuilderMiddlewareExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.1" />

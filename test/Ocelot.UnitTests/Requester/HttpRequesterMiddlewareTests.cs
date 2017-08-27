@@ -28,7 +28,7 @@
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider())))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.HttpRequest(new HttpRequestMessage(),true, new NoQoSProvider())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())
@@ -49,7 +49,7 @@
             app.UseHttpRequesterMiddleware();
         }
 
-        private void GivenTheRequestIs(Ocelot.Request.Request request)
+        private void GivenTheRequestIs(Ocelot.Request.HttpRequest request)
         {
             _request = new OkResponse<Ocelot.Request.Request>(request);
             ScopedRepository
@@ -61,7 +61,7 @@
         {
             _response = new OkResponse<HttpResponseMessage>(response);
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Request.Request>()))
+                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Request.HttpRequest>()))
                 .ReturnsAsync(_response);
         }
 
