@@ -19,7 +19,7 @@
 
     public class HttpRequestBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestCreator> _requestBuilder;
+        private readonly Mock<IHttpRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
         private readonly HttpRequestMessage _downstreamRequest;
@@ -30,7 +30,7 @@
         public HttpRequestBuilderMiddlewareTests()
         {
             _qosProviderHouse = new Mock<IQosProviderHouse>();
-            _requestBuilder = new Mock<IRequestCreator>();
+            _requestBuilder = new Mock<IHttpRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             _downstreamRequest = new HttpRequestMessage();

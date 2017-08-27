@@ -8,7 +8,7 @@ using System.Net.Http;
 
 namespace Ocelot.Request.Builder
 {
-    public sealed class HttpRequestCreator : IRequestCreator
+    public sealed class HttpRequestCreator : IHttpRequestCreator
     {
         public async Task<Response<Request>> Build(
              HttpRequestMessage httpRequestMessage,

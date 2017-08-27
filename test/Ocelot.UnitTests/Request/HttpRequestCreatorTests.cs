@@ -12,7 +12,7 @@
 
     public class HttpRequestCreatorTests
     {
-        private readonly IRequestCreator _requestCreator;
+        private readonly IHttpRequestCreator _requestCreator;
         private readonly bool _isQos;
         private readonly IQoSProvider _qoSProvider;
         private readonly HttpRequestMessage _requestMessage;
