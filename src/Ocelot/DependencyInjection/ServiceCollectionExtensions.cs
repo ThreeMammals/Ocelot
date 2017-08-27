@@ -183,7 +183,7 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
             services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
-            services.TryAddSingleton<IRequestMapper, RequestMapper>();
+            services.TryAddSingleton<IHttpRequestMapper, HttpRequestMapper>();
             services.TryAddSingleton<IRequesterHandlerFactory, RequesterHandlerFactory>();
             services.TryAddSingleton<IRequesterHandlerCreator, RequesterHandlerCreator>();
             services.TryAddSingleton<IRequestBuilderFactory, RequestBuilderFactory>();

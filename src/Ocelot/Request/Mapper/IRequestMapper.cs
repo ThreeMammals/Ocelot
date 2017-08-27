@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.Responses;
 
-    public interface IRequestMapper
+    public interface IHttpRequestMapper
     {
         Task<Response<HttpRequestMessage>> Map(HttpRequest request);
     }

@@ -13,7 +13,7 @@
     using Microsoft.Extensions.Primitives;
     using Ocelot.Responses;
 
-    public class RequestMapper : IRequestMapper
+    public class HttpRequestMapper : IHttpRequestMapper
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 

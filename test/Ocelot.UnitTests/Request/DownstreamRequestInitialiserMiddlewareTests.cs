@@ -21,7 +21,7 @@
 
         readonly Mock<RequestDelegate> _next;
 
-        readonly Mock<IRequestMapper> _requestMapper;
+        readonly Mock<IHttpRequestMapper> _requestMapper;
 
         readonly Mock<IRequestScopedDataRepository> _repo;
 
@@ -36,7 +36,7 @@
 
             _httpContext = new Mock<HttpContext>();
             _httpRequest = new Mock<HttpRequest>();
-            _requestMapper = new Mock<IRequestMapper>();
+            _requestMapper = new Mock<IHttpRequestMapper>();
             _repo = new Mock<IRequestScopedDataRepository>();
             _next = new Mock<RequestDelegate>();
             _logger = new Mock<IOcelotLogger>();
