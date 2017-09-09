@@ -34,7 +34,7 @@ namespace Ocelot.Configuration.Builder
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
-          _loadBalancer = loadBalancer;
+            _loadBalancer = loadBalancer;
             return this;
         }
 
@@ -145,7 +145,7 @@ namespace Ocelot.Configuration.Builder
             _qosOptions = input;
             return this;
         }
-       
+
         public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
@@ -176,31 +176,59 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        /// <summary>
+        /// 修改者:HY
+        /// 新增转换方法: List<HttpMethod> 转  List<string>
+        /// </summary>
+        /// <param name="httpmethodls"></param>
+        /// <returns></returns>
+        public List<string> ConvertHttpMethodToString(List<HttpMethod> httpmethodls)
+        {
+            var HttpMethodLs = new List<string>();
+            if (httpmethodls != null && httpmethodls.Count > 0)
+            {
+                foreach (var s in httpmethodls)
+                {
+                    if (HttpMethod.Equals(s.Method, HttpMethod.Delete))
+                        HttpMethodLs.Add("Delete");
+                    if (HttpMethod.Equals(s.Method, HttpMethod.Post))
+                        HttpMethodLs.Add("Post");
+                    if (HttpMethod.Equals(s.Method, HttpMethod.Get))
+                        HttpMethodLs.Add("Get");
+                    if (HttpMethod.Equals(s.Method, HttpMethod.Put))
+                        HttpMethodLs.Add("Put");
+                    if (HttpMethod.Equals(s.Method, HttpMethod.Head))
+                        HttpMethodLs.Add("Head");
+                }
+            };
+            return HttpMethodLs;
+        }
+
 
         public ReRoute Build()
         {
             return new ReRoute(
-                new PathTemplate(_downstreamPathTemplate), 
-                new PathTemplate(_upstreamTemplate), 
-                _upstreamHttpMethod, 
-                _upstreamTemplatePattern, 
-                _isAuthenticated, 
+                _downstreamPathTemplate,
+                _upstreamTemplate,
+               ConvertHttpMethodToString(_upstreamHttpMethod),
+                _upstreamTemplatePattern,
+                _isAuthenticated,
                 _authenticationOptions,
-                _configHeaderExtractorProperties, 
-                _claimToClaims, 
-                _routeClaimRequirement, 
-                _isAuthorised, 
-                _claimToQueries, 
-                _requestIdHeaderKey, 
-                _isCached, 
-                _fileCacheOptions, 
-                _downstreamScheme, 
+                _configHeaderExtractorProperties,
+                _claimToClaims,
+                _routeClaimRequirement,
+                _isAuthorised,
+                _claimToQueries,
+                _requestIdHeaderKey,
+                _isCached,
+                _fileCacheOptions,
+                _downstreamScheme,
                 _loadBalancer,
-                _downstreamHost, 
-                _downstreamPort, 
-                _loadBalancerKey, 
-                _serviceProviderConfiguraion, 
-                _useQos, 
+                _downstreamHost,
+                _downstreamPort,
+                _loadBalancerKey,
+                _serviceProviderConfiguraion,
+                _useQos,
                 _qosOptions,
                 _enableRateLimiting,
                 _rateLimitOptions);
