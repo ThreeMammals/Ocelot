@@ -51,7 +51,7 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             await CreateAdministrationArea(builder);
 
@@ -143,9 +143,9 @@ namespace Ocelot.Middleware
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
             var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
-            
+
             var configSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
-            
+
             var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
 
             var ocelotConfiguration = await configProvider.Get();
@@ -162,7 +162,7 @@ namespace Ocelot.Middleware
 
             ocelotConfiguration = await configProvider.Get();
 
-            if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            if (ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
             {
                 throw new Exception("Unable to start Ocelot: ocelot configuration was not returned by provider.");
             }
@@ -176,15 +176,15 @@ namespace Ocelot.Middleware
 
             var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
 
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
+            if (!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
                 var urlFinder = (IBaseUrlFinder)builder.ApplicationServices.GetService(typeof(IBaseUrlFinder));
 
                 var baseSchemeUrlAndPort = urlFinder.Find();
-                
+
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
+                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0, 1)}";
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
                         Authority = identityServerUrl,
@@ -201,7 +201,7 @@ namespace Ocelot.Middleware
                 });
             }
         }
-        
+
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         {
             if (middleware != null)
@@ -211,20 +211,20 @@ namespace Ocelot.Middleware
         }
 
         /// <summary>
-         /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
-         /// </summary>
-         /// <param name="builder"></param>
-         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
-         {
-             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+        /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
+        /// </summary>
+        /// <param name="builder"></param>
+        private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
+        {
+            var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
 
             //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
             if (!env.IsProduction())
-             {
-                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
-                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
-                 diagnosticListener.SubscribeWithAdapter(listener);
-             }
-         }
+            {
+                var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+                var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+                diagnosticListener.SubscribeWithAdapter(listener);
+            }
+        }
     }
 }

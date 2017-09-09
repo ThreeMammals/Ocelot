@@ -1,12 +1,11 @@
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ocelot.Authentication.JsonConverters;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using System;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Repository
 {

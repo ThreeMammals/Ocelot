@@ -9,6 +9,7 @@ using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Authentication;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -18,6 +19,7 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
 using Ocelot.Controllers;
+using Ocelot.Creator.Configuration;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
@@ -42,9 +44,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
-using Ocelot.Configuration;
-using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
@@ -53,7 +52,7 @@ namespace Ocelot.DependencyInjection
     {
         public static IServiceCollection AddOcelotStoreConfigurationInConsul(this IServiceCollection services, ConsulRegistryConfiguration consulConfig)
         {
-            services.AddSingleton<ConsulRegistryConfiguration>(consulConfig);
+            services.AddSingleton(consulConfig);
             services.AddSingleton<IOcelotConfigurationRepository, ConsulOcelotConfigurationRepository>();
             return services;
         }
