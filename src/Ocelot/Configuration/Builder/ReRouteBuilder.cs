@@ -207,6 +207,7 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
+
             return new ReRoute(
                 _downstreamPathTemplate,
                 _upstreamTemplate,
