@@ -65,5 +65,53 @@ that isnt available is annoying. Let alone it be null.
 
 [![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
 
+## Instruction
 
+1.Configured your Consul first, make sure your Consul machine IP, Port, ServerName.
+
+2.Configure your Key/Value in Consul, Ke name: OcelotConfiguration, the Value for the document shows the Json format: [Value](https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.json)
+
+3.Create a new NetCore console application and apply the Ocelot assembly;
+
+``` 4.Add configuration file configuration. Json (name can be picked up), and the configuration file is:
+  {
+   "GlobalConfiguration": {
+   "RequestIdKey": "OcRequestId",
+   "ServiceDiscoveryProvider": {
+      "Host": "localhost",->此处为Consul的主机地址
+      "Port": 8500, -> 此处为Consul的主机端口
+      "Provider": "Consul" -> 此处为Consul的服务名
+     }
+    }
+  }
+
+5.Associate the just-json configuration file in the Startup of the program
+    public Startup(IHostingEnvironment env)
+    {
+       var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("configuration.json")
+                .AddEnvironmentVariables();
+        Configuration = builder.Build();
+     }
+
+6.In the ConfigureServices method in Startup. Cs, add the following:
+   Action<ConfigurationBuilderCachePart> settings = (x) =>
+            {
+                x.WithMicrosoftLogging(log =>
+                {
+                    log.AddConsole(LogLevel.Debug);
+                })
+                .WithDictionaryHandle();
+            };
+            services.AddOcelot(Configuration, settings);
+            var consulConfig = new ConsulRegistryConfiguration("localhost", 8500, "consul");
+            services.AddOcelotStoreConfigurationInConsul(consulConfig);
+  
+  7.In the Configure method in Startup. Cs, add the following content to register the middleware:
+     await app.UseOcelot();
+  
+  8.These are the methods that Ocelot USES to store the configuration in a way that can be stored in a file, but I think you can still       store it in the same way!
 
