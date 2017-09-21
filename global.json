@@ -1,1 +1,6 @@
-{"projects":["src","test"]}
+{
+  "projects": [ "src", "test" ],
+  "sdk": {
+    "version": "2.0.0"
+  }
+}
