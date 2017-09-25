@@ -129,7 +129,7 @@ namespace Ocelot.DependencyInjection
 
                 if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
                 {
-                    identityServerBuilder.AddTemporarySigningCredential();
+                    identityServerBuilder.AddDeveloperSigningCredential();
                 }
                 else
                 {

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
@@ -38,9 +39,9 @@ namespace Ocelot.Middleware
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, IServiceCollection services)
         {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), services);
 
             return builder;
         }
@@ -51,9 +52,9 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration, IServiceCollection services)
         {
-            await CreateAdministrationArea(builder);
+            await CreateAdministrationArea(builder, services);
 
             ConfigureDiagnosticListener(builder);
 
@@ -170,7 +171,7 @@ namespace Ocelot.Middleware
             return ocelotConfiguration.Data;
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IServiceCollection services)
         {
             var configuration = await CreateConfiguration(builder);
 
@@ -185,18 +186,20 @@ namespace Ocelot.Middleware
                 builder.Map(configuration.AdministrationPath, app =>
                 {
                     var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
-                    app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
-                    {
-                        Authority = identityServerUrl,
-                        ApiName = identityServerConfiguration.ApiName,
-                        RequireHttpsMetadata = identityServerConfiguration.RequireHttps,
-                        AllowedScopes = identityServerConfiguration.AllowedScopes,
-                        SupportedTokens = SupportedTokens.Both,
-                        ApiSecret = identityServerConfiguration.ApiSecret
-                    });
+
+                    services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                            .AddIdentityServerAuthentication(o =>
+                        {
+                            o.Authority = identityServerUrl;
+                            o.ApiName = identityServerConfiguration.ApiName;
+                            o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
+                            o.AllowedScopes = identityServerConfiguration.AllowedScopes;
+                            o.SupportedTokens = SupportedTokens.Both;
+                            o.ApiSecret = identityServerConfiguration.ApiSecret;
+                        });
 
                     app.UseIdentityServer();
-
+                    app.UseAuthentication();
                     app.UseMvc();
                 });
             }

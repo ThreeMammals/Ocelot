@@ -134,6 +134,7 @@ namespace Ocelot.AcceptanceTests
                 .AddJsonFile("configuration.json")
                 .AddEnvironmentVariables();
 
+            IServiceCollection serviceCollection = new ServiceCollection();
             var configuration = builder.Build();
 
             _webHostBuilder = new WebHostBuilder();
@@ -157,15 +158,16 @@ namespace Ocelot.AcceptanceTests
                     };
                     
                     s.AddOcelot(configuration, settings);
+                    serviceCollection = s;
                 })
                 .ConfigureLogging(l =>
                 {
-                    l.AddConsole(configuration.GetSection("Logging"));
+                    l.AddConsole();
                     l.AddDebug();
                 })
                 .Configure(a =>
                 {
-                    a.UseOcelot(ocelotMiddlewareConfig).Wait();
+                    a.UseOcelot(ocelotMiddlewareConfig, serviceCollection).Wait();
                 }));
 
             _ocelotClient = _ocelotServer.CreateClient();

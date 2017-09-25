@@ -133,7 +133,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     services.AddLogging();
                     services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                        .AddDeveloperSigningCredential()
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource
