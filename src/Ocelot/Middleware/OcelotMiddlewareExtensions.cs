@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
+using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
@@ -179,28 +181,12 @@ namespace Ocelot.Middleware
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
-                var urlFinder = (IBaseUrlFinder)builder.ApplicationServices.GetService(typeof(IBaseUrlFinder));
-
-                var baseSchemeUrlAndPort = urlFinder.Find();
                 
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
-
-                    services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                            .AddIdentityServerAuthentication(o =>
-                        {
-                            o.Authority = identityServerUrl;
-                            o.ApiName = identityServerConfiguration.ApiName;
-                            o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-                            o.AllowedScopes = identityServerConfiguration.AllowedScopes;
-                            o.SupportedTokens = SupportedTokens.Both;
-                            o.ApiSecret = identityServerConfiguration.ApiSecret;
-                        });
-
+                    app.UseMvc();
                     app.UseIdentityServer();
                     app.UseAuthentication();
-                    app.UseMvc();
                 });
             }
         }
