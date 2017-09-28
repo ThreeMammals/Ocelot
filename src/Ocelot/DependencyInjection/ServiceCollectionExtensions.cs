@@ -84,6 +84,7 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
+            services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
 
             var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
             

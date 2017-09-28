@@ -15,11 +15,13 @@ namespace Ocelot.Requester
         /// <summary>
         /// Sets a PollyCircuitBreakingDelegatingHandler .
         /// </summary>
-        IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger);            
+        IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger);
 
         /// <summary>
         /// Creates the <see cref="HttpClient"/>
         /// </summary>
-        IHttpClient Create();
+        /// <param name="useCookies">Defines if http client should use cookie container</param>
+        /// <param name="allowAutoRedirect">Defines if http client should allow auto redirect</param>
+        IHttpClient Create(bool useCookies, bool allowAutoRedirect);
     }
 }

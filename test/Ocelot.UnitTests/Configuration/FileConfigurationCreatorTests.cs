@@ -45,6 +45,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private Mock<IRegionCreator> _regionCreator;
+        private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -66,6 +67,7 @@ namespace Ocelot.UnitTests.Configuration
             _fileReRouteOptionsCreator = new Mock<IReRouteOptionsCreator>();
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
+            _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
@@ -73,7 +75,7 @@ namespace Ocelot.UnitTests.Configuration
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
-                _rateLimitOptions.Object, _regionCreator.Object);
+                _rateLimitOptions.Object, _regionCreator.Object, _httpHandlerOptionsCreator.Object);
         }
 
         [Fact]
@@ -442,6 +444,45 @@ namespace Ocelot.UnitTests.Configuration
                 }))
                 .And(x => x.ThenTheRequestIdKeyCreatorIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_call_httpHandler_creator()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+            var httpHandlerOptions = new HttpHandlerOptions(true, true);
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    DownstreamHost = "127.0.0.1",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = new List<string> { "Get" }
+                                }
+                            },
+            }))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingHttpHandlerOptionsAreReturned(httpHandlerOptions))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
+        {
+            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(httpHandlerOptions);
+        }
+
+        private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
+        {
+            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
         }
 
         [Theory]
