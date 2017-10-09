@@ -261,11 +261,19 @@ Task("ReleasePackagesToUnstableFeed")
 Task("EnsureStableReleaseRequirements")
     .Does(() =>
     {
+		Information("Check if stable release...");
+
         if (!AppVeyor.IsRunningOnAppVeyor)
 		{
            throw new Exception("Stable release should happen via appveyor");
 		}
-        
+
+		Information("Running on AppVeyor...");
+
+		Information("IsTag = " + AppVeyor.Environment.Repository.Tag.IsTag);
+
+		Information("Name = " + AppVeyor.Environment.Repository.Tag.Name);
+
 		var isTag =
            AppVeyor.Environment.Repository.Tag.IsTag &&
            !string.IsNullOrWhiteSpace(AppVeyor.Environment.Repository.Tag.Name);
@@ -274,6 +282,8 @@ Task("EnsureStableReleaseRequirements")
 		{
            throw new Exception("Stable release should happen from a published GitHub release");
 		}
+
+		Information("Release is stable...");
     });
 
 Task("UpdateVersionInfo")
