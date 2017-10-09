@@ -15,6 +15,9 @@
         private readonly bool _isQos;
         private readonly IQoSProvider _qoSProvider;
         private readonly HttpRequestMessage _requestMessage;
+        private readonly bool _useCookieContainer;
+        private readonly bool _allowAutoRedirect;
+
         private Response<Ocelot.Request.Request> _response;
 
         public HttpRequestCreatorTests()
@@ -22,6 +25,9 @@
             _requestCreator = new HttpRequestCreator();
             _isQos = true;
             _qoSProvider = new NoQoSProvider();
+            _useCookieContainer = false;
+            _allowAutoRedirect = false;
+
             _requestMessage = new HttpRequestMessage();
         }
 
@@ -30,12 +36,19 @@
         {
             this.When(x => x.WhenIBuildARequest())
                 .Then(x => x.ThenTheRequestContainsTheRequestMessage())
+                .Then(x => x.ThenTheRequestContainsTheIsQos())
+                .Then(x => x.ThenTheRequestContainsTheQosProvider())
+                .Then(x => x.ThenTheRequestContainsUseCookieContainer())
+                .Then(x => x.ThenTheRequestContainsAllowAutoRedirect())
                 .BDDfy();
         }
 
         private void WhenIBuildARequest()
         {
-            _response = _requestCreator.Build(_requestMessage, _isQos, _qoSProvider).GetAwaiter().GetResult();
+            _response = _requestCreator.Build(_requestMessage,
+                    _isQos, _qoSProvider, _useCookieContainer, _allowAutoRedirect)
+                .GetAwaiter()
+                .GetResult();
         }
 
         private void ThenTheRequestContainsTheRequestMessage()
@@ -51,6 +64,16 @@
         private void ThenTheRequestContainsTheQosProvider()
         {
             _response.Data.QosProvider.ShouldBe(_qoSProvider);
+        }
+
+        private void ThenTheRequestContainsUseCookieContainer()
+        {
+            _response.Data.UseCookieContainer.ShouldBe(_useCookieContainer);
+        }
+
+        private void ThenTheRequestContainsAllowAutoRedirect()
+        {
+            _response.Data.AllowAutoRedirect.ShouldBe(_allowAutoRedirect);
         }
     }
 }

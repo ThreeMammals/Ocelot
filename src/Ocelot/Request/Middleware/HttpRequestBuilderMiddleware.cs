@@ -46,7 +46,9 @@ namespace Ocelot.Request.Middleware
             var buildResult = await _requestCreator.Build(
                     DownstreamRequest,
                     DownstreamRoute.ReRoute.IsQos,
-                    qosProvider.Data);
+                    qosProvider.Data,
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.UseCookieContainer,
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.AllowAutoRedirect);
 
             if (buildResult.IsError)
             {

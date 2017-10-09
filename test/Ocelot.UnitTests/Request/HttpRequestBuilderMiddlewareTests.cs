@@ -15,6 +15,7 @@
     using TestStack.BDDfy;
     using Xunit;
     using Ocelot.Requester.QoS;
+    using Ocelot.Configuration;
     using Microsoft.AspNetCore.Builder;
 
     public class HttpRequestBuilderMiddlewareTests : ServerHostedMiddlewareTest
@@ -50,12 +51,13 @@
                 new ReRouteBuilder()
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true))
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider())))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -103,7 +105,11 @@
             _request = new OkResponse<Ocelot.Request.Request>(request);
 
             _requestBuilder
-                .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(), It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
+                .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(),
+                                    It.IsAny<bool>(),
+                                    It.IsAny<IQoSProvider>(),
+                                    It.IsAny<bool>(),
+                                    It.IsAny<bool>()))
                 .ReturnsAsync(_request);
         }
 

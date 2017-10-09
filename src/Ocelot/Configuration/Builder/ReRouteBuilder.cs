@@ -29,6 +29,7 @@ namespace Ocelot.Configuration.Builder
         private ServiceProviderConfiguration _serviceProviderConfiguraion;
         private bool _useQos;
         private QoSOptions _qosOptions;
+        private HttpHandlerOptions _httpHandlerOptions;
         public bool _enableRateLimiting;
         public RateLimitOptions _rateLimitOptions;
 
@@ -176,6 +177,11 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
+        {
+            _httpHandlerOptions = input;
+            return this;
+        }
 
         public ReRoute Build()
         {
@@ -203,7 +209,8 @@ namespace Ocelot.Configuration.Builder
                 _useQos, 
                 _qosOptions,
                 _enableRateLimiting,
-                _rateLimitOptions);
+                _rateLimitOptions,
+                _httpHandlerOptions);
         }
     }
 }
