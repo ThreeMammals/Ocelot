@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -15,6 +16,7 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _builder;
         private readonly Steps _steps;
+        private string _downstreamPath;
 
         public RoutingTests()
         {
@@ -232,6 +234,34 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+
+        [Fact]
+        public void should_not_add_trailing_slash_to_downstream_url()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/products/{productId}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe("/api/products/1"))
+                .BDDfy();
+        }
+
         [Fact]
         public void should_return_response_201_with_simple_url()
         {
@@ -379,11 +409,11 @@ namespace Ocelot.AcceptanceTests
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseUrls(url)
                 .Configure(app =>
                 {
                     app.Run(async context =>
                     {
+                        _downstreamPath = context.Request.PathBase.Value;
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
                     });
@@ -391,6 +421,11 @@ namespace Ocelot.AcceptanceTests
                 .Build();
 
             _builder.Start();
+        }
+
+        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
+        {
+            _downstreamPath.ShouldBe(expectedDownstreamPath);
         }
 
         public void Dispose()

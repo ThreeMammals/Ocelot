@@ -30,7 +30,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var upstreamUrlPath = context.Request.Path.ToString().SetLastCharacterAs('/');
+            var upstreamUrlPath = context.Request.Path.ToString();
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 

@@ -184,7 +184,7 @@ namespace Ocelot.Configuration.Creator
         private string CreateReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
-            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
+            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";
             return loadBalancerKey;
         }
 
