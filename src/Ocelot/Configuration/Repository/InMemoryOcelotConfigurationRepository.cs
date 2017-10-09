@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.Repository
 
         public async Task<Response<IOcelotConfiguration>> Get()
         {
-            return new OkResponse<IOcelotConfiguration>(_ocelotConfiguration);
+            return await Task.FromResult(new OkResponse<IOcelotConfiguration>(_ocelotConfiguration));
         }
 
         public async Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration)
@@ -24,7 +24,7 @@ namespace Ocelot.Configuration.Repository
                 _ocelotConfiguration = ocelotConfiguration;
             }
 
-            return new OkResponse();
+            return await Task.FromResult(new OkResponse());
         }
     }
 }

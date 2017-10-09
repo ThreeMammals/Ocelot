@@ -11,12 +11,12 @@ namespace Ocelot.Request.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
-        private readonly Mapper.IRequestMapper _requestMapper;
+        private readonly Mapper.IHttpRequestMapper _requestMapper;
 
         public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository,
-            Mapper.IRequestMapper requestMapper)
+            Mapper.IHttpRequestMapper requestMapper)
             :base(requestScopedDataRepository)
         {
             _next = next;

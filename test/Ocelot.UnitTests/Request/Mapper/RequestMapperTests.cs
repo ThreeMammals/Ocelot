@@ -20,7 +20,7 @@
     {
         readonly HttpRequest _inputRequest;
 
-        readonly RequestMapper _requestMapper;
+        readonly HttpRequestMapper _requestMapper;
 
         Response<HttpRequestMessage> _mappedRequest;
 
@@ -30,7 +30,7 @@
         {
             _inputRequest = new DefaultHttpRequest(new DefaultHttpContext());
 
-            _requestMapper = new RequestMapper();
+            _requestMapper = new HttpRequestMapper();
         }
 
         [Theory]

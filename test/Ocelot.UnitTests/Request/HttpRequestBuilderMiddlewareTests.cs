@@ -19,7 +19,7 @@
 
     public class HttpRequestBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IRequestCreator> _requestBuilder;
+        private readonly Mock<IHttpRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
         private readonly HttpRequestMessage _downstreamRequest;
@@ -30,7 +30,7 @@
         public HttpRequestBuilderMiddlewareTests()
         {
             _qosProviderHouse = new Mock<IQosProviderHouse>();
-            _requestBuilder = new Mock<IRequestCreator>();
+            _requestBuilder = new Mock<IHttpRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
 
             _downstreamRequest = new HttpRequestMessage();
@@ -55,7 +55,7 @@
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider())))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.HttpRequest(new HttpRequestMessage(), true, new NoQoSProvider())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();

@@ -11,14 +11,14 @@ namespace Ocelot.Request.Middleware
     public class HttpRequestBuilderMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IRequestCreator _requestCreator;
+        private readonly IHttpRequestCreator _requestCreator;
         private readonly IOcelotLogger _logger;
         private readonly IQosProviderHouse _qosProviderHouse;
 
         public HttpRequestBuilderMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
-            IRequestCreator requestCreator, 
+            IHttpRequestCreator requestCreator, 
             IQosProviderHouse qosProviderHouse)
             :base(requestScopedDataRepository)
         {

@@ -46,6 +46,10 @@ using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
 using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+using Ocelot.Requester.Handler.Factory;
+using Ocelot.Requester.Handler.Creator;
+using Ocelot.Request.Builder.Factory;
+using Ocelot.Request.Builder.Creator;
 
 namespace Ocelot.DependencyInjection
 {
@@ -173,13 +177,17 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
             services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
-            services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
+            services.TryAddSingleton<IHttpRequestCreator, HttpRequestCreator>();
             services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             services.TryAddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
             services.TryAddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
             services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
-            services.TryAddSingleton<IRequestMapper, RequestMapper>();
+            services.TryAddSingleton<IHttpRequestMapper, HttpRequestMapper>();
+            services.TryAddSingleton<IRequesterHandlerFactory, RequesterHandlerFactory>();
+            services.TryAddSingleton<IRequesterHandlerCreator, RequesterHandlerCreator>();
+            services.TryAddSingleton<IRequestBuilderFactory, RequestBuilderFactory>();
+            services.TryAddSingleton<IRequestBuilderCreator, RequestBuilderCreator>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository

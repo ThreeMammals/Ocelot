@@ -20,7 +20,7 @@ namespace Ocelot.Requester
             _cacheHandlers = cacheHandlers;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
+        public async Task<Response<HttpResponseMessage>> GetResponse(Request.HttpRequest request)
         {
             var builder = new HttpClientBuilder();
 
@@ -65,7 +65,7 @@ namespace Ocelot.Requester
             return httpClient;
         }
 
-        private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
+        private string GetCacheKey(Request.HttpRequest request, IHttpClientBuilder builder)
         {
             string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
 
