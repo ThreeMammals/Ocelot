@@ -316,12 +316,16 @@ Task("DownloadGitHubReleaseArtifacts")
 
         foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
         {
+			Information("In the loop..");
+
 			var file = packagesDir + File(asset.Value<string>("name"));
 
 			Information("Downloading " + file);
 			
             DownloadFile(asset.Value<string>("browser_download_url"), file);
         }
+
+		Information("Out of the loop...");
     });
 
 Task("ReleasePackagesToStableFeed")
