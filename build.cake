@@ -298,17 +298,28 @@ Task("DownloadGitHubReleaseArtifacts")
     .IsDependentOn("UpdateVersionInfo")
     .Does(() =>
     {
+		Information("DownloadGitHubReleaseArtifacts");
+
         EnsureDirectoryExists(packagesDir);
 
+		Information("Directory exists...");
+
 		var releaseUrl = tagsUrl + releaseTag;
+
+		Information("Release url " + releaseUrl);
+
         var assets_url = ParseJson(GetResource(releaseUrl))
             .GetValue("assets_url")
 			.Value<string>();
 
+		Information("Assets url " + assets_url);
+
         foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
         {
 			var file = packagesDir + File(asset.Value<string>("name"));
+
 			Information("Downloading " + file);
+			
             DownloadFile(asset.Value<string>("browser_download_url"), file);
         }
     });
@@ -416,7 +427,11 @@ private string GetResource(string url)
     {
         var assetsStream = assetsResponse.GetResponseStream();
         var assetsReader = new StreamReader(assetsStream);
-        return assetsReader.ReadToEnd();
+        var response =  assetsReader.ReadToEnd();
+
+		Information("Response is " + response);
+		
+		return response;
     }
 }
 
