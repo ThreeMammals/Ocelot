@@ -420,23 +420,31 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 /// gets the resource from the specified url
 private string GetResource(string url)
 {
-	Information("Getting resource from " + url);
+	try
+	{
+		Information("Getting resource from " + url);
 
-    var assetsRequest = System.Net.WebRequest.CreateHttp(url);
-    assetsRequest.Method = "GET";
-    assetsRequest.Accept = "application/vnd.github.v3+json";
-    assetsRequest.UserAgent = "BuildScript";
+		var assetsRequest = System.Net.WebRequest.CreateHttp(url);
+		assetsRequest.Method = "GET";
+		assetsRequest.Accept = "application/vnd.github.v3+json";
+		assetsRequest.UserAgent = "BuildScript";
 
-    using (var assetsResponse = assetsRequest.GetResponse())
-    {
-        var assetsStream = assetsResponse.GetResponseStream();
-        var assetsReader = new StreamReader(assetsStream);
-        var response =  assetsReader.ReadToEnd();
+		using (var assetsResponse = assetsRequest.GetResponse())
+		{
+			var assetsStream = assetsResponse.GetResponseStream();
+			var assetsReader = new StreamReader(assetsStream);
+			var response =  assetsReader.ReadToEnd();
 
-		Information("Response is " + response);
-		
-		return response;
-    }
+			Information("Response is " + response);
+			
+			return response;
+		}
+	}
+	catch(Exception exception)
+	{
+		Information("There was an exception " + exception);
+		throw;
+	}
 }
 
 private bool ShouldPublishToUnstableFeed(string filter, string branchName)
