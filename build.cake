@@ -298,34 +298,42 @@ Task("DownloadGitHubReleaseArtifacts")
     .IsDependentOn("UpdateVersionInfo")
     .Does(() =>
     {
-		Information("DownloadGitHubReleaseArtifacts");
+		try
+		{
+			Information("DownloadGitHubReleaseArtifacts");
 
-        EnsureDirectoryExists(packagesDir);
+			EnsureDirectoryExists(packagesDir);
 
-		Information("Directory exists...");
+			Information("Directory exists...");
 
-		var releaseUrl = tagsUrl + releaseTag;
+			var releaseUrl = tagsUrl + releaseTag;
 
-		Information("Release url " + releaseUrl);
+			Information("Release url " + releaseUrl);
 
-        var assets_url = ParseJson(GetResource(releaseUrl))
-            .GetValue("assets_url")
-			.Value<string>();
+			var assets_url = ParseJson(GetResource(releaseUrl))
+				.GetValue("assets_url")
+				.Value<string>();
 
-		Information("Assets url " + assets_url);
+			Information("Assets url " + assets_url);
 
-        foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
-        {
-			Information("In the loop..");
+			foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
+			{
+				Information("In the loop..");
 
-			var file = packagesDir + File(asset.Value<string>("name"));
+				var file = packagesDir + File(asset.Value<string>("name"));
 
-			Information("Downloading " + file);
-			
-            DownloadFile(asset.Value<string>("browser_download_url"), file);
-        }
+				Information("Downloading " + file);
+				
+				DownloadFile(asset.Value<string>("browser_download_url"), file);
+			}
 
-		Information("Out of the loop...");
+			Information("Out of the loop...");
+		}
+		catch(Exception exception)
+		{
+			Information("There was an exception " + exception);
+			throw;
+		}
     });
 
 Task("ReleasePackagesToStableFeed")
