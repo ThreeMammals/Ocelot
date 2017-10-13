@@ -313,7 +313,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
 
         	//todo - remove when publish working..var assets_url = ParseJson(GetResource(releaseUrl))
-			assets_url = releaseJson.GetValue("assets_url").Value<string>();
+			var assets_url = releaseJson.GetValue("assets_url").Value<string>();
 
 			Information("Assets url " + assets_url);
 
