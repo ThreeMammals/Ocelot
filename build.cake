@@ -318,7 +318,11 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			Information("Assets url " + assets_url);
 
-			foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
+			var assets = GetResource(assets_url);
+
+			Information("Assets " + assets_url);
+
+			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(assets))
 			{
 				Information("In the loop..");
 
