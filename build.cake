@@ -312,7 +312,7 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			//var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
 
-        	var assets_url = ParseJson(GetResource(releaseUrl))
+        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
 				.GetValue("assets_url")
 				.Value<string>();
 
