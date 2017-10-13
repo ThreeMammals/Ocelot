@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("(?i)/PRODUCTS/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS/.*/$"))
                 .BDDfy();
         }
 
@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
                 };
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("/PRODUCTS/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/PRODUCTS/.*/$"))
                 .BDDfy();
         }
 
@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("/api/products/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/$"))
                 .BDDfy();
         }
 
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("/api/products/.*/variants/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/variants/.*/$"))
                 .BDDfy();
         }
         [Fact]
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("/api/products/.*/variants/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/variants/.*/$"))
                 .BDDfy();
         }
 

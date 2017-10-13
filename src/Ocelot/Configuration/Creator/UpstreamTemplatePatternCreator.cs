@@ -41,8 +41,8 @@ namespace Ocelot.Configuration.Creator
             }
 
             var route = reRoute.ReRouteIsCaseSensitive 
-                ? $"{upstreamTemplate}{RegExMatchEndString}" 
-                : $"{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
+                ? $"^{upstreamTemplate}{RegExMatchEndString}" 
+                : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
             return route;
         }
