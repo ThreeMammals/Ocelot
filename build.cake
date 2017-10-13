@@ -1,7 +1,7 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
-#addin nuget:?package=Newtonsoft.Json&version=9.0.1
+#addin nuget:?package=Newtonsoft.Json
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool coveralls.net
@@ -310,10 +310,11 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			Information("Release url " + releaseUrl);
 
-			var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
+			//var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
 
-        	//todo - remove when publish working..var assets_url = ParseJson(GetResource(releaseUrl))
-			var assets_url = releaseJson.GetValue("assets_url").Value<string>();
+        	var assets_url = ParseJson(GetResource(releaseUrl))
+				.GetValue("assets_url")
+				.Value<string>();
 
 			Information("Assets url " + assets_url);
 
