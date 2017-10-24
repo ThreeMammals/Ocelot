@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.0.0-rc1" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" />
@@ -42,7 +42,7 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.1" />
     <PackageReference Include="Consul" Version="0.7.2.3" />
     <PackageReference Include="Polly" Version="5.3.1" />
-    <PackageReference Include="IdentityServer4" Version="2.0.0-rc1-update1" />
+    <PackageReference Include="IdentityServer4" Version="2.0.1" />
   </ItemGroup>
 
 </Project>

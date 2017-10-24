@@ -197,7 +197,7 @@ namespace Ocelot.DependencyInjection
                         o.Authority = baseSchemeUrlAndPort + "admin";
                         o.ApiName = identityServerConfiguration.ApiName;
                         o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-                        o.AllowedScopes = identityServerConfiguration.AllowedScopes;
+                        //o.AllowedScopes = identityServerConfiguration.AllowedScopes;
                         o.SupportedTokens = SupportedTokens.Both;
                         o.ApiSecret = identityServerConfiguration.ApiSecret;
                     });
