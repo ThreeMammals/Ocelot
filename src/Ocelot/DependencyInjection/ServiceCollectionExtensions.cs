@@ -159,13 +159,11 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHashMatcher, HashMatcher>();
             var identityServerBuilder = services
                 .AddIdentityServer()
-                // .AddIdentityServer(options => {
-                //     options.IssuerUri = "Ocelot";
-                // })
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration))
                 .AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
 
+            //todo - refactor a method so we know why this is happening
             var whb = services.First(x => x.ServiceType == typeof(IWebHostBuilder));
             var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
             var baseSchemeUrlAndPort = urlFinder.Find();
@@ -182,12 +180,14 @@ namespace Ocelot.DependencyInjection
                     o.ApiSecret = identityServerConfiguration.ApiSecret;
                 });
 
+                //todo - refactor naming..
                 if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
                 {
                     identityServerBuilder.AddDeveloperSigningCredential();
                 }
                 else
                 {
+                    //todo - refactor so calls method?
                     var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
                     identityServerBuilder.AddSigningCredential(cert);
                 }
@@ -197,58 +197,31 @@ namespace Ocelot.DependencyInjection
         {
             return new List<ApiResource>
             {
-                new ApiResource("admin", "My API")
+                new ApiResource(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+                {
+                    ApiSecrets = new List<Secret>
+                    {
+                        new Secret
+                        {
+                            Value = identityServerConfiguration.ApiSecret.Sha256()
+                        }
+                    }
+                }
             };
-            // return new List<ApiResource>
-            // {
-            //     new ApiResource
-            //     {
-            //         Name = identityServerConfiguration.ApiName,
-            //         Description = identityServerConfiguration.Description,
-            //         Enabled = identityServerConfiguration.Enabled,
-            //         DisplayName = identityServerConfiguration.ApiName,
-            //         Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
-            //         ApiSecrets = new List<Secret>
-            //         {
-            //             new Secret
-            //             {
-            //                 Value = identityServerConfiguration.ApiSecret.Sha256()
-            //             }
-            //         }
-            //     }
-            // };    
         }
 
         private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration) 
         {
             return new List<Client>
             {
-                // resource owner password grant client
                 new Client
                 {
-                    ClientId = "admin",
+                    ClientId = identityServerConfiguration.ApiName,
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-
-                    ClientSecrets =
-                    {
-                        new Secret("secret".Sha256())
-                    },
-                    AllowedScopes = { "admin" }
+                    ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+                    AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
-            // return new List<Client>
-            // {
-            //     new Client
-            //     {
-            //         ClientId = identityServerConfiguration.ApiName,
-            //         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-            //         ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
-            //         AllowedScopes = identityServerConfiguration.AllowedScopes,
-            //         AccessTokenType = identityServerConfiguration.AccessTokenType,
-            //         Enabled = identityServerConfiguration.Enabled,
-            //         RequireClientSecret = identityServerConfiguration.RequireClientSecret
-            //     }
-            // };
         }
     }
 }
