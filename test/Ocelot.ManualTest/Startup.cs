@@ -34,7 +34,7 @@ namespace Ocelot.ManualTest
             {
                 x.WithMicrosoftLogging(log =>
                 {
-                    log.AddConsole(LogLevel.Debug);
+                    //log.AddConsole(LogLevel.Debug);
                 })
                 .WithDictionaryHandle();
             };

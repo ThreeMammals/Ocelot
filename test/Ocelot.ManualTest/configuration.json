@@ -312,6 +312,6 @@
 
   "GlobalConfiguration": {
     "RequestIdKey": "OcRequestId",
-    "AdministrationPath": "/admin"
+    "AdministrationPath": "/administration"
   }
 }

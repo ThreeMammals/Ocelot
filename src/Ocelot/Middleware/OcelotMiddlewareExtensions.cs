@@ -181,12 +181,12 @@ namespace Ocelot.Middleware
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
-                
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    app.UseMvc();
+                    Console.WriteLine("SETTING UP ADMIN AREA");
                     app.UseIdentityServer();
                     app.UseAuthentication();
+                    app.UseMvc();
                 });
             }
         }

@@ -147,60 +147,41 @@ namespace Ocelot.DependencyInjection
 
             if (identityServerConfiguration != null)
             {
-                services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-                services.TryAddSingleton<IHashMatcher, HashMatcher>();
-                var identityServerBuilder = services
-                    .AddIdentityServer(options => {
-                        options.IssuerUri = "Ocelot";
-                    })
-                    .AddInMemoryApiResources(new List<ApiResource>
-                    {
-                        new ApiResource
-                        {
-                            Name = identityServerConfiguration.ApiName,
-                            Description = identityServerConfiguration.Description,
-                            Enabled = identityServerConfiguration.Enabled,
-                            DisplayName = identityServerConfiguration.ApiName,
-                            Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
-                            ApiSecrets = new List<Secret>
-                            {
-                                new Secret
-                                {
-                                    Value = identityServerConfiguration.ApiSecret.Sha256()
-                                }
-                            }
-                        }
-                    })
-                    .AddInMemoryClients(new List<Client>
-                    {
-                        new Client
-                        {
-                            ClientId = identityServerConfiguration.ApiName,
-                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                            ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
-                            AllowedScopes = identityServerConfiguration.AllowedScopes,
-                            AccessTokenType = identityServerConfiguration.AccessTokenType,
-                            Enabled = identityServerConfiguration.Enabled,
-                            RequireClientSecret = identityServerConfiguration.RequireClientSecret
-                        }
-                    }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+                services.AddIdentityServer(identityServerConfiguration);
+            }
 
+            return services;
+        }
 
-                var whb = services.First(x => x.ServiceType == typeof(IWebHostBuilder));
-                var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
-                var baseSchemeUrlAndPort = urlFinder.Find();
-                JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        private static void AddIdentityServer(this IServiceCollection services, IIdentityServerConfiguration identityServerConfiguration) 
+        {
+            services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            services.TryAddSingleton<IHashMatcher, HashMatcher>();
+            var identityServerBuilder = services
+                .AddIdentityServer()
+                // .AddIdentityServer(options => {
+                //     options.IssuerUri = "Ocelot";
+                // })
+                .AddInMemoryApiResources(Resources(identityServerConfiguration))
+                .AddInMemoryClients(Client(identityServerConfiguration))
+                .AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
 
-                services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                    .AddIdentityServerAuthentication(o =>
-                    {
-                        o.Authority = baseSchemeUrlAndPort + "admin";
-                        o.ApiName = identityServerConfiguration.ApiName;
-                        o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-                        //o.AllowedScopes = identityServerConfiguration.AllowedScopes;
-                        o.SupportedTokens = SupportedTokens.Both;
-                        o.ApiSecret = identityServerConfiguration.ApiSecret;
-                    });
+            var whb = services.First(x => x.ServiceType == typeof(IWebHostBuilder));
+            var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
+            var baseSchemeUrlAndPort = urlFinder.Find();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(o =>
+                {
+                    //todo - this needs to come from the config so have to get it in here...
+                    o.Authority = baseSchemeUrlAndPort + "/administration";
+                    o.ApiName = identityServerConfiguration.ApiName;
+                    o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
+                    o.SupportedTokens = SupportedTokens.Both;
+                    o.ApiSecret = identityServerConfiguration.ApiSecret;
+                });
+
                 if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
                 {
                     identityServerBuilder.AddDeveloperSigningCredential();
@@ -210,9 +191,64 @@ namespace Ocelot.DependencyInjection
                     var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
                     identityServerBuilder.AddSigningCredential(cert);
                 }
-            }
+        }
 
-            return services;
+        private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("admin", "My API")
+            };
+            // return new List<ApiResource>
+            // {
+            //     new ApiResource
+            //     {
+            //         Name = identityServerConfiguration.ApiName,
+            //         Description = identityServerConfiguration.Description,
+            //         Enabled = identityServerConfiguration.Enabled,
+            //         DisplayName = identityServerConfiguration.ApiName,
+            //         Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
+            //         ApiSecrets = new List<Secret>
+            //         {
+            //             new Secret
+            //             {
+            //                 Value = identityServerConfiguration.ApiSecret.Sha256()
+            //             }
+            //         }
+            //     }
+            // };    
+        }
+
+        private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration) 
+        {
+            return new List<Client>
+            {
+                // resource owner password grant client
+                new Client
+                {
+                    ClientId = "admin",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    AllowedScopes = { "admin" }
+                }
+            };
+            // return new List<Client>
+            // {
+            //     new Client
+            //     {
+            //         ClientId = identityServerConfiguration.ApiName,
+            //         AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+            //         ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+            //         AllowedScopes = identityServerConfiguration.AllowedScopes,
+            //         AccessTokenType = identityServerConfiguration.AccessTokenType,
+            //         Enabled = identityServerConfiguration.Enabled,
+            //         RequireClientSecret = identityServerConfiguration.RequireClientSecret
+            //     }
+            // };
         }
     }
 }
