@@ -41,9 +41,9 @@ namespace Ocelot.Middleware
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, IServiceCollection services)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration(), services);
+            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
 
             return builder;
         }
@@ -54,9 +54,9 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration, IServiceCollection services)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
-            await CreateAdministrationArea(builder, services);
+            await CreateAdministrationArea(builder);
 
             ConfigureDiagnosticListener(builder);
 
@@ -173,7 +173,7 @@ namespace Ocelot.Middleware
             return ocelotConfiguration.Data;
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IServiceCollection services)
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
         {
             var configuration = await CreateConfiguration(builder);
 
@@ -183,7 +183,6 @@ namespace Ocelot.Middleware
             {
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    Console.WriteLine("SETTING UP ADMIN AREA");
                     app.UseIdentityServer();
                     app.UseAuthentication();
                     app.UseMvc();

@@ -42,7 +42,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
     <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
     <PackageReference Include="xunit" Version="2.3.0-beta2-build3683" />
-    <PackageReference Include="IdentityServer4" Version="2.0.0-rc1-update1" />
+    <PackageReference Include="IdentityServer4" Version="2.0.1" />
     <PackageReference Include="Shouldly" Version="2.8.3" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="Consul" Version="0.7.2.3" />

@@ -147,13 +147,13 @@ namespace Ocelot.DependencyInjection
 
             if (identityServerConfiguration != null)
             {
-                services.AddIdentityServer(identityServerConfiguration);
+                services.AddIdentityServer(identityServerConfiguration, configurationRoot);
             }
 
             return services;
         }
 
-        private static void AddIdentityServer(this IServiceCollection services, IIdentityServerConfiguration identityServerConfiguration) 
+        private static void AddIdentityServer(this IServiceCollection services, IIdentityServerConfiguration identityServerConfiguration, IConfigurationRoot configurationRoot) 
         {
             services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
             services.TryAddSingleton<IHashMatcher, HashMatcher>();
@@ -172,8 +172,8 @@ namespace Ocelot.DependencyInjection
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>
                 {
-                    //todo - this needs to come from the config so have to get it in here...
-                    o.Authority = baseSchemeUrlAndPort + "/administration";
+                    var adminPath = configurationRoot.GetValue("GlobalConfiguration:AdministrationPath", string.Empty);
+                    o.Authority = baseSchemeUrlAndPort + adminPath;
                     o.ApiName = identityServerConfiguration.ApiName;
                     o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
                     o.SupportedTokens = SupportedTokens.Both;

@@ -26,7 +26,6 @@ namespace Ocelot.ManualTest
         }
 
         public IConfigurationRoot Configuration { get; }
-        public IServiceCollection Services { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -40,14 +39,13 @@ namespace Ocelot.ManualTest
             };
 
             services.AddOcelot(Configuration, settings);
-            Services = services;
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 
-            app.UseOcelot(Services).Wait();
+            app.UseOcelot().Wait();
         }
     }
 }

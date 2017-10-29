@@ -59,7 +59,7 @@ namespace Ocelot.IntegrationTests
          public void should_return_response_200_with_call_re_routes_controller()
          {
              var configuration = new FileConfiguration
-             {
+             { 
                  GlobalConfiguration = new FileGlobalConfiguration
                  {
                      AdministrationPath = "/administration"
