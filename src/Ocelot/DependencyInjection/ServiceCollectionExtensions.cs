@@ -158,7 +158,9 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
             services.TryAddSingleton<IHashMatcher, HashMatcher>();
             var identityServerBuilder = services
-                .AddIdentityServer()
+                .AddIdentityServer(o => {
+                    o.IssuerUri = "Ocelot";
+                })
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration))
                 .AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
