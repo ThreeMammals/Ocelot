@@ -150,27 +150,20 @@ namespace Ocelot.DependencyInjection
             {
                 services.AddIdentityServer(identityServerConfiguration, configurationRoot);
             }
-            services.AddSingleton(services);
 
-
-            Action<AuthenticationSchemeBuilder> builder = schemeBuilder =>
+            // public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
+            Action<IdentityServerAuthenticationOptions> options = o =>
             {
-                
-            } 
+                o.Authority = "http://localhost:51888";
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+            };
 
-            services.AddAuthentication(x =>
-                {
-                    x.AddScheme("", );
-                })
-                .AddIdentityServerAuthentication(o =>
-                {
-                    o.Authority = "http://localhost:51888";
-                    o.ApiName = "api";
-                    o.RequireHttpsMetadata = false;
-                    o.SupportedTokens = SupportedTokens.Both;
-                    o.ApiSecret = "secret";
-                });
+            services.AddScheme<IdentityServerAuthenticationOptions, IdentityServerAuthenticationHandler>("IdentityServer", "IdentityServer", options);
 
+            services.AddScheme<IdentityServerAuthenticationOptions, IdentityServerAuthenticationHandler>("IdentityServerIdentityServerAuthenticationJwt", "IdentityServerIdentityServerAuthenticationJwt", options);
 
             return services;
         }

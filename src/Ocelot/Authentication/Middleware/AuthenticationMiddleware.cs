@@ -102,7 +102,8 @@ namespace Ocelot.Authentication.Middleware
                 //auth.AddScheme(scheme);
 
                 //todo - call the next middleware to authenticate? Does this need to be on a different branch so it doesnt call any further middlewares?
-                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.AuthenticationOptions.Provider);
+                var scheme = await auth.GetSchemeAsync("IdentityServer");
+                var result = await context.AuthenticateAsync("IdentityServer");
                 context.User = result.Principal;
 
                 if (context.User.Identity.IsAuthenticated)
