@@ -75,7 +75,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/ClientRateLimit"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
@@ -128,7 +128,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/ClientRateLimit"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
@@ -137,16 +137,17 @@ namespace Ocelot.AcceptanceTests
         }
 
 
-        private void GivenThereIsAServiceRunningOn(string url)
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
         {
             _builder = new WebHostBuilder()
-                .UseUrls(url)
+                .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseUrls(url)
+                .UseUrls(baseUrl)
                 .Configure(app =>
                 {
+                    app.UsePathBase(basePath);
                     app.Run(context =>
                     {
                         _counterOne++;
