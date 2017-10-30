@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -71,17 +73,37 @@ namespace Ocelot.Authentication.Middleware
             {
                 _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
-                var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
+                //var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
 
-                if (authenticationHandler.IsError)
-                {
-                    _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
-                    SetPipelineError(authenticationHandler.Errors);
-                    return;
-                }
+                /* if (authenticationHandler.IsError)
+                 {
+                     _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
+                     SetPipelineError(authenticationHandler.Errors);
+                     return;
+                 }
 
-                await authenticationHandler.Data.Handler.Handle(context);
+                 await authenticationHandler.Data.Handler.Handle(context);*/
 
+                //todo - add the scheme for this route??
+                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                
+                /*        Action<IdentityServerAuthenticationOptions> configureOptions = o =>
+                        {
+                            o.Authority = "";
+                            o.ApiName = "";
+                            o.RequireHttpsMetadata = true;
+                            o.SupportedTokens = SupportedTokens.Both;
+                            o.ApiSecret = "";
+                        };
+                        */
+            
+
+                //var scheme = new AuthenticationScheme(DownstreamRoute.ReRoute.AuthenticationOptions.Provider, DownstreamRoute.ReRoute.AuthenticationOptions.Provider, typeof(IdentityServerAuthenticationHandler));
+                //auth.AddScheme(scheme);
+
+                //todo - call the next middleware to authenticate? Does this need to be on a different branch so it doesnt call any further middlewares?
+                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.AuthenticationOptions.Provider);
+                context.User = result.Principal;
 
                 if (context.User.Identity.IsAuthenticated)
                 {
@@ -98,8 +120,10 @@ namespace Ocelot.Authentication.Middleware
 
                     _logger.LogError($"Client has NOT been authenticated for {context.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     SetPipelineError(error);
-                    return;
                 }
+
+                //todo - remove the scheme or do we leave it?
+                auth.RemoveScheme(DownstreamRoute.ReRoute.AuthenticationOptions.Provider);
             }
             else
             {
@@ -124,7 +148,7 @@ namespace Ocelot.Authentication.Middleware
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var principal = new ClaimsPrincipal();
-            var id = new ClaimsIdentity();
+            var id = new ClaimsIdentity("Ocelot");
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, Scheme.Name, ClaimValueTypes.String, Scheme.Name));
             if (Options.Instance != null)
             {

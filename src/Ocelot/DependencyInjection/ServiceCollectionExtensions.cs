@@ -44,6 +44,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -149,6 +150,27 @@ namespace Ocelot.DependencyInjection
             {
                 services.AddIdentityServer(identityServerConfiguration, configurationRoot);
             }
+            services.AddSingleton(services);
+
+
+            Action<AuthenticationSchemeBuilder> builder = schemeBuilder =>
+            {
+                
+            } 
+
+            services.AddAuthentication(x =>
+                {
+                    x.AddScheme("", );
+                })
+                .AddIdentityServerAuthentication(o =>
+                {
+                    o.Authority = "http://localhost:51888";
+                    o.ApiName = "api";
+                    o.RequireHttpsMetadata = false;
+                    o.SupportedTokens = SupportedTokens.Both;
+                    o.ApiSecret = "secret";
+                });
+
 
             return services;
         }
