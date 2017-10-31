@@ -51,6 +51,8 @@ using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
 using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
@@ -151,19 +153,27 @@ namespace Ocelot.DependencyInjection
                 services.AddIdentityServer(identityServerConfiguration, configurationRoot);
             }
 
-            // public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
-            Action<IdentityServerAuthenticationOptions> options = o =>
+            //todo - this means we need to break auth providers into there own section in the config
+            //then join onto them from reroutes based on a key
+            var data = File.ReadAllText("configuration.json");
+            var config = JsonConvert.DeserializeObject<FileConfiguration>(data);
+            foreach(var reRoute in config.ReRoutes)
             {
-                o.Authority = "http://localhost:51888";
-                o.ApiName = "api";
-                o.RequireHttpsMetadata = false;
-                o.SupportedTokens = SupportedTokens.Both;
-                o.ApiSecret = "secret";
-            };
+                if(reRoute.AuthenticationOptions != null && !string.IsNullOrEmpty(reRoute.AuthenticationOptions.Provider))
+                {
+                     Action<IdentityServerAuthenticationOptions> options = o =>
+                    {
+                        o.Authority = reRoute.AuthenticationOptions.IdentityServerConfig.ProviderRootUrl;
+                        o.ApiName = reRoute.AuthenticationOptions.IdentityServerConfig.ApiName;
+                        o.RequireHttpsMetadata = reRoute.AuthenticationOptions.IdentityServerConfig.RequireHttps;
+                        o.SupportedTokens = SupportedTokens.Both;
+                        o.ApiSecret = reRoute.AuthenticationOptions.IdentityServerConfig.ApiSecret;
+                    };
 
-            services.AddScheme<IdentityServerAuthenticationOptions, IdentityServerAuthenticationHandler>("IdentityServer", "IdentityServer", options);
-
-            services.AddScheme<IdentityServerAuthenticationOptions, IdentityServerAuthenticationHandler>("IdentityServerIdentityServerAuthenticationJwt", "IdentityServerIdentityServerAuthenticationJwt", options);
+                    services.AddAuthentication()
+                        .AddIdentityServerAuthentication(reRoute.AuthenticationOptions.Provider, options);
+                }
+            }
 
             return services;
         }

@@ -25,6 +25,7 @@ namespace Ocelot.Authentication.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IApplicationBuilder _app;
+        private readonly IAuthenticationSchemeProvider _authSchemeProvider;
         private readonly IAuthenticationHandlerFactory _authHandlerFactory;
         private readonly IOcelotLogger _logger;
 
@@ -43,67 +44,12 @@ namespace Ocelot.Authentication.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-         /*   var req = context.Request;
-            var res = context.Response;
-            if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
-            {
-                var name = remainder.Value.Substring(1);
-                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
-                auth.AddScheme(scheme);
-            }
-            else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
-            {
-                var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                var result = await context.AuthenticateAsync(name);
-                result.Principal.IsAuthenticated();
-            }
-            else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
-            {
-                var name = remainder.Value.Substring(1);
-                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                auth.RemoveScheme(name);
-            }
-            else
-            {
-                await _next.Invoke(context);
-            }*/
-
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
                 _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
-
-                //var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
-
-                /* if (authenticationHandler.IsError)
-                 {
-                     _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
-                     SetPipelineError(authenticationHandler.Errors);
-                     return;
-                 }
-
-                 await authenticationHandler.Data.Handler.Handle(context);*/
-
-                //todo - add the scheme for this route??
-                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
                 
-                /*        Action<IdentityServerAuthenticationOptions> configureOptions = o =>
-                        {
-                            o.Authority = "";
-                            o.ApiName = "";
-                            o.RequireHttpsMetadata = true;
-                            o.SupportedTokens = SupportedTokens.Both;
-                            o.ApiSecret = "";
-                        };
-                        */
-            
-
-                //var scheme = new AuthenticationScheme(DownstreamRoute.ReRoute.AuthenticationOptions.Provider, DownstreamRoute.ReRoute.AuthenticationOptions.Provider, typeof(IdentityServerAuthenticationHandler));
-                //auth.AddScheme(scheme);
-
-                //todo - call the next middleware to authenticate? Does this need to be on a different branch so it doesnt call any further middlewares?
-                var scheme = await auth.GetSchemeAsync("IdentityServer");
-                var result = await context.AuthenticateAsync("IdentityServer");
+                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.AuthenticationOptions.Provider);
+                
                 context.User = result.Principal;
 
                 if (context.User.Identity.IsAuthenticated)
@@ -122,9 +68,6 @@ namespace Ocelot.Authentication.Middleware
                     _logger.LogError($"Client has NOT been authenticated for {context.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     SetPipelineError(error);
                 }
-
-                //todo - remove the scheme or do we leave it?
-                auth.RemoveScheme(DownstreamRoute.ReRoute.AuthenticationOptions.Provider);
             }
             else
             {
