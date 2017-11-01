@@ -30,7 +30,7 @@ namespace Ocelot.Configuration
             QoSOptions qosOptions,
             bool enableEndpointRateLimiting,
             RateLimitOptions ratelimitOptions,
-            string authenticationProviderKey)
+            HttpHandlerOptions httpHandlerOptions)
         {
             ReRouteKey = reRouteKey;
             ServiceProviderConfiguraion = serviceProviderConfiguraion;
@@ -59,7 +59,7 @@ namespace Ocelot.Configuration
             QosOptionsOptions = qosOptions;
             EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
             RateLimitOptions = ratelimitOptions;
-            AuthenticationProviderKey = authenticationProviderKey;
+            HttpHandlerOptions = httpHandlerOptions;
         }
 
         public string ReRouteKey {get;private set;}
@@ -86,6 +86,6 @@ namespace Ocelot.Configuration
         public ServiceProviderConfiguration ServiceProviderConfiguraion { get; private set; }
         public bool EnableEndpointEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
-        public string AuthenticationProviderKey { get; private set; }
+        public HttpHandlerOptions HttpHandlerOptions { get; private set; }
     }
 }

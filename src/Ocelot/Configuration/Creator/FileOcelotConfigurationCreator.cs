@@ -38,6 +38,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IReRouteOptionsCreator _fileReRouteOptionsCreator;
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
         private readonly IRegionCreator _regionCreator;
+        private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -55,7 +56,8 @@ namespace Ocelot.Configuration.Creator
             IQoSOptionsCreator qosOptionsCreator,
             IReRouteOptionsCreator fileReRouteOptionsCreator,
             IRateLimitOptionsCreator rateLimitOptionsCreator,
-            IRegionCreator regionCreator
+            IRegionCreator regionCreator,
+            IHttpHandlerOptionsCreator httpHandlerOptionsCreator
             )
         {
             _regionCreator = regionCreator;
@@ -74,6 +76,7 @@ namespace Ocelot.Configuration.Creator
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
             _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
+            _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -143,6 +146,8 @@ namespace Ocelot.Configuration.Creator
 
             var region = _regionCreator.Create(fileReRoute);
 
+            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -168,7 +173,7 @@ namespace Ocelot.Configuration.Creator
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
-                .WithAuthenticationProviderKey(fileReRoute.AuthenticationOptions.AuthenticationProviderKey)
+                .WithHttpHandlerOptions(httpHandlerOptions)
                 .Build();
 
             await SetupLoadBalancer(reRoute);

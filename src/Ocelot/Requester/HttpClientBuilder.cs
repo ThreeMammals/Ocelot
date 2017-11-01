@@ -20,9 +20,9 @@ namespace Ocelot.Requester
             return this;
         }  
 
-        public IHttpClient Create()
+        public IHttpClient Create(bool useCookies, bool allowAutoRedirect)
         {
-            var httpclientHandler = new HttpClientHandler();
+            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = allowAutoRedirect, UseCookies = useCookies};
             
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
             

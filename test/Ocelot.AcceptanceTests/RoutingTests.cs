@@ -62,6 +62,47 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void bug()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/{vacancyId}",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_200_when_path_missing_forward_slash_as_first_char()
         {
             var configuration = new FileConfiguration
@@ -402,6 +443,46 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_404_when_calling_upstream_route_with_no_matching_downstream_re_route_github_issue_134()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/{vacancyId}",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("api/vacancy/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
@@ -413,7 +494,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.UsePathBase(basePath);
                     app.Run(async context =>
-                    {
+                    {   
                         _downstreamPath = context.Request.PathBase.Value;
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
