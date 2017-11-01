@@ -29,7 +29,7 @@ The response from the downstream service is stored in a per request scoped repos
 and retrieved as the requests goes back up the Ocelot pipeline. There is a piece of middleware 
 that maps the HttpResponseMessage onto the HttpResponse object and that is returned to the client.
 That is basically it with a bunch of other features.
-
+ 
 ## How to install
 
 Ocelot is designed to work with ASP.NET core only and is currently 
