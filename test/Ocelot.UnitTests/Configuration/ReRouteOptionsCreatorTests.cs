@@ -34,7 +34,10 @@ namespace Ocelot.UnitTests.Configuration
                     ExceptionsAllowedBeforeBreaking = 1,
                     TimeoutValue = 1
                 },
-                AuthenticationProviderKey = "Test",
+                AuthenticationOptions = new FileAuthenticationOptions()
+                {
+                    AuthenticationProviderKey = "Test"
+                },
                 RouteClaimsRequirement = new Dictionary<string, string>()
                 {
                     {"",""}

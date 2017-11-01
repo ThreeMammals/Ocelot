@@ -14,6 +14,7 @@ namespace Ocelot.Configuration.File
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
+            AuthenticationOptions = new FileAuthenticationOptions();
         }
 
         public string DownstreamPathTemplate { get; set; }
@@ -33,6 +34,6 @@ namespace Ocelot.Configuration.File
         public FileQoSOptions QoSOptions { get; set; }
         public string LoadBalancer {get;set;}
         public FileRateLimitRule RateLimitOptions { get; set; }
-        public string AuthenticationProviderKey {get; set;}
+        public FileAuthenticationOptions AuthenticationOptions { get; set; }
     }
 }

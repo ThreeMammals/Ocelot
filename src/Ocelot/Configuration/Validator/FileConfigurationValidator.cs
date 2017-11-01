@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Authentication.Handler;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
 using Ocelot.Errors;
 using Ocelot.Responses;
@@ -10,7 +10,14 @@ namespace Ocelot.Configuration.Validator
 {
     public class FileConfigurationValidator : IConfigurationValidator
     {
-        public Response<ConfigurationValidationResult> IsValid(FileConfiguration configuration)
+        private readonly IAuthenticationSchemeProvider _provider;
+
+        public FileConfigurationValidator(IAuthenticationSchemeProvider provider)
+        {
+            _provider = provider;
+        }
+
+        public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
         {
             var result = CheckForDuplicateReRoutes(configuration);
 
@@ -19,7 +26,7 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
 
-            result = CheckForUnsupportedAuthenticationProviders(configuration);
+            result = await CheckForUnsupportedAuthenticationProviders(configuration);
 
             if (result.IsError)
             {
@@ -42,51 +49,33 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
-        private ConfigurationValidationResult CheckForUnsupportedAuthenticationProviders(FileConfiguration configuration)
+        private async Task<ConfigurationValidationResult> CheckForUnsupportedAuthenticationProviders(FileConfiguration configuration)
         {
             var errors = new List<Error>();
 
-            //todo - these loops break seperation of concerns...unit tests should fail also..
-            foreach(var authProvider in configuration.AuthenticationOptions)
-            {
-                if (IsSupportedAuthenticationProvider(authProvider.Provider))
-                {
-                    continue;
-                }
-
-                var error = new UnsupportedAuthenticationProviderError($"{authProvider.Provider} is unsupported authentication provider");
-                errors.Add(error);
-            }
-
             foreach (var reRoute in configuration.ReRoutes)
             {
-                var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationProviderKey);
+                var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions.AuthenticationProviderKey);
 
                 if (!isAuthenticated)
                 {
                     continue;
                 }
 
-                //todo is this correct?
-                if(configuration.AuthenticationOptions.Exists(x => x.AuthenticationProviderKey == reRoute.AuthenticationProviderKey))
+                var data = await _provider.GetAllSchemesAsync();
+                var schemes = data.ToList();
+                if (schemes.Any(x => x.Name == reRoute.AuthenticationOptions.AuthenticationProviderKey))
                 {
                     continue;
                 }
 
-                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationProviderKey} is unsupported authentication provider, upstream template is {reRoute.UpstreamPathTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
+                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationOptions.AuthenticationProviderKey} is unsupported authentication provider, upstream template is {reRoute.UpstreamPathTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
                 errors.Add(error);
             }
 
             return errors.Count > 0 
                 ? new ConfigurationValidationResult(true, errors) 
                 : new ConfigurationValidationResult(false);
-        }
-
-        private bool IsSupportedAuthenticationProvider(string provider)
-        {
-            SupportedAuthenticationProviders supportedProvider;
-
-            return Enum.TryParse(provider, true, out supportedProvider);
         }
 
         private ConfigurationValidationResult CheckForReRoutesContainingDownstreamSchemeInDownstreamPathTemplate(FileConfiguration configuration)

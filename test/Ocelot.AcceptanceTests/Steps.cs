@@ -8,6 +8,8 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -78,6 +80,26 @@ namespace Ocelot.AcceptanceTests
             _webHostBuilder.ConfigureServices(s => 
             {
                 s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddAuthentication()
+                    .AddIdentityServerAuthentication(authenticationProviderKey, options);
             });
 
             _ocelotServer = new TestServer(_webHostBuilder

@@ -92,7 +92,7 @@ namespace Ocelot.Configuration.Creator
 
         private async Task<IOcelotConfiguration> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
-            var response = _configurationValidator.IsValid(fileConfiguration);
+            var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {
@@ -110,14 +110,14 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var reRoute in fileConfiguration.ReRoutes)
             {
-                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration, fileConfiguration.AuthenticationOptions);
+                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
             
             return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath);
         }
 
-        private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration, List<FileAuthenticationOptions> authOptions)
+        private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
@@ -129,7 +129,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
-            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute, authOptions);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
 
             var claimsToHeaders = _claimsToThingCreator.Create(fileReRoute.AddHeadersToRequest);
 
@@ -168,7 +168,7 @@ namespace Ocelot.Configuration.Creator
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
-                .WithAuthenticationProviderKey(fileReRoute.AuthenticationProviderKey)
+                .WithAuthenticationProviderKey(fileReRoute.AuthenticationOptions.AuthenticationProviderKey)
                 .Build();
 
             await SetupLoadBalancer(reRoute);

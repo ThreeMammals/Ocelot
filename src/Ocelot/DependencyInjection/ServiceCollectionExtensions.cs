@@ -42,15 +42,10 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Ocelot.Configuration;
-using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
-using System.IO;
-using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
@@ -77,7 +72,6 @@ namespace Ocelot.DependencyInjection
 
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
-            services.TryAddSingleton<IAuthenticationProviderConfigCreator, AuthenticationProviderConfigCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
             services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
@@ -147,38 +141,6 @@ namespace Ocelot.DependencyInjection
             if (identityServerConfiguration != null)
             {
                 services.AddIdentityServer(identityServerConfiguration, configurationRoot);
-            }
-
-            //todo - this means we need to break auth providers into there own section in the config
-            //then join onto them from reroutes based on a key
-            var data = File.ReadAllText("configuration.json");
-            var config = JsonConvert.DeserializeObject<FileConfiguration>(data);
-            
-            foreach(var authOptions in config.AuthenticationOptions)
-            {
-                if(authOptions.Provider.ToLower() == "identityserver")
-                {
-                    Action<IdentityServerAuthenticationOptions> options = o =>
-                    {
-                        o.Authority = authOptions.IdentityServerConfig.ProviderRootUrl;
-                        o.ApiName = authOptions.IdentityServerConfig.ApiName;
-                        o.RequireHttpsMetadata = authOptions.IdentityServerConfig.RequireHttps;
-                        o.SupportedTokens = SupportedTokens.Both;
-                        o.ApiSecret = authOptions.IdentityServerConfig.ApiSecret;
-                    };
-
-                    services.AddAuthentication()
-                        .AddIdentityServerAuthentication(authOptions.AuthenticationProviderKey, options);
-                }
-                else if (authOptions.Provider.ToLower() == "jwt")
-                {
-                    services.AddAuthentication()
-                        .AddJwtBearer(x =>
-                        {
-                            x.Authority = authOptions.JwtConfig.Authority;
-                            x.Audience = authOptions.JwtConfig.Audience;
-                        });
-                }
             }
 
             return services;

@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Responder
         [InlineData(OcelotErrorCode.RequestTimedOutError)]
         public void should_return_service_unavailable(OcelotErrorCode errorCode)
         {
-            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.ServiceUnavailable);
+            ShouldMapErrorToStatusCode(OcelotErrorCode.RequestTimedOutError, HttpStatusCode.ServiceUnavailable);
         }
 
 

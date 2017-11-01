@@ -446,16 +446,14 @@ namespace Ocelot.UnitTests.Configuration
 
         [Theory]
         [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
-        public void should_create_with_headers_to_extract(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
+        public void should_create_with_headers_to_extract(FileConfiguration fileConfig)
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(true)
                 .Build();
 
             var authenticationOptions = new AuthenticationOptionsBuilder()
-                    .WithProvider(provider)
                     .WithAllowedScopes(new List<string>())
-                    .WithConfig(config)
                     .Build();
 
             var expected = new List<ReRoute>
@@ -480,23 +478,21 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
-                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
         [Theory]
         [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
-        public void should_create_with_authentication_properties(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
+        public void should_create_with_authentication_properties(FileConfiguration fileConfig)
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(true)
                 .Build();
 
             var authenticationOptions = new AuthenticationOptionsBuilder()
-                   .WithProvider(provider)
                    .WithAllowedScopes(new List<string>())
-                   .WithConfig(config)
                    .Build();
 
             var expected = new List<ReRoute>
@@ -516,7 +512,7 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
-                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
         }
@@ -538,7 +534,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _validator
                 .Setup(x => x.IsValid(It.IsAny<FileConfiguration>()))
-                .Returns(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false)));
+                .ReturnsAsync(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false)));
         }
 
         private void GivenTheConfigIs(FileConfiguration fileConfiguration)
@@ -587,34 +583,13 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void ThenTheAuthenticationOptionsAre(string provider, List<ReRoute> expectedReRoutes)
+        private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
                 var result = _config.Data.ReRoutes[i].AuthenticationOptions;
                 var expected = expectedReRoutes[i].AuthenticationOptions;
-
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
-                result.Provider.ShouldBe(expected.Provider);
-
-                if (provider.ToLower() == "identityserver")
-                {
-                    var config = result.Config as IdentityServerConfig;
-                    var expectedConfig = expected.Config as IdentityServerConfig;
-
-                    config.ProviderRootUrl.ShouldBe(expectedConfig.ProviderRootUrl);
-                    config.RequireHttps.ShouldBe(expectedConfig.RequireHttps);
-                    config.ApiName.ShouldBe(expectedConfig.ApiName);
-                    config.ApiSecret.ShouldBe(expectedConfig.ApiSecret);
-                }
-                else
-                {
-                    var config = result.Config as JwtConfig;
-                    var expectedConfig = expected.Config as JwtConfig;
-
-                    config.Audience.ShouldBe(expectedConfig.Audience);
-                    config.Authority.ShouldBe(expectedConfig.Authority);
-                }
             }
         }
 
@@ -666,14 +641,14 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenTheAuthOptionsCreatorReturns(AuthenticationOptions authOptions)
         {
             _authOptionsCreator
-                .Setup(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<List<FileAuthenticationOptions>>()))
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
                 .Returns(authOptions);
         }
 
         private void ThenTheAuthOptionsCreatorIsCalledCorrectly()
         {
             _authOptionsCreator
-                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0], _fileConfiguration.AuthenticationOptions), Times.Once);
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
         private void GivenTheUpstreamTemplatePatternCreatorReturns(string pattern)

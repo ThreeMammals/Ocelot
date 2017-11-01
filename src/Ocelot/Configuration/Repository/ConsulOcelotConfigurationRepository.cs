@@ -3,8 +3,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Ocelot.Authentication.JsonConverters;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
@@ -49,9 +47,7 @@ namespace Ocelot.Configuration.Repository
 
             var json = Encoding.UTF8.GetString(bytes);
 
-            var settings = new JsonSerializerSettings();
-            settings.Converters.Add(new AuthenticationConfigConverter());
-            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
+            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
 
             return new OkResponse<IOcelotConfiguration>(consulConfig);
         }

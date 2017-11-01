@@ -1,4 +1,4 @@
-using Ocelot.Creator.Configuration;
+/*using Ocelot.Creator.Configuration;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -34,4 +34,4 @@ namespace Ocelot.Configuration.Creator
                 .WithRequireHttps(authenticationOptions.IdentityServerConfig.RequireHttps).Build();
         }
     }
-}
+}*/
