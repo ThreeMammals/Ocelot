@@ -44,21 +44,6 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
-/*               AuthenticationOptions = new List<FileAuthenticationOptions>
-               {
-                    new FileAuthenticationOptions
-                    {
-                    AllowedScopes =  new List<string>(),
-                        Provider = "IdentityServer",
-                        IdentityServerConfig = new FileIdentityServerConfig{
-                            ProviderRootUrl = "http://localhost:51888",
-                            RequireHttps = false,
-                            ApiName = "api",
-                            ApiSecret = "secret"
-                        },
-                        AuthenticationProviderKey = "Test"
-                    }
-               },*/
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -111,21 +96,6 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
-/*               AuthenticationOptions = new List<FileAuthenticationOptions>
-               {
-                    new FileAuthenticationOptions
-                    {
-                        AllowedScopes =  new List<string>(),
-                        Provider = "IdentityServer",
-                        IdentityServerConfig = new FileIdentityServerConfig{
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                        },
-                        AuthenticationProviderKey = "Test"
-                    }
-               },*/
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -176,21 +146,6 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {   
-       /*        AuthenticationOptions = new List<FileAuthenticationOptions>
-               {
-                   new FileAuthenticationOptions
-                    {
-                        AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                        Provider = "IdentityServer",
-                        IdentityServerConfig = new FileIdentityServerConfig{
-                            ProviderRootUrl = "http://localhost:51888",
-                            RequireHttps = false,
-                            ApiName = "api",
-                            ApiSecret = "secret"
-                        },
-                        AuthenticationProviderKey = "Test"
-                    }
-               },*/
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -226,21 +181,6 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
-              /* AuthenticationOptions = new List<FileAuthenticationOptions>
-               {
-                    new FileAuthenticationOptions
-                    {
-                        AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
-                        Provider = "IdentityServer",
-                        IdentityServerConfig = new FileIdentityServerConfig{
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                        },
-                        AuthenticationProviderKey = "Test"
-                    }
-               },*/
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute

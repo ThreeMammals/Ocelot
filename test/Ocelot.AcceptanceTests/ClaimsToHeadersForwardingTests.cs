@@ -58,24 +58,6 @@ namespace Ocelot.AcceptanceTests
 
            var configuration = new FileConfiguration
            {
-   /*            AuthenticationOptions = new List<FileAuthenticationOptions>
-               {
-                    new FileAuthenticationOptions
-                    {
-                        AllowedScopes = new List<string>
-                        {
-                            "openid", "offline_access", "api"
-                        },
-                        Provider = "IdentityServer",
-                        IdentityServerConfig = new FileIdentityServerConfig{
-                                ProviderRootUrl = "http://localhost:52888",
-                                RequireHttps = false,
-                                ApiName = "api",
-                                ApiSecret = "secret"
-                        },
-                        AuthenticationProviderKey = "Test"
-                    }
-               },*/
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
