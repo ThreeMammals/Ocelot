@@ -168,6 +168,7 @@ namespace Ocelot.Configuration.Creator
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
+                .WithAuthenticationProviderKey(fileReRoute.AuthenticationProviderKey)
                 .Build();
 
             await SetupLoadBalancer(reRoute);

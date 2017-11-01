@@ -31,6 +31,7 @@ namespace Ocelot.Configuration.Builder
         private QoSOptions _qosOptions;
         public bool _enableRateLimiting;
         public RateLimitOptions _rateLimitOptions;
+        private string _authenticationProviderKey;
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
@@ -176,6 +177,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
+        {
+            _authenticationProviderKey = authenticationProviderKey;
+            return this;
+        }
+
 
         public ReRoute Build()
         {
@@ -203,7 +210,8 @@ namespace Ocelot.Configuration.Builder
                 _useQos, 
                 _qosOptions,
                 _enableRateLimiting,
-                _rateLimitOptions);
+                _rateLimitOptions,
+                _authenticationProviderKey);
         }
     }
 }
