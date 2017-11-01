@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
@@ -18,18 +17,15 @@ namespace Ocelot.Authentication.Middleware
         private readonly RequestDelegate _next;
         private readonly IApplicationBuilder _app;
         private readonly IAuthenticationSchemeProvider _authSchemeProvider;
-        private readonly IAuthenticationHandlerFactory _authHandlerFactory;
         private readonly IOcelotLogger _logger;
 
         public AuthenticationMiddleware(RequestDelegate next,
             IApplicationBuilder app,
             IRequestScopedDataRepository requestScopedDataRepository,
-            IAuthenticationHandlerFactory authHandlerFactory,
             IOcelotLoggerFactory loggerFactory)
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _authHandlerFactory = authHandlerFactory;
             _app = app;
             _logger = loggerFactory.CreateLogger<AuthenticationMiddleware>();
         }

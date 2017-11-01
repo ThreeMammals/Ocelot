@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Ocelot.Authentication.Handler.Creator;
-using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
@@ -129,8 +127,6 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
             services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            services.TryAddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
-            services.TryAddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
             services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
             services.TryAddSingleton<IRequestMapper, RequestMapper>();
@@ -162,7 +158,7 @@ namespace Ocelot.DependencyInjection
             {
                 if(authOptions.Provider.ToLower() == "identityserver")
                 {
-                     Action<IdentityServerAuthenticationOptions> options = o =>
+                    Action<IdentityServerAuthenticationOptions> options = o =>
                     {
                         o.Authority = authOptions.IdentityServerConfig.ProviderRootUrl;
                         o.ApiName = authOptions.IdentityServerConfig.ApiName;
@@ -176,7 +172,12 @@ namespace Ocelot.DependencyInjection
                 }
                 else if (authOptions.Provider.ToLower() == "jwt")
                 {
-                    //todo - make this work for nick..
+                    services.AddAuthentication()
+                        .AddJwtBearer(x =>
+                        {
+                            x.Authority = authOptions.JwtConfig.Authority;
+                            x.Audience = authOptions.JwtConfig.Audience;
+                        });
                 }
             }
 
