@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +9,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
-namespace Ocelot.ManualTest
+namespace Ocelot.IntegrationTests
 {
     public class Startup
     {
@@ -32,18 +32,11 @@ namespace Ocelot.ManualTest
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
                 x.WithMicrosoftLogging(log =>
-                {
-                    log.AddConsole(LogLevel.Debug);
-                })
-                .WithDictionaryHandle();
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithDictionaryHandle();
             };
-
-            services.AddAuthentication()
-                .AddJwtBearer("TestKey", x =>
-                {
-                    x.Authority = "test";
-                    x.Audience = "test";
-                });
 
             services.AddOcelot(Configuration, settings);
         }
