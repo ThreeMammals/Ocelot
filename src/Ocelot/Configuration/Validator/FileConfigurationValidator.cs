@@ -26,6 +26,20 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(result);
             }
 
+            result = CheckDownstreamTemplatePathBeingsWithForwardSlash(configuration);
+
+            if (result.IsError)
+            {
+                return new OkResponse<ConfigurationValidationResult>(result);
+            }
+
+            result = CheckUpstreamTemplatePathBeingsWithForwardSlash(configuration);
+
+            if (result.IsError)
+            {
+                return new OkResponse<ConfigurationValidationResult>(result);
+            }
+
             result = await CheckForUnsupportedAuthenticationProviders(configuration);
 
             if (result.IsError)
@@ -47,6 +61,46 @@ namespace Ocelot.Configuration.Validator
             }
 
             return new OkResponse<ConfigurationValidationResult>(result);
+        }
+
+        private ConfigurationValidationResult CheckDownstreamTemplatePathBeingsWithForwardSlash(FileConfiguration configuration)
+        {   
+            var errors = new List<Error>();
+
+            foreach(var reRoute in configuration.ReRoutes)
+            {
+                if(!reRoute.DownstreamPathTemplate.StartsWith("/"))
+                {
+                    errors.Add(new PathTemplateDoesntStartWithForwardSlash($"{reRoute.DownstreamPathTemplate} doesnt start with forward slash"));
+                }
+            }
+
+            if(errors.Any())
+            {
+                return new ConfigurationValidationResult(true, errors);
+            }
+
+            return new ConfigurationValidationResult(false, errors);
+        }
+
+        private ConfigurationValidationResult CheckUpstreamTemplatePathBeingsWithForwardSlash(FileConfiguration configuration)
+        {   
+            var errors = new List<Error>();
+
+            foreach(var reRoute in configuration.ReRoutes)
+            {
+                if(!reRoute.UpstreamPathTemplate.StartsWith("/"))
+                {
+                    errors.Add(new PathTemplateDoesntStartWithForwardSlash($"{reRoute.DownstreamPathTemplate} doesnt start with forward slash"));
+                }
+            }
+
+            if(errors.Any())
+            {
+                return new ConfigurationValidationResult(true, errors);
+            }
+
+            return new ConfigurationValidationResult(false, errors);
         }
 
         private async Task<ConfigurationValidationResult> CheckForUnsupportedAuthenticationProviders(FileConfiguration configuration)
