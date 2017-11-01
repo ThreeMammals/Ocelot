@@ -11,6 +11,7 @@ namespace Ocelot.Configuration.File
             JwtConfig = new FileJwtConfig();
         }
 
+        public string AuthenticationProviderKey {get; set;}
         public string Provider { get; set; }
         public List<string> AllowedScopes { get; set; }
         public FileIdentityServerConfig IdentityServerConfig { get; set; }

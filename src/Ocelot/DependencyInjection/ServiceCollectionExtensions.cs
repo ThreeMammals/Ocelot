@@ -157,21 +157,26 @@ namespace Ocelot.DependencyInjection
             //then join onto them from reroutes based on a key
             var data = File.ReadAllText("configuration.json");
             var config = JsonConvert.DeserializeObject<FileConfiguration>(data);
-            foreach(var reRoute in config.ReRoutes)
+            
+            foreach(var authOptions in config.AuthenticationOptions)
             {
-                if(reRoute.AuthenticationOptions != null && !string.IsNullOrEmpty(reRoute.AuthenticationOptions.Provider))
+                if(authOptions.Provider.ToLower() == "identityserver")
                 {
                      Action<IdentityServerAuthenticationOptions> options = o =>
                     {
-                        o.Authority = reRoute.AuthenticationOptions.IdentityServerConfig.ProviderRootUrl;
-                        o.ApiName = reRoute.AuthenticationOptions.IdentityServerConfig.ApiName;
-                        o.RequireHttpsMetadata = reRoute.AuthenticationOptions.IdentityServerConfig.RequireHttps;
+                        o.Authority = authOptions.IdentityServerConfig.ProviderRootUrl;
+                        o.ApiName = authOptions.IdentityServerConfig.ApiName;
+                        o.RequireHttpsMetadata = authOptions.IdentityServerConfig.RequireHttps;
                         o.SupportedTokens = SupportedTokens.Both;
-                        o.ApiSecret = reRoute.AuthenticationOptions.IdentityServerConfig.ApiSecret;
+                        o.ApiSecret = authOptions.IdentityServerConfig.ApiSecret;
                     };
 
                     services.AddAuthentication()
-                        .AddIdentityServerAuthentication(reRoute.AuthenticationOptions.Provider, options);
+                        .AddIdentityServerAuthentication(authOptions.AuthenticationProviderKey, options);
+                }
+                else if (authOptions.Provider.ToLower() == "jwt")
+                {
+                    //todo - make this work for nick..
                 }
             }
 

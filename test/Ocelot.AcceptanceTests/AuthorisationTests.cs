@@ -33,6 +33,21 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
+               AuthenticationOptions = new List<FileAuthenticationOptions>
+               {
+                    new FileAuthenticationOptions
+                    {
+                    AllowedScopes =  new List<string>(),
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                            ProviderRootUrl = "http://localhost:51888",
+                            RequireHttps = false,
+                            ApiName = "api",
+                            ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+               },
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -43,17 +58,7 @@ namespace Ocelot.AcceptanceTests
                            DownstreamHost = "localhost",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                            AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = "http://localhost:51888",
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
-                           },
+                           AuthenticationProviderKey = "Test",
                            AddHeadersToRequest =
                            {
                                {"CustomerId", "Claims[CustomerId] > value"},
@@ -92,6 +97,21 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
+               AuthenticationOptions = new List<FileAuthenticationOptions>
+               {
+                    new FileAuthenticationOptions
+                    {
+                        AllowedScopes =  new List<string>(),
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+               },
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -102,17 +122,7 @@ namespace Ocelot.AcceptanceTests
                            DownstreamHost = "localhost",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                                AllowedScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                IdentityServerConfig = new FileIdentityServerConfig{
-                                        ProviderRootUrl = "http://localhost:51888",
-                                        RequireHttps = false,
-                                        ApiName = "api",
-                                        ApiSecret = "secret"
-                                }   
-                           },
+                           AuthenticationProviderKey = "Test",
                            AddHeadersToRequest =
                            {
                                {"CustomerId", "Claims[CustomerId] > value"},
@@ -148,7 +158,22 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200_using_identity_server_with_allowed_scope()
         {
            var configuration = new FileConfiguration
-           {
+           {   
+               AuthenticationOptions = new List<FileAuthenticationOptions>
+               {
+                   new FileAuthenticationOptions
+                    {
+                        AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                            ProviderRootUrl = "http://localhost:51888",
+                            RequireHttps = false,
+                            ApiName = "api",
+                            ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+               },
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -159,17 +184,7 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = "http",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = "http://localhost:51888",
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                                }   
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
                    }
            };
@@ -190,6 +205,21 @@ namespace Ocelot.AcceptanceTests
         {
            var configuration = new FileConfiguration
            {
+               AuthenticationOptions = new List<FileAuthenticationOptions>
+               {
+                    new FileAuthenticationOptions
+                    {
+                        AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+               },
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -200,17 +230,7 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = "http",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                        ProviderRootUrl = "http://localhost:51888",
-                                        RequireHttps = false,
-                                        ApiName = "api",
-                                        ApiSecret = "secret"
-                                }
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
                    }
            };

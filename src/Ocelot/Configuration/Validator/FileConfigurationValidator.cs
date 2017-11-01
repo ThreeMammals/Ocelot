@@ -46,21 +46,34 @@ namespace Ocelot.Configuration.Validator
         {
             var errors = new List<Error>();
 
+            //todo - these loops break seperation of concerns...unit tests should fail also..
+            foreach(var authProvider in configuration.AuthenticationOptions)
+            {
+                if (IsSupportedAuthenticationProvider(authProvider.Provider))
+                {
+                    continue;
+                }
+
+                var error = new UnsupportedAuthenticationProviderError($"{authProvider.Provider} is unsupported authentication provider");
+                errors.Add(error);
+            }
+
             foreach (var reRoute in configuration.ReRoutes)
             {
-                var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationOptions?.Provider);
+                var isAuthenticated = !string.IsNullOrEmpty(reRoute.AuthenticationProviderKey);
 
                 if (!isAuthenticated)
                 {
                     continue;
                 }
 
-                if (IsSupportedAuthenticationProvider(reRoute.AuthenticationOptions?.Provider))
+                //todo is this correct?
+                if(configuration.AuthenticationOptions.Exists(x => x.AuthenticationProviderKey == reRoute.AuthenticationProviderKey))
                 {
                     continue;
                 }
 
-                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationOptions?.Provider} is unsupported authentication provider, upstream template is {reRoute.UpstreamPathTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
+                var error = new UnsupportedAuthenticationProviderError($"{reRoute.AuthenticationProviderKey} is unsupported authentication provider, upstream template is {reRoute.UpstreamPathTemplate}, upstream method is {reRoute.UpstreamHttpMethod}");
                 errors.Add(error);
             }
 

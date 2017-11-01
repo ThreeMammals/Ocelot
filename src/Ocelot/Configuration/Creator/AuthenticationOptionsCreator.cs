@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Creator.Configuration;
@@ -13,15 +14,25 @@ namespace Ocelot.Configuration.Creator
             _creator = creator;
         }
 
-        public AuthenticationOptions Create(FileReRoute fileReRoute)
+        public AuthenticationOptions Create(FileReRoute reRoute, List<FileAuthenticationOptions> authOptions)
         {
-            var authenticationConfig = _creator.Create(fileReRoute.AuthenticationOptions);
+            //todo - loop is crap..
+            foreach(var authOption in authOptions)
+            {
+                if(reRoute.AuthenticationProviderKey == authOption.AuthenticationProviderKey)
+                {
+                    var authenticationConfig = _creator.Create(authOption);
 
-            return new AuthenticationOptionsBuilder()
-                .WithProvider(fileReRoute.AuthenticationOptions?.Provider)
-                .WithAllowedScopes(fileReRoute.AuthenticationOptions?.AllowedScopes)
-                .WithConfig(authenticationConfig)
-                .Build();
+                    return new AuthenticationOptionsBuilder()
+                        .WithProvider(authOption.Provider)
+                        .WithAllowedScopes(authOption.AllowedScopes)
+                        .WithConfig(authenticationConfig)
+                        .Build();
+                }
+            }
+
+            //todo - should not return null?
+            return null;
         } 
     }
 }

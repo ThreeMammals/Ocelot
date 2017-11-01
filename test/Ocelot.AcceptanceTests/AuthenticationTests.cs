@@ -49,18 +49,23 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }                               
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
+                   },
+                   AuthenticationOptions = new List<FileAuthenticationOptions>
+                   {
+                        new FileAuthenticationOptions
+                        {
+                            AllowedScopes =  new List<string>(),
+                            Provider = "IdentityServer",
+                            IdentityServerConfig = new FileIdentityServerConfig{
+                                ProviderRootUrl = _identityServerRootUrl,
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                            },
+                            AuthenticationProviderKey = "Test"                           
+                        }
                    }
            };
 
@@ -89,19 +94,24 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
-                   }
+                   },
+                AuthenticationOptions = new List<FileAuthenticationOptions>
+                {
+                    new FileAuthenticationOptions
+                        {
+                            AllowedScopes =  new List<string>(),
+                            Provider = "IdentityServer",
+                            IdentityServerConfig = new FileIdentityServerConfig{
+                                ProviderRootUrl = _identityServerRootUrl,
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                            },
+                            AuthenticationProviderKey = "Test"
+                        }
+                }
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -131,19 +141,24 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
-                   }
+                   },
+                AuthenticationOptions = new List<FileAuthenticationOptions>
+                {
+                    new FileAuthenticationOptions
+                    {
+                        AllowedScopes =  new List<string>(),
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                            ProviderRootUrl = _identityServerRootUrl,
+                            RequireHttps = false,
+                            ApiName = "api",
+                            ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+                }
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -172,8 +187,12 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
-
-                           AuthenticationOptions = new FileAuthenticationOptions
+                           AuthenticationProviderKey = "Test"
+                       }
+                   },
+                    AuthenticationOptions = new List<FileAuthenticationOptions>
+                    {
+                        new FileAuthenticationOptions
                            {
                                AllowedScopes =  new List<string>(),
                                Provider = "IdentityServer",
@@ -182,10 +201,10 @@ namespace Ocelot.AcceptanceTests
                                     RequireHttps = false,
                                     ApiName = "api",
                                     ApiSecret = "secret"
-                               }
+                               },
+                               AuthenticationProviderKey = "Test"
                            }
-                       }
-                   }
+                    }
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -215,19 +234,24 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AllowedScopes = new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
-                           }
+                           AuthenticationProviderKey = "Test"
                        }
-                   }
+                   },
+                AuthenticationOptions = new List<FileAuthenticationOptions>
+                {
+                    new FileAuthenticationOptions
+                    {
+                        AllowedScopes = new List<string>(),
+                        Provider = "IdentityServer",
+                        IdentityServerConfig = new FileIdentityServerConfig{
+                            ProviderRootUrl = _identityServerRootUrl,
+                            RequireHttps = false,
+                            ApiName = "api",
+                            ApiSecret = "secret"
+                        },
+                        AuthenticationProviderKey = "Test"
+                    }
+                }
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))

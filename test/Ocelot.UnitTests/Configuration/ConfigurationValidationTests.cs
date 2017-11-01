@@ -62,16 +62,21 @@ namespace Ocelot.UnitTests.Configuration
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
+                AuthenticationOptions = new List<FileAuthenticationOptions>
+                {
+                    new FileAuthenticationOptions
+                    {
+                        Provider = "IdentityServer",
+                        AuthenticationProviderKey = "Test"
+                    }
+                },
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "http://asdf.com",
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            Provider = "IdentityServer"
-                        }
+                        AuthenticationProviderKey = "Test"
                     }
                 }
             }))
@@ -85,16 +90,21 @@ namespace Ocelot.UnitTests.Configuration
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
+                AuthenticationOptions = new List<FileAuthenticationOptions>
+                {
+                    new FileAuthenticationOptions
+                    {
+                        Provider = "BootyBootyBottyRockinEverywhere",
+                        AuthenticationProviderKey = "Test"
+                    }
+                },
                 ReRoutes = new List<FileReRoute>
                 {
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "http://asdf.com",
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            Provider = "BootyBootyBottyRockinEverywhere"
-                        }
+                        AuthenticationProviderKey = "Test"
                     }
                 }
             }))

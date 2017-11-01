@@ -20,6 +20,22 @@
                     .Build(),
                 new FileConfiguration
                 {
+                    AuthenticationOptions = new List<FileAuthenticationOptions>
+                    {
+                        new FileAuthenticationOptions
+                        {
+                            AllowedScopes = new List<string>(),
+                            Provider = "IdentityServer",
+                            IdentityServerConfig = new FileIdentityServerConfig
+                            {
+                                ProviderRootUrl = "http://localhost:51888",
+                                RequireHttps = false,
+                                ApiName = "api",
+                                ApiSecret = "secret"
+                            }  ,
+                            AuthenticationProviderKey = "Test"                              
+                        }
+                    },
                     ReRoutes = new List<FileReRoute>
                     {
                         new FileReRoute
@@ -28,18 +44,7 @@
                             DownstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AllowedScopes = new List<string>(),
-                                Provider = "IdentityServer",
-                                IdentityServerConfig = new FileIdentityServerConfig
-                                {
-                                    ProviderRootUrl = "http://localhost:51888",
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                                }                                
-                            },
+                                AuthenticationProviderKey = "Test",                              
                             AddHeadersToRequest =
                                 {
                                     { "CustomerId", "Claims[CustomerId] > value" },
@@ -58,6 +63,20 @@
                     .Build(),
                 new FileConfiguration
                 {
+                    AuthenticationOptions = new List<FileAuthenticationOptions>
+                    {
+                        new FileAuthenticationOptions
+                            {
+                                AllowedScopes = new List<string>(),
+                                Provider = "IdentityServer",
+                                JwtConfig = new FileJwtConfig
+                                {
+                                    Audience = "a",
+                                    Authority = "au"
+                                },
+                                AuthenticationProviderKey = "Test"
+                            }
+                    },
                     ReRoutes = new List<FileReRoute>
                     {
                         new FileReRoute
@@ -66,16 +85,7 @@
                             DownstreamPathTemplate = "/products/{productId}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ReRouteIsCaseSensitive = true,
-                            AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AllowedScopes = new List<string>(),
-                                Provider = "IdentityServer",
-                                JwtConfig = new FileJwtConfig
-                                {
-                                    Audience = "a",
-                                    Authority = "au"
-                                }
-                            },
+                            AuthenticationProviderKey = "Test",
                             AddHeadersToRequest =
                             {
                                 { "CustomerId", "Claims[CustomerId] > value" },

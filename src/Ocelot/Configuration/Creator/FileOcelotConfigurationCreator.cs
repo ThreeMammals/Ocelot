@@ -110,14 +110,14 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var reRoute in fileConfiguration.ReRoutes)
             {
-                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
+                var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration, fileConfiguration.AuthenticationOptions);
                 reRoutes.Add(ocelotReRoute);
             }
             
             return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath);
         }
 
-        private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
+        private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration, List<FileAuthenticationOptions> authOptions)
         {
             var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
@@ -129,7 +129,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
-            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute, authOptions);
 
             var claimsToHeaders = _claimsToThingCreator.Create(fileReRoute.AddHeadersToRequest);
 

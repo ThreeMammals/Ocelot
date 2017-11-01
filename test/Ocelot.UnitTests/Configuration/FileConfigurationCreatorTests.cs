@@ -666,14 +666,14 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenTheAuthOptionsCreatorReturns(AuthenticationOptions authOptions)
         {
             _authOptionsCreator
-                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Setup(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<List<FileAuthenticationOptions>>()))
                 .Returns(authOptions);
         }
 
         private void ThenTheAuthOptionsCreatorIsCalledCorrectly()
         {
             _authOptionsCreator
-                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0], _fileConfiguration.AuthenticationOptions), Times.Once);
         }
 
         private void GivenTheUpstreamTemplatePatternCreatorReturns(string pattern)
