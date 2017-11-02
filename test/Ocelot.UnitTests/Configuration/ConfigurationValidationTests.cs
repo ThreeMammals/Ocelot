@@ -57,12 +57,50 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "/asdf/"
                     }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_without_slash_prefix_downstream_path_template()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "api/products/",
+                        UpstreamPathTemplate = "/asdf/"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_without_slash_prefix_upstream_path_template()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "api/prod/",
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
                 .BDDfy();
         }
 
@@ -76,7 +114,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "http://asdf.com",
+                        UpstreamPathTemplate = "/asdf/",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
@@ -90,14 +128,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheAuthSchemeExists(string name)
-        {
-            _provider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(new List<AuthenticationScheme>
-            {
-                new AuthenticationScheme(name, name, typeof(TestHandler))
-            });
-        }
-
         [Fact]
         public void configuration_is_invalid_with_invalid_authentication_provider()
         {
@@ -108,7 +138,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "http://asdf.com",
+                        UpstreamPathTemplate = "/asdf/",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
@@ -131,12 +161,12 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "/asdf/"
                     },
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk",
-                        UpstreamPathTemplate = "http://asdf.com"
+                        UpstreamPathTemplate = "/asdf/"
                     }
                 }
             }))
@@ -169,6 +199,14 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheErrorIs<T>()
         {
             _result.Data.Errors[0].ShouldBeOfType<T>();
+        }
+
+        private void GivenTheAuthSchemeExists(string name)
+        {
+            _provider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(new List<AuthenticationScheme>
+            {
+                new AuthenticationScheme(name, name, typeof(TestHandler))
+            });
         }
 
         private class TestOptions : AuthenticationSchemeOptions

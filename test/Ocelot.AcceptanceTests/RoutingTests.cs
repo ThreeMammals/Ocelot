@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamPathTemplate = "api/products",
+                            DownstreamPathTemplate = "/api/products",
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
