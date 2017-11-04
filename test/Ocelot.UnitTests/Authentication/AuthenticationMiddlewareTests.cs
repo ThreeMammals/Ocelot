@@ -2,11 +2,9 @@
 {
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
-    using Ocelot.Authentication.Handler.Factory;
     using Ocelot.Authentication.Middleware;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
@@ -19,13 +17,10 @@
 
     public class AuthenticationMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IAuthenticationHandlerFactory> _authFactory;
         private OkResponse<DownstreamRoute> _downstreamRoute;
 
         public AuthenticationMiddlewareTests()
         {
-            _authFactory = new Mock<IAuthenticationHandlerFactory>();
-
             GivenTheTestServerIsConfigured();
         }
 
@@ -45,7 +40,6 @@
         {
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
-            services.AddSingleton(_authFactory.Object);
             services.AddSingleton(ScopedRepository.Object);
         }
 

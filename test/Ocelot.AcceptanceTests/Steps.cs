@@ -8,6 +8,8 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +19,6 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.ManualTest;
 using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
@@ -86,6 +87,26 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddAuthentication()
+                    .AddIdentityServerAuthentication(authenticationProviderKey, options);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
         {
             _webHostBuilder = new WebHostBuilder();
@@ -135,9 +156,7 @@ namespace Ocelot.AcceptanceTests
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
-
             _webHostBuilder = new WebHostBuilder();
-            
             _webHostBuilder.ConfigureServices(s => 
             {
                 s.AddSingleton(_webHostBuilder);
@@ -160,7 +179,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .ConfigureLogging(l =>
                 {
-                    l.AddConsole(configuration.GetSection("Logging"));
+                    l.AddConsole();
                     l.AddDebug();
                 })
                 .Configure(a =>
@@ -360,6 +379,44 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheRequestIdIsReturned(string expected)
         {
             _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
+        }
+    }
+
+    public class Startup
+    {
+        public Startup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("configuration.json")
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
+        }
+
+        public IConfigurationRoot Configuration { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            Action<ConfigurationBuilderCachePart> settings = (x) =>
+            {
+                x.WithMicrosoftLogging(log =>
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithDictionaryHandle();
+            };
+
+            services.AddOcelot(Configuration, settings);
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
+            app.UseOcelot().Wait();
         }
     }
 }

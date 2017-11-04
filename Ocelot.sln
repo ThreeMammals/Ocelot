@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -12,9 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build-and-run-tests.ps1 = build-and-run-tests.ps1
 		build.cake = build.cake
 		build.ps1 = build.ps1
-		build.readme.md = build.readme.md
-		configuration-explanation.txt = configuration-explanation.txt
-		configuration.yaml = configuration.yaml
 		GitVersion.yml = GitVersion.yml
 		global.json = global.json
 		LICENSE.md = LICENSE.md
@@ -83,5 +80,8 @@ Global
 		{02BBF4C5-517E-4157-8D21-4B8B9E118B7A} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{D4575572-99CA-4530-8737-C296EDA326F8} = {5B401523-36DA-4491-B73A-7590A26E420B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}
 	EndGlobalSection
 EndGlobal

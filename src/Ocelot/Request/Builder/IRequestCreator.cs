@@ -11,6 +11,8 @@
         Task<Response<Request>> Build(
             HttpRequestMessage httpRequestMessage,
             bool isQos,
-            IQoSProvider qosProvider);
+            IQoSProvider qosProvider,
+            bool useCookieContainer,
+            bool allowAutoRedirect);
     }
 }

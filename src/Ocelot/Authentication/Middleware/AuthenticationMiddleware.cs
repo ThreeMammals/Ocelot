@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
@@ -16,18 +16,16 @@ namespace Ocelot.Authentication.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IApplicationBuilder _app;
-        private readonly IAuthenticationHandlerFactory _authHandlerFactory;
+        private readonly IAuthenticationSchemeProvider _authSchemeProvider;
         private readonly IOcelotLogger _logger;
 
         public AuthenticationMiddleware(RequestDelegate next,
             IApplicationBuilder app,
             IRequestScopedDataRepository requestScopedDataRepository,
-            IAuthenticationHandlerFactory authHandlerFactory,
             IOcelotLoggerFactory loggerFactory)
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _authHandlerFactory = authHandlerFactory;
             _app = app;
             _logger = loggerFactory.CreateLogger<AuthenticationMiddleware>();
         }
@@ -37,18 +35,10 @@ namespace Ocelot.Authentication.Middleware
             if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
             {
                 _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
-
-                var authenticationHandler = _authHandlerFactory.Get(_app, DownstreamRoute.ReRoute.AuthenticationOptions);
-
-                if (authenticationHandler.IsError)
-                {
-                    _logger.LogError($"Error getting authentication handler for {context.Request.Path}. {authenticationHandler.Errors.ToErrorString()}");
-                    SetPipelineError(authenticationHandler.Errors);
-                    return;
-                }
-
-                await authenticationHandler.Data.Handler.Handle(context);
-
+                
+                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.AuthenticationOptions.AuthenticationProviderKey);
+                
+                context.User = result.Principal;
 
                 if (context.User.Identity.IsAuthenticated)
                 {
@@ -65,7 +55,6 @@ namespace Ocelot.Authentication.Middleware
 
                     _logger.LogError($"Client has NOT been authenticated for {context.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     SetPipelineError(error);
-                    return;
                 }
             }
             else

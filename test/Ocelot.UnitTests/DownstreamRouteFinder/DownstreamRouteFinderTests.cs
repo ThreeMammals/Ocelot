@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_route()
         {
-            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher"))
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x =>x.GivenTheTemplateVariableAndNameFinderReturns(
                         new OkResponse<List<UrlPathPlaceholderNameAndValue>>(
                             new List<UrlPathPlaceholderNameAndValue>())))
@@ -62,6 +62,39 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .Build()
                 )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_append_slash_to_upstream_url_path()
+        {
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher"))
+                .And(x =>x.GivenTheTemplateVariableAndNameFinderReturns(
+                        new OkResponse<List<UrlPathPlaceholderNameAndValue>>(
+                            new List<UrlPathPlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                {
+                    new ReRouteBuilder()
+                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithUpstreamPathTemplate("someUpstreamPath")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .WithUpstreamTemplatePattern("someUpstreamPath")
+                        .Build()
+                }, string.Empty
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
+                            new List<UrlPathPlaceholderNameAndValue>(),
+                            new ReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .Build()
+                )))
+                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly("matchInUrlMatcher/"))
                 .BDDfy();
         }
 
@@ -137,7 +170,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_not_return_route()
         {
-            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("dontMatchPath"))
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("dontMatchPath/"))
                  .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
                         new ReRouteBuilder()
@@ -267,6 +300,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _mockMatcher
                 .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Once);
+        }
+
+        private void ThenTheUrlMatcherIsCalledCorrectly(string expectedUpstreamUrlPath)
+        {
+            _mockMatcher
+                .Verify(x => x.Match(expectedUpstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Once);
         }
 
         private void ThenTheUrlMatcherIsNotCalled()

@@ -38,6 +38,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IReRouteOptionsCreator _fileReRouteOptionsCreator;
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
         private readonly IRegionCreator _regionCreator;
+        private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -55,7 +56,8 @@ namespace Ocelot.Configuration.Creator
             IQoSOptionsCreator qosOptionsCreator,
             IReRouteOptionsCreator fileReRouteOptionsCreator,
             IRateLimitOptionsCreator rateLimitOptionsCreator,
-            IRegionCreator regionCreator
+            IRegionCreator regionCreator,
+            IHttpHandlerOptionsCreator httpHandlerOptionsCreator
             )
         {
             _regionCreator = regionCreator;
@@ -74,6 +76,7 @@ namespace Ocelot.Configuration.Creator
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
             _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
+            _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create()
@@ -92,7 +95,7 @@ namespace Ocelot.Configuration.Creator
 
         private async Task<IOcelotConfiguration> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
-            var response = _configurationValidator.IsValid(fileConfiguration);
+            var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {
@@ -143,6 +146,8 @@ namespace Ocelot.Configuration.Creator
 
             var region = _regionCreator.Create(fileReRoute);
 
+            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -168,6 +173,7 @@ namespace Ocelot.Configuration.Creator
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
+                .WithHttpHandlerOptions(httpHandlerOptions)
                 .Build();
 
             await SetupLoadBalancer(reRoute);
@@ -178,7 +184,7 @@ namespace Ocelot.Configuration.Creator
         private string CreateReRouteKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
-            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}{fileReRoute.UpstreamHttpMethod}";
+            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";
             return loadBalancerKey;
         }
 

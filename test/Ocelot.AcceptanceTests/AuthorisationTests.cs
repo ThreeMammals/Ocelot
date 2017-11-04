@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,10 +23,20 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
+        private Action<IdentityServerAuthenticationOptions> _options;
+        private string _identityServerRootUrl = "http://localhost:51888";
 
         public AuthorisationTests()
         {
             _steps = new Steps();
+            _options = o =>
+            {
+                o.Authority = _identityServerRootUrl;
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+            };
         }
 
         [Fact]
@@ -45,14 +56,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                            AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = "http://localhost:51888",
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
+                               AuthenticationProviderKey = "Test"
                            },
                            AddHeadersToRequest =
                            {
@@ -79,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -104,14 +108,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                                AllowedScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                IdentityServerConfig = new FileIdentityServerConfig{
-                                        ProviderRootUrl = "http://localhost:51888",
-                                        RequireHttps = false,
-                                        ApiName = "api",
-                                        ApiSecret = "secret"
-                                }   
+                               AuthenticationProviderKey = "Test"
                            },
                            AddHeadersToRequest =
                            {
@@ -137,7 +134,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
@@ -148,7 +145,7 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200_using_identity_server_with_allowed_scope()
         {
            var configuration = new FileConfiguration
-           {
+           {   
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -161,15 +158,9 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
+                               AuthenticationProviderKey = "Test",
                                AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = "http://localhost:51888",
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                                }   
-                           }
+                           },
                        }
                    }
            };
@@ -178,7 +169,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -202,15 +193,9 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
+                               AuthenticationProviderKey = "Test",
                                AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                        ProviderRootUrl = "http://localhost:51888",
-                                        RequireHttps = false,
-                                        ApiName = "api",
-                                        ApiSecret = "secret"
-                                }
-                           }
+                           },
                        }
                    }
            };
@@ -219,7 +204,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
@@ -259,7 +244,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     services.AddLogging();
                     services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                        .AddDeveloperSigningCredential()
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource

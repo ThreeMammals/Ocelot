@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
+using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
@@ -51,7 +54,7 @@ namespace Ocelot.Middleware
         /// <param name="builder"></param>
         /// <param name="middlewareConfiguration"></param>
         /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder,       OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
             await CreateAdministrationArea(builder);
 
@@ -178,25 +181,10 @@ namespace Ocelot.Middleware
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
             {
-                var urlFinder = (IBaseUrlFinder)builder.ApplicationServices.GetService(typeof(IBaseUrlFinder));
-
-                var baseSchemeUrlAndPort = urlFinder.Find();
-                
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
-                    app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
-                    {
-                        Authority = identityServerUrl,
-                        ApiName = identityServerConfiguration.ApiName,
-                        RequireHttpsMetadata = identityServerConfiguration.RequireHttps,
-                        AllowedScopes = identityServerConfiguration.AllowedScopes,
-                        SupportedTokens = SupportedTokens.Both,
-                        ApiSecret = identityServerConfiguration.ApiSecret
-                    });
-
                     app.UseIdentityServer();
-
+                    app.UseAuthentication();
                     app.UseMvc();
                 });
             }

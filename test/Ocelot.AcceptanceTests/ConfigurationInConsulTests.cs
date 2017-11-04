@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Ocelot.Authentication.JsonConverters;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
 using Ocelot.ServiceDiscovery;
 using TestStack.BDDfy;
 using Xunit;
@@ -105,9 +102,7 @@ namespace Ocelot.AcceptanceTests
 
                                             var json = reader.ReadToEnd();
 
-                                            var settings = new JsonSerializerSettings();
-                                            settings.Converters.Add(new AuthenticationConfigConverter());
-                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json, settings);
+                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
 
                                             var response = JsonConvert.SerializeObject(true);
 

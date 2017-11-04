@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -15,6 +16,7 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _builder;
         private readonly Steps _steps;
+        private string _downstreamPath;
 
         public RoutingTests()
         {
@@ -50,10 +52,51 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void bug()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/{vacancyId}",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
@@ -68,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamPathTemplate = "api/products",
+                            DownstreamPathTemplate = "/api/products",
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
@@ -78,7 +121,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -106,7 +149,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -134,7 +177,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
@@ -162,7 +205,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
@@ -196,7 +239,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
@@ -223,12 +266,40 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_not_add_trailing_slash_to_downstream_url()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/products/{productId}",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/products/{productId}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe("/api/products/1"))
                 .BDDfy();
         }
 
@@ -251,7 +322,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -279,7 +350,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/newThing?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-"))
@@ -307,7 +378,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/myApp1Name/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/myApp1Name/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/myApp1Name/api/products/1"))
@@ -335,7 +406,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -363,7 +434,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -372,18 +443,59 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
+        [Fact]
+        public void should_return_404_when_calling_upstream_route_with_no_matching_downstream_re_route_github_issue_134()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/vacancy/{vacancyId}",
+                        UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
+                        ServiceName = "botCore",
+                        LoadBalancer = "LeastConnection"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("api/vacancy/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
+
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
-                .UseUrls(url)
+                .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseUrls(url)
                 .Configure(app =>
                 {
+                    app.UsePathBase(basePath);
                     app.Run(async context =>
-                    {
+                    {   
+                        _downstreamPath = context.Request.PathBase.Value;
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
                     });
@@ -391,6 +503,11 @@ namespace Ocelot.AcceptanceTests
                 .Build();
 
             _builder.Start();
+        }
+
+        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
+        {
+            _downstreamPath.ShouldBe(expectedDownstreamPath);
         }
 
         public void Dispose()

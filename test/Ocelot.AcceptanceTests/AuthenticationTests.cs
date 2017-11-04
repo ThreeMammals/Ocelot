@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +15,6 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4;
     using IdentityServer4.Test;
 
     public class AuthenticationTests : IDisposable
@@ -28,10 +28,19 @@ namespace Ocelot.AcceptanceTests
         private int _downstreamServicePort = 51876;
         private string _downstreamServiceScheme = "http";
         private string _downstreamServiceUrl = "http://localhost:51876";
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
 
         public AuthenticationTests()
         {
             _steps = new Steps();
+            _options = o =>
+            {
+                o.Authority = _identityServerRootUrl;
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+            };
         }
 
         [Fact]
@@ -51,23 +60,16 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }                               
+                                AuthenticationProviderKey = "Test"
                            }
                        }
                    }
            };
 
-           this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenThePostHasContent("postContent"))
                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
@@ -91,14 +93,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
+                               AuthenticationProviderKey = "Test"
                            }
                        }
                    }
@@ -108,7 +103,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -133,14 +128,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
+                               AuthenticationProviderKey = "Test"
                            }
                        }
                    }
@@ -150,7 +138,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApi2(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
@@ -172,17 +160,9 @@ namespace Ocelot.AcceptanceTests
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
-
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowedScopes =  new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
+                               AuthenticationProviderKey = "Test"
                            }
                        }
                    }
@@ -192,7 +172,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .And(x => _steps.GivenThePostHasContent("postContent"))
                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
@@ -217,14 +197,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowedScopes = new List<string>(),
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                    ProviderRootUrl = _identityServerRootUrl,
-                                    RequireHttps = false,
-                                    ApiName = "api",
-                                    ApiSecret = "secret"
-                               }
+                               AuthenticationProviderKey = "Test"
                            }
                        }
                    }
@@ -234,7 +207,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .And(x => _steps.GivenThePostHasContent("postContent"))
                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
@@ -275,7 +248,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     services.AddLogging();
                     services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                    .AddDeveloperSigningCredential()
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource

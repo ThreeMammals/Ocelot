@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Ocelot.Authentication.Handler.Creator;
-using Ocelot.Authentication.Handler.Factory;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
@@ -38,13 +36,15 @@ using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.IdentityModel.Tokens;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Ocelot.Configuration;
-using Ocelot.Creator.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
@@ -72,10 +72,8 @@ namespace Ocelot.DependencyInjection
 
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
-            services.TryAddSingleton<IAuthenticationProviderConfigCreator, AuthenticationProviderConfigCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
             services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
-            services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
             services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
@@ -84,59 +82,7 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
-
-            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
-            
-            if(identityServerConfiguration != null)
-            {
-                services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-                services.TryAddSingleton<IHashMatcher, HashMatcher>();
-                var identityServerBuilder = services
-                    .AddIdentityServer(options => {
-                        options.IssuerUri = "Ocelot";
-                    })
-                    .AddInMemoryApiResources(new List<ApiResource>
-                    {
-                        new ApiResource
-                        {
-                            Name = identityServerConfiguration.ApiName,
-                            Description = identityServerConfiguration.Description,
-                            Enabled = identityServerConfiguration.Enabled,
-                            DisplayName = identityServerConfiguration.ApiName,
-                            Scopes = identityServerConfiguration.AllowedScopes.Select(x => new Scope(x)).ToList(),
-                            ApiSecrets = new List<Secret>
-                            {
-                                new Secret
-                                {
-                                    Value = identityServerConfiguration.ApiSecret.Sha256()
-                                }
-                            }
-                        }
-                    })
-                    .AddInMemoryClients(new List<Client>
-                    {
-                        new Client
-                        {
-                            ClientId = identityServerConfiguration.ApiName,
-                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                            ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
-                            AllowedScopes = identityServerConfiguration.AllowedScopes,
-                            AccessTokenType = identityServerConfiguration.AccessTokenType,
-                            Enabled = identityServerConfiguration.Enabled,
-                            RequireClientSecret = identityServerConfiguration.RequireClientSecret
-                        }
-                    }).AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
-
-                if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
-                {
-                    identityServerBuilder.AddTemporarySigningCredential();
-                }
-                else
-                {
-                    var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
-                    identityServerBuilder.AddSigningCredential(cert);
-                }
-            }
+            services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
 
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
@@ -175,11 +121,10 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
             services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            services.TryAddSingleton<IAuthenticationHandlerFactory, AuthenticationHandlerFactory>();
-            services.TryAddSingleton<IAuthenticationHandlerCreator, AuthenticationHandlerCreator>();
             services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
             services.TryAddSingleton<IRequestMapper, RequestMapper>();
+            services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -190,8 +135,89 @@ namespace Ocelot.DependencyInjection
             //Used to log the the start and ending of middleware
             services.TryAddSingleton<OcelotDiagnosticListener>();
             services.AddMiddlewareAnalysis();
+            services.AddWebEncoders();
+
+            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
+
+            if (identityServerConfiguration != null)
+            {
+                services.AddIdentityServer(identityServerConfiguration, configurationRoot);
+            }
 
             return services;
+        }
+
+        private static void AddIdentityServer(this IServiceCollection services, IIdentityServerConfiguration identityServerConfiguration, IConfigurationRoot configurationRoot) 
+        {
+            services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            services.TryAddSingleton<IHashMatcher, HashMatcher>();
+            var identityServerBuilder = services
+                .AddIdentityServer(o => {
+                    o.IssuerUri = "Ocelot";
+                })
+                .AddInMemoryApiResources(Resources(identityServerConfiguration))
+                .AddInMemoryClients(Client(identityServerConfiguration))
+                .AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+
+            //todo - refactor a method so we know why this is happening
+            var whb = services.First(x => x.ServiceType == typeof(IWebHostBuilder));
+            var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
+            var baseSchemeUrlAndPort = urlFinder.Find();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(o =>
+                {
+                    var adminPath = configurationRoot.GetValue("GlobalConfiguration:AdministrationPath", string.Empty);
+                    o.Authority = baseSchemeUrlAndPort + adminPath;
+                    o.ApiName = identityServerConfiguration.ApiName;
+                    o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
+                    o.SupportedTokens = SupportedTokens.Both;
+                    o.ApiSecret = identityServerConfiguration.ApiSecret;
+                });
+
+                //todo - refactor naming..
+                if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
+                {
+                    identityServerBuilder.AddDeveloperSigningCredential();
+                }
+                else
+                {
+                    //todo - refactor so calls method?
+                    var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
+                    identityServerBuilder.AddSigningCredential(cert);
+                }
+        }
+
+        private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+                {
+                    ApiSecrets = new List<Secret>
+                    {
+                        new Secret
+                        {
+                            Value = identityServerConfiguration.ApiSecret.Sha256()
+                        }
+                    }
+                }
+            };
+        }
+
+        private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration) 
+        {
+            return new List<Client>
+            {
+                new Client
+                {
+                    ClientId = identityServerConfiguration.ApiName,
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+                    AllowedScopes = { identityServerConfiguration.ApiName }
+                }
+            };
         }
     }
 }

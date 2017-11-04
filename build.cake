@@ -1,6 +1,7 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=GitReleaseNotes"
-#addin "nuget:?package=Cake.Json"
+#addin nuget:?package=Cake.Json
+#addin nuget:?package=Newtonsoft.Json&version=9.0.1
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool coveralls.net
@@ -260,11 +261,19 @@ Task("ReleasePackagesToUnstableFeed")
 Task("EnsureStableReleaseRequirements")
     .Does(() =>
     {
+		Information("Check if stable release...");
+
         if (!AppVeyor.IsRunningOnAppVeyor)
 		{
            throw new Exception("Stable release should happen via appveyor");
 		}
-        
+
+		Information("Running on AppVeyor...");
+
+		Information("IsTag = " + AppVeyor.Environment.Repository.Tag.IsTag);
+
+		Information("Name = " + AppVeyor.Environment.Repository.Tag.Name);
+
 		var isTag =
            AppVeyor.Environment.Repository.Tag.IsTag &&
            !string.IsNullOrWhiteSpace(AppVeyor.Environment.Repository.Tag.Name);
@@ -273,6 +282,8 @@ Task("EnsureStableReleaseRequirements")
 		{
            throw new Exception("Stable release should happen from a published GitHub release");
 		}
+
+		Information("Release is stable...");
     });
 
 Task("UpdateVersionInfo")
@@ -287,19 +298,48 @@ Task("DownloadGitHubReleaseArtifacts")
     .IsDependentOn("UpdateVersionInfo")
     .Does(() =>
     {
-        EnsureDirectoryExists(packagesDir);
+		try
+		{
+			Information("DownloadGitHubReleaseArtifacts");
 
-		var releaseUrl = tagsUrl + releaseTag;
-        var assets_url = ParseJson(GetResource(releaseUrl))
-            .GetValue("assets_url")
-			.Value<string>();
+			EnsureDirectoryExists(packagesDir);
 
-        foreach(var asset in DeserializeJson<JArray>(GetResource(assets_url)))
-        {
-			var file = packagesDir + File(asset.Value<string>("name"));
-			Information("Downloading " + file);
-            DownloadFile(asset.Value<string>("browser_download_url"), file);
-        }
+			Information("Directory exists...");
+
+			var releaseUrl = tagsUrl + releaseTag;
+
+			Information("Release url " + releaseUrl);
+
+			//var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
+
+        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
+				.GetValue("assets_url")
+				.Value<string>();
+
+			Information("Assets url " + assets_url);
+
+			var assets = GetResource(assets_url);
+
+			Information("Assets " + assets_url);
+
+			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(assets))
+			{
+				Information("In the loop..");
+
+				var file = packagesDir + File(asset.Value<string>("name"));
+
+				Information("Downloading " + file);
+				
+				DownloadFile(asset.Value<string>("browser_download_url"), file);
+			}
+
+			Information("Out of the loop...");
+		}
+		catch(Exception exception)
+		{
+			Information("There was an exception " + exception);
+			throw;
+		}
     });
 
 Task("ReleasePackagesToStableFeed")
@@ -394,19 +434,31 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 /// gets the resource from the specified url
 private string GetResource(string url)
 {
-	Information("Getting resource from " + url);
+	try
+	{
+		Information("Getting resource from " + url);
 
-    var assetsRequest = System.Net.WebRequest.CreateHttp(url);
-    assetsRequest.Method = "GET";
-    assetsRequest.Accept = "application/vnd.github.v3+json";
-    assetsRequest.UserAgent = "BuildScript";
+		var assetsRequest = System.Net.WebRequest.CreateHttp(url);
+		assetsRequest.Method = "GET";
+		assetsRequest.Accept = "application/vnd.github.v3+json";
+		assetsRequest.UserAgent = "BuildScript";
 
-    using (var assetsResponse = assetsRequest.GetResponse())
-    {
-        var assetsStream = assetsResponse.GetResponseStream();
-        var assetsReader = new StreamReader(assetsStream);
-        return assetsReader.ReadToEnd();
-    }
+		using (var assetsResponse = assetsRequest.GetResponse())
+		{
+			var assetsStream = assetsResponse.GetResponseStream();
+			var assetsReader = new StreamReader(assetsStream);
+			var response =  assetsReader.ReadToEnd();
+
+			Information("Response is " + response);
+			
+			return response;
+		}
+	}
+	catch(Exception exception)
+	{
+		Information("There was an exception " + exception);
+		throw;
+	}
 }
 
 private bool ShouldPublishToUnstableFeed(string filter, string branchName)

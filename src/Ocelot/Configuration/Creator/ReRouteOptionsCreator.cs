@@ -36,7 +36,7 @@ namespace Ocelot.Configuration.Creator
 
         private bool IsAuthenticated(FileReRoute fileReRoute)
         {
-            return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.Provider);
+            return !string.IsNullOrEmpty(fileReRoute.AuthenticationOptions?.AuthenticationProviderKey);
         }
 
         private bool IsAuthorised(FileReRoute fileReRoute)

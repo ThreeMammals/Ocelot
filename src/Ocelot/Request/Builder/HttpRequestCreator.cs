@@ -10,9 +10,11 @@ namespace Ocelot.Request.Builder
         public async Task<Response<Request>> Build(
             HttpRequestMessage httpRequestMessage,
             bool isQos,
-            IQoSProvider qosProvider)
+            IQoSProvider qosProvider,
+            bool useCookieContainer,
+            bool allowAutoRedirect)
         {
-            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider));
+            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider, useCookieContainer, allowAutoRedirect));
         }
     }
 }

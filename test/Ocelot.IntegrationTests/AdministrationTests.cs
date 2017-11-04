@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
-using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -59,7 +58,7 @@ namespace Ocelot.IntegrationTests
          public void should_return_response_200_with_call_re_routes_controller()
          {
              var configuration = new FileConfiguration
-             {
+             { 
                  GlobalConfiguration = new FileGlobalConfiguration
                  {
                      AdministrationPath = "/administration"

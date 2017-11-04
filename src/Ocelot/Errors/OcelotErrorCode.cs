@@ -31,6 +31,7 @@
         UnableToFindQoSProviderError,
         UnableToSetConfigInConsulError,
         UnmappableRequestError,
-        RateLimitOptionsError
+        RateLimitOptionsError,
+        PathTemplateDoesntStartWithForwardSlash
     }
 }

@@ -11,16 +11,16 @@ namespace Ocelot.Configuration.File
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
             AddQueriesToRequest = new Dictionary<string, string>();
-            AuthenticationOptions = new FileAuthenticationOptions();
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
+            AuthenticationOptions = new FileAuthenticationOptions();
+            HttpHandlerOptions = new FileHttpHandlerOptions();
         }
 
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
-        public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
@@ -35,5 +35,7 @@ namespace Ocelot.Configuration.File
         public FileQoSOptions QoSOptions { get; set; }
         public string LoadBalancer {get;set;}
         public FileRateLimitRule RateLimitOptions { get; set; }
+        public FileAuthenticationOptions AuthenticationOptions { get; set; }
+        public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     }
 }

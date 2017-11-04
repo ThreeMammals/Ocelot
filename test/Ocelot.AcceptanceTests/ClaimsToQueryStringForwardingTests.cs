@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,10 +25,20 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
+        private Action<IdentityServerAuthenticationOptions> _options;
+        private string _identityServerRootUrl = "http://localhost:57888";
 
         public ClaimsToQueryStringForwardingTests()
         {
             _steps = new Steps();
+            _options = o =>
+            {
+                o.Authority = _identityServerRootUrl;
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+            };
         }
 
         [Fact]
@@ -59,17 +70,11 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-								AllowedScopes = new List<string>
+                               AuthenticationProviderKey = "Test",
+                               AllowedScopes = new List<string>
                                {
                                    "openid", "offline_access", "api"
                                },
-                               Provider = "IdentityServer",
-                               IdentityServerConfig = new FileIdentityServerConfig{
-                                        ProviderRootUrl = "http://localhost:57888",
-                                        RequireHttps = false,
-                                        ApiName = "api",
-                                        ApiSecret = "secret"
-                                }
                            },
                            AddQueriesToRequest =
                            {
@@ -86,7 +91,7 @@ namespace Ocelot.AcceptanceTests
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
                .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning())
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -140,7 +145,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     services.AddLogging();
                     services.AddIdentityServer()
-                    .AddTemporarySigningCredential()
+                        .AddDeveloperSigningCredential()
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource

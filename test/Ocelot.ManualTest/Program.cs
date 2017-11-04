@@ -9,17 +9,14 @@ namespace Ocelot.ManualTest
         public static void Main(string[] args)
         {
             IWebHostBuilder builder = new WebHostBuilder();
-            
             builder.ConfigureServices(s => {
                 s.AddSingleton(builder);
             });
-
             builder.UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
-
+                .UseIISIntegration()
+                .UseStartup<Startup>();                
             var host = builder.Build();
-
             host.Run();
         }
     }

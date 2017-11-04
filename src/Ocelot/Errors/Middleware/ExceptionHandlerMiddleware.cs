@@ -50,11 +50,7 @@ namespace Ocelot.Errors.Middleware
 
         private void SetInternalServerErrorOnResponse(HttpContext context)
         {
-            context.Response.OnStarting(x =>
-            {
-                context.Response.StatusCode = 500;
-                return Task.CompletedTask;
-            }, context);
+            context.Response.StatusCode = 500;
         }
 
         private string CreateMessage(HttpContext context, Exception e)
