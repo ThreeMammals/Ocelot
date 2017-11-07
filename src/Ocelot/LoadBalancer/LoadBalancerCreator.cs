@@ -4,7 +4,7 @@ using Ocelot.LoadBalancer.LoadBalancers;
 
 namespace Ocelot.LoadBalancer
 {
-    public class LoadBalancerCreator
+    public class LoadBalancerCreator : ILoadBalancerCreator
     {
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly ILoadBalancerFactory _loadBalanceFactory;

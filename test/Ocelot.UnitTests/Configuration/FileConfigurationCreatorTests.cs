@@ -19,7 +19,7 @@ using Xunit;
 namespace Ocelot.UnitTests.Configuration
 {
     using System.Collections;
-
+    using Ocelot.LoadBalancer;
     using Ocelot.UnitTests.TestData;
 
     public class FileConfigurationCreatorTests
@@ -30,8 +30,6 @@ namespace Ocelot.UnitTests.Configuration
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IOcelotLoggerFactory> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
-        private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
-        private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
         private readonly Mock<IQoSProviderFactory> _qosProviderFactory;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
@@ -46,6 +44,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private Mock<IRegionCreator> _regionCreator;
         private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
+        private Mock<ILoadBalancerCreator> _lbCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -55,8 +54,6 @@ namespace Ocelot.UnitTests.Configuration
             _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
-            _loadBalancerFactory = new Mock<ILoadBalancerFactory>();
-            _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _claimsToThingCreator = new Mock<IClaimsToThingCreator>();
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
@@ -68,10 +65,11 @@ namespace Ocelot.UnitTests.Configuration
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
+            _lbCreator = new Mock<ILoadBalancerCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
-                _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
+                _lbCreator.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
@@ -212,10 +210,8 @@ namespace Ocelot.UnitTests.Configuration
                             }))
                                 .And(x => x.GivenTheConfigIsValid())
                                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-                                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                                 .When(x => x.WhenICreateTheConfig())
-                                .Then(x => x.TheLoadBalancerFactoryIsCalledCorrectly())
-                                .And(x => x.ThenTheLoadBalancerHouseIsCalledCorrectly())
+                                .And(x => x.ThenTheLoadBalancerCreatorIsCalledCorrectly())
                     .BDDfy();
         }
 
@@ -516,7 +512,6 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing> { new ClaimToThing("CustomerId", "CustomerId", "", 0) }))
-                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -550,7 +545,6 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
-                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -634,23 +628,9 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void GivenTheLoadBalancerFactoryReturns()
+        private void ThenTheLoadBalancerCreatorIsCalledCorrectly()
         {
-            _loadBalancerFactory
-                .Setup(x => x.Get(It.IsAny<ReRoute>()))
-                .ReturnsAsync(_loadBalancer.Object);
-        }
-
-        private void TheLoadBalancerFactoryIsCalledCorrectly()
-        {
-            _loadBalancerFactory
-                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
-        }
-
-        private void ThenTheLoadBalancerHouseIsCalledCorrectly()
-        {
-            _loadBalancerHouse
-                .Verify(x => x.Add(It.IsAny<string>(), _loadBalancer.Object), Times.Once);
+            _lbCreator.Verify(x => x.SetupLoadBalancer(It.IsAny<ReRoute>()), Times.Once);
         }
 
         private void GivenTheQosProviderFactoryReturns()

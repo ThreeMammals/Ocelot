@@ -46,6 +46,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Ocelot.Configuration;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+using Ocelot.LoadBalancer;
 
 namespace Ocelot.DependencyInjection
 {
@@ -93,6 +94,7 @@ namespace Ocelot.DependencyInjection
                 .AddJsonFormatters();
 
             services.AddLogging();
+            services.TryAddSingleton<ILoadBalancerCreator, LoadBalancerCreator>();
             services.TryAddSingleton<IRegionCreator, RegionCreator>();
             services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
             services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
