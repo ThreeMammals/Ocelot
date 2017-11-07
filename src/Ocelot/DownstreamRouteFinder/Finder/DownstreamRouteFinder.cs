@@ -27,7 +27,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             upstreamUrlPath = upstreamUrlPath.SetLastCharacterAs('/');
             
-            var configuration = await _configProvider.Get();
+            var configuration = await _configProvider.Get(); 
 
             var applicableReRoutes = configuration.Data.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(upstreamHttpMethod.ToLower()));
 
