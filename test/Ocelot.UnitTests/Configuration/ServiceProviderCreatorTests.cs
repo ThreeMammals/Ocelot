@@ -60,15 +60,12 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_reRoute, _globalConfig);
+            _result = _creator.Create(_globalConfig);
         }
 
         private void ThenTheConfigIs(ServiceProviderConfiguration expected)
         {
-            _result.DownstreamHost.ShouldBe(expected.DownstreamHost);
-            _result.DownstreamPort.ShouldBe(expected.DownstreamPort);
             _result.ServiceDiscoveryProvider.ShouldBe(expected.ServiceDiscoveryProvider);
-            _result.ServiceName.ShouldBe(expected.ServiceName);
             _result.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
             _result.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
         }

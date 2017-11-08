@@ -5,6 +5,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.Errors;
@@ -137,8 +138,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheLoadBalancerHouseReturns()
         {
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<string>()))
-                .Returns(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
+                .Setup(x => x.Get(It.IsAny<ReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .ReturnsAsync(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
         }
 
         private void GivenTheLoadBalancerHouseReturnsAnError()
@@ -149,8 +150,8 @@ namespace Ocelot.UnitTests.LoadBalancer
             });
 
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<string>()))
-                .Returns(_getLoadBalancerHouseError);
+                .Setup(x => x.Get(It.IsAny<ReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .ReturnsAsync(_getLoadBalancerHouseError);
         }
 
         private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()

@@ -12,6 +12,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private ServiceProviderConfiguration _serviceConfig;
         private IServiceDiscoveryProvider _result;
         private readonly ServiceDiscoveryProviderFactory _factory;
+        private ReRoute _reRoute;
 
         public ServiceProviderFactoryTests()
         {
@@ -22,12 +23,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         public void should_return_no_service_provider()
         {
             var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithDownstreamHost("127.0.0.1")
-                .WithDownstreamPort(80)
-                .WithUseServiceDiscovery(false)
                 .Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig))
+            var reRoute = new ReRouteBuilder().Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
                 .BDDfy();
@@ -36,26 +36,30 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_consul_service_provider()
         {
-            var serviceConfig = new ServiceProviderConfigurationBuilder()
+            var reRoute = new ReRouteBuilder()
                 .WithServiceName("product")
                 .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .WithServiceDiscoveryProvider("Consul")
                 .Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig))
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
                 .BDDfy();
         }
 
-        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig)
+        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
         {
             _serviceConfig = serviceConfig;
+            _reRoute = reRoute;
         }
 
         private void WhenIGetTheServiceProvider()
         {
-            _result = _factory.Get(_serviceConfig);
+            _result = _factory.Get(_serviceConfig, _reRoute);
         }
 
         private void ThenTheServiceProviderIs<T>()

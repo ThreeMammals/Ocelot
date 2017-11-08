@@ -36,6 +36,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_route()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x =>x.GivenTheTemplateVariableAndNameFinderReturns(
                         new OkResponse<List<UrlPathPlaceholderNameAndValue>>(
@@ -48,7 +50,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("someUpstreamPath")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
@@ -69,6 +71,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_append_slash_to_upstream_url_path()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher"))
                 .And(x =>x.GivenTheTemplateVariableAndNameFinderReturns(
                         new OkResponse<List<UrlPathPlaceholderNameAndValue>>(
@@ -81,7 +85,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("someUpstreamPath")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
@@ -101,6 +105,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_route_if_upstream_path_and_upstream_template_are_the_same()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(
                     x =>
@@ -114,7 +120,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("someUpstreamPath")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
@@ -133,6 +139,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_correct_route_for_http_verb()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(
                     x =>
@@ -152,7 +160,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern("")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -169,7 +177,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         [Fact]
         public void should_not_return_route()
-        {
+        {            
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("dontMatchPath/"))
                  .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
@@ -179,7 +189,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("somePath")
                         .Build(),   
-                     }, string.Empty
+                     }, string.Empty, serviceProviderConfig
                  ))
                  .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false))))
                  .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
@@ -193,6 +203,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_correct_route_for_http_verb_setting_multiple_upstream_http_method()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(
                     x =>
@@ -206,7 +218,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
                         .WithUpstreamTemplatePattern("")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -224,6 +236,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_correct_route_for_http_verb_setting_all_upstream_http_method()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(
                     x =>
@@ -237,7 +251,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string>())
                         .WithUpstreamTemplatePattern("")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -255,6 +269,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_not_return_route_for_http_verb_not_setting_in_upstream_http_method()
         {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(
                     x =>
@@ -268,7 +284,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
                         .WithUpstreamTemplatePattern("")
                         .Build()
-                }, string.Empty
+                }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -322,12 +338,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Returns(_match);
         }
 
-        private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath)
+        private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _reRoutesConfig = reRoutesConfig;
             _mockConfig
                 .Setup(x => x.Get())
-                .ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig, adminPath)));
+                .ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig)));
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

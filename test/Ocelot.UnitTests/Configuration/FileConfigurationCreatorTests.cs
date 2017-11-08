@@ -44,7 +44,6 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private Mock<IRegionCreator> _regionCreator;
         private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
-        private Mock<ILoadBalancerCreator> _lbCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -65,11 +64,9 @@ namespace Ocelot.UnitTests.Configuration
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
-            _lbCreator = new Mock<ILoadBalancerCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
-                _lbCreator.Object, 
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
@@ -190,32 +187,6 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_load_balancer()
-        {
-            var reRouteOptions = new ReRouteOptionsBuilder()
-                .Build();
-
-            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-                            {
-                                ReRoutes = new List<FileReRoute>
-                                {
-                                    new FileReRoute
-                                    {
-                                        DownstreamHost = "127.0.0.1",
-                                        UpstreamPathTemplate = "/api/products/{productId}",
-                                        DownstreamPathTemplate = "/products/{productId}",
-                                        UpstreamHttpMethod = new List<string> { "Get" },
-                                    }
-                                },
-                            }))
-                                .And(x => x.GivenTheConfigIsValid())
-                                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-                                .When(x => x.WhenICreateTheConfig())
-                                .And(x => x.ThenTheLoadBalancerCreatorIsCalledCorrectly())
-                    .BDDfy();
-        }
-
-        [Fact]
         public void should_use_downstream_host()
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
@@ -320,12 +291,8 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
-                                        .WithUseServiceDiscovery(true)
-                                        .WithServiceDiscoveryProvider("consul")
-                                        .WithServiceDiscoveryProviderHost("127.0.0.1")
-                                        .WithServiceName("ProductService")
-                                        .Build())
+                                    .WithUseServiceDiscovery(true)
+                                    .WithServiceName("ProductService")
                                     .Build()
                             }))
                             .BDDfy();
@@ -359,9 +326,7 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
-                                        .WithUseServiceDiscovery(false)
-                                        .Build())
+                                    .WithUseServiceDiscovery(false)
                                     .Build()
                             }))
                             .BDDfy();
@@ -604,20 +569,6 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void ThenTheServiceConfigurationIs(ServiceProviderConfiguration expected)
-        {
-            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
-            {
-                var result = _config.Data.ReRoutes[i];
-                result.ServiceProviderConfiguraion.DownstreamHost.ShouldBe(expected.DownstreamHost);
-                result.ServiceProviderConfiguraion.DownstreamPort.ShouldBe(expected.DownstreamPort);
-                result.ServiceProviderConfiguraion.ServiceDiscoveryProvider.ShouldBe(expected.ServiceDiscoveryProvider);
-                result.ServiceProviderConfiguraion.ServiceName.ShouldBe(expected.ServiceName);
-                result.ServiceProviderConfiguraion.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
-                result.ServiceProviderConfiguraion.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
-            }
-        }
-
         private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
@@ -626,11 +577,6 @@ namespace Ocelot.UnitTests.Configuration
                 var expected = expectedReRoutes[i].AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
-        }
-
-        private void ThenTheLoadBalancerCreatorIsCalledCorrectly()
-        {
-            _lbCreator.Verify(x => x.SetupLoadBalancer(It.IsAny<ReRoute>()), Times.Once);
         }
 
         private void GivenTheQosProviderFactoryReturns()

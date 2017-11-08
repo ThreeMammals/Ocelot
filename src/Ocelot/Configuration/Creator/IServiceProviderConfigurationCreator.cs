@@ -4,6 +4,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IServiceProviderConfigurationCreator
     {
-        ServiceProviderConfiguration Create(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration);
+        ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration);
     }
 }

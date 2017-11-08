@@ -26,7 +26,6 @@ namespace Ocelot.Configuration.Creator
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
         private readonly IOcelotLogger _logger;
-        private readonly ILoadBalancerCreator _lbCreator;
         private readonly IQoSProviderFactory _qoSProviderFactory;
         private readonly IQosProviderHouse _qosProviderHouse;
         private readonly IClaimsToThingCreator _claimsToThingCreator;
@@ -44,7 +43,6 @@ namespace Ocelot.Configuration.Creator
             IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator,
             IOcelotLoggerFactory loggerFactory,
-            ILoadBalancerCreator lbCreator,
             IQoSProviderFactory qoSProviderFactory, 
             IQosProviderHouse qosProviderHouse,
             IClaimsToThingCreator claimsToThingCreator,
@@ -59,7 +57,6 @@ namespace Ocelot.Configuration.Creator
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator
             )
         {
-            _lbCreator = lbCreator;
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -114,8 +111,10 @@ namespace Ocelot.Configuration.Creator
                 var ocelotReRoute = await SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
                 reRoutes.Add(ocelotReRoute);
             }
+
+            var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath);
+            return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath, serviceProviderConfiguration);
         }
 
         private async Task<ReRoute> SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
@@ -127,8 +126,6 @@ namespace Ocelot.Configuration.Creator
             var reRouteKey = CreateReRouteKey(fileReRoute);
 
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
-
-            var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileReRoute, globalConfiguration);
 
             var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
 
@@ -166,7 +163,6 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHost(fileReRoute.DownstreamHost)
                 .WithDownstreamPort(fileReRoute.DownstreamPort)
                 .WithLoadBalancerKey(reRouteKey)
-                .WithServiceProviderConfiguraion(serviceProviderConfiguration)
                 .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
@@ -174,7 +170,6 @@ namespace Ocelot.Configuration.Creator
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .Build();
 
-            await _lbCreator.SetupLoadBalancer(reRoute);
             SetupQosProvider(reRoute);
             return reRoute;
         }

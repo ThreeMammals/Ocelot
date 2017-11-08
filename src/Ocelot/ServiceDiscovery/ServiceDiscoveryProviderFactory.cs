@@ -6,17 +6,17 @@ namespace Ocelot.ServiceDiscovery
 {
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig)
+        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
         {
-            if (serviceConfig.UseServiceDiscovery)
+            if (reRoute.UseServiceDiscovery)
             {
-                return GetServiceDiscoveryProvider(serviceConfig.ServiceName, serviceConfig.ServiceDiscoveryProvider, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
+                return GetServiceDiscoveryProvider(reRoute.ServiceName, serviceConfig.ServiceDiscoveryProvider, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
             }
 
             var services = new List<Service>()
             {
-                new Service(serviceConfig.ServiceName, 
-                new HostAndPort(serviceConfig.DownstreamHost, serviceConfig.DownstreamPort),
+                new Service(reRoute.ServiceName, 
+                new HostAndPort(reRoute.DownstreamHost, reRoute.DownstreamPort),
                 string.Empty, 
                 string.Empty, 
                 new string[0])

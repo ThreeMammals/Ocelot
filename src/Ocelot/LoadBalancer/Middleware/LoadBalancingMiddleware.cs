@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.Provider;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -11,6 +12,7 @@ namespace Ocelot.LoadBalancer.Middleware
 {
     public class LoadBalancingMiddleware : OcelotMiddleware
     {
+        private readonly IOcelotConfigurationProvider _configProvider;
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
@@ -18,9 +20,11 @@ namespace Ocelot.LoadBalancer.Middleware
         public LoadBalancingMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository,
-            ILoadBalancerHouse loadBalancerHouse) 
+            ILoadBalancerHouse loadBalancerHouse,
+            IOcelotConfigurationProvider configProvider) 
             : base(requestScopedDataRepository)
         {
+            _configProvider = configProvider;
             _next = next;
             _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
             _loadBalancerHouse = loadBalancerHouse;
@@ -28,7 +32,9 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.ReRouteKey);
+            var configuration = await _configProvider.Get(); 
+
+            var loadBalancer = await _loadBalancerHouse.Get(DownstreamRoute.ReRoute, configuration.Data.ServiceProviderConfiguration);
             if(loadBalancer.IsError)
             {
                 _logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");

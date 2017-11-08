@@ -1,33 +1,58 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Ocelot.Configuration;
 using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public class LoadBalancerHouse : ILoadBalancerHouse
     {
+        private readonly ILoadBalancerFactory _factory;
         private readonly Dictionary<string, ILoadBalancer> _loadBalancers;
 
-        public LoadBalancerHouse()
+        public LoadBalancerHouse(ILoadBalancerFactory factory)
         {
+            _factory = factory;
             _loadBalancers = new Dictionary<string, ILoadBalancer>();
         }
 
-        public Response<ILoadBalancer> Get(string key)
+        public async Task<Response<ILoadBalancer>> Get(ReRoute reRoute, ServiceProviderConfiguration config)
         {
-            ILoadBalancer loadBalancer;
-
-            if(_loadBalancers.TryGetValue(key, out loadBalancer))
+            try
             {
-                return new OkResponse<ILoadBalancer>(_loadBalancers[key]);
+                ILoadBalancer loadBalancer;
+
+                if(_loadBalancers.TryGetValue(reRoute.ReRouteKey, out loadBalancer))
+                {
+                    loadBalancer = _loadBalancers[reRoute.ReRouteKey];
+
+                    //todo - we have some duplicate namey type logic in the LoadBalancerFactory...maybe we can do something
+                    //about this..
+                    if((reRoute.LoadBalancer == "RoundRobin" && loadBalancer.GetType() != typeof(RoundRobinLoadBalancer))
+                        || (reRoute.LoadBalancer == "LeastConnection" && loadBalancer.GetType() != typeof(LeastConnectionLoadBalancer)))
+                    {
+                        loadBalancer = await _factory.Get(reRoute, config);
+                        AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
+                    }
+
+                    return new OkResponse<ILoadBalancer>(loadBalancer);
+                }
+
+                loadBalancer = await _factory.Get(reRoute, config);
+                AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
+                return new OkResponse<ILoadBalancer>(loadBalancer);
             }
-
-                return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+            catch(Exception ex)
             {
-                new UnableToFindLoadBalancerError($"unabe to find load balancer for {key}")
-            });
+                return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+                {
+                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.ReRouteKey} exception is {ex}")
+                });
+            }
         }
 
-        public Response Add(string key, ILoadBalancer loadBalancer)
+        private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
         {
             if (!_loadBalancers.ContainsKey(key))
             {
@@ -36,7 +61,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
             _loadBalancers.Remove(key);
             _loadBalancers.Add(key, loadBalancer);
-            return new OkResponse();
         }
     }
 }
