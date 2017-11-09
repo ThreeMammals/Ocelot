@@ -100,8 +100,8 @@ namespace Ocelot.AcceptanceTests
 
         private void ThenBothServicesCalledRealisticAmountOfTimes()
         {
-            _counterOne.ShouldBe(26);
-            _counterTwo.ShouldBe(24);
+            _counterOne.ShouldBeInRange(24,26);
+            _counterOne.ShouldBeInRange(24,26);
         }
 
         private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
