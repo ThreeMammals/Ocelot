@@ -74,6 +74,30 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void should_call_service_provider_config_creator()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+                
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Port = 8500,
+                        Provider = "consul"
+                    }
+                }
+            }))
+                .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => x.GivenTheConfigIsValid())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
+                .BDDfy();  
+        }
+
+        [Fact]
         public void should_call_region_creator()
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
@@ -651,6 +675,18 @@ namespace Ocelot.UnitTests.Configuration
 
             _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
             _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+        }
+
+        private void ThenTheServiceProviderCreatorIsCalledCorrectly()
+        {
+            _serviceProviderConfigCreator
+                .Verify(x => x.Create(_fileConfiguration.GlobalConfiguration), Times.Once);
+        }
+
+        private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)
+        {
+            _serviceProviderConfigCreator
+                .Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(serviceProviderConfiguration);
         }
     }
 }
