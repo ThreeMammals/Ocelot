@@ -168,6 +168,8 @@ namespace Ocelot.Configuration.Creator
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .WithHttpHandlerOptions(httpHandlerOptions)
+                .WithServiceName(fileReRoute.ServiceName)
+                .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
                 .Build();
 
             SetupQosProvider(reRoute);

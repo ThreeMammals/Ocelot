@@ -72,6 +72,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ServiceName = serviceName,
                             LoadBalancer = "LeastConnection",
+                            UseServiceDiscovery = true,
                         }
                     },
                     GlobalConfiguration = new FileGlobalConfiguration()
@@ -99,8 +100,8 @@ namespace Ocelot.AcceptanceTests
 
         private void ThenBothServicesCalledRealisticAmountOfTimes()
         {
-            _counterOne.ShouldBe(25);
-            _counterTwo.ShouldBe(25);
+            _counterOne.ShouldBe(26);
+            _counterTwo.ShouldBe(24);
         }
 
         private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)

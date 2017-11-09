@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.Configuration;
@@ -9,12 +10,12 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     public class LoadBalancerHouse : ILoadBalancerHouse
     {
         private readonly ILoadBalancerFactory _factory;
-        private readonly Dictionary<string, ILoadBalancer> _loadBalancers;
+        private readonly ConcurrentDictionary<string, ILoadBalancer> _loadBalancers;
 
         public LoadBalancerHouse(ILoadBalancerFactory factory)
         {
             _factory = factory;
-            _loadBalancers = new Dictionary<string, ILoadBalancer>();
+            _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
         }
 
         public async Task<Response<ILoadBalancer>> Get(ReRoute reRoute, ServiceProviderConfiguration config)
@@ -54,13 +55,18 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
         {
-            if (!_loadBalancers.ContainsKey(key))
-            {
-                _loadBalancers.Add(key, loadBalancer);
-            }
+            _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => {
+                return loadBalancer;
+            });
+            
+            // if (!_loadBalancers.ContainsKey(key))
+            // {
+            //     _loadBalancers.TryAdd(key, loadBalancer);
+            // }
 
-            _loadBalancers.Remove(key);
-            _loadBalancers.Add(key, loadBalancer);
+            // ILoadBalancer old;
+            // _loadBalancers.Remove(key, out old);
+            // _loadBalancers.TryAdd(key, loadBalancer);
         }
     }
 }
