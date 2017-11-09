@@ -7,6 +7,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Provider;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.Errors;
     using Ocelot.LoadBalancer.LoadBalancers;
@@ -22,18 +23,20 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
+        private readonly Mock<IOcelotConfigurationProvider> _configProvider;
         private HostAndPort _hostAndPort;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
         private ErrorResponse<HostAndPort> _getHostAndPortError;
         private HttpRequestMessage _downstreamRequest;
+        private ServiceProviderConfiguration _config;
 
         public LoadBalancerMiddlewareTests()
         {
+            _configProvider = new Mock<IOcelotConfigurationProvider>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
-
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "");
 
             ScopedRepository
@@ -51,7 +54,11 @@ namespace Ocelot.UnitTests.LoadBalancer
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
+                .And(x => GivenTheConfigurationIs(serviceProviderConfig))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturns())
@@ -68,7 +75,11 @@ namespace Ocelot.UnitTests.LoadBalancer
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+                .Build();
+
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
+                .And(x => GivenTheConfigurationIs(serviceProviderConfig))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturnsAnError())
                 .When(x => x.WhenICallTheMiddleware())
@@ -83,8 +94,12 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
+                
+             var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+                .Build();
 
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
+                .And(x => GivenTheConfigurationIs(serviceProviderConfig))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturnsAnError())
@@ -93,11 +108,19 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
+        {
+            _config = config;
+            _configProvider
+                .Setup(x => x.Get()).ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(null, null, _config)));
+        }
+
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
         {
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_loadBalancerHouse.Object);
+            services.AddSingleton(_configProvider.Object);
             services.AddSingleton(ScopedRepository.Object);
         }
 
