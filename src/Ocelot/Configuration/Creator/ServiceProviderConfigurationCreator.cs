@@ -10,7 +10,6 @@ namespace Ocelot.Configuration.Creator
             var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
 
             return new ServiceProviderConfigurationBuilder()
-                    .WithServiceDiscoveryProvider(globalConfiguration?.ServiceDiscoveryProvider?.Provider)
                     .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
                     .WithServiceDiscoveryProviderPort(serviceProviderPort)
                     .Build();

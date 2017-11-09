@@ -149,7 +149,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-        public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
+        public ReRouteBuilder WithReRouteKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
             return this;

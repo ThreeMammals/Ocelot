@@ -2,15 +2,8 @@ namespace Ocelot.Configuration.Builder
 {
     public class ServiceProviderConfigurationBuilder
     {
-        private string _serviceDiscoveryProvider;
         private string _serviceDiscoveryProviderHost;
         private int _serviceDiscoveryProviderPort;
-
-        public ServiceProviderConfigurationBuilder WithServiceDiscoveryProvider(string serviceDiscoveryProvider)
-        {
-            _serviceDiscoveryProvider = serviceDiscoveryProvider;
-            return this;
-        }
 
         public ServiceProviderConfigurationBuilder WithServiceDiscoveryProviderHost(string serviceDiscoveryProviderHost)
         {
@@ -26,7 +19,7 @@ namespace Ocelot.Configuration.Builder
 
         public ServiceProviderConfiguration Build()
         {
-            return new ServiceProviderConfiguration(_serviceDiscoveryProvider, _serviceDiscoveryProviderHost,_serviceDiscoveryProviderPort);
+            return new ServiceProviderConfiguration(_serviceDiscoveryProviderHost,_serviceDiscoveryProviderPort);
         }
     }
 }

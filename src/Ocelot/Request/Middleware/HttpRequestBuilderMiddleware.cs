@@ -32,7 +32,7 @@ namespace Ocelot.Request.Middleware
         {
             _logger.LogDebug("started calling request builder middleware");
 
-            var qosProvider = _qosProviderHouse.Get(DownstreamRoute.ReRoute.ReRouteKey);
+            var qosProvider = _qosProviderHouse.Get(DownstreamRoute.ReRoute);
 
             if (qosProvider.IsError)
             {

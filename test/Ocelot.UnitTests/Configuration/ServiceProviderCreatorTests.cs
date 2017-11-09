@@ -29,14 +29,12 @@ namespace Ocelot.UnitTests.Configuration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Provider = "consul",
                     Host = "127.0.0.1",
                     Port = 1234
                 }
             };
 
             var expected = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProvider("consul")
                 .WithServiceDiscoveryProviderHost("127.0.0.1")
                 .WithServiceDiscoveryProviderPort(1234)
                 .Build();
@@ -65,7 +63,6 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigIs(ServiceProviderConfiguration expected)
         {
-            _result.ServiceDiscoveryProvider.ShouldBe(expected.ServiceDiscoveryProvider);
             _result.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
             _result.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
         }

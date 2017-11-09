@@ -11,19 +11,19 @@ namespace Ocelot.Configuration.Repository
     public class ConsulOcelotConfigurationRepository : IOcelotConfigurationRepository
     {
         private readonly ConsulClient _consul;
-        private ConsulRegistryConfiguration _configuration;
         private string _ocelotConfiguration = "OcelotConfiguration";
-        private Cache.IOcelotCache<IOcelotConfiguration> _cache;
+        private readonly Cache.IOcelotCache<IOcelotConfiguration> _cache;
 
-        public ConsulOcelotConfigurationRepository(ConsulRegistryConfiguration consulRegistryConfiguration, Cache.IOcelotCache<IOcelotConfiguration> cache)
+
+        public ConsulOcelotConfigurationRepository(Cache.IOcelotCache<IOcelotConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
         {
-            var consulHost = string.IsNullOrEmpty(consulRegistryConfiguration?.HostName) ? "localhost" : consulRegistryConfiguration.HostName;
-            var consulPort = consulRegistryConfiguration?.Port ?? 8500;
-            _configuration = new ConsulRegistryConfiguration(consulHost, consulPort, consulRegistryConfiguration?.ServiceName);
+            var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.ServiceProviderHost) ? "localhost" : serviceProviderConfig?.ServiceProviderHost;
+            var consulPort = serviceProviderConfig?.ServiceProviderPort ?? 8500;
+            var configuration = new ConsulRegistryConfiguration(consulHost, consulPort, _ocelotConfiguration);
             _cache = cache;
-            _consul = new ConsulClient(config =>
+            _consul = new ConsulClient(c =>
             {
-                config.Address = new Uri($"http://{_configuration.HostName}:{_configuration.Port}");
+                c.Address = new Uri($"http://{configuration.HostName}:{configuration.Port}");
             });
         }
 

@@ -107,18 +107,17 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig(/*ConsulRegistryConfiguration consulConfig*/)
         {
             _webHostBuilder = new WebHostBuilder();
 
             _webHostBuilder.ConfigureServices(s =>
             {
                 s.AddSingleton(_webHostBuilder);
-                s.AddOcelotStoreConfigurationInConsul(consulConfig);
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<ConsulStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -131,7 +130,6 @@ namespace Ocelot.AcceptanceTests
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
 
             for(var i = 0; i < response.ReRoutes.Count; i++)
             {

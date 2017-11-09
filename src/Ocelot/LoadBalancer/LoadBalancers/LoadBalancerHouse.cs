@@ -22,16 +22,11 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {
             try
             {
-                ILoadBalancer loadBalancer;
-
-                if(_loadBalancers.TryGetValue(reRoute.ReRouteKey, out loadBalancer))
+                if(_loadBalancers.TryGetValue(reRoute.ReRouteKey, out var loadBalancer))
                 {
                     loadBalancer = _loadBalancers[reRoute.ReRouteKey];
 
-                    //todo - we have some duplicate namey type logic in the LoadBalancerFactory...maybe we can do something
-                    //about this..
-                    if((reRoute.LoadBalancer == "RoundRobin" && loadBalancer.GetType() != typeof(RoundRobinLoadBalancer))
-                        || (reRoute.LoadBalancer == "LeastConnection" && loadBalancer.GetType() != typeof(LeastConnectionLoadBalancer)))
+                    if(reRoute.LoadBalancer != loadBalancer.GetType().Name)
                     {
                         loadBalancer = await _factory.Get(reRoute, config);
                         AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
@@ -55,18 +50,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
         {
-            _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => {
-                return loadBalancer;
-            });
-            
-            // if (!_loadBalancers.ContainsKey(key))
-            // {
-            //     _loadBalancers.TryAdd(key, loadBalancer);
-            // }
-
-            // ILoadBalancer old;
-            // _loadBalancers.Remove(key, out old);
-            // _loadBalancers.TryAdd(key, loadBalancer);
+            _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => loadBalancer);
         }
     }
 }

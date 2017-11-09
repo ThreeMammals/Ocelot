@@ -33,10 +33,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_service_discovery_and_load_balance_request()
         {
+            var consulPort = 8501;
             var serviceName = "product";
             var downstreamServiceOneUrl = "http://localhost:50879";
             var downstreamServiceTwoUrl = "http://localhost:50880";
-            var fakeConsulServiceDiscoveryUrl = "http://localhost:8500";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
                 Service = new AgentService()
@@ -79,9 +80,8 @@ namespace Ocelot.AcceptanceTests
                     {
                         ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                         {
-                            Provider = "Consul",
                             Host = "localhost",
-                            Port = 8500
+                            Port = consulPort
                         }
                     }
             };

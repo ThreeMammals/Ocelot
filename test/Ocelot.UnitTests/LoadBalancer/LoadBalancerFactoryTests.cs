@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobinLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobin>())
                 .BDDfy();
         }
 
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnectionLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnection>())
                 .BDDfy();
         }
 

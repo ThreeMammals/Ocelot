@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_store_load_balancer_on_first_request()
         {
-            var reRoute = new ReRouteBuilder().WithLoadBalancerKey("test").Build();
+            var reRoute = new ReRouteBuilder().WithReRouteKey("test").Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
                 .Then(x => x.ThenItIsAdded())
@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_not_store_load_balancer_on_second_request()
         {
-            var reRoute = new ReRouteBuilder().WithLoadBalancerKey("test").Build();
+            var reRoute = new ReRouteBuilder().WithLoadBalancer("FakeLoadBalancer").WithReRouteKey("test").Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
                 .When(x => x.WhenWeGetTheLoadBalancer(reRoute))
@@ -53,8 +53,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_store_load_balancers_by_key()
         {
-            var reRoute = new ReRouteBuilder().WithLoadBalancerKey("test").Build();
-            var reRouteTwo = new ReRouteBuilder().WithLoadBalancerKey("testtwo").Build();
+            var reRoute = new ReRouteBuilder().WithReRouteKey("test").Build();
+            var reRouteTwo = new ReRouteBuilder().WithReRouteKey("testtwo").Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
                 .And(x => x.GivenThereIsALoadBalancer(reRouteTwo, new FakeRoundRobinLoadBalancer()))
@@ -78,22 +78,22 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_get_new_load_balancer_if_reroute_load_balancer_has_changed()
         {
-            var reRoute = new ReRouteBuilder().WithLoadBalancerKey("test").Build();
+            var reRoute = new ReRouteBuilder().WithLoadBalancer("FakeLoadBalancer").WithReRouteKey("test").Build();
 
-            var reRouteTwo = new ReRouteBuilder().WithLoadBalancer("LeastConnection").WithLoadBalancerKey("test").Build();
+            var reRouteTwo = new ReRouteBuilder().WithLoadBalancer("LeastConnection").WithReRouteKey("test").Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
                 .When(x => x.WhenWeGetTheLoadBalancer(reRoute))
                 .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
                 .When(x => x.WhenIGetTheReRouteWithTheSameKeyButDifferentLoadBalancer(reRouteTwo))
-                .Then(x => x.ThenTheLoadBalancerIs<LeastConnectionLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIs<LeastConnection>())
                 .BDDfy();
         }
 
         private void WhenIGetTheReRouteWithTheSameKeyButDifferentLoadBalancer(ReRoute reRoute)
         {
             _reRoute = reRoute;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new LeastConnectionLoadBalancer(null, null));
+            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new LeastConnection(null, null));
             _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig).Result;
         }
 

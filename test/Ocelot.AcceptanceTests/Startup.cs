@@ -44,4 +44,39 @@ namespace Ocelot.AcceptanceTests
             app.UseOcelot().Wait();
         }
     }
+
+    public class ConsulStartup
+    {
+        public ConsulStartup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("configuration.json")
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
+        }
+
+        public IConfigurationRoot Configuration { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            Action<ConfigurationBuilderCachePart> settings = (x) =>
+            {
+                x.WithDictionaryHandle();
+            };
+
+            services.AddOcelot(Configuration, settings);
+            services.AddStoreOcelotConfigurationInConsul(Configuration);
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
+            app.UseOcelot().Wait();
+        }
+    }
 }

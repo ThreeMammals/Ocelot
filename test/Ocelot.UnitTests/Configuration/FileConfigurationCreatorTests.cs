@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Cache;
@@ -8,9 +7,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -18,8 +15,6 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections;
-    using Ocelot.LoadBalancer;
     using Ocelot.UnitTests.TestData;
 
     public class FileConfigurationCreatorTests
@@ -30,10 +25,6 @@ namespace Ocelot.UnitTests.Configuration
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IOcelotLoggerFactory> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
-        private readonly Mock<ILoadBalancer> _loadBalancer;
-        private readonly Mock<IQoSProviderFactory> _qosProviderFactory;
-        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
-        private readonly Mock<IQoSProvider> _qosProvider;
         private Mock<IClaimsToThingCreator> _claimsToThingCreator;
         private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
@@ -47,13 +38,9 @@ namespace Ocelot.UnitTests.Configuration
 
         public FileConfigurationCreatorTests()
         {
-            _qosProviderFactory = new Mock<IQoSProviderFactory>();
-            _qosProviderHouse = new Mock<IQosProviderHouse>();
-            _qosProvider = new Mock<IQoSProvider>();
             _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
-            _loadBalancer = new Mock<ILoadBalancer>();
             _claimsToThingCreator = new Mock<IClaimsToThingCreator>();
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
@@ -67,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
-                _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
+                _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
                 _rateLimitOptions.Object, _regionCreator.Object, _httpHandlerOptionsCreator.Object);
@@ -86,7 +73,6 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         Host = "localhost",
                         Port = 8500,
-                        Provider = "consul"
                     }
                 }
             }))
@@ -201,12 +187,9 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
-                .And(x => x.GivenTheQosProviderFactoryReturns())
                 .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheQosOptionsAre(expected))
-                .And(x => x.TheQosProviderFactoryIsCalledCorrectly())
-                .And(x => x.ThenTheQosProviderHouseIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -301,7 +284,6 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                                 {
-                                     Provider = "consul",
                                      Host = "127.0.0.1"
                                 }
                             }
@@ -601,25 +583,6 @@ namespace Ocelot.UnitTests.Configuration
                 var expected = expectedReRoutes[i].AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
-        }
-
-        private void GivenTheQosProviderFactoryReturns()
-        {
-            _qosProviderFactory
-                .Setup(x => x.Get(It.IsAny<ReRoute>()))
-                .Returns(_qosProvider.Object);
-        }
-
-        private void TheQosProviderFactoryIsCalledCorrectly()
-        {
-            _qosProviderFactory
-                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
-        }
-
-        private void ThenTheQosProviderHouseIsCalledCorrectly()
-        {
-            _qosProviderHouse
-                .Verify(x => x.Add(It.IsAny<string>(), _qosProvider.Object), Times.Once);
         }
 
         private void GivenTheClaimsToThingCreatorReturns(List<ClaimToThing> claimsToThing)

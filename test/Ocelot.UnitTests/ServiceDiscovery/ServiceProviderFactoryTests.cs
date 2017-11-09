@@ -42,7 +42,6 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProvider("Consul")
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
