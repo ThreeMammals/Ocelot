@@ -42,6 +42,10 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51779,
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
+                            FileCacheOptions = new FileCacheOptions
+                            {
+                                TtlSeconds = 100
+                            }
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration()
