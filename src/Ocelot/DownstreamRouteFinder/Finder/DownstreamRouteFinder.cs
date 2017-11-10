@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -12,24 +13,20 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 {
     public class DownstreamRouteFinder : IDownstreamRouteFinder
     {
-        private readonly IOcelotConfigurationProvider _configProvider;
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private readonly IUrlPathPlaceholderNameAndValueFinder _urlPathPlaceholderNameAndValueFinder;
 
-        public DownstreamRouteFinder(IOcelotConfigurationProvider configProvider, IUrlPathToUrlTemplateMatcher urlMatcher, IUrlPathPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
+        public DownstreamRouteFinder(IUrlPathToUrlTemplateMatcher urlMatcher, IUrlPathPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
         {
-            _configProvider = configProvider;
             _urlMatcher = urlMatcher;
             _urlPathPlaceholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public async Task<Response<DownstreamRoute>> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
+        public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod, IOcelotConfiguration configuration)
         {
             upstreamUrlPath = upstreamUrlPath.SetLastCharacterAs('/');
             
-            var configuration = await _configProvider.Get(); 
-
-            var applicableReRoutes = configuration.Data.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(upstreamHttpMethod.ToLower()));
+            var applicableReRoutes = configuration.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(upstreamHttpMethod.ToLower()));
 
             foreach (var reRoute in applicableReRoutes)
             {

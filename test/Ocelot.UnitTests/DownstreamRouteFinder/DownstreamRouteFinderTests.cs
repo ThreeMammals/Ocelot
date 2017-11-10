@@ -16,21 +16,20 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly Mock<IOcelotConfigurationProvider> _mockConfig;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
         private readonly Mock<IUrlPathPlaceholderNameAndValueFinder> _finder;
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
         private List<ReRoute> _reRoutesConfig;
+        private OcelotConfiguration _config;
         private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;
 
         public DownstreamRouteFinderTests()
         {
-            _mockConfig = new Mock<IOcelotConfigurationProvider>();
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _finder = new Mock<IUrlPathPlaceholderNameAndValueFinder>();
-            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockConfig.Object, _mockMatcher.Object, _finder.Object);
+            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockMatcher.Object, _finder.Object);
         }
 
         [Fact]
@@ -341,9 +340,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _reRoutesConfig = reRoutesConfig;
-            _mockConfig
-                .Setup(x => x.Get())
-                .ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig)));
+            _config = new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig);
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)
@@ -353,7 +350,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod).Result;
+            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod, _config);
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

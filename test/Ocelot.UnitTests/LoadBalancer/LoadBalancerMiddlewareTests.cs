@@ -23,7 +23,6 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
-        private readonly Mock<IOcelotConfigurationProvider> _configProvider;
         private HostAndPort _hostAndPort;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
@@ -33,7 +32,6 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         public LoadBalancerMiddlewareTests()
         {
-            _configProvider = new Mock<IOcelotConfigurationProvider>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
@@ -111,8 +109,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
         {
             _config = config;
-            _configProvider
-                .Setup(x => x.Get()).ReturnsAsync(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(null, null, _config)));
+            ScopedRepository
+                .Setup(x => x.Get<ServiceProviderConfiguration>("ServiceProviderConfiguration")).Returns(new OkResponse<ServiceProviderConfiguration>(config));
         }
 
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
@@ -120,7 +118,6 @@ namespace Ocelot.UnitTests.LoadBalancer
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(_loadBalancerHouse.Object);
-            services.AddSingleton(_configProvider.Object);
             services.AddSingleton(ScopedRepository.Object);
         }
 

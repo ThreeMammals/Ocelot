@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
@@ -30,9 +31,16 @@ namespace Ocelot.Middleware
 
         public HttpResponseMessage HttpResponseMessage => _requestScopedDataRepository.Get<HttpResponseMessage>("HttpResponseMessage").Data;
 
+        public ServiceProviderConfiguration ServiceProviderConfiguration => _requestScopedDataRepository.Get<ServiceProviderConfiguration>("ServiceProviderConfiguration").Data;
+
         public void SetDownstreamRouteForThisRequest(DownstreamRoute downstreamRoute)
         {
             _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute);
+        }
+
+        public void SetServiceProviderConfigurationForThisRequest(ServiceProviderConfiguration serviceProviderConfiguration)
+        {
+            _requestScopedDataRepository.Add("ServiceProviderConfiguration", serviceProviderConfiguration);
         }
 
         public void SetUpstreamRequestForThisRequest(Request.Request request)
