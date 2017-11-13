@@ -23,6 +23,7 @@ using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -121,9 +122,25 @@ namespace Ocelot.AcceptanceTests
                 .UseStartup<Startup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
-        }
+		}
 
-        internal void ThenTheResponseShouldBe(FileConfiguration expected)
+		public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache(ConsulRegistryConfiguration consulConfig)
+		{
+			_webHostBuilder = new WebHostBuilder();
+
+			_webHostBuilder.ConfigureServices(s =>
+			{
+				s.AddSingleton(_webHostBuilder);
+				s.AddOcelotStoreConfigurationInConsul(consulConfig);
+			});
+
+			_ocelotServer = new TestServer(_webHostBuilder
+				.UseStartup<StartupWithCustomCacheHandle>());
+
+			_ocelotClient = _ocelotServer.CreateClient();
+		}
+
+		internal void ThenTheResponseShouldBe(FileConfiguration expected)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
             
@@ -398,7 +415,7 @@ namespace Ocelot.AcceptanceTests
 
         public IConfigurationRoot Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
@@ -418,5 +435,25 @@ namespace Ocelot.AcceptanceTests
 
             app.UseOcelot().Wait();
         }
-    }
+	}
+
+	public class StartupWithCustomCacheHandle : Startup
+	{
+		public StartupWithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
+
+		public override void ConfigureServices(IServiceCollection services)
+		{
+			Action<ConfigurationBuilderCachePart> settings = (x) =>
+			{
+				x.WithMicrosoftLogging(log =>
+				{
+					log.AddConsole(LogLevel.Debug);
+				})
+				.WithJsonSerializer()
+				.WithHandle(typeof(InMemoryJsonHandle<>));
+			};
+
+			services.AddOcelot(Configuration, settings);
+		}
+	}
 }

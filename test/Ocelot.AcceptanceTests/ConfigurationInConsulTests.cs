@@ -73,7 +73,53 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
+		[Fact]
+		public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
+		{
+			var configuration = new FileConfiguration
+			{
+				ReRoutes = new List<FileReRoute>
+					{
+						new FileReRoute
+						{
+							DownstreamPathTemplate = "/",
+							DownstreamScheme = "http",
+							DownstreamHost = "localhost",
+							DownstreamPort = 51779,
+							UpstreamPathTemplate = "/",
+							UpstreamHttpMethod = new List<string> { "Get" },
+							FileCacheOptions = new FileCacheOptions
+							{
+								TtlSeconds = 100
+							}
+						}
+					},
+				GlobalConfiguration = new FileGlobalConfiguration()
+				{
+					ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+					{
+						Provider = "Consul",
+						Host = "localhost",
+						Port = 9500
+					}
+				}
+			};
+
+			var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
+
+			var consulConfig = new ConsulRegistryConfiguration("localhost", 9500, "Ocelot");
+
+			this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+				.And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", 200, "Hello from Laura"))
+				.And(x => _steps.GivenThereIsAConfiguration(configuration))
+				.And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache(consulConfig))
+				.When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+				.Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+				.And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+				.BDDfy();
+		}
+
+		private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
         {
             _fakeConsulBuilder = new WebHostBuilder()
                             .UseUrls(url)
