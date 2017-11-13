@@ -8,14 +8,14 @@ using Ocelot.Values;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    public class LeastConnectionLoadBalancer : ILoadBalancer
+    public class LeastConnection : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
         private readonly List<Lease> _leases;
         private readonly string _serviceName;
         private static readonly object _syncLock = new object();
 
-        public LeastConnectionLoadBalancer(Func<Task<List<Service>>> services, string serviceName)
+        public LeastConnection(Func<Task<List<Service>>> services, string serviceName)
         {
             _services = services;
             _serviceName = serviceName;

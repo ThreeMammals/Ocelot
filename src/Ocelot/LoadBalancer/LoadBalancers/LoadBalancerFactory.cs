@@ -12,16 +12,16 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _serviceProviderFactory = serviceProviderFactory;
         }
 
-        public async Task<ILoadBalancer> Get(ReRoute reRoute)
+        public async Task<ILoadBalancer> Get(ReRoute reRoute, ServiceProviderConfiguration config)
         {            
-            var serviceProvider = _serviceProviderFactory.Get(reRoute.ServiceProviderConfiguraion);
+            var serviceProvider = _serviceProviderFactory.Get(config, reRoute);
 
             switch (reRoute.LoadBalancer)
             {
                 case "RoundRobin":
-                    return new RoundRobinLoadBalancer(async () => await serviceProvider.Get());
+                    return new RoundRobin(async () => await serviceProvider.Get());
                 case "LeastConnection":
-                    return new LeastConnectionLoadBalancer(async () => await serviceProvider.Get(), reRoute.ServiceProviderConfiguraion.ServiceName);
+                    return new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName);
                 default:
                     return new NoLoadBalancer(await serviceProvider.Get());
             }

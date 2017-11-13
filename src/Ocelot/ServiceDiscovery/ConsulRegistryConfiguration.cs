@@ -2,14 +2,14 @@ namespace Ocelot.ServiceDiscovery
 {
     public class ConsulRegistryConfiguration
     {
-        public ConsulRegistryConfiguration(string hostName, int port, string serviceName)
+        public ConsulRegistryConfiguration(string hostName, int port, string keyOfServiceInConsul)
         {
             HostName = hostName;
             Port = port;
-            ServiceName = serviceName;
+            KeyOfServiceInConsul = keyOfServiceInConsul;
         }
 
-        public string ServiceName { get; private set; }
+        public string KeyOfServiceInConsul { get; private set; }
         public string HostName { get; private set; }
         public int Port { get; private set; }
     }

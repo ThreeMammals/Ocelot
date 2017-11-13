@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
@@ -27,9 +28,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_get_config()
         {
-            this.Given(x => x.GivenTheRepoReturns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty))))
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenTheRepoReturns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig))))
                 .When(x => x.WhenIGetTheConfig())
-                .Then(x => x.TheFollowingIsReturned(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty))))
+                .Then(x => x.TheFollowingIsReturned(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig))))
                 .BDDfy();
         }
 

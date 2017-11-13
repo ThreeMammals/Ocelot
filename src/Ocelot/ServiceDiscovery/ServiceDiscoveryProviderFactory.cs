@@ -6,17 +6,17 @@ namespace Ocelot.ServiceDiscovery
 {
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig)
+        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
         {
-            if (serviceConfig.UseServiceDiscovery)
+            if (reRoute.UseServiceDiscovery)
             {
-                return GetServiceDiscoveryProvider(serviceConfig.ServiceName, serviceConfig.ServiceDiscoveryProvider, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
+                return GetServiceDiscoveryProvider(reRoute.ServiceName, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
             }
 
             var services = new List<Service>()
             {
-                new Service(serviceConfig.ServiceName, 
-                new HostAndPort(serviceConfig.DownstreamHost, serviceConfig.DownstreamPort),
+                new Service(reRoute.ServiceName, 
+                new HostAndPort(reRoute.DownstreamHost, reRoute.DownstreamPort),
                 string.Empty, 
                 string.Empty, 
                 new string[0])
@@ -25,9 +25,9 @@ namespace Ocelot.ServiceDiscovery
             return new ConfigurationServiceProvider(services);
         }
 
-        private IServiceDiscoveryProvider GetServiceDiscoveryProvider(string serviceName, string serviceProviderName, string providerHostName, int providerPort)
+        private IServiceDiscoveryProvider GetServiceDiscoveryProvider(string keyOfServiceInConsul, string providerHostName, int providerPort)
         {
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(providerHostName, providerPort, serviceName);
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(providerHostName, providerPort, keyOfServiceInConsul);
             return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration);
         }
     }
