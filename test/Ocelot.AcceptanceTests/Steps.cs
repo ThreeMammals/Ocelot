@@ -106,9 +106,24 @@ namespace Ocelot.AcceptanceTests
                 .UseStartup<Startup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
-        }
+		}
 
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
+		public void GivenOcelotIsRunningUsingJsonSerializedCache()
+		{
+			_webHostBuilder = new WebHostBuilder();
+
+			_webHostBuilder.ConfigureServices(s =>
+			{
+				s.AddSingleton(_webHostBuilder);
+			});
+
+			_ocelotServer = new TestServer(_webHostBuilder
+				.UseStartup<StartupWithCustomCacheHandle>());
+
+			_ocelotClient = _ocelotServer.CreateClient();
+		}
+
+		public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
         {
             _webHostBuilder = new WebHostBuilder();
 
