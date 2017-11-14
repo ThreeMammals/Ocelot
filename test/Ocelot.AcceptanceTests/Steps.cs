@@ -107,7 +107,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig(/*ConsulRegistryConfiguration consulConfig*/)
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig()
         {
             _webHostBuilder = new WebHostBuilder();
 
