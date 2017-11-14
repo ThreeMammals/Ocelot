@@ -100,14 +100,14 @@ namespace Ocelot.AcceptanceTests
 					{
 						Provider = "Consul",
 						Host = "localhost",
-						Port = 9500
+						Port = 9502
 					}
 				}
 			};
 
-			var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
+			var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
 
-			var consulConfig = new ConsulRegistryConfiguration("localhost", 9500, "Ocelot");
+			var consulConfig = new ConsulRegistryConfiguration("localhost", 9502, "Ocelot");
 
 			this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
 				.And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", 200, "Hello from Laura"))
