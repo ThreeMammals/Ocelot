@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -16,9 +17,9 @@ namespace Ocelot.Configuration.Provider
             _repo = repo;
         }
         
-        public Response<FileConfiguration> Get()
+        public async Task<Response<FileConfiguration>> Get()
         {
-            var fileConfig = _repo.Get();
+            var fileConfig = await _repo.Get();
             return new OkResponse<FileConfiguration>(fileConfig.Data);
         }
     }

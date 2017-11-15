@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _repo
                 .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-                .Returns(response);
+                .ReturnsAsync(response);
         }
 
         private void ThenAnErrorResponseIsReturned()

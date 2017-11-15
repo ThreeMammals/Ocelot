@@ -63,7 +63,7 @@ namespace Ocelot.DependencyInjection
                 .Build();
 
             services.AddSingleton<ServiceProviderConfiguration>(config);
-            services.AddSingleton<IOcelotConfigurationRepository, ConsulOcelotConfigurationRepository>();
+            services.AddSingleton<IFileConfigurationRepository, ConsulOcelotConfigurationRepository>();
             return services;
         }
 

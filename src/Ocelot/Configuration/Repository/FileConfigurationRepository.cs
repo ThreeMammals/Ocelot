@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
@@ -8,7 +9,7 @@ namespace Ocelot.Configuration.Repository
     public class FileConfigurationRepository : IFileConfigurationRepository
     {
         private static readonly object _lock = new object();
-        public Response<FileConfiguration> Get()
+        public async Task<Response<FileConfiguration>> Get()
         {
             var configFilePath = $"{AppContext.BaseDirectory}/configuration.json";
             string json = string.Empty;
@@ -20,7 +21,7 @@ namespace Ocelot.Configuration.Repository
             return new OkResponse<FileConfiguration>(fileConfiguration);
         }
 
-        public Response Set(FileConfiguration fileConfiguration)
+        public async Task<Response> Set(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
 
