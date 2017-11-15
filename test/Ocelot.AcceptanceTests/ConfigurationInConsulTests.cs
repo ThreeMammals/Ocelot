@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _builder;
         private readonly Steps _steps;
         private IWebHost _fakeConsulBuilder;
-        private IOcelotConfiguration _config;
+        private FileConfiguration _config;
 
         public ConfigurationInConsul()
         {
@@ -84,28 +84,50 @@ namespace Ocelot.AcceptanceTests
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
-            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(consulPort)
-                .Build();
+            // var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+            //     .WithServiceDiscoveryProviderHost("localhost")
+            //     .WithServiceDiscoveryProviderPort(consulPort)
+            //     .Build();
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamPathTemplate("/status")
-                .WithUpstreamTemplatePattern("^(?i)/cs/status/$")
-                .WithDownstreamScheme("http")
-                .WithDownstreamHost("localhost")
-                .WithDownstreamPort(51779)
-                .WithUpstreamPathTemplate("/cs/status")
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithReRouteKey("/cs/status|Get")
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, false))
-                .Build();
+            // var reRoute = new ReRouteBuilder()
+            //     .WithDownstreamPathTemplate("/status")
+            //     .WithUpstreamTemplatePattern("^(?i)/cs/status/$")
+            //     .WithDownstreamScheme("http")
+            //     .WithDownstreamHost("localhost")
+            //     .WithDownstreamPort(51779)
+            //     .WithUpstreamPathTemplate("/cs/status")
+            //     .WithUpstreamHttpMethod(new List<string> {"Get"})
+            //     .WithReRouteKey("/cs/status|Get")
+            //     .WithHttpHandlerOptions(new HttpHandlerOptions(true, false))
+            //     .Build();
 
-            var reRoutes = new List<ReRoute> { reRoute };
             
-            var config = new OcelotConfiguration(reRoutes, null, serviceProviderConfig);
 
-            this.Given(x => GivenTheConsulConfigurationIs(config))
+            var consulConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/status",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51779,
+                        UpstreamPathTemplate = "/cs/status",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -116,7 +138,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenTheConsulConfigurationIs(OcelotConfiguration config)
+        private void GivenTheConsulConfigurationIs(FileConfiguration config)
         {
             _config = config;
         }
@@ -154,7 +176,7 @@ namespace Ocelot.AcceptanceTests
 
                                             var json = reader.ReadToEnd();
 
-                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+                                            _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
                                             var response = JsonConvert.SerializeObject(true);
 

@@ -90,6 +90,11 @@ namespace Ocelot.DependencyInjection
             services.TryAddSingleton<ICacheManager<IOcelotConfiguration>>(ocelotConfigCacheManagerOutputCache);
             services.TryAddSingleton<IOcelotCache<IOcelotConfiguration>>(ocelotConfigCacheManager);
 
+              var fileConfigCacheManagerOutputCache = CacheFactory.Build<FileConfiguration>("FileConfigurationCache", settings);
+            var fileConfigCacheManager = new OcelotCacheManagerCache<FileConfiguration>(fileConfigCacheManagerOutputCache);
+            services.TryAddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
+            services.TryAddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
+
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
