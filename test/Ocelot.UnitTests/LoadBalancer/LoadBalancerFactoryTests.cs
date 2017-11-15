@@ -17,7 +17,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private ILoadBalancer _result;
         private Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
         private Mock<IServiceDiscoveryProvider> _serviceProvider;
-        
+        private ServiceProviderConfiguration _serviceProviderConfig;
+
         public LoadBalancerFactoryTests()
         {
             _serviceProviderFactory = new Mock<IServiceDiscoveryProviderFactory>();
@@ -29,11 +30,11 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_return_no_load_balancer()
         {
             var reRoute = new ReRouteBuilder()
-                .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheLoadBalancerIsReturned<NoLoadBalancer>())
@@ -46,13 +47,13 @@ namespace Ocelot.UnitTests.LoadBalancer
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobinLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobin>())
                 .BDDfy();
         }
 
@@ -62,13 +63,13 @@ namespace Ocelot.UnitTests.LoadBalancer
              var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("LeastConnection")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnectionLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnection>())
                 .BDDfy();
         }
 
@@ -78,27 +79,32 @@ namespace Ocelot.UnitTests.LoadBalancer
             var reRoute = new ReRouteBuilder()
                 .WithLoadBalancer("RoundRobin")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder().Build())
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
                 .BDDfy();
         }
 
+        private void GivenAServiceProviderConfig(ServiceProviderConfiguration serviceProviderConfig)
+        {
+            _serviceProviderConfig = serviceProviderConfig;
+        }
+
         private void GivenTheServiceProviderFactoryReturns()
         {
             _serviceProviderFactory
-                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>()))
+                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<ReRoute>()))
                 .Returns(_serviceProvider.Object);
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()
         {
             _serviceProviderFactory
-                .Verify(x => x.Get(It.IsAny<ServiceProviderConfiguration>()), Times.Once);
+                .Verify(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<ReRoute>()), Times.Once);
         }
 
         private void GivenAReRoute(ReRoute reRoute)
@@ -108,7 +114,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheLoadBalancer()
         {
-            _result = _factory.Get(_reRoute).Result;
+            _result = _factory.Get(_reRoute, _serviceProviderConfig).Result;
         }
 
         private void ThenTheLoadBalancerIsReturned<T>()

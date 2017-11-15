@@ -43,7 +43,6 @@ namespace Ocelot.UnitTests.Configuration
                 AdministrationPath = "testy",
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Provider = "consul",
                     Port = 198,
                     Host = "blah"
                 }
@@ -78,7 +77,6 @@ namespace Ocelot.UnitTests.Configuration
                 AdministrationPath = "asdas",
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Provider = "consul",
                     Port = 198,
                     Host = "blah"
                 }
@@ -111,7 +109,6 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
 
             for(var i = 0; i < _result.ReRoutes.Count; i++)
             {
@@ -147,7 +144,6 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
 
             for(var i = 0; i < _result.ReRoutes.Count; i++)
             {

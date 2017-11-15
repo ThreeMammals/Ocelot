@@ -2,6 +2,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
@@ -16,13 +17,17 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
         private readonly IOcelotLogger _logger;
+        private readonly IOcelotConfigurationProvider _configProvider;
+
 
         public DownstreamRouteFinderMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder, 
-            IRequestScopedDataRepository requestScopedDataRepository)
+            IRequestScopedDataRepository requestScopedDataRepository,
+            IOcelotConfigurationProvider configProvider)
             :base(requestScopedDataRepository)
         {
+            _configProvider = configProvider;
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
             _logger = loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>();
@@ -32,9 +37,19 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             var upstreamUrlPath = context.Request.Path.ToString();
 
+            //todo make this getting config its own middleware one day?
+            var configuration = await _configProvider.Get(); 
+            if(configuration.IsError)
+            {
+                _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                SetPipelineError(configuration.Errors);
+            }
+
+            SetServiceProviderConfigurationForThisRequest(configuration.Data.ServiceProviderConfiguration);
+
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
-            var downstreamRoute = await _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method);
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method, configuration.Data);
 
             if (downstreamRoute.IsError)
             {

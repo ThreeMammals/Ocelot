@@ -45,17 +45,37 @@ using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddOcelotStoreConfigurationInConsul(this IServiceCollection services, ConsulRegistryConfiguration consulConfig)
+        public static IServiceCollection AddStoreOcelotConfigurationInConsul(this IServiceCollection services, IConfigurationRoot configurationRoot)
         {
-            services.AddSingleton<ConsulRegistryConfiguration>(consulConfig);
+            var serviceDiscoveryPort = configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Port", 0);
+            var serviceDiscoveryHost = configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Host", string.Empty);
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .WithServiceDiscoveryProviderPort(serviceDiscoveryPort)
+                .WithServiceDiscoveryProviderHost(serviceDiscoveryHost)
+                .Build();
+
+            services.AddSingleton<ServiceProviderConfiguration>(config);
             services.AddSingleton<IOcelotConfigurationRepository, ConsulOcelotConfigurationRepository>();
             return services;
+        }
+
+        public static IServiceCollection AddOcelot(this IServiceCollection services,
+            IConfigurationRoot configurationRoot)
+        {
+            Action<ConfigurationBuilderCachePart> defaultCachingSettings = x =>
+            {
+                x.WithDictionaryHandle();
+            };
+
+            return services.AddOcelot(configurationRoot, defaultCachingSettings);
         }
 
         public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot, Action<ConfigurationBuilderCachePart> settings)

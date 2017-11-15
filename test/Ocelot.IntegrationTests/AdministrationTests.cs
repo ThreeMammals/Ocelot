@@ -107,7 +107,6 @@ namespace Ocelot.IntegrationTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "127.0.0.1",
-                        Provider = "test"
                     }
 
                 },
@@ -332,7 +331,6 @@ namespace Ocelot.IntegrationTests
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
 
             for (var i = 0; i < response.ReRoutes.Count; i++)
             {
