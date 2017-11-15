@@ -14,7 +14,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private HostAndPort _hostAndPort;
         private Response<HostAndPort> _result;
-        private LeastConnectionLoadBalancer _leastConnection;
+        private LeastConnection _leastConnection;
         private List<Service> _services;
         private Random _random;
 
@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+            _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
             var tasks = new Task[100];
            
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+            _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
             var response = _leastConnection.Lease().Result;
 
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+            _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
             var response = _leastConnection.Lease().Result;
 
@@ -144,7 +144,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             _services = availableServices;
-            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+            _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
             var response = _leastConnection.Lease().Result;
 
@@ -211,7 +211,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
         {
             _services = services;
-            _leastConnection = new LeastConnectionLoadBalancer(() => Task.FromResult(_services), serviceName);
+            _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
         }
 
         private void WhenTheLoadBalancerStarts(List<Service> services, string serviceName)

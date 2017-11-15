@@ -88,7 +88,7 @@
         private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
         {
             _qosProviderHouse
-                .Setup(x => x.Get(It.IsAny<string>()))
+                .Setup(x => x.Get(It.IsAny<ReRoute>()))
                 .Returns(qosProvider);
         }
 
