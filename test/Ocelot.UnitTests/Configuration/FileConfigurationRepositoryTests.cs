@@ -1,27 +1,29 @@
 using System;
 using System.Collections.Generic;
 using Moq;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
-using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using Newtonsoft.Json;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Ocelot.Configuration.Repository;
 
 namespace Ocelot.UnitTests.Configuration
 {
     public class FileConfigurationRepositoryTests
     {
+        private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
         private readonly IFileConfigurationRepository _repo;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
+        private readonly string _devEnvironmentName = "DEV";
 
         public FileConfigurationRepositoryTests()
         {
-            _repo = new FileConfigurationRepository();
+            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_devEnvironmentName);
+            _repo = new FileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         [Fact]
@@ -121,7 +123,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
+            var configurationPath = $"{AppContext.BaseDirectory}/configuration.{_devEnvironmentName}.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
