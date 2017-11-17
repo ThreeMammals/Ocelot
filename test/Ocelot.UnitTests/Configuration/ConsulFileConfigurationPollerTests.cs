@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheSetterIsCalled(FileConfiguration fileConfig)
         {
-            var result = WaitFor(1000).Until(() => {
+            var result = WaitFor(2000).Until(() => {
                 try
                 {
                     _setter.Verify(x => x.Set(fileConfig), Times.Once);

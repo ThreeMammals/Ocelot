@@ -162,24 +162,36 @@ namespace Ocelot.Middleware
             {
                 Response config = null;
                 var fileConfigRepo = builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
-                if(fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository))
+                if (fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository))
                 {
-                    var consulFileConfigRepo = (ConsulFileConfigurationRepository)fileConfigRepo;
-                    var ocelotConfigurationRepository = (IOcelotConfigurationRepository)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationRepository));
-                    var ocelotConfigurationCreator = (IOcelotConfigurationCreator)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationCreator));
-                    
+                    var consulFileConfigRepo = (ConsulFileConfigurationRepository) fileConfigRepo;
+                    var ocelotConfigurationRepository =
+                        (IOcelotConfigurationRepository) builder.ApplicationServices.GetService(
+                            typeof(IOcelotConfigurationRepository));
+                    var ocelotConfigurationCreator =
+                        (IOcelotConfigurationCreator) builder.ApplicationServices.GetService(
+                            typeof(IOcelotConfigurationCreator));
+
                     var fileConfigFromConsul = await consulFileConfigRepo.Get();
-                    var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
-                    var response = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
-                    var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
+                    if (fileConfigFromConsul.Data == null)
+                    {
+                        config = await configSetter.Set(fileConfig.Value);
+                    }
+                    else
+                    {
+                        var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
+                        config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                        var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
+                    }
                 }
-                else 
+                else
                 {
                     config = await configSetter.Set(fileConfig.Value);
-                    if (config == null || config.IsError)
-                    {
-                        throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
-                    }
+                }
+
+                if (config == null || config.IsError)
+                {
+                    throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
                 }
             }
 

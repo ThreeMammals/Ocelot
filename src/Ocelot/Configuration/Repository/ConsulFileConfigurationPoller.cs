@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.Repository
         private IOcelotLogger _logger; 
         private IFileConfigurationRepository _repo;
         private IFileConfigurationSetter _setter;
-        private string _previousHash;
+        private string _previousAsJson;
         private Timer _timer;
         private bool _polling;
 
@@ -23,7 +23,7 @@ namespace Ocelot.Configuration.Repository
             _setter = setter;
             _logger = factory.CreateLogger<ConsulFileConfigurationPoller>();
             _repo = repo;
-            _previousHash = "";
+            _previousAsJson = "";
             _timer = new Timer(async x =>
             {
                 if(_polling)
@@ -50,20 +50,24 @@ namespace Ocelot.Configuration.Repository
                 return;
             }
 
-            var hash = Hash(fileConfig.Data);
+            var asJson = ToJson(fileConfig.Data);
 
-            if(!fileConfig.IsError && hash != _previousHash)
+            if(!fileConfig.IsError && asJson != _previousAsJson)
             {
                 await _setter.Set(fileConfig.Data);
-                _previousHash = hash;
+                _previousAsJson = asJson;
             }
 
             _logger.LogDebug("Finished polling consul");
         }
 
-        private string Hash(FileConfiguration config)
+        /// <summary>
+        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        private string ToJson(FileConfiguration config)
         {
-            //todo - do something proper?
             var currentHash = JsonConvert.SerializeObject(config);
             return currentHash;
         }
