@@ -9,13 +9,14 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Repository
 {
-    public class ConsulOcelotConfigurationRepository : IFileConfigurationRepository
+
+    public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         private readonly ConsulClient _consul;
         private string _ocelotConfiguration = "OcelotConfiguration";
         private readonly Cache.IOcelotCache<FileConfiguration> _cache;
 
-        public ConsulOcelotConfigurationRepository(Cache.IOcelotCache<FileConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
+        public ConsulFileConfigurationRepository(Cache.IOcelotCache<FileConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
         {
             var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.ServiceProviderHost) ? "localhost" : serviceProviderConfig?.ServiceProviderHost;
             var consulPort = serviceProviderConfig?.ServiceProviderPort ?? 8500;
