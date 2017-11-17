@@ -21,9 +21,9 @@ namespace Ocelot.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var response = _configGetter.Get();
+            var response = await _configGetter.Get();
 
             if(response.IsError)
             {

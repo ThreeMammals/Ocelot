@@ -35,6 +35,14 @@ namespace Ocelot.Infrastructure.RequestData
         {
             object obj;
 
+            if(_httpContextAccessor.HttpContext == null || _httpContextAccessor.HttpContext.Items == null)
+            {
+                return new ErrorResponse<T>(new List<Error>
+                {
+                    new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null")
+                });
+            }
+
             if(_httpContextAccessor.HttpContext.Items.TryGetValue(key, out obj))
             {
                 var data = (T) obj;

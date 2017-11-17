@@ -63,7 +63,8 @@ namespace Ocelot.DependencyInjection
                 .Build();
 
             services.AddSingleton<ServiceProviderConfiguration>(config);
-            services.AddSingleton<IOcelotConfigurationRepository, ConsulOcelotConfigurationRepository>();
+            services.AddSingleton<ConsulFileConfigurationPoller>();
+            services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
             return services;
         }
 
@@ -89,6 +90,11 @@ namespace Ocelot.DependencyInjection
             var ocelotConfigCacheManager = new OcelotCacheManagerCache<IOcelotConfiguration>(ocelotConfigCacheManagerOutputCache);
             services.TryAddSingleton<ICacheManager<IOcelotConfiguration>>(ocelotConfigCacheManagerOutputCache);
             services.TryAddSingleton<IOcelotCache<IOcelotConfiguration>>(ocelotConfigCacheManager);
+
+              var fileConfigCacheManagerOutputCache = CacheFactory.Build<FileConfiguration>("FileConfigurationCache", settings);
+            var fileConfigCacheManager = new OcelotCacheManagerCache<FileConfiguration>(fileConfigCacheManagerOutputCache);
+            services.TryAddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
+            services.TryAddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
 
             services.Configure<FileConfiguration>(configurationRoot);
             services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
