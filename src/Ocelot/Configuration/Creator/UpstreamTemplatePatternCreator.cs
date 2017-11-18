@@ -15,7 +15,7 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplate = reRoute.UpstreamPathTemplate;
 
-            upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
+            //upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
 
             var placeholders = new List<string>();
 
