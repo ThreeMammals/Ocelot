@@ -3,19 +3,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
+using Ocelot.Configuration.File;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Repository
 {
-    public class ConsulOcelotConfigurationRepository : IOcelotConfigurationRepository
+
+    public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         private readonly ConsulClient _consul;
         private string _ocelotConfiguration = "OcelotConfiguration";
-        private readonly Cache.IOcelotCache<IOcelotConfiguration> _cache;
+        private readonly Cache.IOcelotCache<FileConfiguration> _cache;
 
-
-        public ConsulOcelotConfigurationRepository(Cache.IOcelotCache<IOcelotConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
+        public ConsulFileConfigurationRepository(Cache.IOcelotCache<FileConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
         {
             var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.ServiceProviderHost) ? "localhost" : serviceProviderConfig?.ServiceProviderHost;
             var consulPort = serviceProviderConfig?.ServiceProviderPort ?? 8500;
@@ -27,32 +28,32 @@ namespace Ocelot.Configuration.Repository
             });
         }
 
-        public async Task<Response<IOcelotConfiguration>> Get()
+        public async Task<Response<FileConfiguration>> Get()
         {
             var config = _cache.Get(_ocelotConfiguration, _ocelotConfiguration);
 
             if (config != null)
             {
-                return new OkResponse<IOcelotConfiguration>(config);
+                return new OkResponse<FileConfiguration>(config);
             }
 
             var queryResult = await _consul.KV.Get(_ocelotConfiguration);
 
             if (queryResult.Response == null)
             {
-                return new OkResponse<IOcelotConfiguration>(null);
+                return new OkResponse<FileConfiguration>(null);
             }
 
             var bytes = queryResult.Response.Value;
 
             var json = Encoding.UTF8.GetString(bytes);
 
-            var consulConfig = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+            var consulConfig = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
-            return new OkResponse<IOcelotConfiguration>(consulConfig);
+            return new OkResponse<FileConfiguration>(consulConfig);
         }
 
-        public async Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration)
+        public async Task<Response> Set(FileConfiguration ocelotConfiguration)
         {
             var json = JsonConvert.SerializeObject(ocelotConfiguration);
 
@@ -72,7 +73,7 @@ namespace Ocelot.Configuration.Repository
                 return new OkResponse();
             }
 
-            return new ErrorResponse(new UnableToSetConfigInConsulError("Unable to set config in consul"));
+            return new ErrorResponse(new UnableToSetConfigInConsulError($"Unable to set FileConfiguration in consul, response status code from consul was {result.StatusCode}"));
         }
     }
 }

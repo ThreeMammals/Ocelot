@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -11,13 +12,13 @@ namespace Ocelot.Configuration.Repository
         private readonly string _configFilePath;
 
         private static readonly object _lock = new object();
-
+        
         public FileConfigurationRepository(IHostingEnvironment hostingEnvironment)
         {
             _configFilePath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
         }
 
-        public Response<FileConfiguration> Get()
+        public async Task<Response<FileConfiguration>> Get()
         {
             string jsonConfiguration;
 
@@ -31,7 +32,7 @@ namespace Ocelot.Configuration.Repository
             return new OkResponse<FileConfiguration>(fileConfiguration);
         }
 
-        public Response Set(FileConfiguration fileConfiguration)
+        public async Task<Response> Set(FileConfiguration fileConfiguration)
         {
             string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 

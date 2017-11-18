@@ -45,12 +45,12 @@ namespace Ocelot.UnitTests.Configuration
             _fileConfiguration = fileConfiguration;
             _repo
                 .Setup(x => x.Get())
-                .Returns(new OkResponse<FileConfiguration>(fileConfiguration));
+                .ReturnsAsync(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
         private void WhenIGetTheReRoutes()
         {
-            _result = _provider.Get().Data;
+            _result = _provider.Get().Result.Data;
         }
 
         private void ThenTheRepoIsCalledCorrectly()
