@@ -508,12 +508,13 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51899", "/api/swagger/lib/backbone-min.js", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51899", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/platform/swagger/lib/backbone-min.js"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => ThenTheDownstreamUrlPathShouldBe("/api/swagger/lib/backbone-min.js"))
                 .BDDfy();
         }
 
@@ -529,7 +530,7 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(async context =>
                     {   
-                        _downstreamPath = context.Request.PathBase.Value;
+                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
                     });
