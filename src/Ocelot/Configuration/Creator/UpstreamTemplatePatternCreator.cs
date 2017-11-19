@@ -15,8 +15,6 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplate = reRoute.UpstreamPathTemplate;
 
-            //upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
-
             var placeholders = new List<string>();
 
             for (var i = 0; i < upstreamTemplate.Length; i++)
@@ -32,12 +30,17 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var placeholder in placeholders)
             {
-                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
+                upstreamTemplate = upstreamTemplate.Replace(placeholder, "[0-9a-zA-Z]" + RegExMatchEverything);
             }
 
             if (upstreamTemplate == "/")
             {
                 return RegExForwardSlashOnly;
+            }
+
+            if(upstreamTemplate.EndsWith("/"))
+            {
+                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length -1, 1) + "(/|)";
             }
 
             var route = reRoute.ReRouteIsCaseSensitive 

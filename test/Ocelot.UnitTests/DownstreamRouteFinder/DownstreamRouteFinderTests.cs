@@ -68,7 +68,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
 
         [Fact]
-        public void should_append_slash_to_upstream_url_path()
+        public void should_not_append_slash_to_upstream_url_path()
         {
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
 
@@ -97,7 +97,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                                 .Build()
                 )))
-                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly("matchInUrlMatcher/"))
+                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly("matchInUrlMatcher"))
                 .BDDfy();
         }
 

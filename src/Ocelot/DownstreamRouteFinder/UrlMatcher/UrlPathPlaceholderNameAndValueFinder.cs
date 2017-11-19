@@ -13,7 +13,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
          
             for (int counterForTemplate = 0; counterForTemplate < upstreamUrlPathTemplate.Length; counterForTemplate++)
             {
-                if (CharactersDontMatch(upstreamUrlPathTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
+                if ((upstreamUrlPath.Length > counterForUrl) && CharactersDontMatch(upstreamUrlPathTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
                 {
                     if (IsPlaceholder(upstreamUrlPathTemplate[counterForTemplate]))
                     {

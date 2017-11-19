@@ -158,94 +158,93 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        // [Fact]
-        // public void should_not_care_about_no_trailing()
-        // {
-        //     var configuration = new FileConfiguration
-        //     {
-        //         ReRoutes = new List<FileReRoute>
-        //             {
-        //                 new FileReRoute
-        //                 {
-        //                     DownstreamPathTemplate = "/products",
-        //                     DownstreamScheme = "http",
-        //                     DownstreamHost = "localhost",
-        //                     DownstreamPort = 51879,
-        //                     UpstreamPathTemplate = "/products/",
-        //                     UpstreamHttpMethod = new List<string> { "Get" },
-        //                 }
-        //             }
-        //     };
+        [Fact]
+        public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/products/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
 
-        //     this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
-        //         .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //         .And(x => _steps.GivenOcelotIsRunning())
-        //         .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
-        //         .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        //         .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-        //         .BDDfy();
-        // }
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
 
-        // [Fact]
-        // public void should_not_care_about_trailing()
-        // {
-        //     var configuration = new FileConfiguration
-        //     {
-        //         ReRoutes = new List<FileReRoute>
-        //             {
-        //                 new FileReRoute
-        //                 {
-        //                     DownstreamPathTemplate = "/products",
-        //                     DownstreamScheme = "http",
-        //                     DownstreamHost = "localhost",
-        //                     DownstreamPort = 51879,
-        //                     UpstreamPathTemplate = "/products",
-        //                     UpstreamHttpMethod = new List<string> { "Get" },
-        //                 }
-        //             }
-        //     };
+        [Fact]
+        public void should_return_not_found_when_upstream_url_ends_with_forward_slash_but_template_does_not()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/products",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/products",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
 
-        //     this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
-        //         .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //         .And(x => _steps.GivenOcelotIsRunning())
-        //         .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
-        //         .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        //         .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-        //         .BDDfy();
-        // }
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
 
-        // [Fact]
-        // public void should_return_not_found()
-        // {
-        //     var configuration = new FileConfiguration
-        //     {
-        //         ReRoutes = new List<FileReRoute>
-        //         {
-        //             new FileReRoute
-        //             {
-        //                 DownstreamPathTemplate = "/products",
-        //                 DownstreamScheme = "http",
-        //                 DownstreamHost = "localhost",
-        //                 DownstreamPort = 51879,
-        //                 UpstreamPathTemplate = "/products/{productId}",
-        //                 UpstreamHttpMethod = new List<string> { "Get" },
-        //                 QoSOptions = new FileQoSOptions()
-        //                 {
-        //                     ExceptionsAllowedBeforeBreaking = 3,
-        //                     DurationOfBreak = 5,
-        //                     TimeoutValue = 5000
-        //                 }
-        //             }
-        //         }
-        //     };
+        [Fact]
+        public void should_return_not_found()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/products",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        QoSOptions = new FileQoSOptions()
+                        {
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak = 5,
+                            TimeoutValue = 5000
+                        }
+                    }
+                }
+            };
 
-        //     this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
-        //         .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //         .And(x => _steps.GivenOcelotIsRunning())
-        //         .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
-        //         .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        //         .BDDfy();
-        // }
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
 
         [Fact]
         public void should_return_response_200_with_complex_url()

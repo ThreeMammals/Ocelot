@@ -31,6 +31,16 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        public void should_not_find_anything()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products/"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(new List<UrlPathPlaceholderNameAndValue>()))
+                .BDDfy();
+        }
+
+        [Fact]
         public void can_match_down_stream_url_with_no_slash()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("api"))
