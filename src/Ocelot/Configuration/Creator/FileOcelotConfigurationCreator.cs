@@ -14,7 +14,6 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
-using Ocelot.Utilities;
 
 namespace Ocelot.Configuration.Creator
 {
