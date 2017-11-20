@@ -4,9 +4,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/TomPallister/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/TomPallister/Ocelot?branch=develop)
 
-Attempt at a .NET Api Gateway
-
-This project is aimed at people using .NET running 
+Ocelot is a .NET Api Gateway. This project is aimed at people using .NET running 
 a micro services / service orientated architecture 
 that need a unified point of entry into their system.
 
