@@ -173,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                         .WithDictionaryHandle();
                     };
                     
-                    s.AddOcelot(configuration, settings);
+                    s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
                 {
