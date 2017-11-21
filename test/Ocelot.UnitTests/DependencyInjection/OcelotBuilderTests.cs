@@ -17,14 +17,14 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    public class ServiceCollectionExtensionTests
+    public class OcelotBuilderTests
     {
         private IServiceCollection _services;
         private IConfigurationRoot _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private int _maxRetries;
 
-        public ServiceCollectionExtensionTests()
+        public OcelotBuilderTests()
         {
                 IWebHostBuilder builder = new WebHostBuilder();
                 _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
