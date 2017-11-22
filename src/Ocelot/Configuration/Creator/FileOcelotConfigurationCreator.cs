@@ -66,13 +66,7 @@ namespace Ocelot.Configuration.Creator
             _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
-
-        public async Task<Response<IOcelotConfiguration>> Create()
-        {     
-            var config = await SetUpConfiguration(_options.Value);
-            return config;
-        }
-
+        
         public async Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration)
         {     
             var config = await SetUpConfiguration(fileConfiguration);

@@ -555,7 +555,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create().Result;
+            _config = _ocelotConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)

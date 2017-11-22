@@ -6,7 +6,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IOcelotConfigurationCreator
     {
-        Task<Response<IOcelotConfiguration>> Create();
         Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration);
     }
 }
