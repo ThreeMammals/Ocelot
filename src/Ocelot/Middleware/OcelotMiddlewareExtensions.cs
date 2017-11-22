@@ -180,6 +180,11 @@ namespace Ocelot.Middleware
                     else
                     {
                         var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
+                        if(ocelotConfig.IsError)
+                        {
+                            //throwing an exception here because Ocelot cannot start without a config? Or can it?
+                            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", ocelotConfig.Errors.ToString())}");
+                        }
                         config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
                         var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
                     }
