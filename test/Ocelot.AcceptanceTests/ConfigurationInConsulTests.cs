@@ -17,14 +17,14 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ConfigurationInConsul : IDisposable
+    public class ConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
         private readonly Steps _steps;
         private IWebHost _fakeConsulBuilder;
         private FileConfiguration _config;
 
-        public ConfigurationInConsul()
+        public ConfigurationInConsulTests()
         {
             _steps = new Steps();
         }

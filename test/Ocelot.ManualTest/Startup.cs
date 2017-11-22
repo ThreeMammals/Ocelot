@@ -45,7 +45,7 @@ namespace Ocelot.ManualTest
                     x.Audience = "test";
                 });
 
-            services.AddOcelot(Configuration, settings);
+            services.AddOcelot(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
