@@ -70,31 +70,22 @@ namespace Ocelot.Configuration.Creator
         public async Task<Response<IOcelotConfiguration>> Create()
         {     
             var config = await SetUpConfiguration(_options.Value);
-
-            return new OkResponse<IOcelotConfiguration>(config);
+            return config;
         }
 
         public async Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration)
         {     
             var config = await SetUpConfiguration(fileConfiguration);
-
-            return new OkResponse<IOcelotConfiguration>(config);
+            return config;
         }
 
-        private async Task<IOcelotConfiguration> SetUpConfiguration(FileConfiguration fileConfiguration)
+        private async Task<Response<IOcelotConfiguration>> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
             var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {
-                var errorBuilder = new StringBuilder();
-
-                foreach (var error in response.Errors)
-                {
-                    errorBuilder.AppendLine(error.Message);
-                }
-
-                throw new Exception($"Unable to start Ocelot..configuration, errors were {errorBuilder}");
+                return new ErrorResponse<IOcelotConfiguration>(response.Data.Errors);
             }
 
             var reRoutes = new List<ReRoute>();
@@ -107,7 +98,9 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            return new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath, serviceProviderConfiguration);
+            var config = new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath, serviceProviderConfiguration);
+
+            return new OkResponse<IOcelotConfiguration>(config);
         }
 
         private ReRoute SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
