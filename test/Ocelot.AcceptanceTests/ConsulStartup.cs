@@ -8,13 +8,12 @@ using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class Startup
+    public class ConsulStartup
     {
-        public Startup(IHostingEnvironment env)
+        public ConsulStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -28,14 +27,14 @@ namespace Ocelot.AcceptanceTests
 
         public IConfigurationRoot Configuration { get; }
 
-        public virtual void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
                 x.WithDictionaryHandle();
             };
 
-            services.AddOcelot(Configuration);
+            services.AddOcelot(Configuration).AddStoreOcelotConfigurationInConsul();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -44,24 +43,5 @@ namespace Ocelot.AcceptanceTests
 
             app.UseOcelot().Wait();
         }
-	}
-
-	public class StartupWithCustomCacheHandle : Startup
-	{
-		public StartupWithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
-
-		public override void ConfigureServices(IServiceCollection services)
-		{
-			services.AddOcelot(Configuration)
-				.AddCacheManager((x) =>
-				{
-					x.WithMicrosoftLogging(log =>
-					{
-						log.AddConsole(LogLevel.Debug);
-					})
-					.WithJsonSerializer()
-					.WithHandle(typeof(InMemoryJsonHandle<>));
-				});
-		}
-	}
+    }
 }

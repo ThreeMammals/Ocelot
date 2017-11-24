@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
 
@@ -9,16 +10,16 @@ namespace Ocelot.Configuration.Provider
     /// </summary>
     public class OcelotConfigurationProvider : IOcelotConfigurationProvider
     {
-        private readonly IOcelotConfigurationRepository _repo;
+        private readonly IOcelotConfigurationRepository _config;
 
         public OcelotConfigurationProvider(IOcelotConfigurationRepository repo)
         {
-            _repo = repo;
+            _config = repo;
         }
 
         public async Task<Response<IOcelotConfiguration>> Get()
         {
-            var repoConfig = await _repo.Get();
+            var repoConfig = await _config.Get();
 
             if (repoConfig.IsError)
             {

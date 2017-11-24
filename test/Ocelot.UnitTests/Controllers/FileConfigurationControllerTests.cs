@@ -107,12 +107,12 @@ namespace Ocelot.UnitTests.Controllers
         {
             _configGetter
                 .Setup(x => x.Get())
-                .Returns(fileConfiguration);
+                .ReturnsAsync(fileConfiguration);
         }
 
         private void WhenIGetTheFileConfiguration()
         {
-            _result = _controller.Get();
+            _result = _controller.Get().Result;
         }
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()

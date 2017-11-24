@@ -159,7 +159,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_not_care_about_no_trailing()
+        public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
             var configuration = new FileConfiguration
             {
@@ -187,7 +187,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_not_care_about_trailing()
+        public void should_return_not_found_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
             var configuration = new FileConfiguration
             {
@@ -209,8 +209,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
 
@@ -483,6 +482,41 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+
+        [Fact]
+        public void should_fix_145()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/{url}",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51899,
+                            UpstreamPathTemplate = "/platform/{url}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            QoSOptions = new FileQoSOptions {
+                                ExceptionsAllowedBeforeBreaking = 3,
+                                DurationOfBreak = 10,
+                                TimeoutValue = 5000
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51899", "", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/platform/swagger/lib/backbone-min.js"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => ThenTheDownstreamUrlPathShouldBe("/api/swagger/lib/backbone-min.js"))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
@@ -495,7 +529,7 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(async context =>
                     {   
-                        _downstreamPath = context.Request.PathBase.Value;
+                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
                     });

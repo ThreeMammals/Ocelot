@@ -22,7 +22,7 @@ namespace Ocelot.Configuration.Setter
 
         public async Task<Response> Set(FileConfiguration fileConfig)
         {
-            var response = _repo.Set(fileConfig);
+            var response = await _repo.Set(fileConfig);
 
             if(response.IsError)
             {

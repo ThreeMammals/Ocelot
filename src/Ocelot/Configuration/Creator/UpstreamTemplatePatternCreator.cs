@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using Ocelot.Configuration.File;
-using Ocelot.Utilities;
 
 namespace Ocelot.Configuration.Creator
 {
     public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
     {
-        private const string RegExMatchEverything = ".*";
+        private const string RegExMatchEverything = "[0-9a-zA-Z].*";
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
         private const string RegExForwardSlashOnly = "^/$";
@@ -14,8 +13,6 @@ namespace Ocelot.Configuration.Creator
         public string Create(FileReRoute reRoute)
         {
             var upstreamTemplate = reRoute.UpstreamPathTemplate;
-
-            upstreamTemplate = upstreamTemplate.SetLastCharacterAs('/');
 
             var placeholders = new List<string>();
 
@@ -38,6 +35,11 @@ namespace Ocelot.Configuration.Creator
             if (upstreamTemplate == "/")
             {
                 return RegExForwardSlashOnly;
+            }
+
+            if(upstreamTemplate.EndsWith("/"))
+            {
+                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length -1, 1) + "(/|)";
             }
 
             var route = reRoute.ReRouteIsCaseSensitive 

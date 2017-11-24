@@ -8,7 +8,6 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Utilities;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {

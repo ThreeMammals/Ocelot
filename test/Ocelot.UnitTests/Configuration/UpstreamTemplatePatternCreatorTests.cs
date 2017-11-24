@@ -28,7 +28,23 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS/[0-9a-zA-Z].*$"))
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/PRODUCTS/",
+                ReRouteIsCaseSensitive = false
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS(/|)$"))
                 .BDDfy();
         }
 
@@ -42,7 +58,7 @@ namespace Ocelot.UnitTests.Configuration
                 };
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("^/PRODUCTS/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/PRODUCTS/[0-9a-zA-Z].*$"))
                 .BDDfy();
         }
 
@@ -57,7 +73,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*$"))
                 .BDDfy();
         }
 
@@ -72,9 +88,10 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/variants/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*/variants/[0-9a-zA-Z].*$"))
                 .BDDfy();
         }
+
         [Fact]
         public void should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
         {
@@ -86,7 +103,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.*/variants/.*/$"))
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*/variants/[0-9a-zA-Z].*(/|)$"))
                 .BDDfy();
         }
 

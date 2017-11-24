@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,14 +17,14 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ConfigurationInConsul : IDisposable
+    public class ConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
         private readonly Steps _steps;
         private IWebHost _fakeConsulBuilder;
-        private IOcelotConfiguration _config;
+        private FileConfiguration _config;
 
-        public ConfigurationInConsul()
+        public ConfigurationInConsulTests()
         {
             _steps = new Steps();
         }
@@ -42,10 +44,6 @@ namespace Ocelot.AcceptanceTests
                             DownstreamPort = 51779,
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            FileCacheOptions = new FileCacheOptions
-                            {
-                                TtlSeconds = 100
-                            }
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration()
@@ -68,57 +66,7 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
-        }
-
-        [Fact]
-        public void should_fix_issue_142()
-        {
-            var consulPort = 8500;
-            var configuration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
-                    {
-                        Host = "localhost",
-                        Port = consulPort
-                    }
-                }
-            };
-
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
-            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(consulPort)
-                .Build();
-
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamPathTemplate("/status")
-                .WithUpstreamTemplatePattern("^(?i)/cs/status/$")
-                .WithDownstreamScheme("http")
-                .WithDownstreamHost("localhost")
-                .WithDownstreamPort(51779)
-                .WithUpstreamPathTemplate("/cs/status")
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithReRouteKey("/cs/status|Get")
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, false))
-                .Build();
-
-            var reRoutes = new List<ReRoute> { reRoute };
-            
-            var config = new OcelotConfiguration(reRoutes, null, serviceProviderConfig);
-
-            this.Given(x => GivenTheConsulConfigurationIs(config))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
+		}
 
 		[Fact]
 		public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
@@ -135,10 +83,6 @@ namespace Ocelot.AcceptanceTests
 							DownstreamPort = 51779,
 							UpstreamPathTemplate = "/",
 							UpstreamHttpMethod = new List<string> { "Get" },
-							FileCacheOptions = new FileCacheOptions
-							{
-								TtlSeconds = 100
-							}
 						}
 					},
 				GlobalConfiguration = new FileGlobalConfiguration()
@@ -163,7 +107,148 @@ namespace Ocelot.AcceptanceTests
 				.BDDfy();
 		}
 
-        private void GivenTheConsulConfigurationIs(OcelotConfiguration config)
+		[Fact]
+        public void should_load_configuration_out_of_consul()
+        {
+            var consulPort = 8500;
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+
+            var consulConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/status",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51779,
+                        UpstreamPathTemplate = "/cs/status",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_load_configuration_out_of_consul_if_it_is_changed()
+        {
+            var consulPort = 8506;
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+
+            var consulConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/status",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51779,
+                        UpstreamPathTemplate = "/cs/status",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            var secondConsulConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/status",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51779,
+                        UpstreamPathTemplate = "/cs/status/awesome",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => GivenTheConsulConfigurationIs(secondConsulConfig))
+                .And(x => GivenIWaitForTheConfigToReplicateToOcelot())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+		}
+
+		private void GivenIWaitForTheConfigToReplicateToOcelot()
+        {
+            Thread.Sleep(10000);
+        }
+
+        private void GivenTheConsulConfigurationIs(FileConfiguration config)
         {
             _config = config;
         }
@@ -201,7 +286,7 @@ namespace Ocelot.AcceptanceTests
 
                                             var json = reader.ReadToEnd();
 
-                                            _config = JsonConvert.DeserializeObject<OcelotConfiguration>(json);
+                                            _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
                                             var response = JsonConvert.SerializeObject(true);
 

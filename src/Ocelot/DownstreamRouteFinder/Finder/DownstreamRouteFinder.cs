@@ -7,7 +7,6 @@ using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Responses;
-using Ocelot.Utilities;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
@@ -24,8 +23,6 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod, IOcelotConfiguration configuration)
         {
-            upstreamUrlPath = upstreamUrlPath.SetLastCharacterAs('/');
-            
             var applicableReRoutes = configuration.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(upstreamHttpMethod.ToLower()));
 
             foreach (var reRoute in applicableReRoutes)
