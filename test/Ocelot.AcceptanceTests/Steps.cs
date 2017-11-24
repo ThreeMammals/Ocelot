@@ -148,7 +148,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<StartupWithCustomCacheHandle>());
+                .UseStartup<Startup_WithConsul_And_CustomCacheHandle>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }

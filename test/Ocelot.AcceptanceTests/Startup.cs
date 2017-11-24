@@ -64,4 +64,24 @@ namespace Ocelot.AcceptanceTests
                 });
         }
     }
+
+    public class Startup_WithConsul_And_CustomCacheHandle : Startup
+    {
+        public Startup_WithConsul_And_CustomCacheHandle(IHostingEnvironment env) : base(env) { }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOcelot(Configuration)
+                .AddCacheManager((x) =>
+                {
+                    x.WithMicrosoftLogging(log =>
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithJsonSerializer()
+                    .WithHandle(typeof(InMemoryJsonHandle<>));
+                })
+                .AddStoreOcelotConfigurationInConsul();
+        }
+    }
 }
