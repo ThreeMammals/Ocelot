@@ -23,6 +23,7 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
@@ -214,7 +215,7 @@ namespace Ocelot.Middleware
 
         private static void ThrowToStopOcelotStarting(Response config)
         {
-            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.ToString())}");
+            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.Select(x => x.ToString()))}");
         }
 
         private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
