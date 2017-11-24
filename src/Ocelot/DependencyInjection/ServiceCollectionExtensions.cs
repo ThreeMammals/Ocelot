@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using CacheManager.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
 
 namespace Ocelot.DependencyInjection
 {
@@ -10,7 +10,32 @@ namespace Ocelot.DependencyInjection
         public static IOcelotBuilder AddOcelot(this IServiceCollection services,
             IConfigurationRoot configurationRoot)
         {
-            return new OcelotBuilder(services, configurationRoot);
+            var builder = new OcelotBuilder(services, configurationRoot);
+
+            //add default cache settings...
+            Action<ConfigurationBuilderCachePart> defaultCachingSettings = x =>
+            {
+                x.WithDictionaryHandle();
+            };
+
+            builder.AddCacheManager(defaultCachingSettings);
+
+            //add ocelot services...
+            builder
+                .AddRequiredBaseServices()
+                .AddQos()
+                .AddServiceDiscovery()
+                .AddLoadBalancer()
+                .AddLogging()
+                .AddRateLimitCounter();
+
+            //add identity server for admin area
+            builder.AddIdentityServer();
+
+            //add asp.net services..
+            builder.AddAspNetCoreServices();
+
+            return builder;
         }
     }
 }
