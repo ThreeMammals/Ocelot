@@ -36,7 +36,8 @@
         [Fact]
         public void should_returned_cached_item_when_it_is_in_cache()
         {
-            this.Given(x => x.GivenThereIsACachedResponse(new CachedResponse()))
+            var cachedResponse = new CachedResponse();
+            this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .And(x => x.GivenThereIsADownstreamUrl())
                 .When(x => x.WhenICallTheMiddleware())

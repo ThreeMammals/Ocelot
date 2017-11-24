@@ -99,18 +99,17 @@ namespace Ocelot.Cache.Middleware
                 return null;
             }
 
-            var cached = new CachedResponse()
-            {
-                StatusCode = response.StatusCode,
-                Headers = response.Headers.ToDictionary(v => v.Key, v => v.Value)
-            };
+            var statusCode = response.StatusCode;
+            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Value);
+            string body = null;
 
             if (response.Content != null)
             {
-                var body = await response.Content.ReadAsByteArrayAsync();
-                cached.Body = Convert.ToBase64String(body);
+                var content = await response.Content.ReadAsByteArrayAsync();
+                body = Convert.ToBase64String(content);
             }
 
+            var cached = new CachedResponse(statusCode, headers, body);
             return cached;
         }
     }
