@@ -30,11 +30,6 @@ namespace Ocelot.AcceptanceTests
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            Action<ConfigurationBuilderCachePart> settings = (x) =>
-            {
-                x.WithDictionaryHandle();
-            };
-
             services.AddOcelot(Configuration);
         }
 
@@ -46,9 +41,9 @@ namespace Ocelot.AcceptanceTests
         }
     }
 
-    public class StartupWithCustomCacheHandle : Startup
+    public class Startup_WithCustomCacheHandle : Startup
     {
-        public StartupWithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
+        public Startup_WithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
 
         public override void ConfigureServices(IServiceCollection services)
         {
