@@ -11,9 +11,9 @@ namespace Ocelot.Controllers
     [Route("outputcache")]
     public class OutputCacheController : Controller
     {
-        private IOcelotCache<HttpResponseMessage> _cache;
+        private IOcelotCache<CachedResponse> _cache;
 
-        public OutputCacheController(IOcelotCache<HttpResponseMessage> cache)
+        public OutputCacheController(IOcelotCache<CachedResponse> cache)
         {
             _cache = cache;
         }

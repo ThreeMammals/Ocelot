@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.IO;
 
 namespace Ocelot.Cache.Middleware
 {
@@ -13,13 +14,13 @@ namespace Ocelot.Cache.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
-        private readonly IOcelotCache<HttpResponseMessage> _outputCache;
+        private readonly IOcelotCache<CachedResponse> _outputCache;
         private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository scopedDataRepository,
-            IOcelotCache<HttpResponseMessage> outputCache,
+            IOcelotCache<CachedResponse> outputCache,
             IRegionCreator regionCreator)
             :base(scopedDataRepository)
         {
@@ -47,7 +48,8 @@ namespace Ocelot.Cache.Middleware
             {
                 _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
 
-                SetHttpResponseMessageThisRequest(cached);
+				var response = await CreateHttpResponseMessage(cached);
+                SetHttpResponseMessageThisRequest(response);
 
                 _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
 
@@ -65,11 +67,54 @@ namespace Ocelot.Cache.Middleware
                 return;
             }
 
-            var response = HttpResponseMessage;
+            cached = await CreateCachedResponse(HttpResponseMessage);
 
-            _outputCache.Add(downstreamUrlKey, response, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
+            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }
+
+		internal Task<HttpResponseMessage> CreateHttpResponseMessage(CachedResponse cached)
+		{
+			return Task.Run(() =>
+			{
+				if(cached == null)
+				{
+					return null;
+				}
+
+				var response = new HttpResponseMessage(cached.StatusCode);
+				foreach (var header in cached.Headers)
+				{
+					response.Headers.Add(header.Key, header.Value);
+				}
+				var content = new MemoryStream(Convert.FromBase64String(cached.Body));
+				response.Content = new StreamContent(content);
+
+				return response;
+			});
+		}
+
+		internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
+		{
+			if (response == null)
+			{
+				return null;
+			}
+
+			var cached = new CachedResponse()
+			{
+				StatusCode = response.StatusCode,
+				Headers = response.Headers.ToDictionary(v => v.Key, v => v.Value)			
+			};
+
+			if (response.Content != null)
+			{
+				var body = await response.Content.ReadAsByteArrayAsync();
+				cached.Body = Convert.ToBase64String(body);
+			}
+
+			return cached;
+		}
     }
 }

@@ -80,10 +80,10 @@ namespace Ocelot.DependencyInjection
 
         public static IServiceCollection AddOcelot(this IServiceCollection services, IConfigurationRoot configurationRoot, Action<ConfigurationBuilderCachePart> settings)
         {
-            var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
-            var ocelotOutputCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
-            services.TryAddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
-            services.TryAddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotOutputCacheManager);
+            var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", settings);
+            var ocelotOutputCacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
+            services.TryAddSingleton<ICacheManager<CachedResponse>>(cacheManagerOutputCache);
+            services.TryAddSingleton<IOcelotCache<CachedResponse>>(ocelotOutputCacheManager);
 
             var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IOcelotConfiguration>("OcelotConfigurationCache", settings);
             var ocelotConfigCacheManager = new OcelotCacheManagerCache<IOcelotConfiguration>(ocelotConfigCacheManagerOutputCache);
