@@ -44,24 +44,24 @@ namespace Ocelot.AcceptanceTests
 
             app.UseOcelot().Wait();
         }
-	}
+    }
 
-	public class StartupWithCustomCacheHandle : Startup
-	{
-		public StartupWithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
+    public class StartupWithCustomCacheHandle : Startup
+    {
+        public StartupWithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
 
-		public override void ConfigureServices(IServiceCollection services)
-		{
-			services.AddOcelot(Configuration)
-				.AddCacheManager((x) =>
-				{
-					x.WithMicrosoftLogging(log =>
-					{
-						log.AddConsole(LogLevel.Debug);
-					})
-					.WithJsonSerializer()
-					.WithHandle(typeof(InMemoryJsonHandle<>));
-				});
-		}
-	}
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOcelot(Configuration)
+                .AddCacheManager((x) =>
+                {
+                    x.WithMicrosoftLogging(log =>
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithJsonSerializer()
+                    .WithHandle(typeof(InMemoryJsonHandle<>));
+                });
+        }
+    }
 }

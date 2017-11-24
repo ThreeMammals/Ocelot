@@ -22,7 +22,7 @@ namespace Ocelot.Cache.Middleware
             IRequestScopedDataRepository scopedDataRepository,
             IOcelotCache<CachedResponse> outputCache,
             IRegionCreator regionCreator)
-            :base(scopedDataRepository)
+            : base(scopedDataRepository)
         {
             _next = next;
             _outputCache = outputCache;
@@ -41,14 +41,14 @@ namespace Ocelot.Cache.Middleware
             var downstreamUrlKey = $"{DownstreamRequest.Method.Method}-{DownstreamRequest.RequestUri.OriginalString}";
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
-  
+
             var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
                 _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
 
-				var response = await CreateHttpResponseMessage(cached);
+                var response = await CreateHttpResponseMessage(cached);
                 SetHttpResponseMessageThisRequest(response);
 
                 _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
@@ -74,47 +74,47 @@ namespace Ocelot.Cache.Middleware
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }
 
-		internal Task<HttpResponseMessage> CreateHttpResponseMessage(CachedResponse cached)
-		{
-			return Task.Run(() =>
-			{
-				if(cached == null)
-				{
-					return null;
-				}
+        internal Task<HttpResponseMessage> CreateHttpResponseMessage(CachedResponse cached)
+        {
+            return Task.Run(() =>
+            {
+                if (cached == null)
+                {
+                    return null;
+                }
 
-				var response = new HttpResponseMessage(cached.StatusCode);
-				foreach (var header in cached.Headers)
-				{
-					response.Headers.Add(header.Key, header.Value);
-				}
-				var content = new MemoryStream(Convert.FromBase64String(cached.Body));
-				response.Content = new StreamContent(content);
+                var response = new HttpResponseMessage(cached.StatusCode);
+                foreach (var header in cached.Headers)
+                {
+                    response.Headers.Add(header.Key, header.Value);
+                }
+                var content = new MemoryStream(Convert.FromBase64String(cached.Body));
+                response.Content = new StreamContent(content);
 
-				return response;
-			});
-		}
+                return response;
+            });
+        }
 
-		internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
-		{
-			if (response == null)
-			{
-				return null;
-			}
+        internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
+        {
+            if (response == null)
+            {
+                return null;
+            }
 
-			var cached = new CachedResponse()
-			{
-				StatusCode = response.StatusCode,
-				Headers = response.Headers.ToDictionary(v => v.Key, v => v.Value)			
-			};
+            var cached = new CachedResponse()
+            {
+                StatusCode = response.StatusCode,
+                Headers = response.Headers.ToDictionary(v => v.Key, v => v.Value)
+            };
 
-			if (response.Content != null)
-			{
-				var body = await response.Content.ReadAsByteArrayAsync();
-				cached.Body = Convert.ToBase64String(body);
-			}
+            if (response.Content != null)
+            {
+                var body = await response.Content.ReadAsByteArrayAsync();
+                cached.Body = Convert.ToBase64String(body);
+            }
 
-			return cached;
-		}
+            return cached;
+        }
     }
 }
