@@ -48,7 +48,7 @@ namespace Ocelot.Cache.Middleware
             {
                 _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
 
-                var response = await CreateHttpResponseMessage(cached);
+                var response = CreateHttpResponseMessage(cached);
                 SetHttpResponseMessageThisRequest(response);
 
                 _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
@@ -74,25 +74,22 @@ namespace Ocelot.Cache.Middleware
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }
 
-        internal Task<HttpResponseMessage> CreateHttpResponseMessage(CachedResponse cached)
+        internal HttpResponseMessage CreateHttpResponseMessage(CachedResponse cached)
         {
-            return Task.Run(() =>
+            if (cached == null)
             {
-                if (cached == null)
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                var response = new HttpResponseMessage(cached.StatusCode);
-                foreach (var header in cached.Headers)
-                {
-                    response.Headers.Add(header.Key, header.Value);
-                }
-                var content = new MemoryStream(Convert.FromBase64String(cached.Body));
-                response.Content = new StreamContent(content);
+            var response = new HttpResponseMessage(cached.StatusCode);
+            foreach (var header in cached.Headers)
+            {
+                response.Headers.Add(header.Key, header.Value);
+            }
+            var content = new MemoryStream(Convert.FromBase64String(cached.Body));
+            response.Content = new StreamContent(content);
 
-                return response;
-            });
+            return response;
         }
 
         internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
