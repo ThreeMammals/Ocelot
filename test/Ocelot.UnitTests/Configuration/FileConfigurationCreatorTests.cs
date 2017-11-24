@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
 
     public class FileConfigurationCreatorTests
@@ -112,19 +113,6 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
                 .BDDfy();
-        }
-
-        private void GivenTheFollowingRegionIsReturned(string region)
-        {
-            _regionCreator
-                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(region);
-        }
-
-        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
-        {
-            _regionCreator
-                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
         [Fact]
@@ -441,17 +429,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
-        {
-            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(httpHandlerOptions);
-        }
-
-        private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
-        {
-            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
-        }
-
         [Theory]
         [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
         public void should_create_with_headers_to_extract(FileConfiguration fileConfig)
@@ -523,6 +500,31 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_validation_errors()
+        {
+            var errors = new List<Error> {new PathTemplateDoesntStartWithForwardSlash("some message")};
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration()))
+                .And(x => x.GivenTheConfigIsInvalid(errors))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheErrorsAreReturned(errors))
+                .BDDfy();
+        }
+
+        private void GivenTheConfigIsInvalid(List<Error> errors)
+        {
+            _validator
+                .Setup(x => x.IsValid(It.IsAny<FileConfiguration>()))
+                .ReturnsAsync(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(true, errors)));
+        }
+
+        private void ThenTheErrorsAreReturned(List<Error> errors)
+        {
+            _config.IsError.ShouldBeTrue();
+            _config.Errors[0].ShouldBe(errors[0]);
+        }
+
         private void GivenTheFollowingOptionsAreReturned(ReRouteOptions fileReRouteOptions)
         {
             _fileReRouteOptionsCreator
@@ -553,7 +555,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create().Result;
+            _config = _ocelotConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -650,6 +652,31 @@ namespace Ocelot.UnitTests.Configuration
         {
             _serviceProviderConfigCreator
                 .Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(serviceProviderConfiguration);
+        }
+
+        
+        private void GivenTheFollowingRegionIsReturned(string region)
+        {
+            _regionCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(region);
+        }
+
+        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
+        {
+            _regionCreator
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
+        }
+        
+        private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
+        {
+            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(httpHandlerOptions);
+        }
+
+        private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
+        {
+            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
         }
     }
 }
