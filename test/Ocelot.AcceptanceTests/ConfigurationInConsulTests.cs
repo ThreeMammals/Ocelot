@@ -69,6 +69,45 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51779,
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = 9502
+                    }
+                }
+            };
+
+            var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
+
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_load_configuration_out_of_consul()
         {
             var consulPort = 8500;
@@ -236,7 +275,7 @@ namespace Ocelot.AcceptanceTests
 
                                         var kvp = new FakeConsulGetResponse(base64);
 
-                                        await context.Response.WriteJsonAsync(new FakeConsulGetResponse[]{kvp});
+                                        await context.Response.WriteJsonAsync(new FakeConsulGetResponse[] { kvp });
                                     }
 
                                     else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/OcelotConfiguration")

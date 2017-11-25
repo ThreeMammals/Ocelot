@@ -23,6 +23,7 @@ using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -74,9 +75,9 @@ namespace Ocelot.AcceptanceTests
         /// </summary>
         public void GivenOcelotIsRunning()
         {
-             _webHostBuilder = new WebHostBuilder();
-            
-            _webHostBuilder.ConfigureServices(s => 
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
             {
                 s.AddSingleton(_webHostBuilder);
             });
@@ -107,6 +108,21 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningUsingJsonSerializedCache()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup_WithCustomCacheHandle>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         public void GivenOcelotIsRunningUsingConsulToStoreConfig()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -122,16 +138,31 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup_WithConsul_And_CustomCacheHandle>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         internal void ThenTheResponseShouldBe(FileConfiguration expected)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
-            
+
             response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for(var i = 0; i < response.ReRoutes.Count; i++)
+            for (var i = 0; i < response.ReRoutes.Count; i++)
             {
                 response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
                 response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
@@ -155,7 +186,7 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = builder.Build();
             _webHostBuilder = new WebHostBuilder();
-            _webHostBuilder.ConfigureServices(s => 
+            _webHostBuilder.ConfigureServices(s =>
             {
                 s.AddSingleton(_webHostBuilder);
             });
@@ -172,7 +203,7 @@ namespace Ocelot.AcceptanceTests
                         })
                         .WithDictionaryHandle();
                     };
-                    
+
                     s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
@@ -299,12 +330,12 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
         {
             var tasks = new Task[times];
-            
+
             for (int i = 0; i < times; i++)
             {
                 var urlCopy = url;
                 tasks[i] = GetForServiceDiscoveryTest(urlCopy);
-                Thread.Sleep(_random.Next(40,60));
+                Thread.Sleep(_random.Next(40, 60));
             }
 
             Task.WaitAll(tasks);
@@ -327,7 +358,7 @@ namespace Ocelot.AcceptanceTests
                 request.Headers.Add("ClientId", clientId);
                 _response = _ocelotClient.SendAsync(request).Result;
             }
-        } 
+        }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
         {

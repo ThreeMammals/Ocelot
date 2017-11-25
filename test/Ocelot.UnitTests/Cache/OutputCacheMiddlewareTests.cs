@@ -19,12 +19,12 @@
 
     public class OutputCacheMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private readonly Mock<IOcelotCache<HttpResponseMessage>> _cacheManager;
-        private HttpResponseMessage _response;
+        private readonly Mock<IOcelotCache<CachedResponse>> _cacheManager;
+        private CachedResponse _response;
 
         public OutputCacheMiddlewareTests()
         {
-            _cacheManager = new Mock<IOcelotCache<HttpResponseMessage>>();
+            _cacheManager = new Mock<IOcelotCache<CachedResponse>>();
 
             ScopedRepository
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
@@ -36,7 +36,8 @@
         [Fact]
         public void should_returned_cached_item_when_it_is_in_cache()
         {
-            this.Given(x => x.GivenThereIsACachedResponse(new HttpResponseMessage()))
+            var cachedResponse = new CachedResponse();
+            this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .And(x => x.GivenThereIsADownstreamUrl())
                 .When(x => x.WhenICallTheMiddleware())
@@ -70,7 +71,7 @@
             app.UseOutputCacheMiddleware();
         }
 
-        private void GivenThereIsACachedResponse(HttpResponseMessage response)
+        private void GivenThereIsACachedResponse(CachedResponse response)
         {
             _response = response;
             _cacheManager
@@ -123,7 +124,7 @@
         private void ThenTheCacheAddIsCalledCorrectly()
         {
             _cacheManager
-                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<HttpResponseMessage>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
+                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<CachedResponse>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
         }
     }
 }

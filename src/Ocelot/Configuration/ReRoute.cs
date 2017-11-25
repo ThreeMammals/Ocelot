@@ -19,7 +19,7 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries, 
             string requestIdKey, 
             bool isCached, 
-            CacheOptions fileCacheOptions, 
+            CacheOptions cacheOptions, 
             string downstreamScheme, 
             string loadBalancer, 
             string downstreamHost, 
@@ -49,7 +49,7 @@ namespace Ocelot.Configuration
             IsAuthorised = isAuthorised;
             RequestIdKey = requestIdKey;
             IsCached = isCached;
-            CacheOptions = fileCacheOptions;
+            CacheOptions = cacheOptions;
             ClaimsToQueries = claimsToQueries
                 ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims 

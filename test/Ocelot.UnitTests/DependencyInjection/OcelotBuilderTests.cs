@@ -72,9 +72,9 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
         {
-            var outputCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<HttpResponseMessage>));
-            var outputCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<HttpResponseMessage>));
-            var thing = (CacheManager.Core.ICacheManager<System.Net.Http.HttpResponseMessage>)outputCacheManager.ImplementationInstance;
+            var outputCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<CachedResponse>));
+            var outputCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<CachedResponse>));
+            var thing = (CacheManager.Core.ICacheManager<CachedResponse>)outputCacheManager.ImplementationInstance;
             thing.Configuration.MaxRetries.ShouldBe(_maxRetries);
             
             var ocelotConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<IOcelotConfiguration>));
