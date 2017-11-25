@@ -247,3 +247,5 @@ test/Ocelot.AcceptanceTests/configuration.json
 
 # Read the docstates
 _build/
+_static/
+_templates/
