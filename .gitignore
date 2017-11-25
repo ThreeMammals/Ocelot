@@ -244,3 +244,6 @@ tools/
 
 # Ocelot acceptance test config
 test/Ocelot.AcceptanceTests/configuration.json
+
+# Read the docstates
+_build/
