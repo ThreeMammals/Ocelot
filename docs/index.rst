@@ -1,5 +1,5 @@
 Welcome to Ocelot
-==========================
+=================
 
 This project is aimed at people using .NET running 
 a micro services / service orientated architecture 
@@ -28,9 +28,40 @@ That is basically it with a bunch of other features.
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: Introduction
+
+   introduction/bigpicture
+   introduction/gettingstarted
+   introduction/contributing
+   introduction/notsupported
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Features
 
-   features/administration
+   features/routing
+   features/configuration
+   features/servicediscovery
    features/authentication
+   features/authorisation
+   features/administration
+   features/caching
+   features/qualityofservice
+   features/claimstransformation 
+   features/logging
+   features/requestid
+   features/middlewareinjection
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Building Ocelot
+
+   building/overview
+   building/building
+   building/tests
+   building/releaseprocess
+
 
 
