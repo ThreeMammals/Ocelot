@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.Provider;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -28,7 +29,7 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var loadBalancer = _loadBalancerHouse.Get(DownstreamRoute.ReRoute.ReRouteKey);
+            var loadBalancer = await _loadBalancerHouse.Get(DownstreamRoute.ReRoute, ServiceProviderConfiguration);
             if(loadBalancer.IsError)
             {
                 _logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");

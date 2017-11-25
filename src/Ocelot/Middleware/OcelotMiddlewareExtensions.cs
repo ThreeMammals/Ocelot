@@ -23,16 +23,20 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
     using Ocelot.Configuration;
+    using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
+    using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Responses;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -56,7 +60,9 @@ namespace Ocelot.Middleware
         /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
         {
-            await CreateAdministrationArea(builder);
+            var configuration = await CreateConfiguration(builder);
+            
+            await CreateAdministrationArea(builder, configuration);
 
             ConfigureDiagnosticListener(builder);
 
@@ -145,38 +151,110 @@ namespace Ocelot.Middleware
 
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
-            var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
-            
-            var configSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
-            
-            var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
+            var deps = GetDependencies(builder);
 
-            var ocelotConfiguration = await configProvider.Get();
+            var ocelotConfiguration = await deps.provider.Get();
 
-            if (ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            if (ConfigurationNotSetUp(ocelotConfiguration))
             {
-                var config = await configSetter.Set(fileConfig.Value);
-
-                if (config == null || config.IsError)
+                var response = await SetConfig(builder, deps.fileConfiguration, deps.setter, deps.provider, deps.repo);
+                
+                if (UnableToSetConfig(response))
                 {
-                    throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
+                    ThrowToStopOcelotStarting(response);
                 }
             }
 
-            ocelotConfiguration = await configProvider.Get();
+            return await GetOcelotConfigAndReturn(deps.provider);
+        }
+
+        private static async Task<Response> SetConfig(IApplicationBuilder builder, IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo)
+        {
+            if (UsingConsul(repo))
+            {
+                return await SetUpConfigFromConsul(builder, repo, setter, fileConfiguration);
+            }
+            
+            return await setter.Set(fileConfiguration.Value);
+        }
+
+        private static bool UnableToSetConfig(Response response)
+        {
+            return response == null || response.IsError;
+        }
+
+        private static bool ConfigurationNotSetUp(Response<IOcelotConfiguration> ocelotConfiguration)
+        {
+            return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
+        }
+
+        private static (IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo) GetDependencies(IApplicationBuilder builder)
+        {
+            var fileConfiguration = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
+            
+            var setter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+            
+            var provider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
+
+            var repo = (IFileConfigurationRepository)builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
+
+            return (fileConfiguration, setter, provider, repo);
+        }
+
+        private static async Task<IOcelotConfiguration> GetOcelotConfigAndReturn(IOcelotConfigurationProvider provider)
+        {
+            var ocelotConfiguration = await provider.Get();
 
             if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
             {
-                throw new Exception("Unable to start Ocelot: ocelot configuration was not returned by provider.");
+                ThrowToStopOcelotStarting(ocelotConfiguration);
             }
 
             return ocelotConfiguration.Data;
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder)
+        private static void ThrowToStopOcelotStarting(Response config)
         {
-            var configuration = await CreateConfiguration(builder);
+            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.Select(x => x.ToString()))}");
+        }
 
+        private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
+        {
+            return fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository);
+        }
+
+        private static async Task<Response> SetUpConfigFromConsul(IApplicationBuilder builder, IFileConfigurationRepository consulFileConfigRepo, IFileConfigurationSetter setter, IOptions<FileConfiguration> fileConfig)
+        {
+            Response config = null;
+
+            var ocelotConfigurationRepository =
+                (IOcelotConfigurationRepository) builder.ApplicationServices.GetService(
+                    typeof(IOcelotConfigurationRepository));
+            var ocelotConfigurationCreator =
+                (IOcelotConfigurationCreator) builder.ApplicationServices.GetService(
+                    typeof(IOcelotConfigurationCreator));
+
+            var fileConfigFromConsul = await consulFileConfigRepo.Get();
+            if (fileConfigFromConsul.Data == null)
+            {
+                config = await setter.Set(fileConfig.Value);
+            }
+            else
+            {
+                var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
+                if(ocelotConfig.IsError)
+                {
+                    return new ErrorResponse(ocelotConfig.Errors);
+                }
+                config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
+            }
+
+            return new OkResponse();
+        }
+
+        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IOcelotConfiguration configuration)
+        {
             var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
 
             if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)

@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
@@ -7,33 +9,41 @@ namespace Ocelot.Configuration.Repository
 {
     public class FileConfigurationRepository : IFileConfigurationRepository
     {
+        private readonly string _configFilePath;
+
         private static readonly object _lock = new object();
-        public Response<FileConfiguration> Get()
+        
+        public FileConfigurationRepository(IHostingEnvironment hostingEnvironment)
         {
-            var configFilePath = $"{AppContext.BaseDirectory}/configuration.json";
-            string json = string.Empty;
+            _configFilePath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
+        }
+
+        public async Task<Response<FileConfiguration>> Get()
+        {
+            string jsonConfiguration;
+
             lock(_lock)
             {
-                json = System.IO.File.ReadAllText(configFilePath);
+                jsonConfiguration = System.IO.File.ReadAllText(_configFilePath);
             }
-            var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(json);
+
+            var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
+
             return new OkResponse<FileConfiguration>(fileConfiguration);
         }
 
-        public Response Set(FileConfiguration fileConfiguration)
+        public async Task<Response> Set(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
-
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
             lock(_lock)
             {
-                if (System.IO.File.Exists(configurationPath))
+                if (System.IO.File.Exists(_configFilePath))
                 {
-                    System.IO.File.Delete(configurationPath);
+                    System.IO.File.Delete(_configFilePath);
                 }
 
-                System.IO.File.WriteAllText(configurationPath, jsonConfiguration);
+                System.IO.File.WriteAllText(_configFilePath, jsonConfiguration);
             }
             
             return new OkResponse();

@@ -6,13 +6,13 @@ using System;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    public class RoundRobinLoadBalancer : ILoadBalancer
+    public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
 
         private int _last;
 
-        public RoundRobinLoadBalancer(Func<Task<List<Service>>> services)
+        public RoundRobin(Func<Task<List<Service>>> services)
         {
             _services = services;
         }

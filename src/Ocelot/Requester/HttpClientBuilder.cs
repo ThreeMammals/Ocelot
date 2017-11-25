@@ -31,7 +31,6 @@ namespace Ocelot.Requester
 
         private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {            
-   
             _handlers
                 .OrderByDescending(handler => handler.Key)
                 .Select(handler => handler.Value)

@@ -107,18 +107,17 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig()
         {
             _webHostBuilder = new WebHostBuilder();
 
             _webHostBuilder.ConfigureServices(s =>
             {
                 s.AddSingleton(_webHostBuilder);
-                s.AddOcelotStoreConfigurationInConsul(consulConfig);
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<ConsulStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -131,7 +130,6 @@ namespace Ocelot.AcceptanceTests
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Provider.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Provider);
 
             for(var i = 0; i < response.ReRoutes.Count; i++)
             {
@@ -175,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                         .WithDictionaryHandle();
                     };
                     
-                    s.AddOcelot(configuration, settings);
+                    s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
                 {
@@ -379,44 +377,6 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheRequestIdIsReturned(string expected)
         {
             _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
-        }
-    }
-
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("configuration.json")
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            Action<ConfigurationBuilderCachePart> settings = (x) =>
-            {
-                x.WithMicrosoftLogging(log =>
-                    {
-                        log.AddConsole(LogLevel.Debug);
-                    })
-                    .WithDictionaryHandle();
-            };
-
-            services.AddOcelot(Configuration, settings);
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
-            app.UseOcelot().Wait();
         }
     }
 }

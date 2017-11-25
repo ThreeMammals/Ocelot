@@ -10,7 +10,7 @@ namespace Ocelot.ServiceDiscovery
 {
     public class ConsulServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
-        private readonly ConsulRegistryConfiguration _configuration;
+        private readonly ConsulRegistryConfiguration _consulConfig;
         private readonly ConsulClient _consul;
         private const string VersionPrefix = "version-";
 
@@ -18,17 +18,17 @@ namespace Ocelot.ServiceDiscovery
         {
             var consulHost = string.IsNullOrEmpty(consulRegistryConfiguration?.HostName) ? "localhost" : consulRegistryConfiguration.HostName;
             var consulPort = consulRegistryConfiguration?.Port ?? 8500;
-            _configuration = new ConsulRegistryConfiguration(consulHost, consulPort, consulRegistryConfiguration?.ServiceName);
+            _consulConfig = new ConsulRegistryConfiguration(consulHost, consulPort, consulRegistryConfiguration?.KeyOfServiceInConsul);
 
             _consul = new ConsulClient(config =>
             {
-                config.Address = new Uri($"http://{_configuration.HostName}:{_configuration.Port}");
+                config.Address = new Uri($"http://{_consulConfig.HostName}:{_consulConfig.Port}");
             });
         }
 
         public async Task<List<Service>> Get()
         {
-            var queryResult = await _consul.Health.Service(_configuration.ServiceName, string.Empty, true);
+            var queryResult = await _consul.Health.Service(_consulConfig.KeyOfServiceInConsul, string.Empty, true);
 
             var services = queryResult.Response.Select(BuildService);
 

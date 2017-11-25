@@ -10,5 +10,10 @@ namespace Ocelot.Errors
 
         public string Message { get; private set; }
         public OcelotErrorCode Code { get; private set; }
+
+        public override string ToString()
+        {
+            return Message;
+        }
     }
 }

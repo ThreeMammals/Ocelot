@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Cache;
@@ -8,9 +7,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
@@ -18,8 +15,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections;
-
+    using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
 
     public class FileConfigurationCreatorTests
@@ -30,12 +26,6 @@ namespace Ocelot.UnitTests.Configuration
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IOcelotLoggerFactory> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
-        private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
-        private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
-        private readonly Mock<ILoadBalancer> _loadBalancer;
-        private readonly Mock<IQoSProviderFactory> _qosProviderFactory;
-        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
-        private readonly Mock<IQoSProvider> _qosProvider;
         private Mock<IClaimsToThingCreator> _claimsToThingCreator;
         private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
@@ -49,15 +39,9 @@ namespace Ocelot.UnitTests.Configuration
 
         public FileConfigurationCreatorTests()
         {
-            _qosProviderFactory = new Mock<IQoSProviderFactory>();
-            _qosProviderHouse = new Mock<IQosProviderHouse>();
-            _qosProvider = new Mock<IQoSProvider>();
             _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
-            _loadBalancerFactory = new Mock<ILoadBalancerFactory>();
-            _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
-            _loadBalancer = new Mock<ILoadBalancer>();
             _claimsToThingCreator = new Mock<IClaimsToThingCreator>();
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
@@ -71,11 +55,33 @@ namespace Ocelot.UnitTests.Configuration
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
-                _loadBalancerFactory.Object, _loadBalancerHouse.Object, 
-                _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
+                _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
                 _rateLimitOptions.Object, _regionCreator.Object, _httpHandlerOptionsCreator.Object);
+        }
+
+        [Fact]
+        public void should_call_service_provider_config_creator()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+                
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Port = 8500,
+                    }
+                }
+            }))
+                .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => x.GivenTheConfigIsValid())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
+                .BDDfy();  
         }
 
         [Fact]
@@ -107,19 +113,6 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
                 .BDDfy();
-        }
-
-        private void GivenTheFollowingRegionIsReturned(string region)
-        {
-            _regionCreator
-                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(region);
-        }
-
-        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
-        {
-            _regionCreator
-                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
         [Fact]
@@ -182,41 +175,10 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
-                .And(x => x.GivenTheQosProviderFactoryReturns())
                 .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheQosOptionsAre(expected))
-                .And(x => x.TheQosProviderFactoryIsCalledCorrectly())
-                .And(x => x.ThenTheQosProviderHouseIsCalledCorrectly())
                 .BDDfy();
-        }
-
-        [Fact]
-        public void should_create_load_balancer()
-        {
-            var reRouteOptions = new ReRouteOptionsBuilder()
-                .Build();
-
-            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-                            {
-                                ReRoutes = new List<FileReRoute>
-                                {
-                                    new FileReRoute
-                                    {
-                                        DownstreamHost = "127.0.0.1",
-                                        UpstreamPathTemplate = "/api/products/{productId}",
-                                        DownstreamPathTemplate = "/products/{productId}",
-                                        UpstreamHttpMethod = new List<string> { "Get" },
-                                    }
-                                },
-                            }))
-                                .And(x => x.GivenTheConfigIsValid())
-                                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-                                .And(x => x.GivenTheLoadBalancerFactoryReturns())
-                                .When(x => x.WhenICreateTheConfig())
-                                .Then(x => x.TheLoadBalancerFactoryIsCalledCorrectly())
-                                .And(x => x.ThenTheLoadBalancerHouseIsCalledCorrectly())
-                    .BDDfy();
         }
 
         [Fact]
@@ -310,7 +272,6 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                                 {
-                                     Provider = "consul",
                                      Host = "127.0.0.1"
                                 }
                             }
@@ -324,12 +285,8 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
-                                        .WithUseServiceDiscovery(true)
-                                        .WithServiceDiscoveryProvider("consul")
-                                        .WithServiceDiscoveryProviderHost("127.0.0.1")
-                                        .WithServiceName("ProductService")
-                                        .Build())
+                                    .WithUseServiceDiscovery(true)
+                                    .WithServiceName("ProductService")
                                     .Build()
                             }))
                             .BDDfy();
@@ -363,9 +320,7 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
-                                        .WithUseServiceDiscovery(false)
-                                        .Build())
+                                    .WithUseServiceDiscovery(false)
                                     .Build()
                             }))
                             .BDDfy();
@@ -474,17 +429,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
-        {
-            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(httpHandlerOptions);
-        }
-
-        private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
-        {
-            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
-        }
-
         [Theory]
         [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
         public void should_create_with_headers_to_extract(FileConfiguration fileConfig)
@@ -516,7 +460,6 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing> { new ClaimToThing("CustomerId", "CustomerId", "", 0) }))
-                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
@@ -550,12 +493,36 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
-                .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
                 .And(x => x.ThenTheAuthenticationOptionsAre(expected))
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_validation_errors()
+        {
+            var errors = new List<Error> {new PathTemplateDoesntStartWithForwardSlash("some message")};
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration()))
+                .And(x => x.GivenTheConfigIsInvalid(errors))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheErrorsAreReturned(errors))
+                .BDDfy();
+        }
+
+        private void GivenTheConfigIsInvalid(List<Error> errors)
+        {
+            _validator
+                .Setup(x => x.IsValid(It.IsAny<FileConfiguration>()))
+                .ReturnsAsync(new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(true, errors)));
+        }
+
+        private void ThenTheErrorsAreReturned(List<Error> errors)
+        {
+            _config.IsError.ShouldBeTrue();
+            _config.Errors[0].ShouldBe(errors[0]);
         }
 
         private void GivenTheFollowingOptionsAreReturned(ReRouteOptions fileReRouteOptions)
@@ -588,7 +555,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create().Result;
+            _config = _ocelotConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -610,20 +577,6 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void ThenTheServiceConfigurationIs(ServiceProviderConfiguration expected)
-        {
-            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
-            {
-                var result = _config.Data.ReRoutes[i];
-                result.ServiceProviderConfiguraion.DownstreamHost.ShouldBe(expected.DownstreamHost);
-                result.ServiceProviderConfiguraion.DownstreamPort.ShouldBe(expected.DownstreamPort);
-                result.ServiceProviderConfiguraion.ServiceDiscoveryProvider.ShouldBe(expected.ServiceDiscoveryProvider);
-                result.ServiceProviderConfiguraion.ServiceName.ShouldBe(expected.ServiceName);
-                result.ServiceProviderConfiguraion.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
-                result.ServiceProviderConfiguraion.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
-            }
-        }
-
         private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
@@ -632,44 +585,6 @@ namespace Ocelot.UnitTests.Configuration
                 var expected = expectedReRoutes[i].AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
-        }
-
-        private void GivenTheLoadBalancerFactoryReturns()
-        {
-            _loadBalancerFactory
-                .Setup(x => x.Get(It.IsAny<ReRoute>()))
-                .ReturnsAsync(_loadBalancer.Object);
-        }
-
-        private void TheLoadBalancerFactoryIsCalledCorrectly()
-        {
-            _loadBalancerFactory
-                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
-        }
-
-        private void ThenTheLoadBalancerHouseIsCalledCorrectly()
-        {
-            _loadBalancerHouse
-                .Verify(x => x.Add(It.IsAny<string>(), _loadBalancer.Object), Times.Once);
-        }
-
-        private void GivenTheQosProviderFactoryReturns()
-        {
-            _qosProviderFactory
-                .Setup(x => x.Get(It.IsAny<ReRoute>()))
-                .Returns(_qosProvider.Object);
-        }
-
-        private void TheQosProviderFactoryIsCalledCorrectly()
-        {
-            _qosProviderFactory
-                .Verify(x => x.Get(It.IsAny<ReRoute>()), Times.Once);
-        }
-
-        private void ThenTheQosProviderHouseIsCalledCorrectly()
-        {
-            _qosProviderHouse
-                .Verify(x => x.Add(It.IsAny<string>(), _qosProvider.Object), Times.Once);
         }
 
         private void GivenTheClaimsToThingCreatorReturns(List<ClaimToThing> claimsToThing)
@@ -725,6 +640,43 @@ namespace Ocelot.UnitTests.Configuration
 
             _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
             _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+        }
+
+        private void ThenTheServiceProviderCreatorIsCalledCorrectly()
+        {
+            _serviceProviderConfigCreator
+                .Verify(x => x.Create(_fileConfiguration.GlobalConfiguration), Times.Once);
+        }
+
+        private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)
+        {
+            _serviceProviderConfigCreator
+                .Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(serviceProviderConfiguration);
+        }
+
+        
+        private void GivenTheFollowingRegionIsReturned(string region)
+        {
+            _regionCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(region);
+        }
+
+        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
+        {
+            _regionCreator
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
+        }
+        
+        private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
+        {
+            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(httpHandlerOptions);
+        }
+
+        private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
+        {
+            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
         }
     }
 }

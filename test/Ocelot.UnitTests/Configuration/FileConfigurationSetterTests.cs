@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -36,7 +37,8 @@ namespace Ocelot.UnitTests.Configuration
         public void should_set_configuration()
         {
             var fileConfig = new FileConfiguration();
-            var config = new OcelotConfiguration(new List<ReRoute>(), string.Empty);
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+            var config = new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig);
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))
@@ -76,7 +78,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _repo
                 .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-                .Returns(response);
+                .ReturnsAsync(response);
         }
 
         private void ThenAnErrorResponseIsReturned()
