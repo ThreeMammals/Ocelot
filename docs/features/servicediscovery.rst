@@ -35,5 +35,4 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         "UseServiceDiscovery": false
     }
 
-When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance
-requests across any available services.
+When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.

@@ -5,8 +5,6 @@ Ocelot's primary functionality is to take incomeing http requests and forward th
 to a downstream service. At the moment in the form of another http request (in the future
 this could be any transport mechanism.). 
 
-Ocelot always adds a trailing slash to an UpstreamPathTemplate.
-
 Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
 
