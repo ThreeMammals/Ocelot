@@ -55,8 +55,6 @@ touch either via gitter or create an issue.
 
 ## Things that are currently annoying me
 
-+ The ReRoute configuration object is too large.
-
 + The base OcelotMiddleware lets you access things that are going to be null
 and doesnt check the response is OK. I think the fact you can even call stuff
 that isnt available is annoying. Let alone it be null.
