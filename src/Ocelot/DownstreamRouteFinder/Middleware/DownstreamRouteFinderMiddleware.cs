@@ -42,6 +42,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             {
                 _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 SetPipelineError(configuration.Errors);
+                return;
             }
 
             SetServiceProviderConfigurationForThisRequest(configuration.Data.ServiceProviderConfiguration);
