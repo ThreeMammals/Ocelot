@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -27,13 +28,8 @@ namespace Ocelot.AcceptanceTests
 
         public IConfigurationRoot Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
-            Action<ConfigurationBuilderCachePart> settings = (x) =>
-            {
-                x.WithDictionaryHandle();
-            };
-
             services.AddOcelot(Configuration);
         }
 
@@ -42,6 +38,45 @@ namespace Ocelot.AcceptanceTests
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 
             app.UseOcelot().Wait();
+        }
+    }
+
+    public class Startup_WithCustomCacheHandle : Startup
+    {
+        public Startup_WithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOcelot(Configuration)
+                .AddCacheManager((x) =>
+                {
+                    x.WithMicrosoftLogging(log =>
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithJsonSerializer()
+                    .WithHandle(typeof(InMemoryJsonHandle<>));
+                });
+        }
+    }
+
+    public class Startup_WithConsul_And_CustomCacheHandle : Startup
+    {
+        public Startup_WithConsul_And_CustomCacheHandle(IHostingEnvironment env) : base(env) { }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOcelot(Configuration)
+                .AddCacheManager((x) =>
+                {
+                    x.WithMicrosoftLogging(log =>
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithJsonSerializer()
+                    .WithHandle(typeof(InMemoryJsonHandle<>));
+                })
+                .AddStoreOcelotConfigurationInConsul();
         }
     }
 }

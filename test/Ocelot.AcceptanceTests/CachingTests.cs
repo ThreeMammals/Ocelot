@@ -59,6 +59,42 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_return_cached_response_when_using_jsonserialized_cache()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamPort = 51879,
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            FileCacheOptions = new FileCacheOptions
+                            {
+                                TtlSeconds = 100
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningUsingJsonSerializedCache())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .Given(x => x.GivenTheServiceNowReturns("http://localhost:51879", 200, "Hello from Tom"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_not_return_cached_response_as_ttl_expires()
         {
             var configuration = new FileConfiguration

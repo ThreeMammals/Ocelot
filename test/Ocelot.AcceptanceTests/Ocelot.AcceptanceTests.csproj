@@ -30,6 +30,7 @@
 </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CacheManager.Serialization.Json" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0-preview-20171031-01" />

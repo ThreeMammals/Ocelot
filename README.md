@@ -41,7 +41,7 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 ## Documentation
 
-Please click [here](https://github.com/TomPallister/Ocelot/wiki) for the Ocleot documentation. This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
+Please click [here](http://ocelot.readthedocs.io/en/latest/) for the Ocleot documentation. This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
 
 ## Coming up
 
@@ -54,8 +54,6 @@ touch either via gitter or create an issue.
 
 
 ## Things that are currently annoying me
-
-+ The ReRoute configuration object is too large.
 
 + The base OcelotMiddleware lets you access things that are going to be null
 and doesnt check the response is OK. I think the fact you can even call stuff

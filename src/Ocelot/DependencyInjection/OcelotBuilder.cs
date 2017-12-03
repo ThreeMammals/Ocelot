@@ -161,13 +161,13 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings)
         {
-            var cacheManagerOutputCache = CacheFactory.Build<HttpResponseMessage>("OcelotOutputCache", settings);
-            var ocelotOutputCacheManager = new OcelotCacheManagerCache<HttpResponseMessage>(cacheManagerOutputCache);
+            var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", settings);
+            var ocelotOutputCacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
 
-            _services.RemoveAll(typeof(ICacheManager<HttpResponseMessage>));
-            _services.RemoveAll(typeof(IOcelotCache<HttpResponseMessage>));
-            _services.AddSingleton<ICacheManager<HttpResponseMessage>>(cacheManagerOutputCache);
-            _services.AddSingleton<IOcelotCache<HttpResponseMessage>>(ocelotOutputCacheManager);
+            _services.RemoveAll(typeof(ICacheManager<CachedResponse>));
+            _services.RemoveAll(typeof(IOcelotCache<CachedResponse>));
+            _services.AddSingleton<ICacheManager<CachedResponse>>(cacheManagerOutputCache);
+            _services.AddSingleton<IOcelotCache<CachedResponse>>(ocelotOutputCacheManager);
 
             var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IOcelotConfiguration>("OcelotConfigurationCache", settings);
             var ocelotConfigCacheManager = new OcelotCacheManagerCache<IOcelotConfiguration>(ocelotConfigCacheManagerOutputCache);
