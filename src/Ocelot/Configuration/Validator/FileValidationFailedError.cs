@@ -7,7 +7,7 @@ namespace Ocelot.Configuration.Validator
 {
     public class FileValidationFailedError : Error
     {
-        public FileValidationFailedError(string message) : base(message, OcelotErrorCode.UnknownError)
+        public FileValidationFailedError(string message) : base(message, OcelotErrorCode.FileValidationFailedError)
         {
 
         }

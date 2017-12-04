@@ -32,6 +32,7 @@
         UnableToSetConfigInConsulError,
         UnmappableRequestError,
         RateLimitOptionsError,
-        PathTemplateDoesntStartWithForwardSlash
+        PathTemplateDoesntStartWithForwardSlash,
+        FileValidationFailedError
     }
 }
