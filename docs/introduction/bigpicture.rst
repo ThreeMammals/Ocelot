@@ -23,16 +23,16 @@ The following are configuration that you use when deploying Ocelot.
 
 Basic Implementation
 ^^^^^^^^^^^^^^^^^^^^
-.. image:: images/OcelotBasic.jpg
+.. image:: ../images/OcelotBasic.jpg
 
 With IdentityServer
 ^^^^^^^^^^^^^^^^^^^
-.. image:: images/OcelotIndentityServer.jpg
+.. image:: ../images/OcelotIndentityServer.jpg
 
 Multiple Instances
 ^^^^^^^^^^^^^^^^^^
-.. image:: images/OcelotMultipleInstances.jpg
+.. image:: ../images/OcelotMultipleInstances.jpg
 
 With Consul
 ^^^^^^^^^^^
-.. image:: images/OcelotMultipleInstancesConsul.jpg
+.. image:: ../images/OcelotMultipleInstancesConsul.jpg
