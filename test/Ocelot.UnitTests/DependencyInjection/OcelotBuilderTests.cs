@@ -5,12 +5,15 @@ using System.Net.Http;
 using System.Text;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -20,6 +23,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     public class OcelotBuilderTests
     {
         private IServiceCollection _services;
+        private IServiceProvider _serviceProvider;
         private IConfigurationRoot _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private int _maxRetries;
@@ -30,6 +34,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
                 _services = new ServiceCollection();
                 _services.AddSingleton(builder);
+                _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
                 _maxRetries = 100;
         }
         private Exception _ex;
@@ -66,6 +71,16 @@ namespace Ocelot.UnitTests.DependencyInjection
         {            
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpConsul())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_logger_factory()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenIValidateScopes())
+                .When(x => WhenIAccessLoggerFactory())
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
         }
@@ -120,6 +135,30 @@ namespace Ocelot.UnitTests.DependencyInjection
                     x.WithMaxRetries(_maxRetries);
                     x.WithDictionaryHandle();
                 });
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
+        private void WhenIAccessLoggerFactory()
+        {
+            try
+            {
+                var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
+        private void WhenIValidateScopes()
+        {
+            try
+            {
+                _serviceProvider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
             }
             catch (Exception e)
             {
