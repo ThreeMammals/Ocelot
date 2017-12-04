@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Validator
 {
@@ -15,7 +14,7 @@ namespace Ocelot.Configuration.Validator
         public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
-            
+
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
                 .Must(path => path.StartsWith("/"))
                 .WithMessage("downstream path {PropertyValue} doesnt start with forward slash");
@@ -29,21 +28,21 @@ namespace Ocelot.Configuration.Validator
                 .Must(IsValidPeriod)
                 .WithMessage("rate limit period {PropertyValue} not contains (s,m,h,d)");
             RuleFor(reRoute => reRoute.AuthenticationOptions)
-                .Must(IsSupportedAuthenticationProviders)
+                .MustAsync(IsSupportedAuthenticationProviders)
                 .WithMessage("{PropertyValue} is unsupported authentication provider");
         }
 
-        private bool IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions)
+        private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(authenticationOptions.AuthenticationProviderKey))
             {
                 return true;
             }
-            var supportedSchemes = _authenticationSchemeProvider.GetAllSchemesAsync().GetAwaiter().GetResult().Select(scheme => scheme.Name).ToList();
+            var schemes = await _authenticationSchemeProvider.GetAllSchemesAsync();
+            var supportedSchemes = schemes.Select(scheme => scheme.Name).ToList();
 
             return supportedSchemes.Contains(authenticationOptions.AuthenticationProviderKey);
         }
-
 
         private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
         {
