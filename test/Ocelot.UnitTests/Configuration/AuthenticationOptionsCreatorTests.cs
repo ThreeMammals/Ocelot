@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
