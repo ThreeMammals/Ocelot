@@ -28,7 +28,8 @@ namespace Ocelot.Configuration.Validator
                 return new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(false));
             }
             var errors = validateResult.Errors.Select(failure => new FileValidationFailedError(failure.ErrorMessage));
-            return new ErrorResponse<ConfigurationValidationResult>(errors.Cast<Error>().ToList());
+            var result = new ConfigurationValidationResult(true, errors.Cast<Error>().ToList());
+            return new OkResponse<ConfigurationValidationResult>(result);
         }
 
         private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> routes)

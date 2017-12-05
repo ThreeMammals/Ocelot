@@ -77,9 +77,9 @@ namespace Ocelot.Configuration.Creator
         {
             var response = await _configurationValidator.IsValid(fileConfiguration);
 
-            if (response.IsError)
+            if (response.Data.IsError)
             {
-                return new ErrorResponse<IOcelotConfiguration>(response.Errors);
+                return new ErrorResponse<IOcelotConfiguration>(response.Data.Errors);
             }
 
             var reRoutes = new List<ReRoute>();
