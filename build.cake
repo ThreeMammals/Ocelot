@@ -114,6 +114,7 @@ Task("Compile")
 	.IsDependentOn("Restore")
 	.Does(() =>
 	{	
+		throw new Exception("Build should fail!!!!")
 		var settings = new DotNetCoreBuildSettings
 		{
 			Configuration = compileConfig,
