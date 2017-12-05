@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -23,6 +24,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_return_auth_options()
         {
+            throw new Exception("FAIL BUILD");
             var fileReRoute = new FileReRoute()
             {
                 AuthenticationOptions = new FileAuthenticationOptions
