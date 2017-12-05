@@ -72,7 +72,7 @@ namespace Ocelot.DependencyInjection
             _services.Configure<FileConfiguration>(configurationRoot);
             _services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             _services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
-            _services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
+            _services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
             _services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             _services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             _services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();

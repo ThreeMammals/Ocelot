@@ -503,7 +503,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_return_validation_errors()
         {
-            var errors = new List<Error> {new PathTemplateDoesntStartWithForwardSlash("some message")};
+            var errors = new List<Error> {new FileValidationFailedError("some message")};
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration()))
                 .And(x => x.GivenTheConfigIsInvalid(errors))

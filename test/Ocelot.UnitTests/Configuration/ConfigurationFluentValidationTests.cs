@@ -15,17 +15,17 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ConfigurationValidationTests
+    public class ConfigurationFluentValidationTests
     {
         private readonly IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
         private Mock<IAuthenticationSchemeProvider> _provider;
 
-        public ConfigurationValidationTests()
+        public ConfigurationFluentValidationTests()
         {
-            _provider = new  Mock<IAuthenticationSchemeProvider>();
-            _configurationValidator = new FileConfigurationValidator(_provider.Object);
+            _provider = new Mock<IAuthenticationSchemeProvider>();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object);
         }
 
         [Fact]
@@ -44,6 +44,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .BDDfy();
         }
 
@@ -147,7 +148,6 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorIs<UnsupportedAuthenticationProviderError>())
                 .BDDfy();
         }
 
@@ -172,9 +172,9 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorIs<DownstreamPathTemplateAlreadyUsedError>())
                 .BDDfy();
         }
+
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
@@ -225,6 +225,5 @@ namespace Ocelot.UnitTests.Configuration
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, new AuthenticationProperties(), Scheme.Name)));
             }
         }
-
     }
 }
