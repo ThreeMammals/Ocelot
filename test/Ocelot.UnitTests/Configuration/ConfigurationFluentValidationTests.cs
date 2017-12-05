@@ -87,6 +87,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template api/products/ doesnt start with forward slash"))
                 .BDDfy();
         }
 
