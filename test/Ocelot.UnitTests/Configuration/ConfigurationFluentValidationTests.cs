@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void configuration_is_invalid_if_scheme_in_downstream_template()
+        public void configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
@@ -45,6 +45,10 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} doesnt start with forward slash"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com contains scheme"))
                 .BDDfy();
         }
 
@@ -199,6 +203,11 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheErrorIs<T>()
         {
             _result.Data.Errors[0].ShouldBeOfType<T>();
+        }
+
+        private void ThenTheErrorMessageAtPositionIs(int index, string expected)
+        {
+            _result.Data.Errors[index].Message.ShouldBe(expected);
         }
 
         private void GivenTheAuthSchemeExists(string name)
