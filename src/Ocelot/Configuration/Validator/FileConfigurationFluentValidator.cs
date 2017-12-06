@@ -18,7 +18,7 @@ namespace Ocelot.Configuration.Validator
                 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
-                .WithMessage((config, reRoute) => $"duplicate downstreampath {reRoute.UpstreamPathTemplate}");
+                .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
@@ -37,22 +37,28 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
-        private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> routes)
+        private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> reRoutes)
         {
-            var reRoutesWithUpstreamPathTemplate = routes.Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate).ToList();
+            var matchingReRoutes = reRoutes.Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate).ToList();
 
-            var hasEmptyListToAllowAllHttpVerbs = reRoutesWithUpstreamPathTemplate.Any(x => x.UpstreamHttpMethod.Count == 0);
+            if(matchingReRoutes.Count == 1)
+            {
+                return true;
+            }
 
-            var hasDuplicateEmptyListToAllowAllHttpVerbs = reRoutesWithUpstreamPathTemplate.Count(x => x.UpstreamHttpMethod.Count == 0) > 1;
+            var allowAllVerbs = matchingReRoutes.Any(x => x.UpstreamHttpMethod.Count == 0);
 
-            var hasSpecificHttpVerbs = reRoutesWithUpstreamPathTemplate.Any(x => x.UpstreamHttpMethod.Count != 0);
+            var duplicateAllowAllVerbs = matchingReRoutes.Count(x => x.UpstreamHttpMethod.Count == 0) > 1;
 
-            var hasDuplicateSpecificHttpVerbs = reRoutesWithUpstreamPathTemplate.SelectMany(x => x.UpstreamHttpMethod).GroupBy(x => x.ToLower()).SelectMany(x => x.Skip(1)).Any();
+            var specificVerbs = matchingReRoutes.Any(x => x.UpstreamHttpMethod.Count != 0);
 
-            if (hasDuplicateEmptyListToAllowAllHttpVerbs || hasDuplicateSpecificHttpVerbs || (hasEmptyListToAllowAllHttpVerbs && hasSpecificHttpVerbs))
+            var duplicateSpecificVerbs = matchingReRoutes.SelectMany(x => x.UpstreamHttpMethod).GroupBy(x => x.ToLower()).SelectMany(x => x.Skip(1)).Any();
+
+            if (duplicateAllowAllVerbs || duplicateSpecificVerbs || (allowAllVerbs && specificVerbs))
             {
                 return false;
             }
+
             return true;
         }
     }

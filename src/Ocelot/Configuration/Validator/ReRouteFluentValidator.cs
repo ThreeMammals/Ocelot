@@ -33,11 +33,19 @@ namespace Ocelot.Configuration.Validator
 
             RuleFor(reRoute => reRoute.RateLimitOptions)
                 .Must(IsValidPeriod)
-                .WithMessage("rate limit period {PropertyValue} not contains (s,m,h,d)");
+                .WithMessage("RateLimitOptions.Period does not contains (s,m,h,d)");
                 
             RuleFor(reRoute => reRoute.AuthenticationOptions)
                 .MustAsync(IsSupportedAuthenticationProviders)
                 .WithMessage("{PropertyValue} is unsupported authentication provider");
+
+            When(reRoute => reRoute.UseServiceDiscovery, () => {
+                RuleFor(r => r.ServiceName).NotEmpty().WithMessage("ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!");
+                });
+
+            When(reRoute => !reRoute.UseServiceDiscovery, () => {
+                RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discover DownstreamHost must be set or Ocelot cannot find your service!");
+                });
         }
 
         private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions, CancellationToken cancellationToken)
