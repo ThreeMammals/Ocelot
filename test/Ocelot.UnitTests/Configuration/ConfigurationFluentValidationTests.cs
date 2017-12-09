@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void configuration_is_invalid_if_scheme_in_downstream_template()
+        public void configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
@@ -45,6 +45,10 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} doesnt start with forward slash"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com contains scheme"))
                 .BDDfy();
         }
 
@@ -58,7 +62,8 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/"
+                        UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bbc.co.uk"
                     }
                 }
             }))
@@ -83,6 +88,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template api/products/ doesnt start with forward slash"))
                 .BDDfy();
         }
 
@@ -102,6 +108,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template api/prod/ doesnt start with forward slash"))
                 .BDDfy();
         }
 
@@ -116,6 +123,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bbc.co.uk",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
@@ -148,11 +156,12 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 
         [Fact]
-        public void configuration_is_not_valid_with_duplicate_reroutes()
+        public void configuration_is_not_valid_with_duplicate_reroutes_all_verbs()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
@@ -161,17 +170,225 @@ namespace Ocelot.UnitTests.Configuration
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/"
+                        UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bb.co.uk"
                     },
                     new FileReRoute
                     {
-                        DownstreamPathTemplate = "http://www.bbc.co.uk",
-                        UpstreamPathTemplate = "/asdf/"
+                        DownstreamPathTemplate = "/www/test/",
+                        UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bb.co.uk"
                     }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "reRoute /asdf/ has duplicate"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_not_valid_with_duplicate_reroutes_specific_verbs()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bbc.co.uk",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/www/test/",
+                        UpstreamPathTemplate = "/asdf/",
+                        DownstreamHost = "bbc.co.uk",
+                        UpstreamHttpMethod = new List<string> {"Get"}
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "reRoute /asdf/ has duplicate"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_with_duplicate_reroutes_different_verbs()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamHost = "bbc.co.uk",
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/www/test/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Post"},
+                        DownstreamHost = "bbc.co.uk",
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_with_invalid_rate_limit_configuration()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamHost = "bbc.co.uk",
+                        RateLimitOptions = new FileRateLimitRule
+                        {
+                            Period = "1x",
+                            EnableRateLimiting = true
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contains (s,m,h,d)"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_with_valid_rate_limit_configuration()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamHost = "bbc.co.uk",
+                        RateLimitOptions = new FileRateLimitRule
+                        {
+                            Period = "1d",
+                            EnableRateLimiting = true
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void configuration_is_invalid_with_using_service_discovery_and_no_service_name(string serviceName)
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = true,
+                        ServiceName = serviceName
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_with_using_service_discovery_and_service_name()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = true,
+                        ServiceName = "Test"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void configuration_is_invalid_when_not_using_service_discovery_and_host(string downstreamHost)
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHost = downstreamHost
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discover DownstreamHost must be set or Ocelot cannot find your service!"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_when_not_using_service_discovery_and_host_is_set()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHost = "bbc.co.uk"
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
 
@@ -199,6 +416,11 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheErrorIs<T>()
         {
             _result.Data.Errors[0].ShouldBeOfType<T>();
+        }
+
+        private void ThenTheErrorMessageAtPositionIs(int index, string expected)
+        {
+            _result.Data.Errors[index].Message.ShouldBe(expected);
         }
 
         private void GivenTheAuthSchemeExists(string name)
