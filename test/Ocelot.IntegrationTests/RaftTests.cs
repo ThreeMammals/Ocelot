@@ -108,7 +108,7 @@ namespace Ocelot.IntegrationTests
             var httpContent = new StringContent(json);
             using(var httpClient = new HttpClient())
             {
-                var response = httpClient.PostAsync($"{p.HostAndPort}/command", httpContent).GetAwaiter().GetResult();
+                var response = httpClient.PostAsync($"{p.HostAndPort}/raft/command", httpContent).GetAwaiter().GetResult();
                 response.EnsureSuccessStatusCode();
                 var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 var result = JsonConvert.DeserializeObject<OkResponse<FakeCommand>>(content);

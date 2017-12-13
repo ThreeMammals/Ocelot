@@ -187,53 +187,57 @@ namespace Ocelot.Middleware
                 TypeNameHandling = TypeNameHandling.All
             };
 
-            builder.Run(async context =>
+            builder.Map("/raft", app =>
                 {
-                    try
+                    app.Run(async context =>
                     {
-                        var n = (INode)context.RequestServices.GetService(typeof(INode));
-                        if(context.Request.Path == "/appendentries")
+                        try
                         {
-                            var reader = new StreamReader(context.Request.Body);
-                            var content = reader.ReadToEnd();
-                            var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(content, jsonSerializerSettings);
-                            logger.LogInformation(new EventId(1), null, $"{baseSchemeUrlAndPort}/appendentries called, my state is {n.State.GetType().FullName}");
-                            var appendEntriesResponse = n.Handle(appendEntries);
-                            var json = JsonConvert.SerializeObject(appendEntriesResponse);
-                            await context.Response.WriteAsync(json);
-                            reader.Dispose();
-                            return;
-                        }
+                            var n = (INode)context.RequestServices.GetService(typeof(INode));
+                            if(context.Request.Path == "/appendentries")
+                            {
+                                var reader = new StreamReader(context.Request.Body);
+                                var content = reader.ReadToEnd();
+                                var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(content, jsonSerializerSettings);
+                                logger.LogInformation(new EventId(1), null, $"{baseSchemeUrlAndPort}/appendentries called, my state is {n.State.GetType().FullName}");
+                                var appendEntriesResponse = n.Handle(appendEntries);
+                                var json = JsonConvert.SerializeObject(appendEntriesResponse);
+                                await context.Response.WriteAsync(json);
+                                reader.Dispose();
+                                return;
+                            }
 
-                        if (context.Request.Path == "/requestvote")
-                        {
-                            var reader = new StreamReader(context.Request.Body);
-                            var requestVote = JsonConvert.DeserializeObject<RequestVote>(reader.ReadToEnd(), jsonSerializerSettings);
-                            logger.LogInformation(new EventId(2), null, $"{baseSchemeUrlAndPort}/requestvote called, my state is {n.State.GetType().FullName}");
-                            var requestVoteResponse = n.Handle(requestVote);
-                            var json = JsonConvert.SerializeObject(requestVoteResponse);
-                            await context.Response.WriteAsync(json);
-                            reader.Dispose();
-                            return;
-                        }
+                            if (context.Request.Path == "/requestvote")
+                            {
+                                var reader = new StreamReader(context.Request.Body);
+                                var requestVote = JsonConvert.DeserializeObject<RequestVote>(reader.ReadToEnd(), jsonSerializerSettings);
+                                logger.LogInformation(new EventId(2), null, $"{baseSchemeUrlAndPort}/requestvote called, my state is {n.State.GetType().FullName}");
+                                var requestVoteResponse = n.Handle(requestVote);
+                                var json = JsonConvert.SerializeObject(requestVoteResponse);
+                                await context.Response.WriteAsync(json);
+                                reader.Dispose();
+                                return;
+                            }
 
-                        if(context.Request.Path == "/command")
-                        {
-                            var reader = new StreamReader(context.Request.Body);
-                            var command = JsonConvert.DeserializeObject<FakeCommand>(reader.ReadToEnd(), jsonSerializerSettings);
-                            logger.LogInformation(new EventId(3), null, $"{baseSchemeUrlAndPort}/command called, my state is {n.State.GetType().FullName}");
-                            var commandResponse = n.Accept(command);
-                            var json = JsonConvert.SerializeObject(commandResponse);
-                            await context.Response.WriteAsync(json);
-                            reader.Dispose();
-                            return;
+                            if(context.Request.Path == "/command")
+                            {
+                                var reader = new StreamReader(context.Request.Body);
+                                var command = JsonConvert.DeserializeObject<FakeCommand>(reader.ReadToEnd(), jsonSerializerSettings);
+                                logger.LogInformation(new EventId(3), null, $"{baseSchemeUrlAndPort}/command called, my state is {n.State.GetType().FullName}");
+                                var commandResponse = n.Accept(command);
+                                var json = JsonConvert.SerializeObject(commandResponse);
+                                await context.Response.WriteAsync(json);
+                                reader.Dispose();
+                                return;
+                            }
                         }
-                    }
-                    catch(Exception exception)
-                    {
-                        Console.WriteLine(exception);
-                    }
+                        catch(Exception exception)
+                        {
+                            Console.WriteLine(exception);
+                        }
+                    });
                 });
+
         }
 
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)

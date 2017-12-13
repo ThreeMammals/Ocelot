@@ -28,7 +28,7 @@ namespace Ocelot.Raft
         {
             var json = JsonConvert.SerializeObject(requestVote, _jsonSerializerSettings);
             var content = new StringContent(json);
-            var response = _httpClient.PostAsync($"{_hostAndPort}/requestvote", content).GetAwaiter().GetResult();
+            var response = _httpClient.PostAsync($"{_hostAndPort}/raft/requestvote", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
                 return JsonConvert.DeserializeObject<RequestVoteResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -45,7 +45,7 @@ namespace Ocelot.Raft
             {
                 var json = JsonConvert.SerializeObject(appendEntries, _jsonSerializerSettings);
                 var content = new StringContent(json);
-                var response = _httpClient.PostAsync($"{_hostAndPort}/appendEntries", content).GetAwaiter().GetResult();
+                var response = _httpClient.PostAsync($"{_hostAndPort}/raft/appendEntries", content).GetAwaiter().GetResult();
                 if(response.IsSuccessStatusCode)
                 {
                     return JsonConvert.DeserializeObject<AppendEntriesResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -66,7 +66,7 @@ namespace Ocelot.Raft
         {
             var json = JsonConvert.SerializeObject(command, _jsonSerializerSettings);
             var content = new StringContent(json);
-            var response = _httpClient.PostAsync($"{_hostAndPort}/command", content).GetAwaiter().GetResult();
+            var response = _httpClient.PostAsync($"{_hostAndPort}/raft/command", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
                 return JsonConvert.DeserializeObject<OkResponse<T>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
