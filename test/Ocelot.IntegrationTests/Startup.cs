@@ -38,7 +38,7 @@ namespace Ocelot.IntegrationTests
                     .WithDictionaryHandle();
             };
 
-            services.AddOcelot(Configuration);
+            services.AddOcelot(Configuration).AddCacheManager(settings);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

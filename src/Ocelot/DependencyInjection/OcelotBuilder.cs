@@ -47,6 +47,11 @@ using Ocelot.Configuration.Builder;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
+using Ocelot.Raft;
+using Rafty.Concensus;
+using Rafty.FiniteStateMachine;
+using Rafty.Infrastructure;
+using Rafty.Log;
 
 namespace Ocelot.DependencyInjection
 {
@@ -141,6 +146,18 @@ namespace Ocelot.DependencyInjection
             _services.AddLogging();
             _services.AddMiddlewareAnalysis();
             _services.AddWebEncoders();
+        }
+
+        public IOcelotBuilder AddRafty()
+        {
+            var settings = new InMemorySettings(4000, 5000, 100, 5000);
+            _services.AddSingleton<ILog, SqlLiteLog>();
+            _services.AddSingleton<IFiniteStateMachine, FileFsm>();
+            _services.AddSingleton<ISettings>(settings);
+            _services.AddSingleton<IPeersProvider, FilePeersProvider>();
+            _services.AddSingleton<INode, Node>();
+            _services.Configure<FilePeers>(_configurationRoot);
+            return this;
         }
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()

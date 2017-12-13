@@ -7,5 +7,6 @@ namespace Ocelot.DependencyInjection
     {
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
+        IOcelotBuilder AddRafty();
     }
 }

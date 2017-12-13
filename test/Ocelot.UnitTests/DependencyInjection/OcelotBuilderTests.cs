@@ -75,6 +75,15 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+         [Fact]
+        public void should_set_up_rafty()
+        {            
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpRafty())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .BDDfy();
+        }
+
         [Fact]
         public void should_use_logger_factory()
         {
@@ -104,6 +113,18 @@ namespace Ocelot.UnitTests.DependencyInjection
             try
             {
                 _ocelotBuilder.AddStoreOcelotConfigurationInConsul();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }       
+        }
+
+        private void WhenISetUpRafty()
+        {
+            try
+            {
+                _ocelotBuilder.AddRafty();
             }
             catch (Exception e)
             {

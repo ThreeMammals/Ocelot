@@ -1,6 +1,6 @@
 using Rafty.FiniteStateMachine;
 
-namespace Ocelot.IntegrationTests
+namespace Ocelot.Raft
 {
     public class FakeCommand : ICommand
     {

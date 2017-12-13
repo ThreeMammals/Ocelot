@@ -47,7 +47,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void ShouldPersistCommandToFiveServers()
+        public void should_persist_command_to_five_servers()
         {
             var command = new FakeCommand("WHATS UP DOC?");
             GivenFiveServersAreRunning();

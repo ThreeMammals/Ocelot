@@ -23,12 +23,15 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Newtonsoft.Json;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
@@ -36,7 +39,10 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Raft;
     using Ocelot.Responses;
+    using Rafty.Concensus;
+    using Rafty.Infrastructure;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -63,6 +69,11 @@ namespace Ocelot.Middleware
             var configuration = await CreateConfiguration(builder);
             
             await CreateAdministrationArea(builder, configuration);
+
+            if(UsingRafty(builder))
+            {
+                SetUpRafty(builder);
+            }
 
             ConfigureDiagnosticListener(builder);
 
@@ -149,6 +160,82 @@ namespace Ocelot.Middleware
             return builder;
         }
 
+        private static bool UsingRafty(IApplicationBuilder builder)
+        {
+            var possible = builder.ApplicationServices.GetService(typeof(INode)) as INode;
+            if(possible != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void SetUpRafty(IApplicationBuilder builder)
+        {
+            var applicationLifetime = (IApplicationLifetime)builder.ApplicationServices.GetService(typeof(IApplicationLifetime));
+            var loggerFactory = (ILoggerFactory)builder.ApplicationServices.GetService(typeof(ILoggerFactory));
+            applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
+            var webHostBuilder = (IWebHostBuilder)builder.ApplicationServices.GetService(typeof(IWebHostBuilder));
+            var baseSchemeUrlAndPort = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey);
+            var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
+            var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
+            var logger = loggerFactory.CreateLogger("OcelotMiddlewareExtensions");
+            node.Start(nodeId.Id);
+
+            var jsonSerializerSettings = new JsonSerializerSettings() { 
+                TypeNameHandling = TypeNameHandling.All
+            };
+
+            builder.Run(async context =>
+                {
+                    try
+                    {
+                        var n = (INode)context.RequestServices.GetService(typeof(INode));
+                        if(context.Request.Path == "/appendentries")
+                        {
+                            var reader = new StreamReader(context.Request.Body);
+                            var content = reader.ReadToEnd();
+                            var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(content, jsonSerializerSettings);
+                            logger.LogInformation(new EventId(1), null, $"{baseSchemeUrlAndPort}/appendentries called, my state is {n.State.GetType().FullName}");
+                            var appendEntriesResponse = n.Handle(appendEntries);
+                            var json = JsonConvert.SerializeObject(appendEntriesResponse);
+                            await context.Response.WriteAsync(json);
+                            reader.Dispose();
+                            return;
+                        }
+
+                        if (context.Request.Path == "/requestvote")
+                        {
+                            var reader = new StreamReader(context.Request.Body);
+                            var requestVote = JsonConvert.DeserializeObject<RequestVote>(reader.ReadToEnd(), jsonSerializerSettings);
+                            logger.LogInformation(new EventId(2), null, $"{baseSchemeUrlAndPort}/requestvote called, my state is {n.State.GetType().FullName}");
+                            var requestVoteResponse = n.Handle(requestVote);
+                            var json = JsonConvert.SerializeObject(requestVoteResponse);
+                            await context.Response.WriteAsync(json);
+                            reader.Dispose();
+                            return;
+                        }
+
+                        if(context.Request.Path == "/command")
+                        {
+                            var reader = new StreamReader(context.Request.Body);
+                            var command = JsonConvert.DeserializeObject<FakeCommand>(reader.ReadToEnd(), jsonSerializerSettings);
+                            logger.LogInformation(new EventId(3), null, $"{baseSchemeUrlAndPort}/command called, my state is {n.State.GetType().FullName}");
+                            var commandResponse = n.Accept(command);
+                            var json = JsonConvert.SerializeObject(commandResponse);
+                            await context.Response.WriteAsync(json);
+                            reader.Dispose();
+                            return;
+                        }
+                    }
+                    catch(Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
+                });
+        }
+
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
             var deps = GetDependencies(builder);
@@ -183,7 +270,7 @@ namespace Ocelot.Middleware
             return response == null || response.IsError;
         }
 
-        private static bool ConfigurationNotSetUp(Response<IOcelotConfiguration> ocelotConfiguration)
+        private static bool ConfigurationNotSetUp(Ocelot.Responses.Response<IOcelotConfiguration> ocelotConfiguration)
         {
             return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
         }
@@ -292,5 +379,11 @@ namespace Ocelot.Middleware
                  diagnosticListener.SubscribeWithAdapter(listener);
              }
          }
+        
+        private static void OnShutdown(IApplicationBuilder app)
+        {
+            var node = (INode)app.ApplicationServices.GetService(typeof(INode));
+            node.Stop();
+        }
     }
 }
