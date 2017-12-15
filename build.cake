@@ -127,13 +127,7 @@ Task("RunUnitTests")
         
 			OpenCover(tool => 
 				{
-					tool.DotNetCoreTest(unitTestAssemblies, new DotNetCoreTestSettings()
-					{
-						Configuration = compileConfig,
-						ArgumentCustomization = args => args
-							.Append("--no-restore")
-							.Append("--no-build")
-					});
+					tool.DotNetCoreTest(unitTestAssemblies);
 				},
 				new FilePath(coverageSummaryFile),
 				new OpenCoverSettings()
