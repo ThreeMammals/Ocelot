@@ -28,7 +28,8 @@ namespace Ocelot.Raft
         {
             var json = JsonConvert.SerializeObject(requestVote, _jsonSerializerSettings);
             var content = new StringContent(json);
-            var response = _httpClient.PostAsync($"{_hostAndPort}/raft/requestvote", content).GetAwaiter().GetResult();
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/requestvote", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
                 return JsonConvert.DeserializeObject<RequestVoteResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -45,7 +46,8 @@ namespace Ocelot.Raft
             {
                 var json = JsonConvert.SerializeObject(appendEntries, _jsonSerializerSettings);
                 var content = new StringContent(json);
-                var response = _httpClient.PostAsync($"{_hostAndPort}/raft/appendEntries", content).GetAwaiter().GetResult();
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/appendEntries", content).GetAwaiter().GetResult();
                 if(response.IsSuccessStatusCode)
                 {
                     return JsonConvert.DeserializeObject<AppendEntriesResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -66,7 +68,8 @@ namespace Ocelot.Raft
         {
             var json = JsonConvert.SerializeObject(command, _jsonSerializerSettings);
             var content = new StringContent(json);
-            var response = _httpClient.PostAsync($"{_hostAndPort}/raft/command", content).GetAwaiter().GetResult();
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/command", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
                 return JsonConvert.DeserializeObject<OkResponse<T>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());

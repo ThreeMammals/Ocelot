@@ -174,70 +174,17 @@ namespace Ocelot.Middleware
         private static void SetUpRafty(IApplicationBuilder builder)
         {
             var applicationLifetime = (IApplicationLifetime)builder.ApplicationServices.GetService(typeof(IApplicationLifetime));
-            var loggerFactory = (ILoggerFactory)builder.ApplicationServices.GetService(typeof(ILoggerFactory));
             applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
-            var webHostBuilder = (IWebHostBuilder)builder.ApplicationServices.GetService(typeof(IWebHostBuilder));
-            var baseSchemeUrlAndPort = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey);
             var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
             var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
-            var logger = loggerFactory.CreateLogger("OcelotMiddlewareExtensions");
             node.Start(nodeId.Id);
 
-            var jsonSerializerSettings = new JsonSerializerSettings() { 
-                TypeNameHandling = TypeNameHandling.All
-            };
-
-            builder.Map("/raft", app =>
-                {
-                    app.Run(async context =>
-                    {
-                        try
-                        {
-                            var n = (INode)context.RequestServices.GetService(typeof(INode));
-                            if(context.Request.Path == "/appendentries")
-                            {
-                                var reader = new StreamReader(context.Request.Body);
-                                var content = reader.ReadToEnd();
-                                var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(content, jsonSerializerSettings);
-                                logger.LogInformation(new EventId(1), null, $"{baseSchemeUrlAndPort}/appendentries called, my state is {n.State.GetType().FullName}");
-                                var appendEntriesResponse = n.Handle(appendEntries);
-                                var json = JsonConvert.SerializeObject(appendEntriesResponse);
-                                await context.Response.WriteAsync(json);
-                                reader.Dispose();
-                                return;
-                            }
-
-                            if (context.Request.Path == "/requestvote")
-                            {
-                                var reader = new StreamReader(context.Request.Body);
-                                var requestVote = JsonConvert.DeserializeObject<RequestVote>(reader.ReadToEnd(), jsonSerializerSettings);
-                                logger.LogInformation(new EventId(2), null, $"{baseSchemeUrlAndPort}/requestvote called, my state is {n.State.GetType().FullName}");
-                                var requestVoteResponse = n.Handle(requestVote);
-                                var json = JsonConvert.SerializeObject(requestVoteResponse);
-                                await context.Response.WriteAsync(json);
-                                reader.Dispose();
-                                return;
-                            }
-
-                            if(context.Request.Path == "/command")
-                            {
-                                var reader = new StreamReader(context.Request.Body);
-                                var command = JsonConvert.DeserializeObject<FakeCommand>(reader.ReadToEnd(), jsonSerializerSettings);
-                                logger.LogInformation(new EventId(3), null, $"{baseSchemeUrlAndPort}/command called, my state is {n.State.GetType().FullName}");
-                                var commandResponse = n.Accept(command);
-                                var json = JsonConvert.SerializeObject(commandResponse);
-                                await context.Response.WriteAsync(json);
-                                reader.Dispose();
-                                return;
-                            }
-                        }
-                        catch(Exception exception)
-                        {
-                            Console.WriteLine(exception);
-                        }
-                    });
-                });
-
+            // builder.Map("/raft", app =>
+            //     {
+            //         app.UseIdentityServer();
+            //         app.UseAuthentication();
+            //         app.UseMvc();
+            //     });
         }
 
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)

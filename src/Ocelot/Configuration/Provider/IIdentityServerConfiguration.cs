@@ -11,11 +11,6 @@ namespace Ocelot.Configuration.Provider
         List<string> AllowedScopes { get;  }
         SupportedTokens SupportedTokens { get;  }
         string ApiSecret { get;  }
-        string Description {get;}
-        bool Enabled {get;}
-        IEnumerable<string>  AllowedGrantTypes {get;}
-        AccessTokenType AccessTokenType {get;}
-        bool RequireClientSecret {get;}
         List<User> Users {get;}
         string CredentialsSigningCertificateLocation { get; }
         string CredentialsSigningCertificatePassword { get; }

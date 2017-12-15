@@ -52,6 +52,7 @@ using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
 using Rafty.Infrastructure;
 using Rafty.Log;
+using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
@@ -141,7 +142,9 @@ namespace Ocelot.DependencyInjection
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
-                .AddJsonFormatters();
+                .AddJsonFormatters().AddJsonOptions(o => {
+                    o.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
+                    });
 
             _services.AddLogging();
             _services.AddMiddlewareAnalysis();
@@ -257,7 +260,7 @@ namespace Ocelot.DependencyInjection
                             Value = identityServerConfiguration.ApiSecret.Sha256()
                         }
                     }
-                }
+                },
             };
         }
 
@@ -274,6 +277,5 @@ namespace Ocelot.DependencyInjection
                 }
             };
         }
-
     }
 }

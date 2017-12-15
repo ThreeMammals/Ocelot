@@ -4,14 +4,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Ocelot.Configuration.File;
 using Ocelot.Raft;
 using Rafty.Concensus;
+using Rafty.FiniteStateMachine;
 using Rafty.Infrastructure;
 using Shouldly;
 using Xunit;
@@ -25,9 +28,15 @@ namespace Ocelot.IntegrationTests
         private List<IWebHostBuilder> _webHostBuilders;
         private List<Thread> _threads;
         private FilePeers _peers;
+        private HttpClient _httpClient;
+        private string _ocelotBaseUrl;
+        private BearerToken _token;
 
         public Tests()
         {
+            _httpClient = new HttpClient();
+            _ocelotBaseUrl = "http://localhost:5000";
+            _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
             _webHostBuilders = new List<IWebHostBuilder>();
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
@@ -49,11 +58,77 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_persist_command_to_five_servers()
         {
+             var configuration = new FileConfiguration
+             { 
+                 GlobalConfiguration = new FileGlobalConfiguration
+                 {
+                     AdministrationPath = "/administration"
+                 }
+             };
+             
             var command = new FakeCommand("WHATS UP DOC?");
+            GivenThereIsAConfiguration(configuration);
             GivenFiveServersAreRunning();
             GivenALeaderIsElected();
+            //GivenIHaveAnOcelotToken("/administration");
+            //GivenIHaveAddedATokenToMyRequest();
             WhenISendACommandIntoTheCluster(command);
             ThenTheCommandIsReplicatedToAllStateMachines(command);
+        }
+
+        private void GivenIHaveAddedATokenToMyRequest()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+        }
+
+        private void GivenIHaveAnOcelotToken(string adminPath)
+        {
+            var tokenUrl = $"{adminPath}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "admin"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "admin"),
+                new KeyValuePair<string, string>("username", "admin"),
+                new KeyValuePair<string, string>("password", "secret"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = _httpClient.PostAsync(tokenUrl, content).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            response.EnsureSuccessStatusCode();
+            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            var configPath = $"{adminPath}/.well-known/openid-configuration";
+            response = _httpClient.GetAsync(configPath).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        {
+            var configurationPath = $"{Directory.GetCurrentDirectory()}/configuration.json";
+
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+
+            if (File.Exists(configurationPath))
+            {
+                File.Delete(configurationPath);
+            }
+
+            File.WriteAllText(configurationPath, jsonConfiguration);
+
+            var text = File.ReadAllText(configurationPath);
+
+            configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
+
+            if (File.Exists(configurationPath))
+            {
+                File.Delete(configurationPath);
+            }
+
+            File.WriteAllText(configurationPath, jsonConfiguration);
+
+            text = File.ReadAllText(configurationPath);
         }
 
         private void GivenAServerIsRunning(string url, string id)
@@ -104,11 +179,14 @@ namespace Ocelot.IntegrationTests
         private void WhenISendACommandIntoTheCluster(FakeCommand command)
         {
             var p = _peers.Peers.First();
-            var json = JsonConvert.SerializeObject(command);
+            var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
+                TypeNameHandling = TypeNameHandling.All
+            });
             var httpContent = new StringContent(json);
+            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
             using(var httpClient = new HttpClient())
             {
-                var response = httpClient.PostAsync($"{p.HostAndPort}/raft/command", httpContent).GetAwaiter().GetResult();
+                var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
                 response.EnsureSuccessStatusCode();
                 var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 var result = JsonConvert.DeserializeObject<OkResponse<FakeCommand>>(content);
