@@ -39,7 +39,7 @@ namespace Ocelot.Raft
         {
             if(_token == null)
             {
-                SetToken().Wait();
+                SetToken();
             }
 
             var json = JsonConvert.SerializeObject(requestVote, _jsonSerializerSettings);
@@ -62,7 +62,7 @@ namespace Ocelot.Raft
             {
                 if(_token == null)
                 {
-                    SetToken().Wait();
+                    SetToken();
                 }                
                 var json = JsonConvert.SerializeObject(appendEntries, _jsonSerializerSettings);
                 var content = new StringContent(json);
@@ -88,7 +88,7 @@ namespace Ocelot.Raft
         {
             if(_token == null)
             {
-                SetToken().Wait();
+                SetToken();
             }   
             var json = JsonConvert.SerializeObject(command, _jsonSerializerSettings);
             var content = new StringContent(json);
@@ -104,7 +104,7 @@ namespace Ocelot.Raft
             }
         }
 
-        private async Task SetToken()
+        private void SetToken()
         {
             var tokenUrl = $"{_baseSchemeUrlAndPort}{_config.AdministrationPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -117,8 +117,8 @@ namespace Ocelot.Raft
                 new KeyValuePair<string, string>("grant_type", "password")
             };
             var content = new FormUrlEncodedContent(formData);
-            var response = await _httpClient.PostAsync(tokenUrl, content);
-            var responseContent = await response.Content.ReadAsStringAsync();
+            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
+            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_token.TokenType, _token.AccessToken);
