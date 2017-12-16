@@ -70,15 +70,9 @@ namespace Ocelot.IntegrationTests
             GivenThereIsAConfiguration(configuration);
             GivenFiveServersAreRunning();
             GivenALeaderIsElected();
-            //GivenIHaveAnOcelotToken("/administration");
-            //GivenIHaveAddedATokenToMyRequest();
+            GivenIHaveAnOcelotToken("/administration");
             WhenISendACommandIntoTheCluster(command);
             ThenTheCommandIsReplicatedToAllStateMachines(command);
-        }
-
-        private void GivenIHaveAddedATokenToMyRequest()
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
         private void GivenIHaveAnOcelotToken(string adminPath)
@@ -186,6 +180,7 @@ namespace Ocelot.IntegrationTests
             httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
             using(var httpClient = new HttpClient())
             {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
                 var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
                 response.EnsureSuccessStatusCode();
                 var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();

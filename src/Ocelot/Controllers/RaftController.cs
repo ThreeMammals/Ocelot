@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -44,12 +45,24 @@ namespace Ocelot.Controllers
         }
 
         [Route("command")]
-        public async Task<IActionResult> Command([FromBody]ICommand command)
+        public async Task<IActionResult> Command()
         { 
-            var reader = new StreamReader(HttpContext.Request.Body);
-            _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
-            var commandResponse = _node.Accept(command);
-            return new OkObjectResult(commandResponse);
+            try
+            {
+                var reader = new StreamReader(HttpContext.Request.Body);
+                var json = await reader.ReadToEndAsync();
+                var command = JsonConvert.DeserializeObject<ICommand>(json, new JsonSerializerSettings {
+                    TypeNameHandling = TypeNameHandling.All
+                });
+                _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
+                var commandResponse = _node.Accept(command);
+                return new OkObjectResult(commandResponse);
+            }
+            catch(Exception e)
+            {
+                _logger.LogError("THERE WAS A PROBLEM", e);
+                throw e;
+            }
         }
     }
 }

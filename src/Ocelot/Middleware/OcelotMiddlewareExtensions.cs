@@ -178,13 +178,6 @@ namespace Ocelot.Middleware
             var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
             var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
             node.Start(nodeId.Id);
-
-            // builder.Map("/raft", app =>
-            //     {
-            //         app.UseIdentityServer();
-            //         app.UseAuthentication();
-            //         app.UseMvc();
-            //     });
         }
 
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
