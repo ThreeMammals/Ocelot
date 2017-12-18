@@ -20,9 +20,13 @@ namespace Ocelot.Raft
         private string _baseSchemeUrlAndPort;
         private BearerToken _token;
         private IOcelotConfiguration _config;
+        private HttpPeerAuthenticationOptions _authOptions;
+        private IIdentityServerConfiguration _identityServerConfiguration;
 
-        public HttpPeer(string hostAndPort, Guid id, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config)
+        public HttpPeer(string hostAndPort, Guid id, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, HttpPeerAuthenticationOptions authOptions, IIdentityServerConfiguration identityServerConfiguration)
         {
+            _identityServerConfiguration = identityServerConfiguration;
+            _authOptions = authOptions;
             _config = config;
             Id  = id;
             _hostAndPort = hostAndPort;
@@ -109,13 +113,14 @@ namespace Ocelot.Raft
             var tokenUrl = $"{_baseSchemeUrlAndPort}{_config.AdministrationPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "admin"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "secret"),
+                new KeyValuePair<string, string>("client_id", _identityServerConfiguration.ApiName),
+                new KeyValuePair<string, string>("client_secret", _identityServerConfiguration.ApiSecret),
+                new KeyValuePair<string, string>("scope", _identityServerConfiguration.ApiName),
+                new KeyValuePair<string, string>("username", _authOptions.Username),
+                new KeyValuePair<string, string>("password", _authOptions.Password),
                 new KeyValuePair<string, string>("grant_type", "password")
             };
+            
             var content = new FormUrlEncodedContent(formData);
             var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
             var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();

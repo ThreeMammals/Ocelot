@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _ocelotBuilder.AddRafty();
+                _ocelotBuilder.AddRafty("admin", "secret");
             }
             catch (Exception e)
             {

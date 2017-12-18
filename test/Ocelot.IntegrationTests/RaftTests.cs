@@ -19,6 +19,7 @@ using Rafty.Infrastructure;
 using Shouldly;
 using Xunit;
 using static Rafty.Infrastructure.Wait;
+using Microsoft.Data.Sqlite;
 
 namespace Ocelot.IntegrationTests
 {
@@ -29,11 +30,14 @@ namespace Ocelot.IntegrationTests
         private List<Thread> _threads;
         private FilePeers _peers;
         private HttpClient _httpClient;
+        private HttpClient _httpClientForAssertions;
         private string _ocelotBaseUrl;
         private BearerToken _token;
+        private HttpResponseMessage _response;
 
         public Tests()
         {
+            _httpClientForAssertions = new HttpClient();
             _httpClient = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5000";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
@@ -65,14 +69,218 @@ namespace Ocelot.IntegrationTests
                      AdministrationPath = "/administration"
                  }
              };
+
+            var updatedConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "127.0.0.1",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "http",
+                        DownstreamPathTemplate = "/geoffrey",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/"
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "123.123.123",
+                        DownstreamPort = 443,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/blooper/{productId}",
+                        UpstreamHttpMethod = new List<string> { "post" },
+                        UpstreamPathTemplate = "/test"
+                    }
+                }
+            };
              
-            var command = new FakeCommand("WHATS UP DOC?");
+            var command = new UpdateFileConfiguration(updatedConfiguration);
             GivenThereIsAConfiguration(configuration);
             GivenFiveServersAreRunning();
             GivenALeaderIsElected();
             GivenIHaveAnOcelotToken("/administration");
             WhenISendACommandIntoTheCluster(command);
             ThenTheCommandIsReplicatedToAllStateMachines(command);
+        }
+
+        [Fact]
+        public void should_persist_command_to_five_servers_when_using_administration_api()
+        {
+             var configuration = new FileConfiguration
+             { 
+                 GlobalConfiguration = new FileGlobalConfiguration
+                 {
+                     AdministrationPath = "/administration"
+                 }
+             };
+
+            var updatedConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AdministrationPath = "/administration"
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "127.0.0.1",
+                        DownstreamPort = 80,
+                        DownstreamScheme = "http",
+                        DownstreamPathTemplate = "/geoffrey",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/"
+                    },
+                    new FileReRoute()
+                    {
+                        DownstreamHost = "123.123.123",
+                        DownstreamPort = 443,
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/blooper/{productId}",
+                        UpstreamHttpMethod = new List<string> { "post" },
+                        UpstreamPathTemplate = "/test"
+                    }
+                }
+            };
+             
+            var command = new UpdateFileConfiguration(updatedConfiguration);
+            GivenThereIsAConfiguration(configuration);
+            GivenFiveServersAreRunning();
+            GivenALeaderIsElected();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
+            ThenTheCommandIsReplicatedToAllStateMachines(command);
+        }
+
+        private void WhenISendACommandIntoTheCluster(UpdateFileConfiguration command)
+        {
+            var p = _peers.Peers.First();
+            var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
+                TypeNameHandling = TypeNameHandling.All
+            });
+            var httpContent = new StringContent(json);
+            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            using(var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+                var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
+                response.EnsureSuccessStatusCode();
+                var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var result = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
+                result.Command.Configuration.GlobalConfiguration.AdministrationPath.ShouldBe(command.Configuration.GlobalConfiguration.AdministrationPath);
+            }
+
+            //dirty sleep to make sure command replicated...
+            var stopwatch = Stopwatch.StartNew();
+            while(stopwatch.ElapsedMilliseconds < 10000)
+            {
+
+            }
+        }
+
+        private void ThenTheCommandIsReplicatedToAllStateMachines(UpdateFileConfiguration expected)
+        {
+            //dirty sleep to give a chance to replicate...
+            var stopwatch = Stopwatch.StartNew();
+            while(stopwatch.ElapsedMilliseconds < 2000)
+            {
+
+            }
+            
+             bool CommandCalledOnAllStateMachines()
+            {
+                try
+                {
+                    var passed = 0;
+                    foreach (var peer in _peers.Peers)
+                    {
+                        var path = $"{peer.Id.ToString()}.db";
+                        using(var connection = new SqliteConnection($"Data Source={path};"))
+                        {
+                            connection.Open();
+                            var sql = @"select count(id) from logs";
+                            using(var command = new SqliteCommand(sql, connection))
+                            {
+                                var index = Convert.ToInt32(command.ExecuteScalar());
+                                index.ShouldBe(1);
+                            }
+                        }
+                        _httpClientForAssertions.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+                        var result = _httpClientForAssertions.GetAsync($"{peer.HostAndPort}/administration/configuration").Result;
+                        var json = result.Content.ReadAsStringAsync().Result;
+                        var response = JsonConvert.DeserializeObject<FileConfiguration>(json, new JsonSerializerSettings{TypeNameHandling = TypeNameHandling.All});
+                         response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.Configuration.GlobalConfiguration.AdministrationPath);
+                        response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.Configuration.GlobalConfiguration.RequestIdKey);
+                        response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+                        response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+
+                        for (var i = 0; i < response.ReRoutes.Count; i++)
+                        {
+                            response.ReRoutes[i].DownstreamHost.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamHost);
+                            response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamPathTemplate);
+                            response.ReRoutes[i].DownstreamPort.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamPort);
+                            response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamScheme);
+                            response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.Configuration.ReRoutes[i].UpstreamPathTemplate);
+                            response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.Configuration.ReRoutes[i].UpstreamHttpMethod);
+                        }
+                        passed++;
+                    }
+
+                    return passed == 5;
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                    return false;
+                }
+            }
+
+            var commandOnAllStateMachines = WaitFor(20000).Until(() => CommandCalledOnAllStateMachines());
+            commandOnAllStateMachines.ShouldBeTrue();   
+        }
+
+        private void ThenTheResponseShouldBe(FileConfiguration expected)
+        {
+            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
+
+            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
+            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+
+            for (var i = 0; i < response.ReRoutes.Count; i++)
+            {
+                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
+                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
+                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
+                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
+            }
+        }
+
+        private void WhenIGetUrlOnTheApiGateway(string url)
+        {
+            _response = _httpClient.GetAsync(url).Result;
+        }
+
+        private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
+        {
+            var json = JsonConvert.SerializeObject(updatedConfiguration);
+            var content = new StringContent(json);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            _response = _httpClient.PostAsync(url, content).Result;
+        }
+
+        private void GivenIHaveAddedATokenToMyRequest()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
         private void GivenIHaveAnOcelotToken(string adminPath)

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Setter;
+using Ocelot.Raft;
+using Rafty.Concensus;
 
 namespace Ocelot.Controllers
 {
@@ -13,9 +15,11 @@ namespace Ocelot.Controllers
     {
         private readonly IFileConfigurationProvider _configGetter;
         private readonly IFileConfigurationSetter _configSetter;
+        private readonly INode _node;
 
-        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter)
+        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter, INode node)
         {
+            _node = node;
             _configGetter = getFileConfig;
             _configSetter = configSetter;
         }
@@ -36,12 +40,13 @@ namespace Ocelot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
-            var response = await _configSetter.Set(fileConfiguration);
+            _node.Accept(new UpdateFileConfiguration(fileConfiguration));
+            // var response = await _configSetter.Set(fileConfiguration);
               
-            if(response.IsError)
-            {
-                return new BadRequestObjectResult(response.Errors);
-            }
+            // if(response.IsError)
+            // {
+            //     return new BadRequestObjectResult(response.Errors);
+            // }
 
             return new OkObjectResult(fileConfiguration);
         }

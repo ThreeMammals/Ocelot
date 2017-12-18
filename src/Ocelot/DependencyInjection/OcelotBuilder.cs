@@ -151,11 +151,13 @@ namespace Ocelot.DependencyInjection
             _services.AddWebEncoders();
         }
 
-        public IOcelotBuilder AddRafty()
+        public IOcelotBuilder AddRafty(string username, string password)
         {
+            var auth = new HttpPeerAuthenticationOptions(username, password);
+            _services.AddSingleton(auth);
             var settings = new InMemorySettings(4000, 5000, 100, 5000);
             _services.AddSingleton<ILog, SqlLiteLog>();
-            _services.AddSingleton<IFiniteStateMachine, FileFsm>();
+            _services.AddSingleton<IFiniteStateMachine, OcelotFiniteStateMachine>();
             _services.AddSingleton<ISettings>(settings);
             _services.AddSingleton<IPeersProvider, FilePeersProvider>();
             _services.AddSingleton<INode, Node>();

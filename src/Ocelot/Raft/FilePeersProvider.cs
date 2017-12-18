@@ -16,9 +16,13 @@ namespace Ocelot.Raft
         private List<IPeer> _peers;
         private IWebHostBuilder _builder;
         private IOcelotConfigurationProvider _provider;
+        private IIdentityServerConfiguration _identityServerConfig;
+        private HttpPeerAuthenticationOptions _authOptions;
 
-        public FilePeersProvider(IOptions<FilePeers> options, IWebHostBuilder builder, IOcelotConfigurationProvider provider)
+        public FilePeersProvider(IOptions<FilePeers> options, IWebHostBuilder builder, IOcelotConfigurationProvider provider, HttpPeerAuthenticationOptions authOptions, IIdentityServerConfiguration identityServerConfig)
         {
+            _authOptions = authOptions;
+            _identityServerConfig = identityServerConfig;
             _provider = provider;
             _builder = builder;
             _options = options;
@@ -29,7 +33,7 @@ namespace Ocelot.Raft
             {
                 var httpClient = new HttpClient();
                 //todo what if this errors?
-                var httpPeer = new HttpPeer(item.HostAndPort, Guid.Parse(item.Id), httpClient, _builder, config.Data);
+                var httpPeer = new HttpPeer(item.HostAndPort, Guid.Parse(item.Id), httpClient, _builder, config.Data, _authOptions, _identityServerConfig);
                 _peers.Add(httpPeer);
             }
         }
