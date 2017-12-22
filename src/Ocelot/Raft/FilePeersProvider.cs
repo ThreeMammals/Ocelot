@@ -33,7 +33,7 @@ namespace Ocelot.Raft
             {
                 var httpClient = new HttpClient();
                 //todo what if this errors?
-                var httpPeer = new HttpPeer(item.HostAndPort, Guid.Parse(item.Id), httpClient, _builder, config.Data, _authOptions, _identityServerConfig);
+                var httpPeer = new HttpPeer(item.HostAndPort, httpClient, _builder, config.Data, _authOptions, _identityServerConfig);
                 _peers.Add(httpPeer);
             }
         }

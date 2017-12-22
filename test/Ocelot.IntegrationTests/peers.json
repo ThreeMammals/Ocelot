@@ -1,22 +1,17 @@
 {
 	"Peers": [{
-			"Id": "2f40ace0-5023-4c4e-853d-50db97ba4e25",
 			"HostAndPort": "http://localhost:5000"
 		},
 		{
-			"Id": "51e4ef33-52ad-4cb8-b571-5aa791adeda8",
 			"HostAndPort": "http://localhost:5002"
 		},
 		{
-			"Id": "ce79e5fe-9c44-4c4b-9b64-4ee4bb124177",
 			"HostAndPort": "http://localhost:5003"
 		},
 		{
-			"Id": "9a589455-24b4-46fe-a243-49e7fbf1c028",
 			"HostAndPort": "http://localhost:5004"
 		},
 		{
-			"Id": "41f54603-9898-4850-ae40-29b40630110e",
 			"HostAndPort": "http://localhost:5001"
 		}
 	]

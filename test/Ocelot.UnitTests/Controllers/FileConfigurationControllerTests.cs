@@ -9,6 +9,7 @@ using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
 using Ocelot.Configuration.Provider;
+using Rafty.Concensus;
 
 namespace Ocelot.UnitTests.Controllers
 {
@@ -19,18 +20,20 @@ namespace Ocelot.UnitTests.Controllers
         private Mock<IFileConfigurationSetter> _configSetter;
         private IActionResult _result;
         private FileConfiguration _fileConfiguration;
+        private Mock<INode> _node;
 
         public FileConfigurationControllerTests()
         {
+            _node = new Mock<INode>();
             _configGetter = new Mock<IFileConfigurationProvider>();
             _configSetter = new Mock<IFileConfigurationSetter>();
-            _controller = new FileConfigurationController(_configGetter.Object, _configSetter.Object);
+            _controller = new FileConfigurationController(_configGetter.Object, _configSetter.Object, _node.Object);
         }
         
         [Fact]
         public void should_get_file_configuration()
         {
-            var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
+            var expected = new Ocelot.Responses.OkResponse<FileConfiguration>(new FileConfiguration());
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
@@ -41,7 +44,7 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_return_error_when_cannot_get_config()
         {
-            var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+            var expected = new Ocelot.Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
              this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
@@ -103,7 +106,7 @@ namespace Ocelot.UnitTests.Controllers
            _result.ShouldBeOfType<T>();
         }
 
-        private void GivenTheGetConfigurationReturns(Response<FileConfiguration> fileConfiguration)
+        private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
         {
             _configGetter
                 .Setup(x => x.Get())

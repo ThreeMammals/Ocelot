@@ -23,12 +23,12 @@ namespace Ocelot.Raft
         private HttpPeerAuthenticationOptions _authOptions;
         private IIdentityServerConfiguration _identityServerConfiguration;
 
-        public HttpPeer(string hostAndPort, Guid id, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, HttpPeerAuthenticationOptions authOptions, IIdentityServerConfiguration identityServerConfiguration)
+        public HttpPeer(string hostAndPort, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, HttpPeerAuthenticationOptions authOptions, IIdentityServerConfiguration identityServerConfiguration)
         {
             _identityServerConfiguration = identityServerConfiguration;
             _authOptions = authOptions;
             _config = config;
-            Id  = id;
+            Id  = hostAndPort;
             _hostAndPort = hostAndPort;
             _httpClient = httpClient;
             _jsonSerializerSettings = new JsonSerializerSettings() { 
@@ -37,7 +37,7 @@ namespace Ocelot.Raft
             _baseSchemeUrlAndPort = builder.GetSetting(WebHostDefaults.ServerUrlsKey);
         }
 
-        public Guid Id {get; private set;}
+        public string Id {get; private set;}
 
         public RequestVoteResponse Request(RequestVote requestVote)
         {

@@ -9,10 +9,11 @@ namespace Ocelot.Raft
 {
     public class FileFsm : IFiniteStateMachine
     {
-        private Guid _id;
+        private string _id;
+
         public FileFsm(NodeId nodeId)
         {
-            _id = nodeId.Id;
+            _id = nodeId.Id.Replace("/","").Replace(":","");
         }
         
         public void Handle(LogEntry log)
@@ -20,7 +21,7 @@ namespace Ocelot.Raft
             try
             {
                 var json = JsonConvert.SerializeObject(log.CommandData);
-                File.AppendAllText(_id.ToString(), json);
+                File.AppendAllText(_id, json);
             }
             catch(Exception exception)
             {

@@ -15,7 +15,7 @@ namespace Ocelot.Raft
 
         public SqlLiteLog(NodeId nodeId)
         {
-            _path = $"{nodeId.Id.ToString()}.db";
+            _path = $"{nodeId.Id.Replace("/","").Replace(":","")}.db";
             if(!File.Exists(_path))
             {
                 lock(_lock)

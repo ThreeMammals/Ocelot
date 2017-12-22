@@ -54,8 +54,8 @@ namespace Ocelot.IntegrationTests
 
             foreach (var peer in _peers.Peers)
             {
-                File.Delete(peer.Id);
-                File.Delete($"{peer.Id.ToString()}.db");
+                File.Delete(peer.HostAndPort.Replace("/","").Replace(":",""));
+                File.Delete($"{peer.HostAndPort.Replace("/","").Replace(":","")}.db");
             }
         }
 
@@ -200,7 +200,7 @@ namespace Ocelot.IntegrationTests
                     var passed = 0;
                     foreach (var peer in _peers.Peers)
                     {
-                        var path = $"{peer.Id.ToString()}.db";
+                        var path = $"{peer.HostAndPort.Replace("/","").Replace(":","")}.db";
                         using(var connection = new SqliteConnection($"Data Source={path};"))
                         {
                             connection.Open();
@@ -333,10 +333,8 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        private void GivenAServerIsRunning(string url, string id)
+        private void GivenAServerIsRunning(string url)
         {
-            var guid = Guid.Parse(id);
-
             IWebHostBuilder webHostBuilder = new WebHostBuilder();
             webHostBuilder.UseUrls(url)
                 .UseKestrel()
@@ -344,7 +342,7 @@ namespace Ocelot.IntegrationTests
                 .ConfigureServices(x =>
                 {
                     x.AddSingleton(webHostBuilder);
-                    x.AddSingleton(new NodeId(guid));
+                    x.AddSingleton(new NodeId(url));
                 })
                 .UseStartup<RaftStartup>();
 
@@ -362,7 +360,7 @@ namespace Ocelot.IntegrationTests
 
             foreach (var peer in _peers.Peers)
             {
-                var thread = new Thread(() => GivenAServerIsRunning(peer.HostAndPort, peer.Id));
+                var thread = new Thread(() => GivenAServerIsRunning(peer.HostAndPort));
                 thread.Start();
                 _threads.Add(thread);
             }
@@ -421,7 +419,7 @@ namespace Ocelot.IntegrationTests
                     foreach (var peer in _peers.Peers)
                     {
                         string fsmData;
-                        fsmData = File.ReadAllText(peer.Id);
+                        fsmData = File.ReadAllText(peer.HostAndPort.Replace("/","").Replace(":",""));
                         fsmData.ShouldNotBeNullOrEmpty();
                         var fakeCommand = JsonConvert.DeserializeObject<FakeCommand>(fsmData);
                         fakeCommand.Value.ShouldBe(command.Value);
