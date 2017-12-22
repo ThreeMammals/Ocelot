@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Ocelot.Configuration.File;
@@ -9,6 +10,7 @@ using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
 using Ocelot.Configuration.Provider;
+using Ocelot.Raft;
 using Rafty.Concensus;
 
 namespace Ocelot.UnitTests.Controllers
@@ -20,20 +22,20 @@ namespace Ocelot.UnitTests.Controllers
         private Mock<IFileConfigurationSetter> _configSetter;
         private IActionResult _result;
         private FileConfiguration _fileConfiguration;
-        private Mock<INode> _node;
+        private Mock<IServiceProvider> _provider;
 
         public FileConfigurationControllerTests()
         {
-            _node = new Mock<INode>();
+            _provider = new Mock<IServiceProvider>();
             _configGetter = new Mock<IFileConfigurationProvider>();
             _configSetter = new Mock<IFileConfigurationSetter>();
-            _controller = new FileConfigurationController(_configGetter.Object, _configSetter.Object, _node.Object);
+            _controller = new FileConfigurationController(_configGetter.Object, _configSetter.Object, _provider.Object);
         }
         
         [Fact]
         public void should_get_file_configuration()
         {
-            var expected = new Ocelot.Responses.OkResponse<FileConfiguration>(new FileConfiguration());
+            var expected = new Responses.OkResponse<FileConfiguration>(new FileConfiguration());
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
@@ -44,7 +46,7 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_return_error_when_cannot_get_config()
         {
-            var expected = new Ocelot.Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+            var expected = new Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
              this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())

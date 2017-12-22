@@ -1,6 +1,8 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Setter;
@@ -15,13 +17,13 @@ namespace Ocelot.Controllers
     {
         private readonly IFileConfigurationProvider _configGetter;
         private readonly IFileConfigurationSetter _configSetter;
-        private readonly INode _node;
+        private readonly IServiceProvider serviceProvider;
 
-        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter, INode node)
+        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter, IServiceProvider serviceProvider)
         {
-            _node = node;
             _configGetter = getFileConfig;
             _configSetter = configSetter;
+            this.serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -40,13 +42,26 @@ namespace Ocelot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
-            _node.Accept(new UpdateFileConfiguration(fileConfiguration));
-            // var response = await _configSetter.Set(fileConfiguration);
-              
-            // if(response.IsError)
-            // {
-            //     return new BadRequestObjectResult(response.Errors);
-            // }
+            var test = serviceProvider.GetService<INode>();
+            //todo - this code is a bit shit sort it out..
+            if (test != null)
+            {
+                var result = test.Accept(new UpdateFileConfiguration(fileConfiguration));
+                if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<FileConfiguration>))
+                {
+                    //todo sort this shit out.
+                    return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
+                }
+
+                return new OkObjectResult(result.Command.Configuration);
+            }
+
+            var response = await _configSetter.Set(fileConfiguration);
+
+            if (response.IsError)
+            {
+                return new BadRequestObjectResult(response.Errors);
+            }
 
             return new OkObjectResult(fileConfiguration);
         }
