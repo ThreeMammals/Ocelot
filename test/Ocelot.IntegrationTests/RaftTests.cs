@@ -23,7 +23,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Ocelot.IntegrationTests
 {
-    public class Tests : IDisposable
+    public class RaftTests : IDisposable
     {
         private List<IWebHost> _builders;
         private List<IWebHostBuilder> _webHostBuilders;
@@ -34,8 +34,9 @@ namespace Ocelot.IntegrationTests
         private string _ocelotBaseUrl;
         private BearerToken _token;
         private HttpResponseMessage _response;
+        private static object _lock = new object();
 
-        public Tests()
+        public RaftTests()
         {
             _httpClientForAssertions = new HttpClient();
             _httpClient = new HttpClient();
@@ -321,22 +322,25 @@ namespace Ocelot.IntegrationTests
 
         private void GivenAServerIsRunning(string url)
         {
-            IWebHostBuilder webHostBuilder = new WebHostBuilder();
-            webHostBuilder.UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureServices(x =>
-                {
-                    x.AddSingleton(webHostBuilder);
-                    x.AddSingleton(new NodeId(url));
-                })
-                .UseStartup<RaftStartup>();
+            lock(_lock)
+            {
+                IWebHostBuilder webHostBuilder = new WebHostBuilder();
+                webHostBuilder.UseUrls(url)
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .ConfigureServices(x =>
+                    {
+                        x.AddSingleton(webHostBuilder);
+                        x.AddSingleton(new NodeId(url));
+                    })
+                    .UseStartup<RaftStartup>();
 
-            var builder = webHostBuilder.Build();
-            builder.Start();
+                var builder = webHostBuilder.Build();
+                builder.Start();
 
-            _webHostBuilders.Add(webHostBuilder);
-            _builders.Add(builder);
+                _webHostBuilders.Add(webHostBuilder);
+                _builders.Add(builder);
+            }
         }
 
         private void GivenFiveServersAreRunning()
