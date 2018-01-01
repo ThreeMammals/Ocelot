@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -103,7 +103,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }

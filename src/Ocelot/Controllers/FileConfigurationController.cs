@@ -42,14 +42,14 @@ namespace Ocelot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
-            var test = _serviceProvider.GetService<INode>();
             //todo - this code is a bit shit sort it out..
+            var test = _serviceProvider.GetService(typeof(INode));
             if (test != null)
             {
-                var result = test.Accept(new UpdateFileConfiguration(fileConfiguration));
-                if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<FileConfiguration>))
+                var node = (INode)test;
+                var result = node.Accept(new UpdateFileConfiguration(fileConfiguration));
+                if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
                 {
-                    //todo sort this shit out.
                     return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
                 }
 
