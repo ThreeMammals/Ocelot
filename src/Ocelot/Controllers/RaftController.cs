@@ -20,9 +20,13 @@ namespace Ocelot.Controllers
         private readonly INode _node;
         private IOcelotLogger _logger;
         private string _baseSchemeUrlAndPort;
+        private JsonSerializerSettings _jsonSerialiserSettings;
 
         public RaftController(INode node, IOcelotLoggerFactory loggerFactory, IWebHostBuilder builder)
         {
+            _jsonSerialiserSettings = new JsonSerializerSettings {
+                TypeNameHandling = TypeNameHandling.All
+            };
             _baseSchemeUrlAndPort = builder.GetSetting(WebHostDefaults.ServerUrlsKey);
             _logger = loggerFactory.CreateLogger<RaftController>();
             _node = node;
@@ -31,27 +35,27 @@ namespace Ocelot.Controllers
         [Route("appendentries")]
         public async Task<IActionResult> AppendEntries()
         {
-            var reader = new StreamReader(HttpContext.Request.Body);
-            var json = await reader.ReadToEndAsync();
-            var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, new JsonSerializerSettings {
-                TypeNameHandling = TypeNameHandling.All
-            });
-            _logger.LogDebug($"{_baseSchemeUrlAndPort}/appendentries called, my state is {_node.State.GetType().FullName}");
-            var appendEntriesResponse = _node.Handle(appendEntries);
-            return new OkObjectResult(appendEntriesResponse);
+            using(var reader = new StreamReader(HttpContext.Request.Body))
+            {
+                var json = await reader.ReadToEndAsync();
+                var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, _jsonSerialiserSettings);
+                _logger.LogDebug($"{_baseSchemeUrlAndPort}/appendentries called, my state is {_node.State.GetType().FullName}");
+                var appendEntriesResponse = _node.Handle(appendEntries);
+                return new OkObjectResult(appendEntriesResponse);
+            }
         }
 
         [Route("requestvote")]
         public async Task<IActionResult> RequestVote()
         { 
-            var reader = new StreamReader(HttpContext.Request.Body);
-            var json = await reader.ReadToEndAsync();
-            var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, new JsonSerializerSettings {
-                TypeNameHandling = TypeNameHandling.All
-            });
-            _logger.LogDebug($"{_baseSchemeUrlAndPort}/requestvote called, my state is {_node.State.GetType().FullName}");
-            var requestVoteResponse = _node.Handle(requestVote);
-            return new OkObjectResult(requestVoteResponse);
+            using(var reader = new StreamReader(HttpContext.Request.Body))
+            {
+                var json = await reader.ReadToEndAsync();
+                var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, _jsonSerialiserSettings);
+                _logger.LogDebug($"{_baseSchemeUrlAndPort}/requestvote called, my state is {_node.State.GetType().FullName}");
+                var requestVoteResponse = _node.Handle(requestVote);
+                return new OkObjectResult(requestVoteResponse);
+            }
         }
 
         [Route("command")]
@@ -59,18 +63,19 @@ namespace Ocelot.Controllers
         { 
             try
             {
-                var reader = new StreamReader(HttpContext.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                var command = JsonConvert.DeserializeObject<ICommand>(json, new JsonSerializerSettings {
-                    TypeNameHandling = TypeNameHandling.All
-                });
-                _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
-                var commandResponse = _node.Accept(command);
-                return new OkObjectResult(commandResponse);
+                using(var reader = new StreamReader(HttpContext.Request.Body))
+                {
+                    var json = await reader.ReadToEndAsync();
+                    var command = JsonConvert.DeserializeObject<ICommand>(json, _jsonSerialiserSettings);
+                    _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
+                    var commandResponse = _node.Accept(command);
+                    json = JsonConvert.SerializeObject(commandResponse, _jsonSerialiserSettings);
+                    return StatusCode(200, json);
+                }
             }
             catch(Exception e)
             {
-                _logger.LogError("THERE WAS A PROBLEM", e);
+                _logger.LogError($"THERE WAS A PROBLEM ON NODE {_node.State.CurrentState.Id}", e);
                 throw e;
             }
         }

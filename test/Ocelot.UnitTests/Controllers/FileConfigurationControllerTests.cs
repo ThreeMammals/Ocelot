@@ -13,6 +13,8 @@ using Ocelot.Configuration.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Raft;
 using Rafty.Concensus;
+using Newtonsoft.Json;
+using Rafty.FiniteStateMachine;
 
 namespace Ocelot.UnitTests.Controllers
 {
