@@ -138,6 +138,7 @@ Task("RunUnitTests")
 				.WithFilter("+[Ocelot*]*")
 				.WithFilter("-[xunit*]*")
 				.WithFilter("-[Ocelot*Tests]*")
+				.WithFilter("-[Ocelot]Raft.*")
 			);
         
 			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
