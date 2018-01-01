@@ -135,7 +135,7 @@ Task("RunUnitTests")
 					Register="user",
 					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode")
 				}
-				.WithFilter("+[Ocelot]* -[Ocelot]Raft.*")
+				.WithFilter("+[Ocelot*]*")
 				.WithFilter("-[xunit*]*")
 				.WithFilter("-[Ocelot*Tests]*")
 			);
