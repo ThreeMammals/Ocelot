@@ -134,9 +134,7 @@ namespace Ocelot.DependencyInjection
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
-                .AddJsonFormatters().AddJsonOptions(o => {
-                    o.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
-                    });
+                .AddJsonFormatters();
 
             _services.AddLogging();
             _services.AddMiddlewareAnalysis();
