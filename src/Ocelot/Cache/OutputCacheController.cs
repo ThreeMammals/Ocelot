@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Cache;
 using Ocelot.Configuration.Provider;
 
-namespace Ocelot.Controllers
+namespace Ocelot.Cache
 {
     [Authorize]
     [Route("outputcache")]

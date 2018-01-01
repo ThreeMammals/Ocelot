@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
-using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
@@ -23,12 +22,15 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Newtonsoft.Json;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
@@ -36,7 +38,10 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Raft;
     using Ocelot.Responses;
+    using Rafty.Concensus;
+    using Rafty.Infrastructure;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -63,6 +68,11 @@ namespace Ocelot.Middleware
             var configuration = await CreateConfiguration(builder);
             
             await CreateAdministrationArea(builder, configuration);
+
+            if(UsingRafty(builder))
+            {
+                SetUpRafty(builder);
+            }
 
             ConfigureDiagnosticListener(builder);
 
@@ -149,6 +159,26 @@ namespace Ocelot.Middleware
             return builder;
         }
 
+        private static bool UsingRafty(IApplicationBuilder builder)
+        {
+            var possible = builder.ApplicationServices.GetService(typeof(INode)) as INode;
+            if(possible != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void SetUpRafty(IApplicationBuilder builder)
+        {
+            var applicationLifetime = (IApplicationLifetime)builder.ApplicationServices.GetService(typeof(IApplicationLifetime));
+            applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
+            var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
+            var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
+            node.Start(nodeId.Id);
+        }
+
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
             var deps = GetDependencies(builder);
@@ -183,7 +213,7 @@ namespace Ocelot.Middleware
             return response == null || response.IsError;
         }
 
-        private static bool ConfigurationNotSetUp(Response<IOcelotConfiguration> ocelotConfiguration)
+        private static bool ConfigurationNotSetUp(Ocelot.Responses.Response<IOcelotConfiguration> ocelotConfiguration)
         {
             return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
         }
@@ -247,6 +277,7 @@ namespace Ocelot.Middleware
                     return new ErrorResponse(ocelotConfig.Errors);
                 }
                 config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                //todo - this starts the poller if it has been registered...please this is so bad.
                 var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
             }
 
@@ -292,5 +323,11 @@ namespace Ocelot.Middleware
                  diagnosticListener.SubscribeWithAdapter(listener);
              }
          }
+        
+        private static void OnShutdown(IApplicationBuilder app)
+        {
+            var node = (INode)app.ApplicationServices.GetService(typeof(INode));
+            node.Stop();
+        }
     }
 }

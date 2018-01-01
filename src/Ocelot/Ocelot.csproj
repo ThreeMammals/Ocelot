@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
@@ -11,39 +10,37 @@
     <PackageId>Ocelot</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>
     <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
-	  <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
     <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-	<Authors>Tom Pallister</Authors>
+    <Authors>Tom Pallister</Authors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="7.2.1" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
-    <PackageReference Include="CacheManager.Core" Version="1.1.1" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.1.1" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.1" />
-    <PackageReference Include="Consul" Version="0.7.2.3" />
-    <PackageReference Include="Polly" Version="5.3.1" />
-    <PackageReference Include="IdentityServer4" Version="2.0.2" />
+    <PackageReference Include="FluentValidation" Version="7.2.1"/>
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.1.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0"/>
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0"/>
+    <PackageReference Include="CacheManager.Core" Version="1.1.1"/>
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.1.1"/>
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.1"/>
+    <PackageReference Include="Consul" Version="0.7.2.3"/>
+    <PackageReference Include="Polly" Version="5.3.1"/>
+    <PackageReference Include="IdentityServer4" Version="2.0.2"/>
+    <PackageReference Include="Rafty" Version="0.4.2"/>
   </ItemGroup>
-
 </Project>

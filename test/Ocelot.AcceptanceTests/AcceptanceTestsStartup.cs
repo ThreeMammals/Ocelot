@@ -12,9 +12,9 @@ using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class Startup
+    public class AcceptanceTestsStartup
     {
-        public Startup(IHostingEnvironment env)
+        public AcceptanceTestsStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
         }
     }
 
-    public class Startup_WithCustomCacheHandle : Startup
+    public class Startup_WithCustomCacheHandle : AcceptanceTestsStartup
     {
         public Startup_WithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
 
@@ -60,7 +60,7 @@ namespace Ocelot.AcceptanceTests
         }
     }
 
-    public class Startup_WithConsul_And_CustomCacheHandle : Startup
+    public class Startup_WithConsul_And_CustomCacheHandle : AcceptanceTestsStartup
     {
         public Startup_WithConsul_And_CustomCacheHandle(IHostingEnvironment env) : base(env) { }
 

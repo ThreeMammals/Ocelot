@@ -24,6 +24,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/authentication
    features/authorisation
    features/administration
+   features/raft
    features/caching
    features/qualityofservice
    features/claimstransformation 

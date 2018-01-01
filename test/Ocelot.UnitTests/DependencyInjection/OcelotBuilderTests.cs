@@ -75,6 +75,16 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+         [Fact]
+        public void should_set_up_rafty()
+        {            
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpRafty())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .Then(x => ThenTheCorrectAdminPathIsRegitered())
+                .BDDfy();
+        }
+
         [Fact]
         public void should_use_logger_factory()
         {
@@ -83,6 +93,13 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => WhenIAccessLoggerFactory())
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
+        }
+
+        private void ThenTheCorrectAdminPathIsRegitered()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var path = _serviceProvider.GetService<IAdministrationPath>();
+            path.Path.ShouldBe("/administration");
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
@@ -104,6 +121,18 @@ namespace Ocelot.UnitTests.DependencyInjection
             try
             {
                 _ocelotBuilder.AddStoreOcelotConfigurationInConsul();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }       
+        }
+
+        private void WhenISetUpRafty()
+        {
+            try
+            {
+                _ocelotBuilder.AddAdministration("/administration", "secret").AddRafty();
             }
             catch (Exception e)
             {
