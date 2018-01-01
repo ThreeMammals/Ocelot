@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class FilePeers
     {
         public FilePeers()

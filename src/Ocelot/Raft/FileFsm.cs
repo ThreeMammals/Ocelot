@@ -6,7 +6,8 @@ using Rafty.Infrastructure;
 using Rafty.Log;
 
 namespace Ocelot.Raft
-{
+{    
+    [ExcludeFromCoverage]
     public class FileFsm : IFiniteStateMachine
     {
         private string _id;
