@@ -40,7 +40,7 @@ namespace Ocelot.IntegrationTests
         {
             services
                 .AddOcelot(Configuration)
-                .AddAdministration("/administration")
+                .AddAdministration("/administration", "secret")
                 .AddRafty();
         }
 

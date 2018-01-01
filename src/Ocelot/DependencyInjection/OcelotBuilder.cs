@@ -144,12 +144,12 @@ namespace Ocelot.DependencyInjection
             _services.AddSingleton<IAdministrationPath>(new NullAdministrationPath());
         }
 
-        public IOcelotAdministrationBuilder AddAdministration(string path)
+        public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
         {
             var administrationPath = new AdministrationPath(path);
 
             //add identity server for admin area
-            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
+            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
 
             if (identityServerConfiguration != null)
             {

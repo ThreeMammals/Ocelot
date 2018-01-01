@@ -40,7 +40,7 @@ namespace Ocelot.IntegrationTests
 
             services.AddOcelot(Configuration)
                 .AddCacheManager(settings)
-                .AddAdministration("/administration");
+                .AddAdministration("/administration", "secret");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

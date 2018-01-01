@@ -46,7 +46,7 @@ namespace Ocelot.ManualTest
                 });
 
             services.AddOcelot(Configuration)
-                    .AddAdministration("/administration");
+                    .AddAdministration("/administration", "secret");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

@@ -132,7 +132,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _ocelotBuilder.AddAdministration("/administration").AddRafty();
+                _ocelotBuilder.AddAdministration("/administration", "secret").AddRafty();
             }
             catch (Exception e)
             {
