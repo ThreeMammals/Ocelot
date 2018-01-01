@@ -12,6 +12,7 @@ using Rafty.FiniteStateMachine;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class HttpPeer : IPeer
     {
         private string _hostAndPort;

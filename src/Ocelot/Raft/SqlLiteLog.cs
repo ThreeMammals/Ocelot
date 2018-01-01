@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class SqlLiteLog : ILog
     {
         private string _path;

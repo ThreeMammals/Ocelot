@@ -10,6 +10,7 @@ using Rafty.Infrastructure;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class FilePeersProvider : IPeersProvider
     {
         private readonly IOptions<FilePeers> _options;

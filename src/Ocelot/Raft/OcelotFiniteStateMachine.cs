@@ -4,6 +4,7 @@ using Rafty.Log;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class OcelotFiniteStateMachine : IFiniteStateMachine
     {
         private IFileConfigurationSetter _setter;

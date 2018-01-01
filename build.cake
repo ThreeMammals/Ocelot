@@ -133,7 +133,7 @@ Task("RunUnitTests")
 				new OpenCoverSettings()
 				{
 					Register="user",
-					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode")
+					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode -excludebyattribute:*.ExcludeFromCoverage*")
 				}
 				.WithFilter("+[Ocelot*]*")
 				.WithFilter("-[xunit*]*")

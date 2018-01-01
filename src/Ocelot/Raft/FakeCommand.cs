@@ -2,6 +2,7 @@ using Rafty.FiniteStateMachine;
 
 namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     public class FakeCommand : ICommand
     {
         public FakeCommand(string value)
