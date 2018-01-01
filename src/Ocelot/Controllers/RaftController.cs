@@ -31,11 +31,11 @@ namespace Ocelot.Controllers
         [Route("appendentries")]
         public async Task<IActionResult> AppendEntries()
         {
-             var reader = new StreamReader(HttpContext.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, new JsonSerializerSettings {
-                    TypeNameHandling = TypeNameHandling.All
-                });
+            var reader = new StreamReader(HttpContext.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, new JsonSerializerSettings {
+                TypeNameHandling = TypeNameHandling.All
+            });
             _logger.LogDebug($"{_baseSchemeUrlAndPort}/appendentries called, my state is {_node.State.GetType().FullName}");
             var appendEntriesResponse = _node.Handle(appendEntries);
             return new OkObjectResult(appendEntriesResponse);
@@ -44,11 +44,11 @@ namespace Ocelot.Controllers
         [Route("requestvote")]
         public async Task<IActionResult> RequestVote()
         { 
-               var reader = new StreamReader(HttpContext.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, new JsonSerializerSettings {
-                    TypeNameHandling = TypeNameHandling.All
-                });
+            var reader = new StreamReader(HttpContext.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, new JsonSerializerSettings {
+                TypeNameHandling = TypeNameHandling.All
+            });
             _logger.LogDebug($"{_baseSchemeUrlAndPort}/requestvote called, my state is {_node.State.GetType().FullName}");
             var requestVoteResponse = _node.Handle(requestVote);
             return new OkObjectResult(requestVoteResponse);
