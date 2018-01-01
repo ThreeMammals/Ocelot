@@ -40,7 +40,8 @@ namespace Ocelot.IntegrationTests
         {
             services
                 .AddOcelot(Configuration)
-                .AddRafty("admin", "secret");
+                .AddAdministration("/administration")
+                .AddRafty();
         }
 
         public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

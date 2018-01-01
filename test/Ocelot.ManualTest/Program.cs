@@ -15,7 +15,7 @@ namespace Ocelot.ManualTest
             builder.UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseStartup<Startup>();                
+                .UseStartup<ManualTestStartup>();                
             var host = builder.Build();
             host.Run();
         }

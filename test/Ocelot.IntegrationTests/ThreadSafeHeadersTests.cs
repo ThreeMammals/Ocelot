@@ -95,7 +95,7 @@ namespace Ocelot.IntegrationTests
                 {
                     x.AddSingleton(_webHostBuilder);
                 })
-                .UseStartup<Startup>();
+                .UseStartup<IntegrationTestsStartup>();
 
             _builder = _webHostBuilder.Build();
 

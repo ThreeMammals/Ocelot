@@ -11,9 +11,9 @@ using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBui
 
 namespace Ocelot.ManualTest
 {
-    public class Startup
+    public class ManualTestStartup
     {
-        public Startup(IHostingEnvironment env)
+        public ManualTestStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -45,7 +45,8 @@ namespace Ocelot.ManualTest
                     x.Audience = "test";
                 });
 
-            services.AddOcelot(Configuration);
+            services.AddOcelot(Configuration)
+                    .AddAdministration("/administration");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

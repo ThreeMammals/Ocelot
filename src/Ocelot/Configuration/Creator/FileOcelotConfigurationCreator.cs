@@ -9,6 +9,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -35,6 +36,8 @@ namespace Ocelot.Configuration.Creator
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
         private readonly IRegionCreator _regionCreator;
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
+        private readonly IAdministrationPath _adminPath;
+
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -49,9 +52,11 @@ namespace Ocelot.Configuration.Creator
             IReRouteOptionsCreator fileReRouteOptionsCreator,
             IRateLimitOptionsCreator rateLimitOptionsCreator,
             IRegionCreator regionCreator,
-            IHttpHandlerOptionsCreator httpHandlerOptionsCreator
+            IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
+            IAdministrationPath adminPath
             )
         {
+            _adminPath = adminPath;
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -92,7 +97,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            var config = new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath, serviceProviderConfiguration);
+            var config = new OcelotConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration);
 
             return new OkResponse<IOcelotConfiguration>(config);
         }

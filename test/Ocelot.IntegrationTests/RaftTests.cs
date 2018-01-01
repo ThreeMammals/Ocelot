@@ -66,7 +66,6 @@ namespace Ocelot.IntegrationTests
              { 
                  GlobalConfiguration = new FileGlobalConfiguration
                  {
-                     AdministrationPath = "/administration"
                  }
              };
 
@@ -74,7 +73,6 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration"
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
@@ -113,18 +111,10 @@ namespace Ocelot.IntegrationTests
         {
              var configuration = new FileConfiguration
              { 
-                 GlobalConfiguration = new FileGlobalConfiguration
-                 {
-                     AdministrationPath = "/administration"
-                 }
              };
 
             var updatedConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    AdministrationPath = "/administration"
-                },
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
@@ -173,7 +163,7 @@ namespace Ocelot.IntegrationTests
                 response.EnsureSuccessStatusCode();
                 var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 var result = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
-                result.Command.Configuration.GlobalConfiguration.AdministrationPath.ShouldBe(command.Configuration.GlobalConfiguration.AdministrationPath);
+                result.Command.Configuration.ReRoutes.Count.ShouldBe(2);
             }
 
             //dirty sleep to make sure command replicated...
@@ -215,7 +205,6 @@ namespace Ocelot.IntegrationTests
                         var result = _httpClientForAssertions.GetAsync($"{peer.HostAndPort}/administration/configuration").Result;
                         var json = result.Content.ReadAsStringAsync().Result;
                         var response = JsonConvert.DeserializeObject<FileConfiguration>(json, new JsonSerializerSettings{TypeNameHandling = TypeNameHandling.All});
-                         response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.Configuration.GlobalConfiguration.AdministrationPath);
                         response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.Configuration.GlobalConfiguration.RequestIdKey);
                         response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Host);
                         response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Port);
@@ -248,8 +237,7 @@ namespace Ocelot.IntegrationTests
         private void ThenTheResponseShouldBe(FileConfiguration expected)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
-
-            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
+            
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
@@ -291,9 +279,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("client_id", "admin"),
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "secret"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "client_credentials")
             };
             var content = new FormUrlEncodedContent(formData);
 

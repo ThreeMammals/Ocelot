@@ -81,6 +81,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpRafty())
                 .Then(x => ThenAnExceptionIsntThrown())
+                .Then(x => ThenTheCorrectAdminPathIsRegitered())
                 .BDDfy();
         }
 
@@ -92,6 +93,13 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => WhenIAccessLoggerFactory())
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
+        }
+
+        private void ThenTheCorrectAdminPathIsRegitered()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var path = _serviceProvider.GetService<IAdministrationPath>();
+            path.Path.ShouldBe("/administration");
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
@@ -124,7 +132,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _ocelotBuilder.AddRafty("admin", "secret");
+                _ocelotBuilder.AddAdministration("/administration").AddRafty();
             }
             catch (Exception e)
             {

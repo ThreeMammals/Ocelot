@@ -59,7 +59,7 @@ Administration API
 
 **POST {adminPath}/connect/token**
 
-This gets a token for use with the admin area using the username and password we talk about setting above. Under the hood this calls into an IdentityServer hosted within Ocelot.
+This gets a token for use with the admin area using the client credentials we talk about setting above. Under the hood this calls into an IdentityServer hosted within Ocelot.
 
 The body of the request is form-data as follows
 
@@ -69,11 +69,7 @@ The body of the request is form-data as follows
 
 ``scope`` set as admin
 
-``username`` set as whatever you used
-
-``password`` set aswhatever you used
-
-``grant_type`` set as password
+``grant_type`` set as client_credentials
 
 **GET {adminPath}/configuration**
 

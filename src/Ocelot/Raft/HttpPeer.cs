@@ -20,13 +20,11 @@ namespace Ocelot.Raft
         private string _baseSchemeUrlAndPort;
         private BearerToken _token;
         private IOcelotConfiguration _config;
-        private HttpPeerAuthenticationOptions _authOptions;
         private IIdentityServerConfiguration _identityServerConfiguration;
 
-        public HttpPeer(string hostAndPort, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, HttpPeerAuthenticationOptions authOptions, IIdentityServerConfiguration identityServerConfiguration)
+        public HttpPeer(string hostAndPort, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
         {
             _identityServerConfiguration = identityServerConfiguration;
-            _authOptions = authOptions;
             _config = config;
             Id  = hostAndPort;
             _hostAndPort = hostAndPort;
@@ -116,11 +114,8 @@ namespace Ocelot.Raft
                 new KeyValuePair<string, string>("client_id", _identityServerConfiguration.ApiName),
                 new KeyValuePair<string, string>("client_secret", _identityServerConfiguration.ApiSecret),
                 new KeyValuePair<string, string>("scope", _identityServerConfiguration.ApiName),
-                new KeyValuePair<string, string>("username", _authOptions.Username),
-                new KeyValuePair<string, string>("password", _authOptions.Password),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "client_credentials")
             };
-            
             var content = new FormUrlEncodedContent(formData);
             var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
             var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();

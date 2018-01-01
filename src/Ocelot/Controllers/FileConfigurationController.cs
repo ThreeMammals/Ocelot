@@ -17,13 +17,13 @@ namespace Ocelot.Controllers
     {
         private readonly IFileConfigurationProvider _configGetter;
         private readonly IFileConfigurationSetter _configSetter;
-        private readonly IServiceProvider serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter, IServiceProvider serviceProvider)
         {
             _configGetter = getFileConfig;
             _configSetter = configSetter;
-            this.serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -42,7 +42,7 @@ namespace Ocelot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
-            var test = serviceProvider.GetService<INode>();
+            var test = _serviceProvider.GetService<INode>();
             //todo - this code is a bit shit sort it out..
             if (test != null)
             {

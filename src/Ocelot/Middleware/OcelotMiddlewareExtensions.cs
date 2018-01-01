@@ -278,6 +278,7 @@ namespace Ocelot.Middleware
                     return new ErrorResponse(ocelotConfig.Errors);
                 }
                 config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                //todo - this starts the poller if it has been registered...please this is so bad.
                 var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
             }
 

@@ -300,12 +300,11 @@
       "DownstreamHost": "www.bbc.co.uk",
       "DownstreamPort": 80,
       "UpstreamPathTemplate": "/bbc/",
-      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamHttpMethod": [ "Get" ]
     }
   ],
 
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId",
-    "AdministrationPath": "/administration"
+    "RequestIdKey": "OcRequestId"
   }
 }
