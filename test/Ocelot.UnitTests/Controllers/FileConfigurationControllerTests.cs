@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
-using Ocelot.Controllers;
 using Ocelot.Errors;
 using Ocelot.Responses;
 using TestStack.BDDfy;
@@ -15,6 +14,7 @@ using Ocelot.Raft;
 using Rafty.Concensus;
 using Newtonsoft.Json;
 using Rafty.FiniteStateMachine;
+using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Controllers
 {

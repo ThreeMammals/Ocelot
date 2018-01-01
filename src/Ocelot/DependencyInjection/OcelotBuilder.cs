@@ -14,7 +14,6 @@ using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
-using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;

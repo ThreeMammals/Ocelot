@@ -9,7 +9,7 @@ using Ocelot.Configuration.Setter;
 using Ocelot.Raft;
 using Rafty.Concensus;
 
-namespace Ocelot.Controllers
+namespace Ocelot.Configuration
 {
     [Authorize]
     [Route("configuration")]

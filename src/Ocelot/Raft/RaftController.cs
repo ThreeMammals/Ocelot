@@ -11,8 +11,9 @@ using Ocelot.Raft;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
 
-namespace Ocelot.Controllers
+namespace Ocelot.Raft
 {
+    [ExcludeFromCoverage]
     [Authorize]
     [Route("raft")]
     public class RaftController : Controller

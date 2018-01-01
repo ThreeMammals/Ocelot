@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
-using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
