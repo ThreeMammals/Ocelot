@@ -121,6 +121,35 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/{url}"
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/{productId}/products/variants/{variantId}/",
+                ReRouteIsCaseSensitive = true
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/[0-9a-zA-Z].*/products/variants/[0-9a-zA-Z].*(/|)$"))
+                .BDDfy();
+        }
+
         private void GivenTheFollowingFileReRoute(FileReRoute fileReRoute)
         {
             _fileReRoute = fileReRoute;
