@@ -9,6 +9,7 @@ namespace Ocelot.Configuration.Creator
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
         private const string RegExForwardSlashOnly = "^/$";
+        private const string RegExForwardSlashAndOnePlaceHolder = "^/.*";
 
         public string Create(FileReRoute reRoute)
         {
@@ -22,8 +23,13 @@ namespace Ocelot.Configuration.Creator
                 {
                     var postitionOfPlaceHolderClosingBracket = upstreamTemplate.IndexOf('}', i);
                     var difference = postitionOfPlaceHolderClosingBracket - i + 1;
-                    var variableName = upstreamTemplate.Substring(i, difference);
-                    placeholders.Add(variableName);
+                    var placeHolderName = upstreamTemplate.Substring(i, difference);
+                    placeholders.Add(placeHolderName);
+
+                    if(ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
+                    {
+                        return RegExForwardSlashAndOnePlaceHolder;
+                    }
                 }
             }
 
@@ -47,6 +53,16 @@ namespace Ocelot.Configuration.Creator
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
             return route;
+        }
+
+        private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
+        {
+            if(upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
+            {   
+                return true;
+            }
+
+            return false;
         }
 
 

@@ -38,6 +38,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             //todo make this getting config its own middleware one day?
             var configuration = await _configProvider.Get(); 
+            
             if(configuration.IsError)
             {
                 _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
