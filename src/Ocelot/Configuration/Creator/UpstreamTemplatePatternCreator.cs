@@ -26,6 +26,7 @@ namespace Ocelot.Configuration.Creator
                     var placeHolderName = upstreamTemplate.Substring(i, difference);
                     placeholders.Add(placeHolderName);
 
+                    //hack to handle /{url} case
                     if(ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
                     {
                         return RegExForwardSlashAndOnePlaceHolder;

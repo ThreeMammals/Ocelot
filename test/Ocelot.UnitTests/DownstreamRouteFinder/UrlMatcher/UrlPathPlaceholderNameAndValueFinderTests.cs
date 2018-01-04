@@ -8,14 +8,14 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 {
-    public class UrlPathToUrlTemplateMatcherTests 
+    public class UrlPathPlaceholderNameAndValueFinderTests 
     {
         private readonly IUrlPathPlaceholderNameAndValueFinder _finder;
         private string _downstreamUrlPath;
         private string _downstreamPathTemplate;
         private Response<List<UrlPathPlaceholderNameAndValue>> _result;
 
-        public UrlPathToUrlTemplateMatcherTests()
+        public UrlPathPlaceholderNameAndValueFinderTests()
         {
             _finder = new UrlPathPlaceholderNameAndValueFinder();
         }
@@ -27,6 +27,81 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate(""))
                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
                 .And(x => x.ThenTheTemplatesVariablesAre(new List<UrlPathPlaceholderNameAndValue>()))
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void can_match_down_stream_url_with_nothing_then_placeholder_no_value_is_blank()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue> 
+            {
+                new UrlPathPlaceholderNameAndValue("{url}", "")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath(""))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{url}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_nothing_then_placeholder_value_is_test()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue> 
+            {
+                new UrlPathPlaceholderNameAndValue("{url}", "test")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/test"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{url}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_forward_slash_then_placeholder_no_value_is_blank()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue> 
+            {
+                new UrlPathPlaceholderNameAndValue("{url}", "")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{url}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_forward_slash()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue> 
+            {
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void can_match_down_stream_url_with_forward_slash_then_placeholder_then_another_value()
+        {
+            var expectedTemplates = new List<UrlPathPlaceholderNameAndValue> 
+            {
+                new UrlPathPlaceholderNameAndValue("{url}", "1")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/1/products"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{url}/products"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
                 .BDDfy();
         }
 
@@ -169,8 +244,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         {
             foreach (var expectedResult in expectedResults)
             {
-                var result = _result.Data
-                    .First(t => t.TemplateVariableName == expectedResult.TemplateVariableName);
+                var result = _result.Data.First(t => t.TemplateVariableName == expectedResult.TemplateVariableName);
                 result.TemplateVariableValue.ShouldBe(expectedResult.TemplateVariableValue);
             }
         }

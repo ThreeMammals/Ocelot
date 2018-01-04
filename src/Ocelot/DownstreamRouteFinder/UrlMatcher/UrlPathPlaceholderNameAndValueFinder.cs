@@ -34,6 +34,30 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                     return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
                 }
+                //hacking to handle special case of /{url}
+                //if this char is a forward slash and the template starts with /{ and last character of string is the next }
+                else if(string.IsNullOrEmpty(upstreamUrlPath) || (upstreamUrlPath.Length > counterForUrl && upstreamUrlPath[counterForUrl] == '/') && upstreamUrlPathTemplate.Length > 1 
+                     && upstreamUrlPathTemplate.Substring(0, 2) == "/{" 
+                     && upstreamUrlPathTemplate.IndexOf('}') == upstreamUrlPathTemplate.Length - 1)
+                {
+                    var endOfPlaceholder = GetNextCounterPosition(upstreamUrlPathTemplate, counterForTemplate, '}');
+                    var variableName = GetPlaceholderVariableName(upstreamUrlPathTemplate, 1);
+
+                    UrlPathPlaceholderNameAndValue templateVariableNameAndValue;
+
+                    if(upstreamUrlPath.Length == 1 || upstreamUrlPath.Length == 0)
+                    {
+                        templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, "");
+                    }
+                    else
+                    {
+                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPathTemplate, variableName, upstreamUrlPath, counterForUrl + 1);
+                        templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, variableValue);
+                    }
+
+                    templateKeysAndValues.Add(templateVariableNameAndValue);
+                    counterForTemplate = endOfPlaceholder;
+                }
                 counterForUrl++;
             }
 
