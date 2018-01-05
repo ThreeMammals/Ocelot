@@ -38,7 +38,7 @@
 
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
                 new DownstreamRoute(
-                    new List<UrlPathPlaceholderNameAndValue>(), 
+                    new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })

@@ -31,7 +31,7 @@
         [Fact]
         public void should_call_claims_to_request_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToClaims(new List<ClaimToThing>

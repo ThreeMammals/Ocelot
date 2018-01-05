@@ -3,68 +3,72 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
-    public class UrlPathPlaceholderNameAndValueFinder : IUrlPathPlaceholderNameAndValueFinder
+    public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFinder
     {
-        public Response<List<UrlPathPlaceholderNameAndValue>> Find(string upstreamUrlPath, string upstreamUrlPathTemplate)
+        public Response<List<PlaceholderNameAndValue>> Find(string path, string pathTemplate)
         {
-            var templateKeysAndValues = new List<UrlPathPlaceholderNameAndValue>();
+            var placeHolderNameAndValues = new List<PlaceholderNameAndValue>();
 
-            int counterForUrl = 0;
+            int counterForPath = 0;
          
-            for (int counterForTemplate = 0; counterForTemplate < upstreamUrlPathTemplate.Length; counterForTemplate++)
+            for (int counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
             {
-                if ((upstreamUrlPath.Length > counterForUrl) && CharactersDontMatch(upstreamUrlPathTemplate[counterForTemplate], upstreamUrlPath[counterForUrl]) && ContinueScanningUrl(counterForUrl,upstreamUrlPath.Length))
+                if ((path.Length > counterForPath) && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath]) && ContinueScanningUrl(counterForPath,path.Length))
                 {
-                    if (IsPlaceholder(upstreamUrlPathTemplate[counterForTemplate]))
+                    if (IsPlaceholder(pathTemplate[counterForTemplate]))
                     {
-                        var variableName = GetPlaceholderVariableName(upstreamUrlPathTemplate, counterForTemplate);
+                        var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate);
 
-                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPathTemplate, variableName, upstreamUrlPath, counterForUrl);
+                        var placeholderValue = GetPlaceholderValue(pathTemplate, placeholderName, path, counterForPath);
 
-                        var templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, variableValue);
+                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
 
-                        templateKeysAndValues.Add(templateVariableNameAndValue);
+                        counterForTemplate = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
 
-                        counterForTemplate = GetNextCounterPosition(upstreamUrlPathTemplate, counterForTemplate, '}');
-
-                        counterForUrl = GetNextCounterPosition(upstreamUrlPath, counterForUrl, '/');
+                        counterForPath = GetNextCounterPosition(path, counterForPath, '/');
 
                         continue;
                     }
 
-                    return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
+                    return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
                 }
-                //hacking to handle special case of /{url}
-                //if this char is a forward slash and the template starts with /{ and last character of string is the next }
-                else if(string.IsNullOrEmpty(upstreamUrlPath) || (upstreamUrlPath.Length > counterForUrl && upstreamUrlPath[counterForUrl] == '/') && upstreamUrlPathTemplate.Length > 1 
-                     && upstreamUrlPathTemplate.Substring(0, 2) == "/{" 
-                     && upstreamUrlPathTemplate.IndexOf('}') == upstreamUrlPathTemplate.Length - 1)
+                else if(IsCatchAll(path, counterForPath, pathTemplate))
                 {
-                    var endOfPlaceholder = GetNextCounterPosition(upstreamUrlPathTemplate, counterForTemplate, '}');
-                    var variableName = GetPlaceholderVariableName(upstreamUrlPathTemplate, 1);
+                    var endOfPlaceholder = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
 
-                    UrlPathPlaceholderNameAndValue templateVariableNameAndValue;
+                    var placeholderName = GetPlaceholderName(pathTemplate, 1);
 
-                    if(upstreamUrlPath.Length == 1 || upstreamUrlPath.Length == 0)
+                    if(NothingAfterFirstForwardSlash(path))
                     {
-                        templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, "");
+                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, ""));
                     }
                     else
                     {
-                        var variableValue = GetPlaceholderVariableValue(upstreamUrlPathTemplate, variableName, upstreamUrlPath, counterForUrl + 1);
-                        templateVariableNameAndValue = new UrlPathPlaceholderNameAndValue(variableName, variableValue);
+                        var placeholderValue = GetPlaceholderValue(pathTemplate, placeholderName, path, counterForPath + 1);
+                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
                     }
 
-                    templateKeysAndValues.Add(templateVariableNameAndValue);
                     counterForTemplate = endOfPlaceholder;
                 }
-                counterForUrl++;
+                counterForPath++;
             }
 
-            return new OkResponse<List<UrlPathPlaceholderNameAndValue>>(templateKeysAndValues);
+            return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
         }
 
-        private string GetPlaceholderVariableValue(string urlPathTemplate, string variableName, string urlPath, int counterForUrl)
+        private bool IsCatchAll(string path, int counterForPath, string pathTemplate)
+        {
+            return string.IsNullOrEmpty(path) || (path.Length > counterForPath && path[counterForPath] == '/') && pathTemplate.Length > 1 
+                     && pathTemplate.Substring(0, 2) == "/{" 
+                     && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
+        }
+
+        private bool NothingAfterFirstForwardSlash(string path)
+        {
+            return path.Length == 1 || path.Length == 0;
+        }
+
+        private string GetPlaceholderValue(string urlPathTemplate, string variableName, string urlPath, int counterForUrl)
         {
             var positionOfNextSlash = urlPath.IndexOf('/', counterForUrl);
 
@@ -78,7 +82,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
             return variableValue;
         }
 
-        private string GetPlaceholderVariableName(string urlPathTemplate, int counterForTemplate)
+        private string GetPlaceholderName(string urlPathTemplate, int counterForTemplate)
         {
             var postitionOfPlaceHolderClosingBracket = urlPathTemplate.IndexOf('}', counterForTemplate) + 1;
 

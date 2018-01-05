@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
@@ -68,7 +68,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_load_balancer()
         {         
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_least()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());

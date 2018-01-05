@@ -13,9 +13,9 @@ namespace Ocelot.DownstreamRouteFinder.Finder
     public class DownstreamRouteFinder : IDownstreamRouteFinder
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
-        private readonly IUrlPathPlaceholderNameAndValueFinder _urlPathPlaceholderNameAndValueFinder;
+        private readonly IPlaceholderNameAndValueFinder _urlPathPlaceholderNameAndValueFinder;
 
-        public DownstreamRouteFinder(IUrlPathToUrlTemplateMatcher urlMatcher, IUrlPathPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
+        public DownstreamRouteFinder(IUrlPathToUrlTemplateMatcher urlMatcher, IPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
         {
             _urlMatcher = urlMatcher;
             _urlPathPlaceholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;

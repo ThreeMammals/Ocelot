@@ -40,7 +40,7 @@
         [Fact]
         public void should_pass_down_request_id_from_upstream_request()
         {
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
                 .WithRequestIdKey("LSRequestId")
@@ -59,7 +59,7 @@
         [Fact]
         public void should_add_request_id_when_not_on_upstream_request()
         {
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
                 .WithRequestIdKey("LSRequestId")

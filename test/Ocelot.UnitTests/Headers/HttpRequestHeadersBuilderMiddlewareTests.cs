@@ -37,7 +37,7 @@
         [Fact]
         public void should_call_add_headers_to_request_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToHeaders(new List<ClaimToThing>
