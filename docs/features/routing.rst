@@ -80,9 +80,7 @@ Ocelot's routing also supports a catch all style routing where the user can spec
         "UpstreamHttpMethod": [ "Get" ]
     }
 
-There is a gotcha if you want to do this kind of thing. The order of the ReRoutes in the config will now matter.
-
-If you had this ReRoute after the catch all then it would never be matched. However if it was before the catch all it would match first.
+The catch all has a lower priority than any other ReRoute. If you also have the ReRoute below in your config then Ocelot would match it before the catch all. 
 
 .. code-block:: json
 
@@ -94,5 +92,3 @@ If you had this ReRoute after the catch all then it would never be matched. Howe
         "UpstreamPathTemplate": "/",
         "UpstreamHttpMethod": [ "Get" ]
     }
-
-This is because when Ocelot tries to match a request to a ReRoute it has to look at all the possible matches and uses a regular expression to test the url.
