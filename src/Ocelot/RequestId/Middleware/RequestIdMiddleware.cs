@@ -42,6 +42,7 @@ namespace Ocelot.RequestId.Middleware
             if (context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
             {
                 context.TraceIdentifier = upstreamRequestIds.First();
+                _requestScopedDataRepository.Add<string>("RequestId", context.TraceIdentifier);
             }
 
             // set request ID on downstream request, if required

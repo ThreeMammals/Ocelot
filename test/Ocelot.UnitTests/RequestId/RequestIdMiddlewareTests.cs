@@ -72,6 +72,31 @@
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_request_id_scoped_repo_for_logging_later()
+        {
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithRequestIdKey("LSRequestId")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build());
+
+            var requestId = Guid.NewGuid().ToString();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheTraceIdIs(requestId))
+                .And(x => ThenTheScopedDataRepoIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        private void ThenTheScopedDataRepoIsCalledCorrectly()
+        {
+            ScopedRepository.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+        }
+
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
         {
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
