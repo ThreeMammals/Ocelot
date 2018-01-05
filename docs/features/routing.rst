@@ -63,3 +63,32 @@ In order to change this you can specify on a per ReRoute basis the following set
 This means that when Ocelot tries to match the incoming upstream url with an upstream template the
 evaluation will be case sensitive. This setting defaults to false so only set it if you want 
 the ReRoute to be case sensitive is my advice!
+
+Catch All
+^^^^^^^^^
+
+Ocelot's routing also supports a catch all style routing where the user can specify that they want to match all traffic if you set up your config like below the request will be proxied straight through (it doesnt have to be url any placeholder name will work). 
+
+.. code-block:: json
+
+    {
+        "DownstreamPathTemplate": "/{url}",
+        "DownstreamScheme": "https",
+        "DownstreamPort": 80,
+        "DownstreamHost" "localhost",
+        "UpstreamPathTemplate": "/{url}",
+        "UpstreamHttpMethod": [ "Get" ]
+    }
+
+The catch all has a lower priority than any other ReRoute. If you also have the ReRoute below in your config then Ocelot would match it before the catch all. 
+
+.. code-block:: json
+
+    {
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "https",
+        "DownstreamPort": 80,
+        "DownstreamHost" "10.0.10.1",
+        "UpstreamPathTemplate": "/",
+        "UpstreamHttpMethod": [ "Get" ]
+    }

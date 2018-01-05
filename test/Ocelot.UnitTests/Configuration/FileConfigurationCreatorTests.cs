@@ -18,6 +18,7 @@ namespace Ocelot.UnitTests.Configuration
     using Ocelot.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
+    using Ocelot.Values;
 
     public class FileConfigurationCreatorTests
     {
@@ -367,7 +368,7 @@ namespace Ocelot.UnitTests.Configuration
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
                         .Build()
                 }))
                 .BDDfy();
@@ -580,7 +581,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
-                result.UpstreamTemplatePattern.ShouldBe(expected.UpstreamTemplatePattern);
+                result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
                 result.ClaimsToClaims.Count.ShouldBe(expected.ClaimsToClaims.Count);
                 result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
                 result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
@@ -623,7 +624,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _upstreamTemplatePatternCreator
                 .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(pattern);
+                .Returns(new UpstreamPathTemplate(pattern, 1));
         }
 
         private void ThenTheRequestIdKeyCreatorIsCalledCorrectly()

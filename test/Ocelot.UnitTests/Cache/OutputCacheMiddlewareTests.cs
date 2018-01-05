@@ -94,7 +94,7 @@
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
                 
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), reRoute);
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
 
             ScopedRepository
                 .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))

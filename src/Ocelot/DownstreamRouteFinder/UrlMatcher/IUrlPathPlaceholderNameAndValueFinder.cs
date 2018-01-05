@@ -3,8 +3,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
-    public interface IUrlPathPlaceholderNameAndValueFinder
+    public interface IPlaceholderNameAndValueFinder
     {
-        Response<List<UrlPathPlaceholderNameAndValue>> Find(string upstreamUrlPath, string upstreamUrlPathTemplate);
+        Response<List<PlaceholderNameAndValue>> Find(string path, string pathTemplate);
     }
 }

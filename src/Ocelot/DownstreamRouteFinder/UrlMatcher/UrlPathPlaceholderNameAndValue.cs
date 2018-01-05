@@ -1,13 +1,13 @@
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
-    public class UrlPathPlaceholderNameAndValue
+    public class PlaceholderNameAndValue
     {
-        public UrlPathPlaceholderNameAndValue(string templateVariableName, string templateVariableValue)
+        public PlaceholderNameAndValue(string name, string value)
         {
-            TemplateVariableName = templateVariableName;
-            TemplateVariableValue = templateVariableValue;
+            Name = name;
+            Value = value;
         }
-        public string TemplateVariableName {get;private set;}
-        public string TemplateVariableValue {get;private set;}
+        public string Name {get;private set;}
+        public string Value {get;private set;}
     }
 }

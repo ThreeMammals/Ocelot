@@ -2,6 +2,7 @@
 using System.Net.Http;
 using Ocelot.Values;
 using System.Linq;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -11,7 +12,7 @@ namespace Ocelot.Configuration.Builder
         private string _loadBalancerKey;
         private string _downstreamPathTemplate;
         private string _upstreamTemplate;
-        private string _upstreamTemplatePattern;
+        private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private bool _isAuthenticated;
         private List<ClaimToThing> _configHeaderExtractorProperties;
@@ -65,7 +66,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithUpstreamTemplatePattern(string input)
+        public ReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
             return this;
