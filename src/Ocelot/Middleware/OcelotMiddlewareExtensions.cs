@@ -313,15 +313,10 @@ namespace Ocelot.Middleware
          /// <param name="builder"></param>
          private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
          {
-             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-
-            //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
-            if (!env.IsProduction())
-             {
-                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
-                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
-                 diagnosticListener.SubscribeWithAdapter(listener);
-             }
+            var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+            var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+            diagnosticListener.SubscribeWithAdapter(listener);
          }
         
         private static void OnShutdown(IApplicationBuilder app)
