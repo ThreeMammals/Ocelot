@@ -31,6 +31,22 @@ namespace Ocelot.Infrastructure.RequestData
             }
         }
 
+        public Response Update<T>(string key, T value)
+        {
+            try
+            {
+                _httpContextAccessor.HttpContext.Items[key] = value;
+                return new OkResponse();
+            }
+            catch (Exception exception)
+            {
+                return new ErrorResponse(new List<Error>
+                {
+                    new CannotAddDataError(string.Format($"Unable to update data for key: {key}, exception: {exception.Message}"))
+                });
+            }
+        }
+
         public Response<T> Get<T>(string key)
         {
             object obj;

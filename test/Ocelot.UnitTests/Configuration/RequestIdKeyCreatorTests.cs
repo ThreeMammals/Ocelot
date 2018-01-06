@@ -51,14 +51,15 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_global_cofiguration_over_re_route_specific()
+        public void should_use_re_route_over_global_specific()
         {
             var reRoute = new FileReRoute
             {
                 RequestIdKey = "cheese"
-            };            var globalConfig = new FileGlobalConfiguration
+            };            
+            var globalConfig = new FileGlobalConfiguration
             {
-                RequestIdKey = "cheese"
+                RequestIdKey = "test"
             };
 
             this.Given(x => x.GivenTheFollowingReRoute(reRoute))

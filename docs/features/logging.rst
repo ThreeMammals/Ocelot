@@ -3,11 +3,11 @@ Logging
 
 Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> at the moment. 
 This is encapsulated in  IOcelotLogger / IOcelotLoggerFactory with an implementation 
-for the standard asp.net core logging stuff at the moment. 
+for the standard asp.net core logging stuff at the moment. This is because Ocelot add's some extra info to the logs such as request id if it is configured.
 
-There are a bunch of debugging logs in the ocelot middlewares however I think the 
-system probably needs more logging in the code it calls into. Other than the debugging
-there is a global error handler that should catch any errors thrown and log them as errors.
+There is a global error handler that should catch any exceptions thrown and log them as errors.
+
+Finally if logging is set to trace level Ocelot will log starting, finishing and any middlewares that throw an exception which can be quite useful.
 
 The reason for not just using bog standard framework logging is that I could not 
 work out how to override the request id that get's logged when setting IncludeScopes 

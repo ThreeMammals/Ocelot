@@ -25,7 +25,7 @@ namespace Ocelot.UnitTests.Infrastructure
         //TODO - Additional tests -> HttpContent null. This should never happen
 
         [Fact]
-        public void Get_returns_correct_key_from_http_context()
+        public void get_returns_correct_key_from_http_context()
         {
 
             this.Given(x => x.GivenAHttpContextContaining("key", "string"))
@@ -35,12 +35,27 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void Get_returns_error_response_if_the_key_is_not_found() //Therefore does not return null
+        public void get_returns_error_response_if_the_key_is_not_found() //Therefore does not return null
         {
             this.Given(x => x.GivenAHttpContextContaining("key", "string"))
                 .When(x => x.GetIsCalledWithKey<string>("keyDoesNotExist"))
                 .Then(x => x.ThenTheResultIsAnErrorReposnse<string>("string1"))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_update()
+        {
+            this.Given(x => x.GivenAHttpContextContaining("key", "string"))
+                .And(x => x.UpdateIsCalledWith<string>("key", "new string"))
+                .When(x => x.GetIsCalledWithKey<string>("key"))
+                .Then(x => x.ThenTheResultIsAnOkResponse<string>("new string"))
+                .BDDfy();
+        }
+
+        private void UpdateIsCalledWith<T>(string key, string value)
+        {
+            _httpDataRepository.Update(key, value);
         }
 
         private void GivenAHttpContextContaining(string key, object o)
