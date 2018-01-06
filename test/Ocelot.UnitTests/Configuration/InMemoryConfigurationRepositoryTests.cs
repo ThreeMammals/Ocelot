@@ -94,6 +94,8 @@ namespace Ocelot.UnitTests.Configuration
             public string AdministrationPath {get;}
 
             public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
+
+            public string RequestId {get;}
         }
     }
 }

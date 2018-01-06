@@ -13,29 +13,11 @@ namespace Ocelot.ManualTest
 {
     public class ManualTestStartup
     {
-        public ManualTestStartup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("configuration.json")
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
         public void ConfigureServices(IServiceCollection services)
         {
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
-                x.WithMicrosoftLogging(log =>
-                {
-                    log.AddConsole(LogLevel.Debug);
-                })
-                .WithDictionaryHandle();
+                x.WithDictionaryHandle();
             };
 
             services.AddAuthentication()
@@ -45,14 +27,13 @@ namespace Ocelot.ManualTest
                     x.Audience = "test";
                 });
 
-            services.AddOcelot(Configuration)
+            services.AddOcelot()
+                    .AddCacheManager(settings)
                     .AddAdministration("/administration", "secret");
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app.UseOcelot().Wait();
         }
     }

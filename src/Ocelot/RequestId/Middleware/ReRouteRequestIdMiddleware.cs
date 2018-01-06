@@ -11,19 +11,19 @@ using System.Collections.Generic;
 
 namespace Ocelot.RequestId.Middleware
 {
-    public class RequestIdMiddleware : OcelotMiddleware
+    public class ReRouteRequestIdMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
-        public RequestIdMiddleware(RequestDelegate next,
+        public ReRouteRequestIdMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<RequestIdMiddleware>();
+            _logger = loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>();
             _requestScopedDataRepository = requestScopedDataRepository;
         }
 
@@ -41,7 +41,22 @@ namespace Ocelot.RequestId.Middleware
             StringValues upstreamRequestIds;
             if (context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
             {
+                //set the traceidentifier
                 context.TraceIdentifier = upstreamRequestIds.First();
+
+                //check if we have previous id
+                var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
+                if(!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data))
+                {
+                    //we have a previous request id lets store it and update request id
+                    _requestScopedDataRepository.Add<string>("PreviousRequestId", previousRequestId.Data);
+                    _requestScopedDataRepository.Update<string>("RequestId", context.TraceIdentifier);
+                }
+                else
+                {
+                    //else just add request id
+                    _requestScopedDataRepository.Add<string>("RequestId", context.TraceIdentifier);
+                }
             }
 
             // set request ID on downstream request, if required

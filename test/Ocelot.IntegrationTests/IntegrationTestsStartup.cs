@@ -25,7 +25,7 @@ namespace Ocelot.IntegrationTests
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -45,8 +45,6 @@ namespace Ocelot.IntegrationTests
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app.UseOcelot().Wait();
         }
     }

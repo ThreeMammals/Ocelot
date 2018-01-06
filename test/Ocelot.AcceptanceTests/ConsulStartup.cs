@@ -22,25 +22,18 @@ namespace Ocelot.AcceptanceTests
                 .AddJsonFile("configuration.json")
                 .AddEnvironmentVariables();
 
-            Configuration = builder.Build();
+            Config = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public static IConfiguration Config { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            Action<ConfigurationBuilderCachePart> settings = (x) =>
-            {
-                x.WithDictionaryHandle();
-            };
-
-            services.AddOcelot(Configuration).AddStoreOcelotConfigurationInConsul();
+            services.AddOcelot(Config).AddStoreOcelotConfigurationInConsul();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app.UseOcelot().Wait();
         }
     }

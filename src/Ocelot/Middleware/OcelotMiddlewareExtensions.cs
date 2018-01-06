@@ -77,6 +77,7 @@ namespace Ocelot.Middleware
             ConfigureDiagnosticListener(builder);
 
             // This is registered to catch any global exceptions that are not handled
+            // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
 
             // Allow the user to respond with absolutely anything they want.
@@ -94,7 +95,9 @@ namespace Ocelot.Middleware
             // We check whether the request is ratelimit, and if there is no continue processing
             builder.UseRateLimiting();
 
-            // Now we can look for the requestId
+            // This adds or updates the request id (initally we try and set this based on global config in the error handling middleware)
+            // If anything was set at global level and we have a different setting at re route level the global stuff will be overwritten
+            // This means you can get a scenario where you have a different request id from the first piece of middleware to the request id middleware.
             builder.UseRequestIdMiddleware();
 
             // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
@@ -313,15 +316,10 @@ namespace Ocelot.Middleware
          /// <param name="builder"></param>
          private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
          {
-             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-
-            //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
-            if (!env.IsProduction())
-             {
-                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
-                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
-                 diagnosticListener.SubscribeWithAdapter(listener);
-             }
+            var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+            var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+            diagnosticListener.SubscribeWithAdapter(listener);
          }
         
         private static void OnShutdown(IApplicationBuilder app)

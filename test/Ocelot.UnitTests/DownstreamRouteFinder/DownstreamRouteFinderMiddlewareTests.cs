@@ -34,7 +34,7 @@
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var config = new OcelotConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build());
+            var config = new OcelotConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "");
 
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
                 new DownstreamRoute(

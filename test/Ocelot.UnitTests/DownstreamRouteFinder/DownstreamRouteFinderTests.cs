@@ -422,7 +422,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _reRoutesConfig = reRoutesConfig;
-            _config = new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig);
+            _config = new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig, "");
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

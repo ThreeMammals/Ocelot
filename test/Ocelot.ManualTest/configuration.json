@@ -62,6 +62,7 @@
       "DownstreamPort": 80,
       "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": [ "Get" ],
+      "RequestIdKey": "ReRouteRequestId",
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10,
