@@ -13,8 +13,10 @@ namespace Ocelot.Logging
     {
         void LogTrace(string message, params object[] args);
         void LogDebug(string message, params object[] args);
+        void LogInformation(string message, params object[] args);
         void LogError(string message, Exception exception);
         void LogError(string message, params object[] args);
+        void LogCritical(string message, Exception exception);
 
         /// <summary>
         /// The name of the type the logger has been built for.

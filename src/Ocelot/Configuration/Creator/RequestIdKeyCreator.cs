@@ -6,11 +6,11 @@ namespace Ocelot.Configuration.Creator
     {
         public string Create(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var globalRequestIdConfiguration = !string.IsNullOrEmpty(globalConfiguration?.RequestIdKey);
+            var reRouteId = !string.IsNullOrEmpty(fileReRoute.RequestIdKey);
 
-             var requestIdKey = globalRequestIdConfiguration
-                ? globalConfiguration.RequestIdKey
-                : fileReRoute.RequestIdKey;
+             var requestIdKey = reRouteId
+                ? fileReRoute.RequestIdKey
+                : globalConfiguration.RequestIdKey;
 
                 return requestIdKey;
         }

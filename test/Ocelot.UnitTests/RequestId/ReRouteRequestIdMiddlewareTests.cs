@@ -19,14 +19,14 @@
     using TestStack.BDDfy;
     using Xunit;
 
-    public class RequestIdMiddlewareTests : ServerHostedMiddlewareTest
+    public class ReRouteRequestIdMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly HttpRequestMessage _downstreamRequest;
         private Response<DownstreamRoute> _downstreamRoute;
         private string _value;
         private string _key;
 
-        public RequestIdMiddlewareTests()
+        public ReRouteRequestIdMiddlewareTests()
         {
             _downstreamRequest = new HttpRequestMessage();
 
@@ -50,6 +50,7 @@
             var requestId = Guid.NewGuid().ToString();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenThereIsNoGlobalRequestId())
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
@@ -67,9 +68,72 @@
                 .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenThereIsNoGlobalRequestId())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIsAnything())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_request_id_scoped_repo_for_logging_later()
+        {
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithRequestIdKey("LSRequestId")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build());
+
+            var requestId = Guid.NewGuid().ToString();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenThereIsNoGlobalRequestId())
+                .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheTraceIdIs(requestId))
+                .And(x => ThenTheRequestIdIsSaved())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_update_request_id_scoped_repo_for_logging_later()
+        {
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithRequestIdKey("LSRequestId")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build());
+
+            var requestId = Guid.NewGuid().ToString();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenTheRequestIdWasSetGlobally())
+                .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheTraceIdIs(requestId))
+                .And(x => ThenTheRequestIdIsUpdated())
+                .BDDfy();
+        }
+
+        private void GivenThereIsNoGlobalRequestId()
+        {
+            ScopedRepository.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>(null));
+        }
+
+        private void GivenTheRequestIdWasSetGlobally()
+        {
+            ScopedRepository.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
+        }
+
+        private void ThenTheRequestIdIsSaved()
+        {
+            ScopedRepository.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+        }
+
+        private void ThenTheRequestIdIsUpdated()
+        {
+            ScopedRepository.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
         }
 
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)

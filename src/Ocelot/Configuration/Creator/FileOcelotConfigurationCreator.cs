@@ -97,7 +97,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            var config = new OcelotConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration);
+            var config = new OcelotConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
 
             return new OkResponse<IOcelotConfiguration>(config);
         }

@@ -1,5 +1,4 @@
 using System;
-using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-using Ocelot.AcceptanceTests.Caching;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -26,7 +24,7 @@ namespace Ocelot.AcceptanceTests
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
@@ -35,48 +33,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app.UseOcelot().Wait();
-        }
-    }
-
-    public class Startup_WithCustomCacheHandle : AcceptanceTestsStartup
-    {
-        public Startup_WithCustomCacheHandle(IHostingEnvironment env) : base(env) { }
-
-        public override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddOcelot(Configuration)
-                .AddCacheManager((x) =>
-                {
-                    x.WithMicrosoftLogging(log =>
-                    {
-                        log.AddConsole(LogLevel.Debug);
-                    })
-                    .WithJsonSerializer()
-                    .WithHandle(typeof(InMemoryJsonHandle<>));
-                });
-        }
-    }
-
-    public class Startup_WithConsul_And_CustomCacheHandle : AcceptanceTestsStartup
-    {
-        public Startup_WithConsul_And_CustomCacheHandle(IHostingEnvironment env) : base(env) { }
-
-        public override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddOcelot(Configuration)
-                .AddCacheManager((x) =>
-                {
-                    x.WithMicrosoftLogging(log =>
-                    {
-                        log.AddConsole(LogLevel.Debug);
-                    })
-                    .WithJsonSerializer()
-                    .WithHandle(typeof(InMemoryJsonHandle<>));
-                })
-                .AddStoreOcelotConfigurationInConsul();
         }
     }
 }

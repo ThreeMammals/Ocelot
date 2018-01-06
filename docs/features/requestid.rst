@@ -4,25 +4,57 @@ Request Id / Correlation Id
 Ocelot supports a client sending a request id in the form of a header. If set Ocelot will
 use the requestid for logging as soon as it becomes available in the middleware pipeline. 
 Ocelot will also forward the request id with the specified header to the downstream service.
-I'm not sure if have this spot on yet in terms of the pipeline order becasue there are a few logs
-that don't get the users request id at the moment and ocelot just logs not set for request id
-which sucks. You can still get the framework request id in the logs if you set 
-IncludeScopes true in your logging config. This can then be used to match up later logs that do
-have an OcelotRequestId.
 
-In order to use the requestid feature in your ReRoute configuration add this setting
+You can still get the asp.net core request id in the logs if you set 
+IncludeScopes true in your logging config.
+
+In order to use the reques tid feature you have two options.
+
+*Global*
+
+In your configuration.json set the following in the GlobalConfiguration section. This will be used for all requests into Ocelot.
+
+.. code-block:: json
+
+   "GlobalConfiguration": {
+    "RequestIdKey": "OcRequestId"
+  }
+
+I reccomend using the GlobalConfiguration unless you really need it to be ReRoute specific.
+
+*ReRoute*
+
+If you want to override this for a specific ReRoute add the following to configuration.json for the specific ReRoute.
 
 .. code-block:: json
 
     "RequestIdKey": "OcRequestId"
 
-In this example OcRequestId is the request header that contains the clients request id.
+Once Ocelot has identified the incoming requests matching ReRoute object it will set the request id based on the ReRoute configuration.
 
-There is also a setting in the GlobalConfiguration section which will override whatever has been
-set at ReRoute level for the request id. The setting is as fllows.
+This can lead to a small gotcha. If you set a GlobalConfiguration it is possible to get one request id until the ReRoute is identified and then another after that because the request id key can change. This is by design and is the best solution I can think of at the moment. In this case the OcelotLogger will show the request id and previous request id in the logs.
 
-.. code-block:: json
+Below is an example of the logging when set at Debug level for a normal request..
 
-    "RequestIdKey": "OcRequestId"
+.. code-block:: bash
 
-It behaves in exactly the same way as the ReRoute level RequestIdKey settings.
+    dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+          requestId: asdf, previousRequestId: no previous request id, message: ocelot pipeline started,
+    dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+          requestId: asdf, previousRequestId: no previous request id, message: upstream url path is {upstreamUrlPath},
+    dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+          requestId: asdf, previousRequestId: no previous request id, message: downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath},
+    dbug: Ocelot.RateLimit.Middleware.ClientRateLimitMiddleware[0]
+          requestId: asdf, previousRequestId: no previous request id, message: EndpointRateLimiting is not enabled for Ocelot.Values.PathTemplate,
+    dbug: Ocelot.Authorisation.Middleware.AuthorisationMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: /posts/{postId} route does not require user to be authorised,
+    dbug: Ocelot.DownstreamUrlCreator.Middleware.DownstreamUrlCreatorMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: downstream url is {downstreamUrl.Data.Value},
+    dbug: Ocelot.Request.Middleware.HttpRequestBuilderMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: setting upstream request,
+    dbug: Ocelot.Requester.Middleware.HttpRequesterMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: setting http response message,
+    dbug: Ocelot.Responder.Middleware.ResponderMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: no pipeline errors, setting and returning completed response,
+    dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+          requestId: 1234, previousRequestId: asdf, message: ocelot pipeline finished,

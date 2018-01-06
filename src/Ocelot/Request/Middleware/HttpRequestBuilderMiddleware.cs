@@ -30,8 +30,6 @@ namespace Ocelot.Request.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling request builder middleware");
-
             var qosProvider = _qosProviderHouse.Get(DownstreamRoute.ReRoute);
 
             if (qosProvider.IsError)
@@ -62,11 +60,7 @@ namespace Ocelot.Request.Middleware
 
             SetUpstreamRequestForThisRequest(buildResult.Data);
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }

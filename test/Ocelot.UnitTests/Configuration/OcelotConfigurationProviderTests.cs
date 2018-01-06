@@ -30,9 +30,9 @@ namespace Ocelot.UnitTests.Configuration
         {
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
 
-            this.Given(x => x.GivenTheRepoReturns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig))))
+            this.Given(x => x.GivenTheRepoReturns(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, ""))))
                 .When(x => x.WhenIGetTheConfig())
-                .Then(x => x.TheFollowingIsReturned(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig))))
+                .Then(x => x.TheFollowingIsReturned(new OkResponse<IOcelotConfiguration>(new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, ""))))
                 .BDDfy();
         }
 
