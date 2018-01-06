@@ -19,34 +19,51 @@ namespace Ocelot.Logging
         }
 
         public void LogTrace(string message, params object[] args)
-        {
-            _logger.LogTrace(GetMessageWithOcelotRequestId(message), args);
+        {            
+            var requestId = GetOcelotRequestId();
+            _logger.LogTrace("requestId: {requestId}, message: {message},", requestId, message, args);
         }
 
         public void LogDebug(string message, params object[] args)
-        {
-            _logger.LogDebug(GetMessageWithOcelotRequestId(message), args);
+        {            
+            var requestId = GetOcelotRequestId();
+            _logger.LogDebug("requestId: {requestId}, message: {message},", requestId, message, args);
         }
+
+        public void LogInformation(string message, params object[] args)
+        {            
+            var requestId = GetOcelotRequestId();
+            _logger.LogInformation("requestId: {requestId}, message: {message},", requestId, message, args);
+        }
+
         public void LogError(string message, Exception exception)
         {
-            _logger.LogError(GetMessageWithOcelotRequestId(message), exception);
+            var requestId = GetOcelotRequestId();
+            _logger.LogError("requestId: {requestId}, message: {message}, exception: {exception}", requestId, message, exception);
         }
 
         public void LogError(string message, params object[] args)
         {
-            _logger.LogError(GetMessageWithOcelotRequestId(message), args);
+            var requestId = GetOcelotRequestId();
+            _logger.LogError("requestId: {requestId}, message: {message}", requestId, message, args);
         }
 
-        private string GetMessageWithOcelotRequestId(string message)
+        public void LogCritical(string message, Exception exception)
+        {
+            var requestId = GetOcelotRequestId();
+            _logger.LogError("requestId: {requestId}, message: {message}", requestId, message);
+        }
+
+        private string GetOcelotRequestId()
         {
             var requestId = _scopedDataRepository.Get<string>("RequestId");
 
             if (requestId == null || requestId.IsError)
             {
-                return $"{message} : OcelotRequestId - not set";
+                return $"Request Id not set";
             }
 
-            return $"{message} : OcelotRequestId - {requestId.Data}";
+            return requestId.Data;
         }
     }
 }

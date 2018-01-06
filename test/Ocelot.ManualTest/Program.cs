@@ -28,7 +28,6 @@ namespace Ocelot.ManualTest
                 {
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
-                    logging.AddDebug();
                 })
                 .UseIISIntegration()
                 .UseStartup<ManualTestStartup>();                

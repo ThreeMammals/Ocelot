@@ -30,18 +30,17 @@ namespace Ocelot.Errors.Middleware
             {
                 _logger.LogDebug("ocelot pipeline started");
 
-                _logger.LogDebug("calling next middleware");
-
                 await _next.Invoke(context);
 
-                _logger.LogDebug("succesfully called middleware");
             }
             catch (Exception e)
             {
                 _logger.LogDebug("error calling middleware");
 
                 var message = CreateMessage(context, e);
+
                 _logger.LogError(message, e);
+                
                 SetInternalServerErrorOnResponse(context);
             }
 
