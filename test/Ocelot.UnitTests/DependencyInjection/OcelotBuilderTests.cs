@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     {
         private IServiceCollection _services;
         private IServiceProvider _serviceProvider;
-        private IConfigurationRoot _configRoot;
+        private IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private int _maxRetries;
 

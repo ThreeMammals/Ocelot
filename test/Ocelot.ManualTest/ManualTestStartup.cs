@@ -13,22 +13,11 @@ namespace Ocelot.ManualTest
 {
     public class ManualTestStartup
     {
-        public ManualTestStartup(IHostingEnvironment env, IConfiguration config)
-        {
-            Config = config;
-        }
-
-        public static IConfiguration Config { get; private set; }
-
         public void ConfigureServices(IServiceCollection services)
         {
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
-                x.WithMicrosoftLogging(log =>
-                {
-                    log.AddConsole(LogLevel.Debug);
-                })
-                .WithDictionaryHandle();
+                x.WithDictionaryHandle();
             };
 
             services.AddAuthentication()
@@ -38,11 +27,12 @@ namespace Ocelot.ManualTest
                     x.Audience = "test";
                 });
 
-            services.AddOcelot(Config)
+            services.AddOcelot()
+                    .AddCacheManager(settings)
                     .AddAdministration("/administration", "secret");
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseOcelot().Wait();
         }
