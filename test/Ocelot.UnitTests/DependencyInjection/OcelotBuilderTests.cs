@@ -35,6 +35,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _services = new ServiceCollection();
                 _services.AddSingleton(builder);
                 _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+                _services.AddSingleton<IConfiguration>(_configRoot);
                 _maxRetries = 100;
         }
         private Exception _ex;
@@ -91,6 +92,14 @@ namespace Ocelot.UnitTests.DependencyInjection
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenIValidateScopes())
                 .When(x => WhenIAccessLoggerFactory())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_up_without_passing_in_config()
+        {
+            this.When(x => WhenISetUpOcelotServicesWithoutConfig())
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
         }
@@ -156,6 +165,19 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _ex = e;
             }
         }
+
+        private void WhenISetUpOcelotServicesWithoutConfig()
+        {
+            try
+            {
+                _ocelotBuilder = _services.AddOcelot();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
         private void WhenISetUpCacheManager()
         {
             try
