@@ -91,7 +91,7 @@
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
-                .And(x => ThenTheScopedDataRepoIsCalledCorrectly())
+                .And(x => ThenTheRequestIdIsSaved())
                 .BDDfy();
         }
 
@@ -112,7 +112,7 @@
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
-                .And(x => ThenTheScopedDataRepoIsCalledCorrectly())
+                .And(x => ThenTheRequestIdIsUpdated())
                 .BDDfy();
         }
 
@@ -126,9 +126,14 @@
             ScopedRepository.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
         }
 
-        private void ThenTheScopedDataRepoIsCalledCorrectly()
+        private void ThenTheRequestIdIsSaved()
         {
             ScopedRepository.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+        }
+
+        private void ThenTheRequestIdIsUpdated()
+        {
+            ScopedRepository.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
         }
 
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
