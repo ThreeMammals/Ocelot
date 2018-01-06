@@ -8,7 +8,7 @@ namespace Ocelot.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         public static IOcelotBuilder AddOcelot(this IServiceCollection services,
-            IConfigurationRoot configurationRoot)
+            IConfiguration configurationRoot)
         {
             return new OcelotBuilder(services, configurationRoot);
         }

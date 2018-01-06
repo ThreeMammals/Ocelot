@@ -13,19 +13,12 @@ namespace Ocelot.ManualTest
 {
     public class ManualTestStartup
     {
-        public ManualTestStartup(IHostingEnvironment env)
+        public ManualTestStartup(IHostingEnvironment env, IConfiguration config)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("configuration.json")
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
+            Config = config;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public static IConfiguration Config { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -45,7 +38,7 @@ namespace Ocelot.ManualTest
                     x.Audience = "test";
                 });
 
-            services.AddOcelot(Configuration)
+            services.AddOcelot(Config)
                     .AddAdministration("/administration", "secret");
         }
 

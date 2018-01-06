@@ -58,9 +58,9 @@ namespace Ocelot.DependencyInjection
     public class OcelotBuilder : IOcelotBuilder
     {
         private IServiceCollection _services;
-        private IConfigurationRoot _configurationRoot;
+        private IConfiguration _configurationRoot;
         
-        public OcelotBuilder(IServiceCollection services, IConfigurationRoot configurationRoot)
+        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
             _services = services;    
@@ -280,9 +280,9 @@ namespace Ocelot.DependencyInjection
     public class OcelotAdministrationBuilder : IOcelotAdministrationBuilder
     {
         private IServiceCollection _services;
-        private IConfigurationRoot _configurationRoot;
+        private IConfiguration _configurationRoot;
         
-        public OcelotAdministrationBuilder(IServiceCollection services, IConfigurationRoot configurationRoot)
+        public OcelotAdministrationBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
             _services = services;    
