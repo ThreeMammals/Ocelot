@@ -26,8 +26,6 @@ namespace Ocelot.Request.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling request builder middleware");
-
             var downstreamRequest = await _requestMapper.Map(context.Request);
             if (downstreamRequest.IsError)
             {
@@ -37,11 +35,7 @@ namespace Ocelot.Request.Middleware
 
             SetDownstreamRequest(downstreamRequest.Data);
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }

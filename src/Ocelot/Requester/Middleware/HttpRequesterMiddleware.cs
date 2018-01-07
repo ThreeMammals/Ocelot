@@ -26,8 +26,6 @@ namespace Ocelot.Requester.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling requester middleware");
-
             var response = await _requester.GetResponse(Request);
 
             if (response.IsError)
@@ -41,8 +39,6 @@ namespace Ocelot.Requester.Middleware
             _logger.LogDebug("setting http response message");
 
             SetHttpResponseMessageThisRequest(response.Data);
-
-            _logger.LogDebug("returning to calling middleware");
         }
     }
 }

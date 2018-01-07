@@ -6,7 +6,7 @@ namespace Ocelot.RequestId.Middleware
     {
         public static IApplicationBuilder UseRequestIdMiddleware(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<RequestIdMiddleware>();
+            return builder.UseMiddleware<ReRouteRequestIdMiddleware>();
         }
     }
 }

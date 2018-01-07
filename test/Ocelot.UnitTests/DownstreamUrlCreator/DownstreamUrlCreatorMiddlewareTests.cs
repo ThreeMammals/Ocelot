@@ -47,7 +47,7 @@
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(
                     new DownstreamRoute(
-                    new List<UrlPathPlaceholderNameAndValue>(), 
+                    new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -91,7 +91,7 @@
         {
             _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(path));
             _downstreamUrlTemplateVariableReplacer
-                .Setup(x => x.Replace(It.IsAny<PathTemplate>(), It.IsAny<List<UrlPathPlaceholderNameAndValue>>()))
+                .Setup(x => x.Replace(It.IsAny<PathTemplate>(), It.IsAny<List<PlaceholderNameAndValue>>()))
                 .Returns(_downstreamPath);
         }
 

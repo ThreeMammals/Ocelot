@@ -1,9 +1,10 @@
 using Ocelot.Configuration.File;
+using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator
 {
     public interface IUpstreamTemplatePatternCreator
     {
-        string Create(FileReRoute reRoute);
+        UpstreamPathTemplate Create(FileReRoute reRoute);
     }
 }

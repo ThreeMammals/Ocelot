@@ -19,6 +19,18 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        public void should_not_match_slash_becaue_we_need_to_match_something_after_it()
+        {
+            const string RegExForwardSlashAndOnePlaceHolder = "^/[0-9a-zA-Z].*";
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern(RegExForwardSlashAndOnePlaceHolder))
+              .When(x => x.WhenIMatchThePaths())
+              .And(x => x.ThenTheResultIsFalse())
+              .BDDfy();
+        }
+
+        [Fact]
         public void should_not_match_forward_slash_only_regex()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("/working/"))

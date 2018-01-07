@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -103,7 +103,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -118,7 +118,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup_WithCustomCacheHandle>());
+                .UseStartup<StartupWithCustomCacheHandle>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -148,7 +148,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup_WithConsul_And_CustomCacheHandle>());
+                .UseStartup<StartupWithConsulAndCustomCacheHandle>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -157,7 +157,6 @@ namespace Ocelot.AcceptanceTests
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
 
-            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);

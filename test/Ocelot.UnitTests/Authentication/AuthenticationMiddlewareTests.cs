@@ -29,7 +29,7 @@
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(
                     new DownstreamRoute(
-                    new List<UrlPathPlaceholderNameAndValue>(), 
+                    new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder().WithUpstreamHttpMethod(new List<string> { "Get" }).Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheUserIsAuthenticated())

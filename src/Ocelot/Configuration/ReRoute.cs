@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Ocelot.Configuration.Creator;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration
@@ -9,7 +10,7 @@ namespace Ocelot.Configuration
         public ReRoute(PathTemplate downstreamPathTemplate, 
             PathTemplate upstreamPathTemplate, 
             List<HttpMethod> upstreamHttpMethod, 
-            string upstreamTemplatePattern, 
+            UpstreamPathTemplate upstreamTemplatePattern, 
             bool isAuthenticated, 
             AuthenticationOptions authenticationOptions, 
             List<ClaimToThing> claimsToHeaders, 
@@ -67,7 +68,7 @@ namespace Ocelot.Configuration
         public string ReRouteKey {get;private set;}
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamPathTemplate { get; private set; }
-        public string UpstreamTemplatePattern { get; private set; }
+        public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public bool IsAuthenticated { get; private set; }
         public bool IsAuthorised { get; private set; }

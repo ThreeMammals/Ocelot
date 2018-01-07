@@ -1,0 +1,18 @@
+{
+	"Peers": [{
+			"HostAndPort": "http://localhost:5000"
+		},
+		{
+			"HostAndPort": "http://localhost:5002"
+		},
+		{
+			"HostAndPort": "http://localhost:5003"
+		},
+		{
+			"HostAndPort": "http://localhost:5004"
+		},
+		{
+			"HostAndPort": "http://localhost:5001"
+		}
+	]
+}

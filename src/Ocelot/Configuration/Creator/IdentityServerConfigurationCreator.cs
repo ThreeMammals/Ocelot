@@ -8,29 +8,16 @@ namespace Ocelot.Configuration.Creator
 {
     public static class IdentityServerConfigurationCreator
     {
-        public static IdentityServerConfiguration GetIdentityServerConfiguration()
+        public static IdentityServerConfiguration GetIdentityServerConfiguration(string secret)
         {
-            var username = Environment.GetEnvironmentVariable("OCELOT_USERNAME");
-            var hash = Environment.GetEnvironmentVariable("OCELOT_HASH");
-            var salt = Environment.GetEnvironmentVariable("OCELOT_SALT");
             var credentialsSigningCertificateLocation = Environment.GetEnvironmentVariable("OCELOT_CERTIFICATE");
             var credentialsSigningCertificatePassword = Environment.GetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD");
 
             return new IdentityServerConfiguration(
                 "admin",
                 false,
-                SupportedTokens.Both,
-                "secret",
+                secret,
                 new List<string> { "admin", "openid", "offline_access" },
-                "Ocelot Administration",
-                true,
-                GrantTypes.ResourceOwnerPassword,
-                AccessTokenType.Jwt,
-                false,
-                new List<User>
-                {
-                    new User("admin", username, hash, salt)
-                },
                 credentialsSigningCertificateLocation,
                 credentialsSigningCertificatePassword
             );

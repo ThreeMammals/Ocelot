@@ -31,7 +31,7 @@
         [Fact]
         public void should_call_middleware_and_ratelimiting()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
                      new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule("1s", 100, 3), 429))
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -48,7 +48,7 @@
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
                      new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new  RateLimitRule( "1s", 100,3),429))
                      .WithUpstreamHttpMethod(new List<string> { "Get" })

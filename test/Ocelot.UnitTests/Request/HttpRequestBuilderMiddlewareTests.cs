@@ -47,7 +47,7 @@
         public void should_call_scoped_data_repository_correctly()
         {
 
-            var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })

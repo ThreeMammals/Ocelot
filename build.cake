@@ -102,16 +102,9 @@ Task("Version")
 		}
 	});
 
-Task("Restore")
+Task("Compile")
 	.IsDependentOn("Clean")
 	.IsDependentOn("Version")
-	.Does(() =>
-	{	
-		DotNetCoreRestore(slnFile);
-	});
-
-Task("Compile")
-	.IsDependentOn("Restore")
 	.Does(() =>
 	{	
 		var settings = new DotNetCoreBuildSettings
@@ -140,7 +133,7 @@ Task("RunUnitTests")
 				new OpenCoverSettings()
 				{
 					Register="user",
-					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode")
+					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode -excludebyattribute:*.ExcludeFromCoverage*")
 				}
 				.WithFilter("+[Ocelot*]*")
 				.WithFilter("-[xunit*]*")
@@ -199,6 +192,9 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
 		};
 
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
@@ -212,6 +208,9 @@ Task("RunIntegrationTests")
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
 		};
 
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);

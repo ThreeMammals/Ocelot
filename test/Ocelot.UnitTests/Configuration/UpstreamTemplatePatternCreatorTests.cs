@@ -1,5 +1,7 @@
+using System;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -10,7 +12,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         private FileReRoute _fileReRoute;
         private UpstreamTemplatePatternCreator _creator;
-        private string _result;
+        private UpstreamPathTemplate _result;
 
         public UpstreamTemplatePatternCreatorTests()
         {
@@ -29,6 +31,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS/[0-9a-zA-Z].*$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -45,6 +48,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS(/|)$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -59,6 +63,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/PRODUCTS/[0-9a-zA-Z].*$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -74,6 +79,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -89,6 +95,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*/variants/[0-9a-zA-Z].*$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -104,6 +111,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[0-9a-zA-Z].*/variants/[0-9a-zA-Z].*(/|)$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -118,6 +126,38 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/$"))
+                .And(x => ThenThePriorityIs(1))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/{url}"
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
+                .And(x => ThenThePriorityIs(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/{productId}/products/variants/{variantId}/",
+                ReRouteIsCaseSensitive = true
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/[0-9a-zA-Z].*/products/variants/[0-9a-zA-Z].*(/|)$"))
+                .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }
 
@@ -133,7 +173,12 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingIsReturned(string expected)
         {
-            _result.ShouldBe(expected);
+            _result.Template.ShouldBe(expected);
+        }
+
+        private void ThenThePriorityIs(int v)
+        {
+            _result.Priority.ShouldBe(v);
         }
     }
 }

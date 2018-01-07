@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
-using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
@@ -23,12 +22,15 @@ using Ocelot.RateLimit.Middleware;
 namespace Ocelot.Middleware
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Newtonsoft.Json;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
@@ -36,7 +38,10 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.Raft;
     using Ocelot.Responses;
+    using Rafty.Concensus;
+    using Rafty.Infrastructure;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -64,9 +69,15 @@ namespace Ocelot.Middleware
             
             await CreateAdministrationArea(builder, configuration);
 
+            if(UsingRafty(builder))
+            {
+                SetUpRafty(builder);
+            }
+
             ConfigureDiagnosticListener(builder);
 
             // This is registered to catch any global exceptions that are not handled
+            // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
 
             // Allow the user to respond with absolutely anything they want.
@@ -84,7 +95,9 @@ namespace Ocelot.Middleware
             // We check whether the request is ratelimit, and if there is no continue processing
             builder.UseRateLimiting();
 
-            // Now we can look for the requestId
+            // This adds or updates the request id (initally we try and set this based on global config in the error handling middleware)
+            // If anything was set at global level and we have a different setting at re route level the global stuff will be overwritten
+            // This means you can get a scenario where you have a different request id from the first piece of middleware to the request id middleware.
             builder.UseRequestIdMiddleware();
 
             // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
@@ -149,6 +162,26 @@ namespace Ocelot.Middleware
             return builder;
         }
 
+        private static bool UsingRafty(IApplicationBuilder builder)
+        {
+            var possible = builder.ApplicationServices.GetService(typeof(INode)) as INode;
+            if(possible != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void SetUpRafty(IApplicationBuilder builder)
+        {
+            var applicationLifetime = (IApplicationLifetime)builder.ApplicationServices.GetService(typeof(IApplicationLifetime));
+            applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
+            var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
+            var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
+            node.Start(nodeId.Id);
+        }
+
         private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
             var deps = GetDependencies(builder);
@@ -183,7 +216,7 @@ namespace Ocelot.Middleware
             return response == null || response.IsError;
         }
 
-        private static bool ConfigurationNotSetUp(Response<IOcelotConfiguration> ocelotConfiguration)
+        private static bool ConfigurationNotSetUp(Ocelot.Responses.Response<IOcelotConfiguration> ocelotConfiguration)
         {
             return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
         }
@@ -247,6 +280,7 @@ namespace Ocelot.Middleware
                     return new ErrorResponse(ocelotConfig.Errors);
                 }
                 config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                //todo - this starts the poller if it has been registered...please this is so bad.
                 var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
             }
 
@@ -282,15 +316,16 @@ namespace Ocelot.Middleware
          /// <param name="builder"></param>
          private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
          {
-             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-
-            //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
-            if (!env.IsProduction())
-             {
-                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
-                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
-                 diagnosticListener.SubscribeWithAdapter(listener);
-             }
+            var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+            var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+            diagnosticListener.SubscribeWithAdapter(listener);
          }
+        
+        private static void OnShutdown(IApplicationBuilder app)
+        {
+            var node = (INode)app.ApplicationServices.GetService(typeof(INode));
+            node.Stop();
+        }
     }
 }

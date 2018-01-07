@@ -15,8 +15,10 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using Ocelot.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
+    using Ocelot.Values;
 
     public class FileConfigurationCreatorTests
     {
@@ -36,6 +38,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private Mock<IRegionCreator> _regionCreator;
         private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
+        private Mock<IAdministrationPath> _adminPath;
 
         public FileConfigurationCreatorTests()
         {
@@ -52,13 +55,23 @@ namespace Ocelot.UnitTests.Configuration
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
+            _adminPath = new Mock<IAdministrationPath>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
-                _fileConfig.Object, _validator.Object, _logger.Object,
+                _fileConfig.Object,
+                _validator.Object, 
+                _logger.Object,
                 _claimsToThingCreator.Object,
-                _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
-                _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
-                _rateLimitOptions.Object, _regionCreator.Object, _httpHandlerOptionsCreator.Object);
+                _authOptionsCreator.Object, 
+                _upstreamTemplatePatternCreator.Object,
+                _requestIdKeyCreator.Object,
+                _serviceProviderConfigCreator.Object,
+                _qosOptionsCreator.Object,
+                _fileReRouteOptionsCreator.Object,
+                _rateLimitOptions.Object,
+                _regionCreator.Object,
+                _httpHandlerOptionsCreator.Object,
+                _adminPath.Object);
         }
 
         [Fact]
@@ -355,7 +368,7 @@ namespace Ocelot.UnitTests.Configuration
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
                         .Build()
                 }))
                 .BDDfy();
@@ -503,7 +516,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_return_validation_errors()
         {
-            var errors = new List<Error> {new PathTemplateDoesntStartWithForwardSlash("some message")};
+            var errors = new List<Error> {new FileValidationFailedError("some message")};
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration()))
                 .And(x => x.GivenTheConfigIsInvalid(errors))
@@ -568,7 +581,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
-                result.UpstreamTemplatePattern.ShouldBe(expected.UpstreamTemplatePattern);
+                result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
                 result.ClaimsToClaims.Count.ShouldBe(expected.ClaimsToClaims.Count);
                 result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
                 result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
@@ -611,7 +624,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _upstreamTemplatePatternCreator
                 .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(pattern);
+                .Returns(new UpstreamPathTemplate(pattern, 1));
         }
 
         private void ThenTheRequestIdKeyCreatorIsCalledCorrectly()

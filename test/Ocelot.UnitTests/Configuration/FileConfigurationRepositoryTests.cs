@@ -91,7 +91,6 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expected)
         {
-            _result.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
@@ -126,7 +125,6 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingIsReturned(FileConfiguration expected)
         {
-            _result.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
@@ -155,7 +153,6 @@ namespace Ocelot.UnitTests.Configuration
 
             var globalConfiguration = new FileGlobalConfiguration
             {
-                AdministrationPath = "asdas",
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
                     Port = 198,
@@ -185,7 +182,6 @@ namespace Ocelot.UnitTests.Configuration
 
             var globalConfiguration = new FileGlobalConfiguration
             {
-                AdministrationPath = "testy",
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
                     Port = 198,

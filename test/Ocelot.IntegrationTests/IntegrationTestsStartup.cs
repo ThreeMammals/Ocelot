@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,11 +9,11 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
-namespace Ocelot.ManualTest
+namespace Ocelot.IntegrationTests
 {
-    public class Startup
+    public class IntegrationTestsStartup
     {
-        public Startup(IHostingEnvironment env)
+        public IntegrationTestsStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -25,33 +25,26 @@ namespace Ocelot.ManualTest
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             Action<ConfigurationBuilderCachePart> settings = (x) =>
             {
                 x.WithMicrosoftLogging(log =>
-                {
-                    log.AddConsole(LogLevel.Debug);
-                })
-                .WithDictionaryHandle();
+                    {
+                        log.AddConsole(LogLevel.Debug);
+                    })
+                    .WithDictionaryHandle();
             };
 
-            services.AddAuthentication()
-                .AddJwtBearer("TestKey", x =>
-                {
-                    x.Authority = "test";
-                    x.Audience = "test";
-                });
-
-            services.AddOcelot(Configuration);
+            services.AddOcelot(Configuration)
+                .AddCacheManager(settings)
+                .AddAdministration("/administration", "secret");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app.UseOcelot().Wait();
         }
     }

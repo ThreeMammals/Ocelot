@@ -32,7 +32,7 @@
         [Fact]
         public void should_call_authorisation_service()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), 
+            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<PlaceholderNameAndValue>(), 
                 new ReRouteBuilder()
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })

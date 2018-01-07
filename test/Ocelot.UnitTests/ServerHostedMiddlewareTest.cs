@@ -53,6 +53,12 @@
             ResponseMessage = Client.GetAsync(Url).Result;
         }
 
+        protected void WhenICallTheMiddlewareWithTheRequestIdKey(string requestIdKey, string value)
+        {
+            Client.DefaultRequestHeaders.Add(requestIdKey, value);
+            ResponseMessage = Client.GetAsync(Url).Result;
+        }
+
         public void Dispose()
         {
             Client.Dispose();

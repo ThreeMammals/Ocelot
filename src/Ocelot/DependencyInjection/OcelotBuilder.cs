@@ -14,7 +14,6 @@ using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
-using Ocelot.Controllers;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
@@ -47,15 +46,21 @@ using Ocelot.Configuration.Builder;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
+using Ocelot.Raft;
+using Rafty.Concensus;
+using Rafty.FiniteStateMachine;
+using Rafty.Infrastructure;
+using Rafty.Log;
+using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
     public class OcelotBuilder : IOcelotBuilder
     {
         private IServiceCollection _services;
-        private IConfigurationRoot _configurationRoot;
+        private IConfiguration _configurationRoot;
         
-        public OcelotBuilder(IServiceCollection services, IConfigurationRoot configurationRoot)
+        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
             _services = services;    
@@ -72,7 +77,7 @@ namespace Ocelot.DependencyInjection
             _services.Configure<FileConfiguration>(configurationRoot);
             _services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
             _services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
-            _services.TryAddSingleton<IConfigurationValidator, FileConfigurationValidator>();
+            _services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
             _services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             _services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             _services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
@@ -103,7 +108,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
             _services.TryAddSingleton<IClaimsParser, ClaimsParser>();
             _services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
-            _services.TryAddSingleton<IUrlPathPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
+            _services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             _services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
             _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
@@ -117,17 +122,9 @@ namespace Ocelot.DependencyInjection
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            _services.TryAddScoped<IRequestScopedDataRepository, HttpDataRepository>();
+            _services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             _services.AddMemoryCache();
             _services.TryAddSingleton<OcelotDiagnosticListener>();
-
-            //add identity server for admin area
-            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration();
-
-            if (identityServerConfiguration != null)
-            {
-                AddIdentityServer(identityServerConfiguration);
-            }
 
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
@@ -141,6 +138,24 @@ namespace Ocelot.DependencyInjection
             _services.AddLogging();
             _services.AddMiddlewareAnalysis();
             _services.AddWebEncoders();
+            _services.AddSingleton<IAdministrationPath>(new NullAdministrationPath());
+        }
+
+        public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
+        {
+            var administrationPath = new AdministrationPath(path);
+
+            //add identity server for admin area
+            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
+
+            if (identityServerConfiguration != null)
+            {
+                AddIdentityServer(identityServerConfiguration, administrationPath);
+            }
+
+            var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
+            _services.Replace(descriptor);
+            return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
@@ -185,7 +200,7 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-        private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration) 
+        private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
             _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
             _services.TryAddSingleton<IHashMatcher, HashMatcher>();
@@ -194,8 +209,7 @@ namespace Ocelot.DependencyInjection
                     o.IssuerUri = "Ocelot";
                 })
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
-                .AddInMemoryClients(Client(identityServerConfiguration))
-                .AddResourceOwnerValidator<OcelotResourceOwnerPasswordValidator>();
+                .AddInMemoryClients(Client(identityServerConfiguration));
 
             //todo - refactor a method so we know why this is happening
             var whb = _services.First(x => x.ServiceType == typeof(IWebHostBuilder));
@@ -206,8 +220,7 @@ namespace Ocelot.DependencyInjection
             _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>
                 {
-                    var adminPath = _configurationRoot.GetValue("GlobalConfiguration:AdministrationPath", string.Empty);
-                    o.Authority = baseSchemeUrlAndPort + adminPath;
+                    o.Authority = baseSchemeUrlAndPort + adminPath.Path;
                     o.ApiName = identityServerConfiguration.ApiName;
                     o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
                     o.SupportedTokens = SupportedTokens.Both;
@@ -240,7 +253,7 @@ namespace Ocelot.DependencyInjection
                             Value = identityServerConfiguration.ApiSecret.Sha256()
                         }
                     }
-                }
+                },
             };
         }
 
@@ -251,12 +264,65 @@ namespace Ocelot.DependencyInjection
                 new Client
                 {
                     ClientId = identityServerConfiguration.ApiName,
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
                     AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
         }
+    }
 
+    public interface IOcelotAdministrationBuilder
+    {
+        IOcelotAdministrationBuilder AddRafty();
+    }
+
+    public class OcelotAdministrationBuilder : IOcelotAdministrationBuilder
+    {
+        private IServiceCollection _services;
+        private IConfiguration _configurationRoot;
+        
+        public OcelotAdministrationBuilder(IServiceCollection services, IConfiguration configurationRoot)
+        {
+            _configurationRoot = configurationRoot;
+            _services = services;    
+        }
+        
+        public IOcelotAdministrationBuilder AddRafty()
+        {
+            var settings = new InMemorySettings(4000, 5000, 100, 5000);
+            _services.AddSingleton<ILog, SqlLiteLog>();
+            _services.AddSingleton<IFiniteStateMachine, OcelotFiniteStateMachine>();
+            _services.AddSingleton<ISettings>(settings);
+            _services.AddSingleton<IPeersProvider, FilePeersProvider>();
+            _services.AddSingleton<INode, Node>();
+            _services.Configure<FilePeers>(_configurationRoot);
+            return this;
+        }
+    }
+
+    public interface IAdministrationPath
+    {
+        string Path {get;}
+    }
+
+    public class NullAdministrationPath : IAdministrationPath
+    {
+        public NullAdministrationPath()
+        {
+            Path = null;
+        }
+
+        public string Path {get;private set;}
+    }
+
+    public class AdministrationPath : IAdministrationPath
+    {
+        public AdministrationPath(string path)
+        {
+            Path = path;
+        }
+
+        public string Path {get;private set;}
     }
 }
