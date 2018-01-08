@@ -46,7 +46,7 @@ You can also do a catch all type of ReRoute e.g.
         "DownstreamPathTemplate": "/api/{everything}",
         "DownstreamScheme": "https",
         "DownstreamPort": 80,
-        "DownstreamHost" "localhost",
+        "DownstreamHost":"localhost",
         "UpstreamPathTemplate": "/{everything}",
         "UpstreamHttpMethod": [ "Get", "Post" ]
     }
