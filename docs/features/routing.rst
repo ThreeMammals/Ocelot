@@ -24,7 +24,7 @@ the following.
         "DownstreamPathTemplate": "/api/posts/{postId}",
         "DownstreamScheme": "https",
         "DownstreamPort": 80,
-        "DownstreamHost" "localhost",
+        "DownstreamHost":"localhost",
         "UpstreamPathTemplate": "/posts/{postId}",
         "UpstreamHttpMethod": [ "Put", "Delete" ]
     }
@@ -46,7 +46,7 @@ You can also do a catch all type of ReRoute e.g.
         "DownstreamPathTemplate": "/api/{everything}",
         "DownstreamScheme": "https",
         "DownstreamPort": 80,
-        "DownstreamHost" "localhost",
+        "DownstreamHost":"localhost",
         "UpstreamPathTemplate": "/{everything}",
         "UpstreamHttpMethod": [ "Get", "Post" ]
     }
@@ -75,7 +75,7 @@ Ocelot's routing also supports a catch all style routing where the user can spec
         "DownstreamPathTemplate": "/{url}",
         "DownstreamScheme": "https",
         "DownstreamPort": 80,
-        "DownstreamHost" "localhost",
+        "DownstreamHost":"localhost",
         "UpstreamPathTemplate": "/{url}",
         "UpstreamHttpMethod": [ "Get" ]
     }
@@ -88,7 +88,7 @@ The catch all has a lower priority than any other ReRoute. If you also have the 
         "DownstreamPathTemplate": "/",
         "DownstreamScheme": "https",
         "DownstreamPort": 80,
-        "DownstreamHost" "10.0.10.1",
+        "DownstreamHost":"10.0.10.1",
         "UpstreamPathTemplate": "/",
         "UpstreamHttpMethod": [ "Get" ]
     }
