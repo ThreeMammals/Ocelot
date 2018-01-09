@@ -33,6 +33,74 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_service_discovery_and_load_balance_request()
         {
+            var consulPort = 8502;
+            var serviceName = "product";
+            var downstreamServiceOneUrl = "http://localhost:50881";
+            var downstreamServiceTwoUrl = "http://localhost:50882";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = 50881,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+            var serviceEntryTwo = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = 50882,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            ServiceName = serviceName,
+                            LoadBalancer = "LeastConnection",
+                            UseServiceDiscovery = true,
+                        }
+                    },
+                    GlobalConfiguration = new FileGlobalConfiguration()
+                    {
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                        {
+                            Host = "localhost",
+                            Port = consulPort
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
+                .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+                .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_send_request_to_service_after_it_becomes_available()
+        {
             var consulPort = 8501;
             var serviceName = "product";
             var downstreamServiceOneUrl = "http://localhost:50879";
@@ -92,16 +160,47 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
-                .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes())
+                .And(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+                .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
+                .And(x => WhenIRemoveAService(serviceEntryTwo))
+                .And(x => GivenIResetCounters())
+                .And(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+                .And(x => ThenOnlyOneServiceHasBeenCalled())
+                .And(x => WhenIAddAServiceBackIn(serviceEntryTwo))
+                .And(x => GivenIResetCounters())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+                .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
                 .BDDfy();
         }
 
-        private void ThenBothServicesCalledRealisticAmountOfTimes()
+        private void WhenIAddAServiceBackIn(ServiceEntry serviceEntryTwo)
         {
-            _counterOne.ShouldBeInRange(24,26);
-            _counterOne.ShouldBeInRange(24,26);
+            _serviceEntries.Add(serviceEntryTwo);
+        }
+
+        private void ThenOnlyOneServiceHasBeenCalled()
+        {
+            _counterOne.ShouldBe(10);
+            _counterTwo.ShouldBe(0);
+        }
+
+        private void WhenIRemoveAService(ServiceEntry serviceEntryTwo)
+        {
+            _serviceEntries.Remove(serviceEntryTwo);
+        }
+
+         private void GivenIResetCounters()
+        {
+            _counterOne = 0;
+            _counterTwo = 0;
+        }
+
+        private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
+        {
+            _counterOne.ShouldBeInRange(bottom, top);
+            _counterOne.ShouldBeInRange(bottom, top);
         }
 
         private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)

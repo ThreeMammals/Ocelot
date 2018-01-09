@@ -123,7 +123,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                 foreach (var service in services)
                 {
-                    var exists = _leases.FirstOrDefault(l => l.HostAndPort.ToString() == service.HostAndPort.ToString());
+                    var exists = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == service.HostAndPort.DownstreamHost && l.HostAndPort.DownstreamPort == service.HostAndPort.DownstreamPort);
 
                     if (exists == null)
                     {
