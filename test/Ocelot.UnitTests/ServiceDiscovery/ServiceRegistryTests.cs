@@ -4,6 +4,7 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
+// nothing in use
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
     public class ServiceRegistryTests
