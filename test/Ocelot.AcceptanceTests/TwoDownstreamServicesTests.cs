@@ -32,7 +32,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_194()
         {
-            var consulPort = 8500;
+            var consulPort = 8503;
             var downstreamServiceOneUrl = "http://localhost:8362";
             var downstreamServiceTwoUrl = "http://localhost:8330";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
