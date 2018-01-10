@@ -46,9 +46,11 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} doesnt start with forward slash"))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com contains scheme"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Upstream Path Template http://asdf.com contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(4, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(5, "Upstream Path Template http://asdf.com contains scheme"))
                 .BDDfy();
         }
 
@@ -109,6 +111,50 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template api/prod/ doesnt start with forward slash"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_upstream_url_contains_forward_slash_then_another_forward_slash()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "//api/prod/",
+                        DownstreamHost = "bbc.co.uk",
+                        DownstreamPort = 80
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template //api/prod/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_downstream_url_contains_forward_slash_then_another_forward_slash()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "//api/products/",
+                        UpstreamPathTemplate = "/api/prod/",
+                        DownstreamHost = "bbc.co.uk",
+                        DownstreamPort = 80
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template //api/products/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
                 .BDDfy();
         }
 
