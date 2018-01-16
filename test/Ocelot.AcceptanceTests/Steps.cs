@@ -326,6 +326,11 @@ namespace Ocelot.AcceptanceTests
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void GivenIAddAHeader(string key, string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.Add(key, value);
+        }
+
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
         {
             var tasks = new Task[times];

@@ -39,6 +39,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IRegionCreator> _regionCreator;
         private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
         private Mock<IAdministrationPath> _adminPath;
+        private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -56,6 +57,7 @@ namespace Ocelot.UnitTests.Configuration
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
             _adminPath = new Mock<IAdministrationPath>();
+            _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object,
@@ -71,7 +73,8 @@ namespace Ocelot.UnitTests.Configuration
                 _rateLimitOptions.Object,
                 _regionCreator.Object,
                 _httpHandlerOptionsCreator.Object,
-                _adminPath.Object);
+                _adminPath.Object,
+                _headerFindAndReplaceCreator.Object);
         }
 
         [Fact]
@@ -125,6 +128,7 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheFollowingRegionIsReturned("region"))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
+                .And(x => x.ThenTheHeaderFindAndReplaceCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -659,6 +663,12 @@ namespace Ocelot.UnitTests.Configuration
         {
             _serviceProviderConfigCreator
                 .Verify(x => x.Create(_fileConfiguration.GlobalConfiguration), Times.Once);
+        }
+
+        private void ThenTheHeaderFindAndReplaceCreatorIsCalledCorrectly()
+        {
+            _headerFindAndReplaceCreator
+                .Verify(x => x.Create(It.IsAny<FileReRoute>()), Times.Once);
         }
 
         private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)

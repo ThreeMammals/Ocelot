@@ -32,8 +32,10 @@ namespace Ocelot.Configuration
             RateLimitOptions ratelimitOptions,
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
-            string serviceName)
+            string serviceName,
+            List<HeaderFindAndReplace> upstreamHeadersFindAndReplace)
         {
+            UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace;
             ServiceName = serviceName;
             UseServiceDiscovery = useServiceDiscovery;
             ReRouteKey = reRouteKey;
@@ -91,5 +93,6 @@ namespace Ocelot.Configuration
         public HttpHandlerOptions HttpHandlerOptions { get; private set; }
         public bool UseServiceDiscovery {get;private set;}
         public string ServiceName {get;private set;}
+        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
     }
 }

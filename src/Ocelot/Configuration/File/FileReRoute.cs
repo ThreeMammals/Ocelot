@@ -16,12 +16,14 @@ namespace Ocelot.Configuration.File
             RateLimitOptions = new FileRateLimitRule();
             AuthenticationOptions = new FileAuthenticationOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
+            UpstreamHeaderTransform = new Dictionary<string, string>();
         }
 
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
+        public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
