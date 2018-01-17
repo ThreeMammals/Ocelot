@@ -33,8 +33,10 @@ namespace Ocelot.Configuration
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
             string serviceName,
-            List<HeaderFindAndReplace> upstreamHeadersFindAndReplace)
+            List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
+            List<HeaderFindAndReplace> downstreamHeadersFindAndReplace)
         {
+            DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace;
             ServiceName = serviceName;
             UseServiceDiscovery = useServiceDiscovery;
@@ -94,5 +96,7 @@ namespace Ocelot.Configuration
         public bool UseServiceDiscovery {get;private set;}
         public string ServiceName {get;private set;}
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
+        public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace {get;private set;}
+
     }
 }

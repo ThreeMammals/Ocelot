@@ -75,6 +75,7 @@ namespace Ocelot.DependencyInjection
 
             //add ocelot services...
             _services.Configure<FileConfiguration>(configurationRoot);
+            _services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
             _services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
             _services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
             _services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();

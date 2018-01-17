@@ -94,6 +94,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
@@ -124,6 +125,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingRegionIsReturned("region"))
                 .When(x => x.WhenICreateTheConfig())
@@ -152,6 +154,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheRateLimitOptionsCreatorIsCalledCorrectly())
@@ -191,6 +194,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
                 .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
                 .When(x => x.WhenICreateTheConfig())
@@ -218,6 +222,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -252,6 +257,7 @@ namespace Ocelot.UnitTests.Configuration
                                             },
                                         }))
                                             .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                                             .When(x => x.WhenICreateTheConfig())
                                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -294,6 +300,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -329,6 +336,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
@@ -363,6 +371,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheUpstreamTemplatePatternCreatorReturns("(?i)/api/products/.*/$"))
                 .When(x => x.WhenICreateTheConfig())
@@ -402,6 +411,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())    
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheRequestIdCreatorReturns("blahhhh"))
                 .When(x => x.WhenICreateTheConfig())
@@ -439,6 +449,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingHttpHandlerOptionsAreReturned(httpHandlerOptions))
                 .When(x => x.WhenICreateTheConfig())
@@ -474,6 +485,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing> { new ClaimToThing("CustomerId", "CustomerId", "", 0) }))
@@ -508,6 +520,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .When(x => x.WhenICreateTheConfig())
@@ -669,6 +682,11 @@ namespace Ocelot.UnitTests.Configuration
         {
             _headerFindAndReplaceCreator
                 .Verify(x => x.Create(It.IsAny<FileReRoute>()), Times.Once);
+        }
+
+        private void GivenTheHeaderFindAndReplaceCreatorReturns()
+        {
+            _headerFindAndReplaceCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>()));
         }
 
         private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)

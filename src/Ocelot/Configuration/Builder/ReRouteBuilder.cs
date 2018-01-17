@@ -37,6 +37,7 @@ namespace Ocelot.Configuration.Builder
         private string _serviceName;
 
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
+        private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
@@ -206,6 +207,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithDownstreamHeaderFindAndReplace(List<HeaderFindAndReplace> downstreamHeaderFindAndReplace)
+        {
+            _downstreamHeaderFindAndReplace = downstreamHeaderFindAndReplace;
+            return this;
+        }
+
         public ReRoute Build()
         {
             return new ReRoute(
@@ -235,7 +242,8 @@ namespace Ocelot.Configuration.Builder
                 _httpHandlerOptions,
                 _useServiceDiscovery,
                 _serviceName,
-                _upstreamHeaderFindAndReplace);
+                _upstreamHeaderFindAndReplace,
+                _downstreamHeaderFindAndReplace);
         }
     }
 }

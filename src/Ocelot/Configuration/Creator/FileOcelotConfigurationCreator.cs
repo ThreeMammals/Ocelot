@@ -160,7 +160,8 @@ namespace Ocelot.Configuration.Creator
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
                 .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
-                .WithUpstreamHeaderFindAndReplace(hAndRs)
+                .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
+                .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .Build();
 
             return reRoute;

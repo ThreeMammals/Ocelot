@@ -16,50 +16,46 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.Responses;
 using Ocelot.Configuration.Builder;
 using Ocelot.Headers;
+using System.Net.Http;
 
 namespace Ocelot.UnitTests.Headers
 {
     public class HttpHeadersTransformationMiddlewareTests : ServerHostedMiddlewareTest
     {
-        private Mock<IHttpContextRequestHeaderReplacer> _replacer;
+        private Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
+        private Mock<IHttpResponseHeaderReplacer> _postReplacer;
         
         public HttpHeadersTransformationMiddlewareTests()
         {
-            _replacer = new Mock<IHttpContextRequestHeaderReplacer>();
+            _preReplacer = new Mock<IHttpContextRequestHeaderReplacer>();
+            _postReplacer = new Mock<IHttpResponseHeaderReplacer>();
+            
             GivenTheTestServerIsConfigured();
         }
 
         [Fact]
-        public void should_do_nothing()
-        {
-            this.Given(x => GivenTheFollowingRequestWillNotBeTransformed())
-                .And(x => GivenTheReRouteHasFindAndReplaceSetUp())
-                .When(x => WhenICallTheMiddleware())
-                .Then(x => ThenTheHeaderIsNotReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_pre_request_header_transform()
+        public void should_call_pre_and_post_header_transforms()
         {
             this.Given(x => GivenTheFollowingRequest())
-                .And(x => GivenTheReRouteHasFindAndReplaceSetUp())
+                .And(x => GivenTheReRouteHasPreFindAndReplaceSetUp())
+                .And(x => GivenTheHttpResponseMessageIs())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
+                .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_find_header_after_next_middleware_and_transform()
+        private void GivenTheHttpResponseMessageIs()
         {
-
+            var httpResponseMessage = new HttpResponseMessage();
+            var response = new OkResponse<HttpResponseMessage>(httpResponseMessage);
+            ScopedRepository.Setup(x => x.Get<HttpResponseMessage>("HttpResponseMessage")).Returns(response);
         }
 
-        private void GivenTheReRouteHasFindAndReplaceSetUp()
+        private void GivenTheReRouteHasPreFindAndReplaceSetUp()
         {
             var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("test", "test", "chicken", 0));
-            var reRoute = new ReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs).Build();
+            var reRoute = new ReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs).WithDownstreamHeaderFindAndReplace(fAndRs).Build();
             var dR = new DownstreamRoute(null, reRoute);
             var response = new OkResponse<DownstreamRoute>(dR);
             ScopedRepository.Setup(x => x.Get<DownstreamRoute>("DownstreamRoute")).Returns(response);
@@ -67,7 +63,12 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly()
         {
-            _replacer.Verify(x => x.Replace(It.IsAny<HttpContext>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
+            _preReplacer.Verify(x => x.Replace(It.IsAny<HttpContext>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
+        }
+
+        private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
+        {
+            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()
@@ -75,22 +76,13 @@ namespace Ocelot.UnitTests.Headers
             Client.DefaultRequestHeaders.Add("test", "test");
         }
 
-        private void GivenTheFollowingRequestWillNotBeTransformed()
-        {
-            Client.DefaultRequestHeaders.Add("boop", "boop");
-        }
-
-        private void ThenTheHeaderIsNotReturned()
-        {
-            ResponseMessage.Headers.TryGetValues("boop", out var test).ShouldBeFalse();
-        }
-
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
         {
             services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             services.AddLogging();
             services.AddSingleton(ScopedRepository.Object);
-            services.AddSingleton(_replacer.Object);
+            services.AddSingleton(_preReplacer.Object);
+            services.AddSingleton(_postReplacer.Object);
         }
 
         protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)

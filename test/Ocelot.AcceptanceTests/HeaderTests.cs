@@ -57,7 +57,39 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+        [Fact]
+        public void should_transform_downstream_header()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 51879,
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHeaderTransform = new Dictionary<string,string>
+                            {
+                                {"Location", "http://www.bbc.co.uk/, http://ocelot.com/"}
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Location", "http://www.bbc.co.uk/"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://ocelot.com/"))
+                .BDDfy();
+        }
+
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -69,12 +101,34 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(async context =>
                     {   
-                        if(context.Request.Headers.TryGetValue(responseBody, out var values))
+                        if(context.Request.Headers.TryGetValue(headerKey, out var values))
                         {
                             var result = values.First();
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync(result);
                         }   
+                    });
+                })
+                .Build();
+
+            _builder.Start();
+        }
+
+         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey, string headerValue)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(async context =>
+                    {   
+                        context.Response.Headers.Add(headerKey, headerValue);
+                        context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync("boop");
                     });
                 })
                 .Build();

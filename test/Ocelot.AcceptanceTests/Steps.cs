@@ -108,6 +108,12 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void ThenTheResponseHeaderIs(string key, string value)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
         {
             _webHostBuilder = new WebHostBuilder();

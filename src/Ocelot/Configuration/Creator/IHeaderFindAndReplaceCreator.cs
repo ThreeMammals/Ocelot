@@ -5,6 +5,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IHeaderFindAndReplaceCreator
     {
-        List<HeaderFindAndReplace> Create(FileReRoute fileReRoute);
+        HeaderTransformations Create(FileReRoute fileReRoute);
     }
 }

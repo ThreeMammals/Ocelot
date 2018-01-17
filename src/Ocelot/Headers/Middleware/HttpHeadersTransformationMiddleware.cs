@@ -11,30 +11,32 @@ namespace Ocelot.Headers.Middleware
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;
+        private readonly IHttpResponseHeaderReplacer _postReplacer;
 
         public HttpHeadersTransformationMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository,
-            IHttpContextRequestHeaderReplacer preReplacer) 
+            IHttpContextRequestHeaderReplacer preReplacer,
+            IHttpResponseHeaderReplacer postReplacer) 
             : base(requestScopedDataRepository)
         {
             _next = next;
+            _postReplacer = postReplacer;
             _preReplacer = preReplacer;
             _logger = loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>();
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var fAndRs = this.DownstreamRoute.ReRoute.UpstreamHeadersFindAndReplace;
+            var preFAndRs = this.DownstreamRoute.ReRoute.UpstreamHeadersFindAndReplace;
 
-            _preReplacer.Replace(context, fAndRs);
+            _preReplacer.Replace(context, preFAndRs);
 
             await _next.Invoke(context);
 
-            //foreach header find and replace after downstream request
-            //maek the change
-            //use this object
-            //this.HttpResponseMessage
+            var postFAndRs = this.DownstreamRoute.ReRoute.DownstreamHeadersFindAndReplace;
+
+            _postReplacer.Replace(HttpResponseMessage, postFAndRs);
         }
     }
 }

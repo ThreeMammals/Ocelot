@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -13,7 +14,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         private HeaderFindAndReplaceCreator _creator;
         private FileReRoute _reRoute;
-        private List<HeaderFindAndReplace> _result;
+        private HeaderTransformations _result;
 
         public HeaderFindAndReplaceCreatorTests()
         {
@@ -30,19 +31,47 @@ namespace Ocelot.UnitTests.Configuration
                     {"Test", "Test, Chicken"},
 
                     {"Moop", "o, a"}
+                },
+                 DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Pop", "West, East"},
+
+                    {"Bop", "e, r"}
                 }
             };
 
-            var expected = new List<HeaderFindAndReplace>
+            var upstream = new List<HeaderFindAndReplace>
             {
                 new HeaderFindAndReplace("Test", "Test", "Chicken", 0),
                 new HeaderFindAndReplace("Moop", "o", "a", 0)
             };
 
+            var downstream = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Pop", "West", "East", 0),
+                new HeaderFindAndReplace("Bop", "e", "r", 0)
+            };
+
             this.Given(x => GivenTheReRoute(reRoute))
                 .When(x => WhenICreate())
-                .Then(x => ThenTheFollowingIsReturned(expected))
+                .Then(x => ThenTheFollowingUpstreamIsReturned(upstream))
+                .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
                 .BDDfy();
+        }
+
+        private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)
+        {
+            _result.Downstream.Count.ShouldBe(downstream.Count);
+            
+            for (int i = 0; i < _result.Downstream.Count; i++)
+            {
+                var result = _result.Downstream[i];
+                var expected = downstream[i];
+                result.Find.ShouldBe(expected.Find);
+                result.Index.ShouldBe(expected.Index);
+                result.Key.ShouldBe(expected.Key);
+                result.Replace.ShouldBe(expected.Replace);
+            }        
         }
 
         private void GivenTheReRoute(FileReRoute reRoute)
@@ -55,13 +84,13 @@ namespace Ocelot.UnitTests.Configuration
             _result = _creator.Create(_reRoute);
         }
 
-        private void ThenTheFollowingIsReturned(List<HeaderFindAndReplace> expecteds)
+        private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)
         {
-            _result.Count.ShouldBe(expecteds.Count);
+            _result.Upstream.Count.ShouldBe(expecteds.Count);
             
-            for (int i = 0; i < _result.Count; i++)
+            for (int i = 0; i < _result.Upstream.Count; i++)
             {
-                var result = _result[i];
+                var result = _result.Upstream[i];
                 var expected = expecteds[i];
                 result.Find.ShouldBe(expected.Find);
                 result.Index.ShouldBe(expected.Index);
