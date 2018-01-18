@@ -250,5 +250,5 @@ _build/
 _static/
 _templates/
 
-
+# JetBrains Rider
 .idea/
