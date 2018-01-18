@@ -413,20 +413,11 @@ private void GenerateReleaseNotes(ConvertableFilePath file)
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
             .Select(l => l.Split(':'))
             .ToDictionary(v => v[0], v => v[1]);
-/* 
-        var artifactsKeyValues = System.IO.File
-            .ReadAllLines(artifactsFile)
-            .Select(l => l.Split(':'));
 
-        var artifacts = new Dictionary<string, string>();
-        foreach (var element in artifactsKeyValues)
-            artifacts.Add(element[0], element[1]);
-*/
 		var codePackage = packagesDir + File(artifacts["nuget"]);
 
 		Information("Pushing package " + codePackage);
