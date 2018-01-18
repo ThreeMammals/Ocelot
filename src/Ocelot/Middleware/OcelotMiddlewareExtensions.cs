@@ -299,7 +299,7 @@ namespace Ocelot.Middleware
                     app.UseAuthentication();
                     app.UseMvc();
                 });
-            }   
+            }
         }
         
         private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
