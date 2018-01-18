@@ -249,3 +249,6 @@ test/Ocelot.AcceptanceTests/configuration.json
 _build/
 _static/
 _templates/
+
+# JetBrains Rider
+.idea/
