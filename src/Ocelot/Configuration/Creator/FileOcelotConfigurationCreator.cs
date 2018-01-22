@@ -37,6 +37,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IRegionCreator _regionCreator;
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private readonly IAdministrationPath _adminPath;
+        private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
 
 
         public FileOcelotConfigurationCreator(
@@ -53,9 +54,11 @@ namespace Ocelot.Configuration.Creator
             IRateLimitOptionsCreator rateLimitOptionsCreator,
             IRegionCreator regionCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-            IAdministrationPath adminPath
+            IAdministrationPath adminPath,
+            IHeaderFindAndReplaceCreator headerFAndRCreator
             )
         {
+            _headerFAndRCreator = headerFAndRCreator;
             _adminPath = adminPath;
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
@@ -128,6 +131,8 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute);
 
+            var hAndRs = _headerFAndRCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -155,6 +160,8 @@ namespace Ocelot.Configuration.Creator
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
                 .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
+                .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
+                .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .Build();
 
             return reRoute;

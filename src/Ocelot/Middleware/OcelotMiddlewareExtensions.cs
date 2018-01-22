@@ -86,11 +86,14 @@ namespace Ocelot.Middleware
             // This is registered first so it can catch any errors and issue an appropriate response
             builder.UseResponderMiddleware();
 
-            // Initialises downstream request
-            builder.UseDownstreamRequestInitialiser();
-
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
+
+            // Now we have the ds route we can transform headers and stuff?
+            builder.UseHttpHeadersTransformationMiddleware();
+
+            // Initialises downstream request
+            builder.UseDownstreamRequestInitialiser();
 
             // We check whether the request is ratelimit, and if there is no continue processing
             builder.UseRateLimiting();

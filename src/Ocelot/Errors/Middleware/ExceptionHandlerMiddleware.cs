@@ -37,7 +37,7 @@ namespace Ocelot.Errors.Middleware
         public async Task Invoke(HttpContext context)
         {
             try
-            {
+            {               
                 await TrySetGlobalRequestId(context);
 
                 _logger.LogDebug("ocelot pipeline started");
@@ -85,7 +85,10 @@ namespace Ocelot.Errors.Middleware
 
         private void SetInternalServerErrorOnResponse(HttpContext context)
         {
-            context.Response.StatusCode = 500;
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = 500;
+            }
         }
 
         private string CreateMessage(HttpContext context, Exception e)
