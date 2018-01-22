@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -89,6 +90,43 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_fix_issue_190()
+        {   
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHost = "localhost",
+                            DownstreamPort = 6773,
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHeaderTransform = new Dictionary<string,string>
+                            {
+                                {"Location", "http://localhost:6773, {BaseUrl}"}
+                            },
+                            HttpHandlerOptions = new FileHttpHandlerOptions
+                            {
+                                AllowAutoRedirect = false
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:6773", "/", 302, "Location", "http://localhost:6773/pay/Receive"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
+                .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
+                .BDDfy();
+        }
+
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)
         {
             _builder = new WebHostBuilder()
@@ -126,9 +164,11 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(async context =>
                     {   
-                        context.Response.Headers.Add(headerKey, headerValue);
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync("boop");
+                        context.Response.OnStarting(() => {
+                            context.Response.Headers.Add(headerKey, headerValue);
+                            context.Response.StatusCode = statusCode;
+                            return Task.CompletedTask;
+                        });
                     });
                 })
                 .Build();
