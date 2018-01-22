@@ -37,7 +37,7 @@ namespace Ocelot.Errors.Middleware
         public async Task Invoke(HttpContext context)
         {
             try
-            {
+            {               
                 await TrySetGlobalRequestId(context);
 
                 _logger.LogDebug("ocelot pipeline started");

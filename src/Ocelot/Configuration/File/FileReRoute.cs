@@ -11,17 +11,21 @@ namespace Ocelot.Configuration.File
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
             AddQueriesToRequest = new Dictionary<string, string>();
+            DownstreamHeaderTransform = new Dictionary<string, string>();
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
             AuthenticationOptions = new FileAuthenticationOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
+            UpstreamHeaderTransform = new Dictionary<string, string>();
         }
 
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
+        public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+        public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
