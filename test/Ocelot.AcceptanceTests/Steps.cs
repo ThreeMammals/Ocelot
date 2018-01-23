@@ -108,6 +108,12 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void ThenTheResponseHeaderIs(string key, string value)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -324,6 +330,11 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void GivenIAddAHeader(string key, string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.Add(key, value);
         }
 
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)

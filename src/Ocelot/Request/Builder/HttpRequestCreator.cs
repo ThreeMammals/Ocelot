@@ -14,7 +14,7 @@ namespace Ocelot.Request.Builder
             bool useCookieContainer,
             bool allowAutoRedirect)
         {
-            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider, useCookieContainer, allowAutoRedirect));
+            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider, allowAutoRedirect, useCookieContainer));
         }
     }
 }

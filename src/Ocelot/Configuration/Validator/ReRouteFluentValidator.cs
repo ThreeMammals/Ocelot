@@ -20,6 +20,14 @@ namespace Ocelot.Configuration.Validator
                 .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
 
             RuleFor(reRoute => reRoute.UpstreamPathTemplate)
+                .Must(path => !path.Contains("//"))
+                .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
+
+            RuleFor(reRoute => reRoute.DownstreamPathTemplate)
+                .Must(path => !path.Contains("//"))
+                .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
+
+            RuleFor(reRoute => reRoute.UpstreamPathTemplate)
                 .Must(path => path.StartsWith("/"))
                 .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
 
