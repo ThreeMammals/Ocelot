@@ -20,5 +20,14 @@ namespace Ocelot.Infrastructure.Extensions
             return s;
         }
 
+        public static string LastCharAsForwardSlash(this string source)
+        {
+            if(source.EndsWith('/'))
+            {
+                return source;
+            }
+
+            return $"{source}/";
+        }
     }
 }

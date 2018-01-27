@@ -39,9 +39,10 @@ Add the following to a ReRoute in configuration.json in order to replace http://
 Placeholders
 ^^^^^^^^^^^^
 
-Ocelot allows placeholders that can be used in header transformation. At the moment there is only one placeholder.
+Ocelot allows placeholders that can be used in header transformation.
 
 {BaseUrl} - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
+{DownstreamBaseUrl} - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for DownstreamHeaderTransform at the moment.
 
 Handling 302 Redirects
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -67,4 +68,30 @@ or you could use the BaseUrl placeholder.
         "AllowAutoRedirect": false,
     },
 
-Ocelot will not try and replace the location header returned by the downstream service with its own URL.
+finally if you are using a load balancer with Ocelot you will get multiple downstream base urls so the above would not work. In this case you can do the following.
+
+.. code-block:: json
+
+    "DownstreamHeaderTransform": {
+        "Location": "{DownstreamBaseUrl}, {BaseUrl}"
+    },
+     "HttpHandlerOptions": {
+        "AllowAutoRedirect": false,
+    },
+
+Future
+^^^^^^
+
+Ideally this feature would be able to support the fact that a header can have multiple values. At the moment it just assumes one.
+It would also be nice if it could multi find and replace e.g. 
+
+.. code-block:: json
+
+    "DownstreamHeaderTransform": {
+        "Location": "[{one,one},{two,two}"
+    },
+     "HttpHandlerOptions": {
+        "AllowAutoRedirect": false,
+    },
+
+If anyone wants to have a go at this please help yourself!!

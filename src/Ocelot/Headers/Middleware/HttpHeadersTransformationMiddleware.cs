@@ -36,7 +36,7 @@ namespace Ocelot.Headers.Middleware
 
             var postFAndRs = this.DownstreamRoute.ReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(HttpResponseMessage, postFAndRs);
+            _postReplacer.Replace(HttpResponseMessage, postFAndRs, DownstreamRequest);
         }
     }
 }
