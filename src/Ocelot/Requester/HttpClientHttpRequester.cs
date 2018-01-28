@@ -14,12 +14,13 @@ namespace Ocelot.Requester
     {
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, 
-            IHttpClientCache cacheHandlers)
+        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, IHttpClientCache cacheHandlers, IServiceProvider provider)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
+            _serviceProvider = provider;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
@@ -28,7 +29,7 @@ namespace Ocelot.Requester
 
             var cacheKey = GetCacheKey(request, builder);
             
-            var httpClient = GetHttpClient(cacheKey, builder, request.UseCookieContainer, request.AllowAutoRedirect);
+            var httpClient = GetHttpClient(cacheKey, builder, request.UseCookieContainer, request.AllowAutoRedirect, request.IsTracing);
 
             try
             {
@@ -56,13 +57,13 @@ namespace Ocelot.Requester
 
         }
 
-        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, bool useCookieContainer, bool allowAutoRedirect)
+        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, bool useCookieContainer, bool allowAutoRedirect,bool isTracing)
         {
             var httpClient = _cacheHandlers.Get(cacheKey);
 
             if (httpClient == null)
             {
-                httpClient = builder.Create(useCookieContainer, allowAutoRedirect);
+                httpClient = builder.Create(useCookieContainer, allowAutoRedirect, isTracing, _serviceProvider);
             }
             return httpClient;
         }

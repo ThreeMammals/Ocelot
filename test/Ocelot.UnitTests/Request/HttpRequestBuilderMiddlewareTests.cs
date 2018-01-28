@@ -51,13 +51,13 @@
                 new ReRouteBuilder()
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true))
+                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true,false))
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false)))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false,false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -109,7 +109,9 @@
                                     It.IsAny<bool>(),
                                     It.IsAny<IQoSProvider>(),
                                     It.IsAny<bool>(),
-                                    It.IsAny<bool>()))
+                                    It.IsAny<bool>(),
+                                    It.IsAny<bool>()
+                                    ))
                 .ReturnsAsync(_request);
         }
 

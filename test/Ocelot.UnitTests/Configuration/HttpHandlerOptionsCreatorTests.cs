@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.Configuration
         public void should_create_options_with_useCookie_and_allowAutoRedirect_true_as_default()
         {
             var fileReRoute = new FileReRoute();
-            var expectedOptions = new HttpHandlerOptions(true, true);
+            var expectedOptions = new HttpHandlerOptions(true, true, false);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false);
+            var expectedOptions = new HttpHandlerOptions(false, false, false);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .When(x => WhenICreateHttpHandlerOptions())

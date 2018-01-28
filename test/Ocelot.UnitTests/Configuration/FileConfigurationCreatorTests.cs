@@ -433,7 +433,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
-            var httpHandlerOptions = new HttpHandlerOptions(true, true);
+            var httpHandlerOptions = new HttpHandlerOptions(true, true,false);
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {

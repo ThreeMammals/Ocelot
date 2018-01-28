@@ -29,6 +29,11 @@ namespace Ocelot.ManualTest
 
             services.AddOcelot()
                     .AddCacheManager(settings)
+                    .AddOpenTracing(option =>
+                    {
+                        option.CollectorUrl = "http://localhost:9618";
+                        option.Service = "Ocelot.ManualTest";
+                    })
                     .AddAdministration("/administration", "secret");
         }
 

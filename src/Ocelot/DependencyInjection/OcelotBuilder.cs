@@ -52,6 +52,7 @@ using Rafty.FiniteStateMachine;
 using Rafty.Infrastructure;
 using Rafty.Log;
 using Newtonsoft.Json;
+using Butterfly.Client.AspNetCore;
 
 namespace Ocelot.DependencyInjection
 {
@@ -203,6 +204,12 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
+        public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
+        {
+            _services.AddButterfly(settings);
+            return this;
+        }
+
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
             _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
@@ -327,5 +334,5 @@ namespace Ocelot.DependencyInjection
         }
 
         public string Path {get;private set;}
-    }
+    }  
 }

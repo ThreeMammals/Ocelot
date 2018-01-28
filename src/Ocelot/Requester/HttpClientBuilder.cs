@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Butterfly.Client;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Requester
 {
@@ -18,12 +20,21 @@ namespace Ocelot.Requester
             _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
 
             return this;
-        }  
+        }
 
-        public IHttpClient Create(bool useCookies, bool allowAutoRedirect)
+        private IHttpClientBuilder WithTracing(IServiceProvider provider)
         {
-            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = allowAutoRedirect, UseCookies = useCookies};
-            
+            _handlers.Add(6000, () => provider.GetService<HttpTracingHandler>());
+            return this;
+        }
+
+        public IHttpClient Create(bool useCookies, bool allowAutoRedirect, bool isTracing, IServiceProvider provider)
+        {
+            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = allowAutoRedirect, UseCookies = useCookies };
+            if(isTracing)
+            {
+                WithTracing(provider);
+            }
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
             
             return new HttpClientWrapper(client);
