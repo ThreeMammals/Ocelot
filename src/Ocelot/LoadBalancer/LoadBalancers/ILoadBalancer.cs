@@ -6,7 +6,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public interface ILoadBalancer
     {
-        Task<Response<HostAndPort>> Lease();
-        void Release(HostAndPort hostAndPort);
+        Task<Response<ServiceHostAndPort>> Lease();
+        void Release(ServiceHostAndPort hostAndPort);
     }
 }

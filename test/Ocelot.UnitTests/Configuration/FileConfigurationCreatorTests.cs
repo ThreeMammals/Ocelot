@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using System;
     using Ocelot.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
@@ -40,6 +41,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
         private Mock<IAdministrationPath> _adminPath;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
+        private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
 
         public FileConfigurationCreatorTests()
         {
@@ -58,6 +60,7 @@ namespace Ocelot.UnitTests.Configuration
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
             _adminPath = new Mock<IAdministrationPath>();
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
+            _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object,
@@ -74,7 +77,8 @@ namespace Ocelot.UnitTests.Configuration
                 _regionCreator.Object,
                 _httpHandlerOptionsCreator.Object,
                 _adminPath.Object,
-                _headerFindAndReplaceCreator.Object);
+                _headerFindAndReplaceCreator.Object,
+                _downstreamAddressesCreator.Object);
         }
 
         [Fact]
@@ -94,6 +98,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
@@ -113,7 +118,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -125,6 +136,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => GivenTheDownstreamAddresses())                
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingRegionIsReturned("region"))
@@ -146,7 +158,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -154,6 +172,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .When(x => x.WhenICreateTheConfig())
@@ -180,7 +199,13 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamHost = "127.0.0.1",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "127.0.0.1",
+                            }
+                        },
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -194,6 +219,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
                 .And(x => x.GivenTheQosOptionsCreatorReturns(expected))
@@ -214,7 +240,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -222,13 +254,14 @@ namespace Ocelot.UnitTests.Configuration
                             },
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
                                 new ReRouteBuilder()
-                                    .WithDownstreamHost("127.0.0.1")
+                                    .WithDownstreamAddresses(new List<DownstreamHostAndPort>(){new DownstreamHostAndPort("127.0.0.1", 80) })
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -257,6 +290,7 @@ namespace Ocelot.UnitTests.Configuration
                                             },
                                         }))
                                             .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => GivenTheDownstreamAddresses())
                                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                                             .When(x => x.WhenICreateTheConfig())
@@ -300,6 +334,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
@@ -336,6 +371,7 @@ namespace Ocelot.UnitTests.Configuration
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                             .When(x => x.WhenICreateTheConfig())
@@ -371,6 +407,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheUpstreamTemplatePatternCreatorReturns("(?i)/api/products/.*/$"))
@@ -411,6 +448,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())    
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheRequestIdCreatorReturns("blahhhh"))
@@ -441,7 +479,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" }
@@ -449,6 +493,7 @@ namespace Ocelot.UnitTests.Configuration
                             },
             }))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingHttpHandlerOptionsAreReturned(httpHandlerOptions))
@@ -484,6 +529,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
@@ -519,6 +565,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -536,6 +583,7 @@ namespace Ocelot.UnitTests.Configuration
             var errors = new List<Error> {new FileValidationFailedError("some message")};
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration()))
+                .And(x => GivenTheDownstreamAddresses())
                 .And(x => x.GivenTheConfigIsInvalid(errors))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheErrorsAreReturned(errors))
@@ -718,6 +766,11 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
         {
             _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
+        }
+
+        private void GivenTheDownstreamAddresses()
+        {
+            _downstreamAddressesCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new List<DownstreamHostAndPort>());
         }
     }
 }

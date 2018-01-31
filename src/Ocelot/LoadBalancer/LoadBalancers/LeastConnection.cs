@@ -22,18 +22,18 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _leases = new List<Lease>();
         }
 
-        public async Task<Response<HostAndPort>> Lease()
+        public async Task<Response<ServiceHostAndPort>> Lease()
         {
             var services = await _services.Invoke();
 
             if (services == null)
             {
-                return new ErrorResponse<HostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for {_serviceName}") });
             }
 
             if (!services.Any())
             {
-                return new ErrorResponse<HostAndPort>(new List<Error>() { new ServicesAreEmptyError($"services were empty for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreEmptyError($"services were empty for {_serviceName}") });
             }
 
             lock(_syncLock)
@@ -49,11 +49,11 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                 _leases.Add(leaseWithLeastConnections);
             
-                return new OkResponse<HostAndPort>(new HostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
+                return new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
             }
         }
 
-        public void Release(HostAndPort hostAndPort)
+        public void Release(ServiceHostAndPort hostAndPort)
         {
             lock(_syncLock)
             {

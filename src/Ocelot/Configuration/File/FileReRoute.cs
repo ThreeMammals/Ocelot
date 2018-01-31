@@ -18,6 +18,7 @@ namespace Ocelot.Configuration.File
             AuthenticationOptions = new FileAuthenticationOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             UpstreamHeaderTransform = new Dictionary<string, string>();
+            DownstreamHostAndPorts = new List<FileHostAndPort>();
         }
 
         public string DownstreamPathTemplate { get; set; }
@@ -34,13 +35,12 @@ namespace Ocelot.Configuration.File
         public bool ReRouteIsCaseSensitive { get; set; }
         public string ServiceName { get; set; }
         public string DownstreamScheme {get;set;}
-        public string DownstreamHost {get;set;}
-        public int DownstreamPort { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public string LoadBalancer {get;set;}
         public FileRateLimitRule RateLimitOptions { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public bool UseServiceDiscovery {get;set;}
+        public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
     }
 }

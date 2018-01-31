@@ -5,16 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Raft;
 using Rafty.Concensus;
-using Rafty.FiniteStateMachine;
 using Rafty.Infrastructure;
 using Shouldly;
 using Xunit;
@@ -25,16 +22,16 @@ namespace Ocelot.IntegrationTests
 {
     public class RaftTests : IDisposable
     {
-        private List<IWebHost> _builders;
-        private List<IWebHostBuilder> _webHostBuilders;
-        private List<Thread> _threads;
+        private readonly List<IWebHost> _builders;
+        private readonly List<IWebHostBuilder> _webHostBuilders;
+        private readonly List<Thread> _threads;
         private FilePeers _peers;
-        private HttpClient _httpClient;
-        private HttpClient _httpClientForAssertions;
+        private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClientForAssertions;
         private string _ocelotBaseUrl;
         private BearerToken _token;
         private HttpResponseMessage _response;
-        private static object _lock = new object();
+        private static readonly object _lock = new object();
 
         public RaftTests()
         {
@@ -79,8 +76,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "127.0.0.1",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "127.0.0.1",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -88,8 +91,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "123.123.123",
-                        DownstreamPort = 443,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "123.123.123",
+                                Port = 443,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
@@ -120,8 +129,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "127.0.0.1",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "127.0.0.1",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -129,8 +144,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "123.123.123",
-                        DownstreamPort = 443,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "123.123.123",
+                                Port = 443,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
@@ -175,7 +196,7 @@ namespace Ocelot.IntegrationTests
             }
         }
 
-        private void ThenTheCommandIsReplicatedToAllStateMachines(UpdateFileConfiguration expected)
+        private void ThenTheCommandIsReplicatedToAllStateMachines(UpdateFileConfiguration expecteds)
         {
             //dirty sleep to give a chance to replicate...
             var stopwatch = Stopwatch.StartNew();
@@ -206,18 +227,24 @@ namespace Ocelot.IntegrationTests
                         var result = _httpClientForAssertions.GetAsync($"{peer.HostAndPort}/administration/configuration").Result;
                         var json = result.Content.ReadAsStringAsync().Result;
                         var response = JsonConvert.DeserializeObject<FileConfiguration>(json, new JsonSerializerSettings{TypeNameHandling = TypeNameHandling.All});
-                        response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.Configuration.GlobalConfiguration.RequestIdKey);
-                        response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-                        response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+                        response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.Configuration.GlobalConfiguration.RequestIdKey);
+                        response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+                        response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
                         for (var i = 0; i < response.ReRoutes.Count; i++)
                         {
-                            response.ReRoutes[i].DownstreamHost.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamHost);
-                            response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamPathTemplate);
-                            response.ReRoutes[i].DownstreamPort.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamPort);
-                            response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.Configuration.ReRoutes[i].DownstreamScheme);
-                            response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.Configuration.ReRoutes[i].UpstreamPathTemplate);
-                            response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.Configuration.ReRoutes[i].UpstreamHttpMethod);
+                            for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                            {
+                                var res = response.ReRoutes[i].DownstreamHostAndPorts[j];
+                                var expected = expecteds.Configuration.ReRoutes[i].DownstreamHostAndPorts[j];
+                                res.Host.ShouldBe(expected.Host);
+                                res.Port.ShouldBe(expected.Port);
+                            }
+
+                            response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.Configuration.ReRoutes[i].DownstreamPathTemplate);
+                            response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.Configuration.ReRoutes[i].DownstreamScheme);
+                            response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.Configuration.ReRoutes[i].UpstreamPathTemplate);
+                            response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.Configuration.ReRoutes[i].UpstreamHttpMethod);
                         }
                         passed++;
                     }
@@ -233,30 +260,6 @@ namespace Ocelot.IntegrationTests
 
             var commandOnAllStateMachines = WaitFor(20000).Until(() => CommandCalledOnAllStateMachines());
             commandOnAllStateMachines.ShouldBeTrue();   
-        }
-
-        private void ThenTheResponseShouldBe(FileConfiguration expected)
-        {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
-            
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-
-            for (var i = 0; i < response.ReRoutes.Count; i++)
-            {
-                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
-            }
-        }
-
-        private void WhenIGetUrlOnTheApiGateway(string url)
-        {
-            _response = _httpClient.GetAsync(url).Result;
         }
 
         private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
@@ -364,68 +367,6 @@ namespace Ocelot.IntegrationTests
             {
 
             }
-        }
-
-        private void WhenISendACommandIntoTheCluster(FakeCommand command)
-        {
-            var p = _peers.Peers.First();
-            var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
-                TypeNameHandling = TypeNameHandling.All
-            });
-            var httpContent = new StringContent(json);
-            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            using(var httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-                var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
-                response.EnsureSuccessStatusCode();
-                var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var result = JsonConvert.DeserializeObject<OkResponse<FakeCommand>>(content);
-                result.Command.Value.ShouldBe(command.Value);
-            }
-
-            //dirty sleep to make sure command replicated...
-            var stopwatch = Stopwatch.StartNew();
-            while(stopwatch.ElapsedMilliseconds < 10000)
-            {
-
-            }
-        }
-
-        private void ThenTheCommandIsReplicatedToAllStateMachines(FakeCommand command)
-        {
-            //dirty sleep to give a chance to replicate...
-            var stopwatch = Stopwatch.StartNew();
-            while(stopwatch.ElapsedMilliseconds < 2000)
-            {
-
-            }
-            
-             bool CommandCalledOnAllStateMachines()
-            {
-                try
-                {
-                    var passed = 0;
-                    foreach (var peer in _peers.Peers)
-                    {
-                        string fsmData;
-                        fsmData = File.ReadAllText(peer.HostAndPort.Replace("/","").Replace(":",""));
-                        fsmData.ShouldNotBeNullOrEmpty();
-                        var fakeCommand = JsonConvert.DeserializeObject<FakeCommand>(fsmData);
-                        fakeCommand.Value.ShouldBe(command.Value);
-                        passed++;
-                    }
-
-                    return passed == 5;
-                }
-                catch(Exception e)
-                {
-                    return false;
-                }
-            }
-
-            var commandOnAllStateMachines = WaitFor(20000).Until(() => CommandCalledOnAllStateMachines());
-            commandOnAllStateMachines.ShouldBeTrue();   
         }
     }
 }

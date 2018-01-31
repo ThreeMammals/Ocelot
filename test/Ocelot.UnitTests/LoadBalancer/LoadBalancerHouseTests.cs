@@ -138,12 +138,12 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         class FakeLoadBalancer : ILoadBalancer
         {
-            public Task<Response<HostAndPort>> Lease()
+            public Task<Response<ServiceHostAndPort>> Lease()
             {
                 throw new NotImplementedException();
             }
 
-            public void Release(HostAndPort hostAndPort)
+            public void Release(ServiceHostAndPort hostAndPort)
             {
                 throw new NotImplementedException();
             }
@@ -151,12 +151,12 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         class FakeRoundRobinLoadBalancer : ILoadBalancer
         {
-            public Task<Response<HostAndPort>> Lease()
+            public Task<Response<ServiceHostAndPort>> Lease()
             {
                 throw new NotImplementedException();
             }
 
-            public void Release(HostAndPort hostAndPort)
+            public void Release(ServiceHostAndPort hostAndPort)
             {
                 throw new NotImplementedException();
             }
