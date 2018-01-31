@@ -12,12 +12,12 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private List<Service> _services;
         private NoLoadBalancer _loadBalancer;
-        private Response<HostAndPort> _result;
+        private Response<ServiceHostAndPort> _result;
 
         [Fact]
         public void should_return_host_and_port()
         {
-            var hostAndPort = new HostAndPort("127.0.0.1", 80);
+            var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
 
             var services = new List<Service>
             {
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _result = _loadBalancer.Lease().Result;
         }
 
-        private void ThenTheHostAndPortIs(HostAndPort expected)
+        private void ThenTheHostAndPortIs(ServiceHostAndPort expected)
         {
             _result.Data.ShouldBe(expected);
         }

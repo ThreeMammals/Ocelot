@@ -1,8 +1,8 @@
 ﻿namespace Ocelot.Values
 {
-    public class HostAndPort
+    public class ServiceHostAndPort
     {
-        public HostAndPort(string downstreamHost, int downstreamPort)
+        public ServiceHostAndPort(string downstreamHost, int downstreamPort)
         {
             DownstreamHost = downstreamHost?.Trim('/');
             DownstreamPort = downstreamPort;

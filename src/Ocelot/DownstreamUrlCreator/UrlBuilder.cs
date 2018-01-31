@@ -8,7 +8,7 @@ namespace Ocelot.DownstreamUrlCreator
 {
     public class UrlBuilder : IUrlBuilder
     {
-        public Response<DownstreamUrl> Build(string downstreamPath, string downstreamScheme, HostAndPort downstreamHostAndPort)
+        public Response<DownstreamUrl> Build(string downstreamPath, string downstreamScheme, ServiceHostAndPort downstreamHostAndPort)
         {
             if (string.IsNullOrEmpty(downstreamPath))
             {

@@ -5,6 +5,6 @@ namespace Ocelot.DownstreamUrlCreator
 {
     public interface IUrlBuilder
     {
-        Response<DownstreamUrl> Build(string downstreamPath, string downstreamScheme, HostAndPort downstreamHostAndPort);
+        Response<DownstreamUrl> Build(string downstreamPath, string downstreamScheme, ServiceHostAndPort downstreamHostAndPort);
     }
 }

@@ -17,7 +17,7 @@ namespace Ocelot.ServiceDiscovery
 
             foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
-                var service = new Service(reRoute.ServiceName, new HostAndPort(downstreamAddress.DownstreamHost, downstreamAddress.DownstreamPort), string.Empty, string.Empty, new string[0]);
+                var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.DownstreamHost, downstreamAddress.DownstreamPort), string.Empty, string.Empty, new string[0]);
                 
                 services.Add(service);
             }
