@@ -304,29 +304,4 @@ namespace Ocelot.DependencyInjection
             return this;
         }
     }
-
-    public interface IAdministrationPath
-    {
-        string Path {get;}
-    }
-
-    public class NullAdministrationPath : IAdministrationPath
-    {
-        public NullAdministrationPath()
-        {
-            Path = null;
-        }
-
-        public string Path {get;private set;}
-    }
-
-    public class AdministrationPath : IAdministrationPath
-    {
-        public AdministrationPath(string path)
-        {
-            Path = path;
-        }
-
-        public string Path {get;private set;}
-    }
 }
