@@ -3,6 +3,7 @@ using System.Net.Http;
 using Ocelot.Values;
 using System.Linq;
 using Ocelot.Configuration.Creator;
+using System;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -24,7 +25,11 @@ namespace Ocelot.Configuration.Builder
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
         private string _downstreamScheme;
+        
+        //todo get rid of this
         private string _downstreamHost;
+
+        //todo get rid of this
         private int _downstreamPort;
         private string _loadBalancer;
         private bool _useQos;
@@ -38,6 +43,18 @@ namespace Ocelot.Configuration.Builder
 
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
+        private List<DownstreamAddress> _downstreamAddresses;
+
+        public ReRouteBuilder()
+        {
+            _downstreamAddresses = new List<DownstreamAddress>();
+        }
+
+        public ReRouteBuilder WithDownstreamAddresses(List<DownstreamAddress> downstreamAddresses)
+        {
+            _downstreamAddresses.AddRange(downstreamAddresses);
+            return this;
+        }
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
@@ -215,6 +232,14 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
+
+            //todo get rid of this
+            if(!string.IsNullOrEmpty(_downstreamHost))
+            {
+                var downstreamAddress = new DownstreamAddress(_downstreamHost, _downstreamPort);
+                _downstreamAddresses.Add(downstreamAddress);
+            }
+
             return new ReRoute(
                 new PathTemplate(_downstreamPathTemplate), 
                 new PathTemplate(_upstreamTemplate), 
@@ -232,8 +257,6 @@ namespace Ocelot.Configuration.Builder
                 _fileCacheOptions, 
                 _downstreamScheme, 
                 _loadBalancer,
-                _downstreamHost, 
-                _downstreamPort, 
                 _loadBalancerKey, 
                 _useQos, 
                 _qosOptions,
@@ -243,7 +266,8 @@ namespace Ocelot.Configuration.Builder
                 _useServiceDiscovery,
                 _serviceName,
                 _upstreamHeaderFindAndReplace,
-                _downstreamHeaderFindAndReplace);
+                _downstreamHeaderFindAndReplace,
+                _downstreamAddresses);
         }
     }
 }

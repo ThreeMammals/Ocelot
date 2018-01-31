@@ -412,7 +412,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discover DownstreamHost must be set or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
@@ -435,6 +435,84 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_when_no_downstream_but_has_host_and_port()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                DownstreamHost = "test"
+                            }
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_not_valid_when_no_host_and_port()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!"))
+                .BDDfy();
+        }
+         [Fact]
+        public void configuration_is_not_valid_when_host_and_port_is_empty()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort()
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set on DownstreamHostAndPorts if you are not using ReRoute.DownstreamHost or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 

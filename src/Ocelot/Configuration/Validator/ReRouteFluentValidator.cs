@@ -51,9 +51,14 @@ namespace Ocelot.Configuration.Validator
                 RuleFor(r => r.ServiceName).NotEmpty().WithMessage("ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!");
                 });
 
-            When(reRoute => !reRoute.UseServiceDiscovery, () => {
-                RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discover DownstreamHost must be set or Ocelot cannot find your service!");
+            When(reRoute => !reRoute.UseServiceDiscovery && !reRoute.DownstreamHostAndPorts.Any(), () => {
+                RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!");
                 });
+            
+            When(reRoute => !reRoute.UseServiceDiscovery, () => {
+                RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
+                    .SetCollectionValidator(new HostAndPortValidator());
+            });
         }
 
         private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions, CancellationToken cancellationToken)
