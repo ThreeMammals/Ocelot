@@ -6,7 +6,9 @@ Ocelot can load balance across available downstream services for each ReRoute. T
 The type of load balancer available are:
     
     LeastConnection - tracks which services are dealing with requests and sends new requests to service with least existing requests. The algorythm state is not distributed across a cluster of Ocelot's.
+
     RoundRobin - loops through available services and sends requests. The algorythm state is not distributed across a cluster of Ocelot's.
+    
     NoLoadBalancer - takes the first available service from config or service discovery.
 
 You must choose in your configuration which load balancer to use.
