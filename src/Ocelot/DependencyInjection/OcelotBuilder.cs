@@ -122,6 +122,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
             _services.TryAddSingleton<IRequestMapper, RequestMapper>();
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
+            _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -302,30 +303,5 @@ namespace Ocelot.DependencyInjection
             _services.Configure<FilePeers>(_configurationRoot);
             return this;
         }
-    }
-
-    public interface IAdministrationPath
-    {
-        string Path {get;}
-    }
-
-    public class NullAdministrationPath : IAdministrationPath
-    {
-        public NullAdministrationPath()
-        {
-            Path = null;
-        }
-
-        public string Path {get;private set;}
-    }
-
-    public class AdministrationPath : IAdministrationPath
-    {
-        public AdministrationPath(string path)
-        {
-            Path = path;
-        }
-
-        public string Path {get;private set;}
     }
 }

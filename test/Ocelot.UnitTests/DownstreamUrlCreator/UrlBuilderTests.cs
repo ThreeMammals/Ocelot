@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void WhenIBuildTheUrl()
         {
-            _result = _urlBuilder.Build(_dsPath, _dsScheme, new HostAndPort(_dsHost, _dsPort));
+            _result = _urlBuilder.Build(_dsPath, _dsScheme, new ServiceHostAndPort(_dsHost, _dsPort));
         }
 
         private void ThenTheUrlIsReturned(string expected)

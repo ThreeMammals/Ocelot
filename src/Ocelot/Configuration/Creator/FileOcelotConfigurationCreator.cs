@@ -38,6 +38,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private readonly IAdministrationPath _adminPath;
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
+        private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
 
 
         public FileOcelotConfigurationCreator(
@@ -55,9 +56,11 @@ namespace Ocelot.Configuration.Creator
             IRegionCreator regionCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IAdministrationPath adminPath,
-            IHeaderFindAndReplaceCreator headerFAndRCreator
+            IHeaderFindAndReplaceCreator headerFAndRCreator,
+            IDownstreamAddressesCreator downstreamAddressesCreator
             )
         {
+            _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
             _adminPath = adminPath;
             _regionCreator = regionCreator;
@@ -133,6 +136,8 @@ namespace Ocelot.Configuration.Creator
 
             var hAndRs = _headerFAndRCreator.Create(fileReRoute);
 
+            var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -150,8 +155,7 @@ namespace Ocelot.Configuration.Creator
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
-                .WithDownstreamHost(fileReRoute.DownstreamHost)
-                .WithDownstreamPort(fileReRoute.DownstreamPort)
+                .WithDownstreamAddresses(downstreamAddresses)
                 .WithReRouteKey(reRouteKey)
                 .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)

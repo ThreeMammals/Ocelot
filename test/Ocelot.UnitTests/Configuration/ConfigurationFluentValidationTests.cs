@@ -65,7 +65,13 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bbc.co.uk"
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk"
+                            }
+                        },
                     }
                 }
             }))
@@ -125,8 +131,14 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "//api/prod/",
-                        DownstreamHost = "bbc.co.uk",
-                        DownstreamPort = 80
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                                Port = 80                            
+                            }
+                        },
                     }
                 }
             }))
@@ -147,8 +159,14 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "//api/products/",
                         UpstreamPathTemplate = "/api/prod/",
-                        DownstreamHost = "bbc.co.uk",
-                        DownstreamPort = 80
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                                Port = 80
+                            }
+                        },
                     }
                 }
             }))
@@ -169,7 +187,13 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
@@ -217,13 +241,25 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bb.co.uk"
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bb.co.uk"
+                            }
+                        },
                     },
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bb.co.uk"
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bb.co.uk"
+                            }
+                        },
                     }
                 }
             }))
@@ -244,14 +280,26 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                         UpstreamHttpMethod = new List<string> {"Get"}
                     },
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
                 }
@@ -274,14 +322,26 @@ namespace Ocelot.UnitTests.Configuration
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },                    
                     },
                     new FileReRoute
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Post"},
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                     }
                 }
             }))
@@ -302,7 +362,13 @@ namespace Ocelot.UnitTests.Configuration
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1x",
@@ -329,7 +395,13 @@ namespace Ocelot.UnitTests.Configuration
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHost = "bbc.co.uk",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk",
+                            }
+                        },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1d",
@@ -406,13 +478,19 @@ namespace Ocelot.UnitTests.Configuration
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         UseServiceDiscovery = false,
-                        DownstreamHost = downstreamHost
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = downstreamHost,
+                            }
+                        },
                     }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discover DownstreamHost must be set or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
@@ -429,12 +507,96 @@ namespace Ocelot.UnitTests.Configuration
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         UseServiceDiscovery = false,
-                        DownstreamHost = "bbc.co.uk"
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "bbc.co.uk"
+                            }
+                        },
                     }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_when_no_downstream_but_has_host_and_port()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "test"
+                            }
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_not_valid_when_no_host_and_port()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
+                .BDDfy();
+        }
+         [Fact]
+        public void configuration_is_not_valid_when_host_and_port_is_empty()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        UseServiceDiscovery = false,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort()
+                        }
+                    }
+                }
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 

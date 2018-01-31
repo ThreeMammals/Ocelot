@@ -13,14 +13,14 @@ namespace Ocelot.ServiceDiscovery
                 return GetServiceDiscoveryProvider(reRoute.ServiceName, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
             }
 
-            var services = new List<Service>()
+            var services = new List<Service>();
+
+            foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
-                new Service(reRoute.ServiceName, 
-                new HostAndPort(reRoute.DownstreamHost, reRoute.DownstreamPort),
-                string.Empty, 
-                string.Empty, 
-                new string[0])
-            };
+                var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
+                
+                services.Add(service);
+            }
 
             return new ConfigurationServiceProvider(services);
         }

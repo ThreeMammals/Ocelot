@@ -14,15 +14,6 @@ if you don't want to manage lots of ReRoute specific settings.
         "GlobalConfiguration": {}
     }
 
-Follow Redirects / Use CookieContainer 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
-- _AllowAutoRedirect_ is a value that indicates whether the request should follow redirection responses.
-Set it true if the request should automatically follow redirection responses from the Downstream resource; otherwise false. The default value is true.
-- _UseCookieContainer_ is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests.
-The default value is true.
-
 Here is an example ReRoute configuration, You don't need to set all of these things but this is everything that is available at the moment:
 
 .. code-block:: json
@@ -45,8 +36,12 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "ReRouteIsCaseSensitive": false,
             "ServiceName": "",
             "DownstreamScheme": "http",
-            "DownstreamHost": "localhost",
-            "DownstreamPort": 51779,
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 51876,
+                }
+            ],
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 0,
                 "DurationOfBreak": 0,
@@ -72,6 +67,15 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
         }
 
 More information on how to use these options is below..
+
+Follow Redirects / Use CookieContainer 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
+- _AllowAutoRedirect_ is a value that indicates whether the request should follow redirection responses.
+Set it true if the request should automatically follow redirection responses from the Downstream resource; otherwise false. The default value is true.
+- _UseCookieContainer_ is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests.
+The default value is true.
 
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
