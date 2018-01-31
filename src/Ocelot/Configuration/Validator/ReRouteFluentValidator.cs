@@ -52,7 +52,7 @@ namespace Ocelot.Configuration.Validator
                 });
 
             When(reRoute => !reRoute.UseServiceDiscovery && !reRoute.DownstreamHostAndPorts.Any(), () => {
-                RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!");
+                RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discovery Host must be set or Ocelot cannot find your service!");
                 });
             
             When(reRoute => !reRoute.UseServiceDiscovery, () => {

@@ -5,6 +5,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IDownstreamAddressesCreator
     {
-        List<DownstreamAddress> Create(FileReRoute reRoute);
+        List<DownstreamHostAndPort> Create(FileReRoute reRoute);
     }
 }

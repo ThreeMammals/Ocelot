@@ -740,7 +740,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheDownstreamAddresses()
         {
-            _downstreamAddressesCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new List<DownstreamAddress>());
+            _downstreamAddressesCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new List<DownstreamHostAndPort>());
         }
     }
 }

@@ -41,10 +41,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
 
-            var downstreamAddresses = new List<DownstreamAddress>()
+            var downstreamAddresses = new List<DownstreamHostAndPort>()
             {
-                new DownstreamAddress("asdf.com", 80),
-                new DownstreamAddress("abc.com", 80)
+                new DownstreamHostAndPort("asdf.com", 80),
+                new DownstreamHostAndPort("abc.com", 80)
             };
 
             var reRoute = new ReRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        private void ThenTheFollowingServicesAreReturned(List<DownstreamAddress> downstreamAddresses)
+        private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result;
             var services = result.Get().Result;
@@ -66,8 +66,8 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 var service = services[i];
                 var downstreamAddress = downstreamAddresses[i];
 
-                service.HostAndPort.DownstreamHost.ShouldBe(downstreamAddress.DownstreamHost);
-                service.HostAndPort.DownstreamPort.ShouldBe(downstreamAddress.DownstreamPort);
+                service.HostAndPort.DownstreamHost.ShouldBe(downstreamAddress.Host);
+                service.HostAndPort.DownstreamPort.ShouldBe(downstreamAddress.Port);
             }
         }
 

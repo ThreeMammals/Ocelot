@@ -35,9 +35,9 @@ namespace Ocelot.Configuration.File
         public bool ReRouteIsCaseSensitive { get; set; }
         public string ServiceName { get; set; }
         public string DownstreamScheme {get;set;}
-        //todo - remove DownstreamHost and DownstreamPort and only have DownstreamHostAndPorts
+        //todo - remove Host and Port and only have DownstreamHostAndPorts
         public string DownstreamHost {get;set;}
-        //todo - remove DownstreamHost and DownstreamPort and only have DownstreamHostAndPorts
+        //todo - remove Host and Port and only have DownstreamHostAndPorts
         public int DownstreamPort { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public string LoadBalancer {get;set;}
@@ -45,7 +45,7 @@ namespace Ocelot.Configuration.File
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public bool UseServiceDiscovery {get;set;}
-        //todo - remove DownstreamHost and DownstreamPort and only have DownstreamHostAndPorts
+        //todo - remove Host and Port and only have DownstreamHostAndPorts
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
     }
 }

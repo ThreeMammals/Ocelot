@@ -7,7 +7,7 @@ namespace Ocelot.Configuration.Validator
     {
         public HostAndPortValidator()
         {
-            RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discovery DownstreamHost must be set on DownstreamHostAndPorts if you are not using ReRoute.DownstreamHost or Ocelot cannot find your service!");
+            RuleFor(r => r.DownstreamHost).NotEmpty().WithMessage("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!");
         }
     }
 }

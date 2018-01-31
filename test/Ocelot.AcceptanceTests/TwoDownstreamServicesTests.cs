@@ -66,16 +66,16 @@ namespace Ocelot.AcceptanceTests
 // {
 // "DownstreamPathTemplate": "/api/user/{user}",
 // "DownstreamScheme": "http",
-// "DownstreamHost": "localhost",
-// "DownstreamPort": 8362,
+// "Host": "localhost",
+// "Port": 8362,
 // "UpstreamPathTemplate": "/api/user/{user}",
 // "UpstreamHttpMethod": [ "Get" ]
 // },
 // {
 // "DownstreamPathTemplate": "/api/product/{product}",
 // "DownstreamScheme": "http",
-// "DownstreamHost": "localhost",
-// "DownstreamPort": 8330,
+// "Host": "localhost",
+// "Port": 8330,
 // "UpstreamPathTemplate": "//api/product/{product}",
 // "UpstreamHttpMethod": [ "Get" ]
 // }

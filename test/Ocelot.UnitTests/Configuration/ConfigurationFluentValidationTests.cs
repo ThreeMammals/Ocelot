@@ -412,7 +412,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
@@ -487,7 +487,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set or Ocelot cannot find your service!"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set or Ocelot cannot find your service!"))
                 .BDDfy();
         }
          [Fact]
@@ -512,7 +512,7 @@ namespace Ocelot.UnitTests.Configuration
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHost must be set on DownstreamHostAndPorts if you are not using ReRoute.DownstreamHost or Ocelot cannot find your service!"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 

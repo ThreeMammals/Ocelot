@@ -13,7 +13,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         public DownstreamAddressesCreator _creator;
         private FileReRoute _reRoute;
-        private List<DownstreamAddress> _result;
+        private List<DownstreamHostAndPort> _result;
 
         public DownstreamAddressesCreatorTests()
         {
@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.Configuration
             {
             };
 
-            var expected = new List<DownstreamAddress>
+            var expected = new List<DownstreamHostAndPort>
             {
             };
 
@@ -46,9 +46,9 @@ namespace Ocelot.UnitTests.Configuration
                 DownstreamPort = 80
             };
 
-            var expected = new List<DownstreamAddress>
+            var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamAddress("test", 80),
+                new DownstreamHostAndPort("test", 80),
             };
 
             this.Given(x => GivenTheFollowingReRoute(reRoute))
@@ -77,10 +77,10 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expected = new List<DownstreamAddress>
+            var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamAddress("test", 80),
-                new DownstreamAddress("west", 443)
+                new DownstreamHostAndPort("test", 80),
+                new DownstreamHostAndPort("west", 443)
             };
             
             this.Given(x => GivenTheFollowingReRoute(reRoute))
@@ -99,7 +99,7 @@ namespace Ocelot.UnitTests.Configuration
             _result = _creator.Create(_reRoute);
         }
 
-        private void TheThenFollowingIsReturned(List<DownstreamAddress> expecteds)
+        private void TheThenFollowingIsReturned(List<DownstreamHostAndPort> expecteds)
         {
             _result.Count.ShouldBe(expecteds.Count);
 
@@ -108,8 +108,8 @@ namespace Ocelot.UnitTests.Configuration
                 var result = _result[i];
                 var expected = expecteds[i];
 
-                result.DownstreamHost.ShouldBe(expected.DownstreamHost);
-                result.DownstreamPort.ShouldBe(expected.DownstreamPort);
+                result.Host.ShouldBe(expected.Host);
+                result.Port.ShouldBe(expected.Port);
             }
         }
     }

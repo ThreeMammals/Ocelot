@@ -33,7 +33,7 @@ namespace Ocelot.Configuration
             string serviceName,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
-            List<DownstreamAddress> downstreamAddresses)
+            List<DownstreamHostAndPort> downstreamAddresses)
         {
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace;
@@ -93,7 +93,7 @@ namespace Ocelot.Configuration
         public string ServiceName {get;private set;}
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace {get;private set;}
-        public List<DownstreamAddress> DownstreamAddresses {get;private set;}
+        public List<DownstreamHostAndPort> DownstreamAddresses {get;private set;}
 
     }
 }

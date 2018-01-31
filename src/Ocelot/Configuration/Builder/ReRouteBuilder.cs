@@ -43,14 +43,14 @@ namespace Ocelot.Configuration.Builder
 
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
-        private List<DownstreamAddress> _downstreamAddresses;
+        private List<DownstreamHostAndPort> _downstreamAddresses;
 
         public ReRouteBuilder()
         {
-            _downstreamAddresses = new List<DownstreamAddress>();
+            _downstreamAddresses = new List<DownstreamHostAndPort>();
         }
 
-        public ReRouteBuilder WithDownstreamAddresses(List<DownstreamAddress> downstreamAddresses)
+        public ReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
         {
             _downstreamAddresses.AddRange(downstreamAddresses);
             return this;
@@ -236,7 +236,7 @@ namespace Ocelot.Configuration.Builder
             //todo get rid of this
             if(!string.IsNullOrEmpty(_downstreamHost))
             {
-                var downstreamAddress = new DownstreamAddress(_downstreamHost, _downstreamPort);
+                var downstreamAddress = new DownstreamHostAndPort(_downstreamHost, _downstreamPort);
                 _downstreamAddresses.Add(downstreamAddress);
             }
 
