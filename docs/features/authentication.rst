@@ -22,13 +22,17 @@ We then map this to a ReRoute in the configuration e.g.
 .. code-block:: json
 
     "ReRoutes": [{
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 51876,
+                }
+            ],
             "DownstreamPathTemplate": "/",
             "UpstreamPathTemplate": "/",
             "UpstreamHttpMethod": ["Post"],
             "ReRouteIsCaseSensitive": false,
             "DownstreamScheme": "http",
-            "DownstreamHost": "localhost",
-            "DownstreamPort": 51876,
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "TestKey",
                 "AllowedScopes": []
@@ -67,13 +71,17 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 .. code-block:: json
 
     "ReRoutes": [{
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 51876,
+                }
+            ],
             "DownstreamPathTemplate": "/",
             "UpstreamPathTemplate": "/",
             "UpstreamHttpMethod": ["Post"],
             "ReRouteIsCaseSensitive": false,
             "DownstreamScheme": "http",
-            "DownstreamHost": "localhost",
-            "DownstreamPort": 51876,
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "TestKey",
                 "AllowedScopes": []
@@ -111,13 +119,17 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 .. code-block:: json
 
     "ReRoutes": [{
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 51876,
+                }
+            ],
             "DownstreamPathTemplate": "/",
             "UpstreamPathTemplate": "/",
             "UpstreamHttpMethod": ["Post"],
             "ReRouteIsCaseSensitive": false,
             "DownstreamScheme": "http",
-            "DownstreamHost": "localhost",
-            "DownstreamPort": 51876,
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "TestKey",
                 "AllowedScopes": []

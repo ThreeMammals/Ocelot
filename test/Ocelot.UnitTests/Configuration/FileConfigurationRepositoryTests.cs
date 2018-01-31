@@ -89,18 +89,25 @@ namespace Ocelot.UnitTests.Configuration
             _result = _repo.Get().Result.Data;
         }
 
-        private void ThenTheConfigurationIsStoredAs(FileConfiguration expected)
+        private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
         {
-            _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
             for(var i = 0; i < _result.ReRoutes.Count; i++)
             {
-                _result.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                _result.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
+                for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                {
+                    var result = _result.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+
+                    result.Host.ShouldBe(expected.Host);
+                    result.Port.ShouldBe(expected.Port);
+                }
+
+                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
             }
         }
 
@@ -123,18 +130,25 @@ namespace Ocelot.UnitTests.Configuration
             _result = _repo.Get().Result.Data;
         }
 
-        private void ThenTheFollowingIsReturned(FileConfiguration expected)
+        private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
         {
-            _result.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
             for(var i = 0; i < _result.ReRoutes.Count; i++)
             {
-                _result.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                _result.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
+                for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                {
+                    var result = _result.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+
+                    result.Host.ShouldBe(expected.Host);
+                    result.Port.ShouldBe(expected.Port);
+                }
+
+                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
             }
         }
 
@@ -144,8 +158,14 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new FileReRoute
                 {
-                    DownstreamHost = "123.12.12.12",
-                    DownstreamPort = 80,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = "123.12.12.12",
+                            Port = 80,
+                        }
+                    },
                     DownstreamScheme = "https",
                     DownstreamPathTemplate = "/asdfs/test/{test}"
                 }
@@ -173,8 +193,14 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new FileReRoute
                 {
-                    DownstreamHost = "localhost",
-                    DownstreamPort = 80,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = "localhost",
+                            Port = 80,
+                        }
+                    },
                     DownstreamScheme = "https",
                     DownstreamPathTemplate = "/test/test/{test}"
                 }

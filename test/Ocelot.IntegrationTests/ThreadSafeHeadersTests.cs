@@ -46,8 +46,14 @@ namespace Ocelot.IntegrationTests
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 51879,
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51879,
+                                }
+                            },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }

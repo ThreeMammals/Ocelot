@@ -32,7 +32,8 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/logging
    features/requestid
    features/middlewareinjection
-   
+   features/loadbalancer
+
 .. toctree::
    :maxdepth: 2
    :hidden:

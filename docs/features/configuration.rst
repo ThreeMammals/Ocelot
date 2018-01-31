@@ -45,8 +45,12 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "ReRouteIsCaseSensitive": false,
             "ServiceName": "",
             "DownstreamScheme": "http",
-            "DownstreamHost": "localhost",
-            "DownstreamPort": 51779,
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 51876,
+                }
+            ],
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 0,
                 "DurationOfBreak": 0,

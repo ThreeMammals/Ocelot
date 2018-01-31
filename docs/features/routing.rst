@@ -23,20 +23,26 @@ the following.
     {
         "DownstreamPathTemplate": "/api/posts/{postId}",
         "DownstreamScheme": "https",
-        "DownstreamPort": 80,
-        "DownstreamHost":"localhost",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 80,
+                }
+            ],
         "UpstreamPathTemplate": "/posts/{postId}",
         "UpstreamHttpMethod": [ "Put", "Delete" ]
     }
 
-The DownstreamPathTemplate, Scheme, Port and Host make the URL that this request will be forwarded to.
-The UpstreamPathTemplate is the URL that Ocelot will use to identity which 
-DownstreamPathTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
+The DownstreamPathTemplate, Scheme and DownstreamHostAndPorts make the URL that this request will be forwarded to. 
+
+DownstreamHostAndPorts is an array that contains the host and port of any downstream services that you wish to forward requests to. Usually this will just contain one entry but sometimes you might want to load balance
+requests to your downstream services and Ocelot let's you add more than one entry and then select a load balancer.
+
+The UpstreamPathTemplate is the URL that Ocelot will use to identity which DownstreamPathTemplate to use for a given request. Finally the UpstreamHttpMethod is used so
 Ocelot can distinguish between requests to the same URL and is obviously needed to work :)
+
 You can set a specific list of HTTP Methods or set an empty list to allow any of them. In Ocelot you can add placeholders for variables to your Templates in the form of {something}.
-The placeholder needs to be in both the DownstreamPathTemplate and UpstreamPathTemplate. If it is
-Ocelot will attempt to replace the placeholder with the correct variable value from the 
-Upstream URL when the request comes in.
+The placeholder needs to be in both the DownstreamPathTemplate and UpstreamPathTemplate. If it is Ocelot will attempt to replace the placeholder with the correct variable value from the Upstream URL when the request comes in.
 
 You can also do a catch all type of ReRoute e.g. 
 
@@ -45,8 +51,12 @@ You can also do a catch all type of ReRoute e.g.
     {
         "DownstreamPathTemplate": "/api/{everything}",
         "DownstreamScheme": "https",
-        "DownstreamPort": 80,
-        "DownstreamHost":"localhost",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 80,
+                }
+            ],
         "UpstreamPathTemplate": "/{everything}",
         "UpstreamHttpMethod": [ "Get", "Post" ]
     }
@@ -74,8 +84,12 @@ Ocelot's routing also supports a catch all style routing where the user can spec
     {
         "DownstreamPathTemplate": "/{url}",
         "DownstreamScheme": "https",
-        "DownstreamPort": 80,
-        "DownstreamHost":"localhost",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 80,
+                }
+            ],
         "UpstreamPathTemplate": "/{url}",
         "UpstreamHttpMethod": [ "Get" ]
     }
@@ -87,8 +101,12 @@ The catch all has a lower priority than any other ReRoute. If you also have the 
     {
         "DownstreamPathTemplate": "/",
         "DownstreamScheme": "https",
-        "DownstreamPort": 80,
-        "DownstreamHost":"10.0.10.1",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "10.0.10.1",
+                    "Port": 80,
+                }
+            ],
         "UpstreamPathTemplate": "/",
         "UpstreamHttpMethod": [ "Get" ]
     }

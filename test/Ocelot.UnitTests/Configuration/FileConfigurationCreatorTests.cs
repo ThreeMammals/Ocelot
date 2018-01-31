@@ -118,7 +118,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -152,7 +158,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -187,7 +199,13 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileReRoute
                     {
-                        DownstreamHost = "127.0.0.1",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "127.0.0.1",
+                            }
+                        },
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -222,7 +240,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
@@ -237,7 +261,7 @@ namespace Ocelot.UnitTests.Configuration
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
                                 new ReRouteBuilder()
-                                    .WithDownstreamHost("127.0.0.1")
+                                    .WithDownstreamAddresses(new List<DownstreamHostAndPort>(){new DownstreamHostAndPort("127.0.0.1", 80) })
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -455,7 +479,13 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 new FileReRoute
                                 {
-                                    DownstreamHost = "127.0.0.1",
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" }

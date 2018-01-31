@@ -48,13 +48,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 new FileHostAndPort
                                 {
-                                    DownstreamHost = "localhost",
-                                    DownstreamPort = 50881
+                                    Host = "localhost",
+                                    Port = 50881
                                 },
                                 new FileHostAndPort
                                 {
-                                    DownstreamHost = "localhost",
-                                    DownstreamPort = 50882
+                                    Host = "localhost",
+                                    Port = 50882
                                 }
                             }
                         }

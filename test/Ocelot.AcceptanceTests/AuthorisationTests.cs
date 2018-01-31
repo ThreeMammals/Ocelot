@@ -49,9 +49,15 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = "/",
-                           DownstreamPort = 51876,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host = "localhost",
+                                   Port = 51876,
+                               }
+                           },
                            DownstreamScheme = "http",
-                           DownstreamHost = "localhost",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
@@ -101,9 +107,15 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = "/",
-                           DownstreamPort = 51876,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host = "localhost",
+                                   Port = 51876,
+                               }
+                           },
                            DownstreamScheme = "http",
-                           DownstreamHost = "localhost",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
@@ -151,8 +163,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = "/",
-                           DownstreamPort = 51876,
-                           DownstreamHost = "localhost",
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host = "localhost",
+                                   Port = 51876,
+                               }
+                           },
                            DownstreamScheme = "http",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
@@ -186,8 +204,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = "/",
-                           DownstreamPort = 51876,
-                           DownstreamHost = "localhost",
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host = "localhost",
+                                   Port = 51876,
+                               }
+                           },
                            DownstreamScheme = "http",
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },

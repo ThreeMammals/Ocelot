@@ -36,8 +36,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51879,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51879,
+                            }
+                        },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
@@ -81,8 +87,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51879,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51879,
+                            }
+                        },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
@@ -96,8 +108,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51880,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51880,
+                            }
+                        },
                         UpstreamPathTemplate = "/working",
                         UpstreamHttpMethod = new List<string> { "Get" },
                     }

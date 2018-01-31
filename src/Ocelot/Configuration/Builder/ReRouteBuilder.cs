@@ -25,25 +25,17 @@ namespace Ocelot.Configuration.Builder
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
         private string _downstreamScheme;
-        
-        //todo get rid of this
-        private string _downstreamHost;
-
-        //todo get rid of this
-        private int _downstreamPort;
         private string _loadBalancer;
         private bool _useQos;
         private QoSOptions _qosOptions;
         private HttpHandlerOptions _httpHandlerOptions;
-        public bool _enableRateLimiting;
-        public RateLimitOptions _rateLimitOptions;
-        private string _authenticationProviderKey;
+        private bool _enableRateLimiting;
+        private RateLimitOptions _rateLimitOptions;
         private bool _useServiceDiscovery;
         private string _serviceName;
-
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
-        private List<DownstreamHostAndPort> _downstreamAddresses;
+        private readonly List<DownstreamHostAndPort> _downstreamAddresses;
 
         public ReRouteBuilder()
         {
@@ -65,12 +57,6 @@ namespace Ocelot.Configuration.Builder
         public ReRouteBuilder WithDownstreamScheme(string downstreamScheme)
         {
             _downstreamScheme = downstreamScheme;
-            return this;
-        }
-
-        public ReRouteBuilder WithDownstreamHost(string downstreamHost)
-        {
-            _downstreamHost = downstreamHost;
             return this;
         }
 
@@ -152,12 +138,6 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithDownstreamPort(int port)
-        {
-            _downstreamPort = port;
-            return this;
-        }
-
         public ReRouteBuilder WithIsQos(bool input)
         {
             _useQos = input;
@@ -194,12 +174,6 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
-        {
-            _authenticationProviderKey = authenticationProviderKey;
-            return this;
-        }
-
         public ReRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
         {
             _httpHandlerOptions = input;
@@ -232,14 +206,6 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-
-            //todo get rid of this
-            if(!string.IsNullOrEmpty(_downstreamHost))
-            {
-                var downstreamAddress = new DownstreamHostAndPort(_downstreamHost, _downstreamPort);
-                _downstreamAddresses.Add(downstreamAddress);
-            }
-
             return new ReRoute(
                 new PathTemplate(_downstreamPathTemplate), 
                 new PathTemplate(_upstreamTemplate), 

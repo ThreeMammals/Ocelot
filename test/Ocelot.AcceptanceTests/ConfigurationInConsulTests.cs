@@ -40,8 +40,14 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 51779,
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51779,
+                                }
+                            },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }
@@ -79,8 +85,14 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 51779,
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51779,
+                                }
+                            },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }
@@ -133,8 +145,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51779,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51779,
+                            }
+                        },
                         UpstreamPathTemplate = "/cs/status",
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
@@ -187,8 +205,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51779,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51780,
+                            }
+                        },
                         UpstreamPathTemplate = "/cs/status",
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
@@ -211,8 +235,14 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 51779,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51780,
+                            }
+                        },
                         UpstreamPathTemplate = "/cs/status/awesome",
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
@@ -229,7 +259,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51780", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
