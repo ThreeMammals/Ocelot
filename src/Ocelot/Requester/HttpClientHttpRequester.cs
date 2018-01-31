@@ -69,15 +69,15 @@ namespace Ocelot.Requester
 
         private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
         {
-            string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
+            string cacheKey = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
 
             if (request.IsQos)
             {
                 builder.WithQos(request.QosProvider, _logger);
-                baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
+                cacheKey = $"{cacheKey}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
             }
            
-            return baseUrl;
+            return cacheKey;
         }
     }
 }
