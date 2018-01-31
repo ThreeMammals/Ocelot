@@ -104,7 +104,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request()
         {
-            var consulPort = 8503;
+            var consulPort = 8505;
             var serviceName = "web";
             var downstreamServiceOneUrl = "http://localhost:8080";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
