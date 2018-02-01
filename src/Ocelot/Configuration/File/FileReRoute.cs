@@ -42,5 +42,6 @@ namespace Ocelot.Configuration.File
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public bool UseServiceDiscovery {get;set;}
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
+        public string UpstreamHost { get; set; }
     }
 }

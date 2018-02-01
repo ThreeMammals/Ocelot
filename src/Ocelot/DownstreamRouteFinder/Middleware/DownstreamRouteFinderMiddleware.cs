@@ -36,6 +36,8 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             var upstreamUrlPath = context.Request.Path.ToString();
 
+            var upstreamHost = context.Request.Headers["Host"];
+
             var configuration = await _configProvider.Get(); 
             
             if(configuration.IsError)
@@ -49,7 +51,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
-            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method, configuration.Data);
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {
