@@ -25,20 +25,12 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
-            var applicableReRoutes = configuration.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())).OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
+            var applicableReRoutes = configuration.ReRoutes
+                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
+                .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
             foreach (var reRoute in applicableReRoutes)
             {
-                if (!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost)
-                {
-                    continue;
-                }
-
-                if (path == reRoute.UpstreamTemplatePattern.Template)
-                {
-                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(path, reRoute));
-                }
-
                 var urlMatch = _urlMatcher.Match(path, reRoute.UpstreamTemplatePattern.Template);
 
                 if (urlMatch.Data.Match)
@@ -59,6 +51,11 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             {
                 new UnableToFindDownstreamRouteError()
             });
+        }
+
+        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
+        {
+            return reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower()) && !(!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost);
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, ReRoute reRoute)
