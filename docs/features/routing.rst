@@ -3,7 +3,7 @@ Routing
 
 Ocelot's primary functionality is to take incomeing http requests and forward them on
 to a downstream service. At the moment in the form of another http request (in the future
-this could be any transport mechanism.). 
+this could be any transport mechanism). 
 
 Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
 anything working in Ocelot you need to set up a ReRoute in the configuration.
@@ -110,3 +110,33 @@ The catch all has a lower priority than any other ReRoute. If you also have the 
         "UpstreamPathTemplate": "/",
         "UpstreamHttpMethod": [ "Get" ]
     }
+
+Upstream Host 
+^^^^^^^^^^^^^
+
+This feature allows you to have ReRoutes based on the upstream host. This works by looking at the host header the client has used and then using this as part of the information we use to identify a ReRoute.
+
+In order to use this feature please add the following to your config.
+
+.. code-block:: json
+
+    {
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "https",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "10.0.10.1",
+                    "Port": 80,
+                }
+            ],
+        "UpstreamPathTemplate": "/",
+        "UpstreamHttpMethod": [ "Get" ],
+        "UpstreamHost": "somedomain.com"
+    }
+
+The ReRoute above will only be matched when the host header value is somedomain.com.
+
+If you do not set UpstreamHost on a ReRoue then any host header can match it. This is basically a catch all and 
+preservers existing functionality at the time of building the feature. This means that if you have two ReRoutes that are the same apart from the UpstreamHost where one is null and the other set. Ocelot will favour the one that has been set. 
+
+This feature was requested as part of `Issue 216 <https://github.com/TomPallister/Ocelot/pull/216>`_ .

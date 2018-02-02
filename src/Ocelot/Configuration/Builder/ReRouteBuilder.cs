@@ -10,7 +10,7 @@ namespace Ocelot.Configuration.Builder
     public class ReRouteBuilder
     {
         private AuthenticationOptions _authenticationOptions;
-        private string _loadBalancerKey;
+        private string _reRouteKey;
         private string _downstreamPathTemplate;
         private string _upstreamTemplate;
         private UpstreamPathTemplate _upstreamTemplatePattern;
@@ -157,9 +157,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-        public ReRouteBuilder WithReRouteKey(string loadBalancerKey)
+        public ReRouteBuilder WithReRouteKey(string reRouteKey)
         {
-            _loadBalancerKey = loadBalancerKey;
+            _reRouteKey = reRouteKey;
             return this;
         }
 
@@ -231,7 +231,7 @@ namespace Ocelot.Configuration.Builder
                 _fileCacheOptions, 
                 _downstreamScheme, 
                 _loadBalancer,
-                _loadBalancerKey, 
+                _reRouteKey, 
                 _useQos, 
                 _qosOptions,
                 _enableRateLimiting,
