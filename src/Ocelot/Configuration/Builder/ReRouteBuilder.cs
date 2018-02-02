@@ -10,7 +10,7 @@ namespace Ocelot.Configuration.Builder
     public class ReRouteBuilder
     {
         private AuthenticationOptions _authenticationOptions;
-        private string _loadBalancerKey;
+        private string _reRouteKey;
         private string _downstreamPathTemplate;
         private string _upstreamTemplate;
         private UpstreamPathTemplate _upstreamTemplatePattern;
@@ -36,6 +36,7 @@ namespace Ocelot.Configuration.Builder
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
+        private string _upstreamHost;
 
         public ReRouteBuilder()
         {
@@ -45,6 +46,12 @@ namespace Ocelot.Configuration.Builder
         public ReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
         {
             _downstreamAddresses.AddRange(downstreamAddresses);
+            return this;
+        }
+
+        public ReRouteBuilder WithUpstreamHost(string upstreamAddresses)
+        {
+            _upstreamHost = upstreamAddresses;
             return this;
         }
 
@@ -150,9 +157,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-        public ReRouteBuilder WithReRouteKey(string loadBalancerKey)
+        public ReRouteBuilder WithReRouteKey(string reRouteKey)
         {
-            _loadBalancerKey = loadBalancerKey;
+            _reRouteKey = reRouteKey;
             return this;
         }
 
@@ -204,6 +211,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+
         public ReRoute Build()
         {
             return new ReRoute(
@@ -223,7 +231,7 @@ namespace Ocelot.Configuration.Builder
                 _fileCacheOptions, 
                 _downstreamScheme, 
                 _loadBalancer,
-                _loadBalancerKey, 
+                _reRouteKey, 
                 _useQos, 
                 _qosOptions,
                 _enableRateLimiting,
@@ -233,7 +241,8 @@ namespace Ocelot.Configuration.Builder
                 _serviceName,
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace,
-                _downstreamAddresses);
+                _downstreamAddresses,
+                _upstreamHost);
         }
     }
 }

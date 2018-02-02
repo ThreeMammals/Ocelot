@@ -26,6 +26,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private OcelotConfiguration _config;
         private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;
+        private string _upstreamHost;
 
         public DownstreamRouteFinderTests()
         {
@@ -210,7 +211,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build()
                         )))
-                .And(x => x.ThenTheUrlMatcherIsNotCalled())
                 .BDDfy();
         }
 
@@ -370,10 +370,159 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
                 .When(x => x.WhenICallTheFinder())
-                 .Then(
-                     x => x.ThenAnErrorResponseIsReturned())
+                 .Then(x => x.ThenAnErrorResponseIsReturned())
                  .And(x => x.ThenTheUrlMatcherIsNotCalled())
                  .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_route_when_host_matches()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
+                .And(x => GivenTheUpstreamHostIs("MATCH"))
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
+                    new OkResponse<List<PlaceholderNameAndValue>>(
+                        new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamHost("MATCH")
+                            .Build()
+                    }, string.Empty, serviceProviderConfig
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build()
+                    )))
+                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_route_when_upstreamhost_is_null()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
+                .And(x => GivenTheUpstreamHostIs("MATCH"))
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
+                    new OkResponse<List<PlaceholderNameAndValue>>(
+                        new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build()
+                    }, string.Empty, serviceProviderConfig
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build()
+                    )))
+                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_return_route_when_host_doesnt_match()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
+                .And(x => GivenTheUpstreamHostIs("DONTMATCH"))
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamHost("MATCH")
+
+                            .Build()
+                    }, string.Empty, serviceProviderConfig
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(x => x.ThenAnErrorResponseIsReturned())
+                .And(x => x.ThenTheUrlMatcherIsNotCalled())
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_return_route_when_host_matches_but_null_host_on_same_path_first()
+        {
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
+                .And(x => GivenTheUpstreamHostIs("MATCH"))
+                .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
+                    new OkResponse<List<PlaceholderNameAndValue>>(
+                        new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("THENULLPATH")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamHost("MATCH")
+                            .Build()
+                    }, string.Empty, serviceProviderConfig
+                ))
+                .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+                .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
+                .When(x => x.WhenICallTheFinder())
+                .Then(
+                    x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build()
+                    )))
+                .And(x => x.ThenTheUrlMatcherIsCalledCorrectly(2))
+                .BDDfy();
+        }
+
+        private void GivenTheUpstreamHostIs(string upstreamHost)
+        {
+            _upstreamHost = upstreamHost;
         }
 
         private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<PlaceholderNameAndValue>> response)
@@ -397,6 +546,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _mockMatcher
                 .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Once);
+        }
+
+        private void ThenTheUrlMatcherIsCalledCorrectly(int times)
+        {
+            _mockMatcher
+                .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Exactly(times));
         }
 
         private void ThenTheUrlMatcherIsCalledCorrectly(string expectedUpstreamUrlPath)
@@ -432,7 +587,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod, _config);
+            _result = _downstreamRouteFinder.FindDownstreamRoute(_upstreamUrlPath, _upstreamHttpMethod, _config, _upstreamHost);
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

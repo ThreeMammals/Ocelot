@@ -13,44 +13,56 @@ namespace Ocelot.DownstreamRouteFinder.Finder
     public class DownstreamRouteFinder : IDownstreamRouteFinder
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
-        private readonly IPlaceholderNameAndValueFinder __placeholderNameAndValueFinder;
+        private readonly IPlaceholderNameAndValueFinder _placeholderNameAndValueFinder;
 
         public DownstreamRouteFinder(IUrlPathToUrlTemplateMatcher urlMatcher, IPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
         {
             _urlMatcher = urlMatcher;
-            __placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
+            _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IOcelotConfiguration configuration)
+        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IOcelotConfiguration configuration, string upstreamHost)
         {
-            var applicableReRoutes = configuration.ReRoutes.Where(r => r.UpstreamHttpMethod.Count == 0 || r.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())).OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
+            var downstreamRoutes = new List<DownstreamRoute>();
+
+            var applicableReRoutes = configuration.ReRoutes
+                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
+                .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
             foreach (var reRoute in applicableReRoutes)
             {
-                if (path == reRoute.UpstreamTemplatePattern.Template)
-                {
-                    return GetPlaceholderNamesAndValues(path, reRoute);
-                }
-
                 var urlMatch = _urlMatcher.Match(path, reRoute.UpstreamTemplatePattern.Template);
 
                 if (urlMatch.Data.Match)
                 {
-                    return GetPlaceholderNamesAndValues(path, reRoute);
+                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(path, reRoute));
                 }
             }
-        
+
+            if (downstreamRoutes.Any())
+            {
+                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+
+                return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
+            }
+
             return new ErrorResponse<DownstreamRoute>(new List<Error>
             {
                 new UnableToFindDownstreamRouteError()
             });
         }
 
-        private OkResponse<DownstreamRoute> GetPlaceholderNamesAndValues(string path, ReRoute reRoute)
+        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
         {
-            var templatePlaceholderNameAndValues = __placeholderNameAndValueFinder.Find(path, reRoute.UpstreamPathTemplate.Value);
+            return reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower()) && !(!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost);
+        }
 
-            return new OkResponse<DownstreamRoute>(new DownstreamRoute(templatePlaceholderNameAndValues.Data, reRoute));
+        private DownstreamRoute GetPlaceholderNamesAndValues(string path, ReRoute reRoute)
+        {
+            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, reRoute.UpstreamPathTemplate.Value);
+
+            return new DownstreamRoute(templatePlaceholderNameAndValues.Data, reRoute);
         }
     }
 }
