@@ -23,6 +23,8 @@ namespace Ocelot.AcceptanceTests
         private int _counterOne;
         private int _counterTwo;
         private static readonly object _syncLock = new object();
+        private IWebHost _builder;
+        private string _downstreamPath;
 
         public ServiceDiscoveryTests()
         {
@@ -88,13 +90,69 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
                 .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
                 .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
+                .BDDfy();
+        }
+
+        //test from issue 213
+        [Fact]
+        public void should_handle_request_to_consul_for_downstream_service_and_make_request()
+        {
+            var consulPort = 8505;
+            var serviceName = "web";
+            var downstreamServiceOneUrl = "http://localhost:8080";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = 8080,
+                    ID = "web_90_0_2_224_8080",
+                    Tags = new string[1]{"version-v1"}
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/home",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/home",
+                            UpstreamHttpMethod = new List<string> { "Get", "Options" },
+                            ServiceName = serviceName,
+                            LoadBalancer = "LeastConnection",
+                            UseServiceDiscovery = true,
+                        }
+                    },
+                    GlobalConfiguration = new FileGlobalConfiguration()
+                    {
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                        {
+                            Host = "localhost",
+                            Port = consulPort
+                        }
+                    }
+            };
+
+                this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))                
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/home"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -156,7 +214,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
@@ -217,7 +275,7 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
+        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
             _fakeConsulBuilder = new WebHostBuilder()
                             .UseUrls(url)
@@ -229,7 +287,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 app.Run(async context =>
                                 {
-                                    if(context.Request.Path.Value == "/v1/health/service/product")
+                                    if(context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                                     {
                                         await context.Response.WriteJsonAsync(_serviceEntries);
                                     }
@@ -308,6 +366,37 @@ namespace Ocelot.AcceptanceTests
                 .Build();
 
             _builderTwo.Start();
+        }
+
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(async context =>
+                    {   
+                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                        if(_downstreamPath != basePath)
+                        {
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync("downstream path didnt match base path");
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(responseBody);
+                        }
+                    });
+                })
+                .Build();
+
+            _builder.Start();
         }
 
         public void Dispose()

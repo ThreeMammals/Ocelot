@@ -53,8 +53,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamPort = _downstreamServicePort,
-                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host =_downstreamServiceHost,
+                                   Port = _downstreamServicePort,
+                               }
+                           },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
@@ -86,8 +92,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamPort = _downstreamServicePort,
-                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host =_downstreamServiceHost,
+                                   Port = _downstreamServicePort,
+                               }
+                           },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
@@ -121,8 +133,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamPort = _downstreamServicePort,
-                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host =_downstreamServiceHost,
+                                   Port = _downstreamServicePort,
+                               }
+                           },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
@@ -155,8 +173,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamPort = _downstreamServicePort,
-                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host =_downstreamServiceHost,
+                                   Port = _downstreamServicePort,
+                               }
+                           },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
@@ -190,8 +214,14 @@ namespace Ocelot.AcceptanceTests
                        new FileReRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamPort = _downstreamServicePort,
-                           DownstreamHost = _downstreamServiceHost,
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host =_downstreamServiceHost,
+                                   Port = _downstreamServicePort,
+                               }
+                           },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },

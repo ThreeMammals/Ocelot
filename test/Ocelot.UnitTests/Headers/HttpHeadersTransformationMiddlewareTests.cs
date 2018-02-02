@@ -37,12 +37,20 @@ namespace Ocelot.UnitTests.Headers
         public void should_call_pre_and_post_header_transforms()
         {
             this.Given(x => GivenTheFollowingRequest())
+                .And(x => GivenTheDownstreamRequestIs())
                 .And(x => GivenTheReRouteHasPreFindAndReplaceSetUp())
                 .And(x => GivenTheHttpResponseMessageIs())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
                 .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void GivenTheDownstreamRequestIs()
+        {
+            var request = new HttpRequestMessage();
+            var response = new OkResponse<HttpRequestMessage>(request);
+            ScopedRepository.Setup(x => x.Get<HttpRequestMessage>("DownstreamRequest")).Returns(response);
         }
 
         private void GivenTheHttpResponseMessageIs()
@@ -68,7 +76,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
         {
-            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
+            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<HttpRequestMessage>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()

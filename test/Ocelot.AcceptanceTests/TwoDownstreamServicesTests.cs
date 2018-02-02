@@ -37,57 +37,6 @@ namespace Ocelot.AcceptanceTests
             var downstreamServiceTwoUrl = "http://localhost:8330";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
           
-// http://localhost:8362/api/user/info?id=1 is ok
-// http://localhost:3164/api/user/info?id=1 is ok
-// http://localhost:8330/api/product/info?id=1 is ok
-// http://localhost:3164/api/product/info?id=1 is 404
-
-// is my configuration.json
-// {
-// "ReRoutes": [
-// //{
-// // "DownstreamPathTemplate": "/{product}",
-// // "DownstreamScheme": "http",
-// // "UpstreamPathTemplate": "/{product}",
-// // "UpstreamHttpMethod": [ "Get", "Post" ],
-// // "ServiceName": "api-product",
-// // "LoadBalancer": "LeastConnection",
-// // "UseServiceDiscovery": true
-// //},
-// //{
-// // "DownstreamPathTemplate": "/{user}",
-// // "DownstreamScheme": "http",
-// // "UpstreamPathTemplate": "/{user}",
-// // "UpstreamHttpMethod": [ "Get", "Post" ],
-// // "ServiceName": "api-user",
-// // "LoadBalancer": "LeastConnection",
-// // "UseServiceDiscovery": true
-// //},
-// {
-// "DownstreamPathTemplate": "/api/user/{user}",
-// "DownstreamScheme": "http",
-// "DownstreamHost": "localhost",
-// "DownstreamPort": 8362,
-// "UpstreamPathTemplate": "/api/user/{user}",
-// "UpstreamHttpMethod": [ "Get" ]
-// },
-// {
-// "DownstreamPathTemplate": "/api/product/{product}",
-// "DownstreamScheme": "http",
-// "DownstreamHost": "localhost",
-// "DownstreamPort": 8330,
-// "UpstreamPathTemplate": "//api/product/{product}",
-// "UpstreamHttpMethod": [ "Get" ]
-// }
-// ],
-// "GlobalConfiguration": {
-// "ServiceDiscoveryProvider": {
-// "Host": "localhost",
-// "Port": 8500
-// }
-// }
-// }
-
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -96,8 +45,14 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/user/{user}",
                             DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 8362,
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 8362,
+                                }
+                            },
                             UpstreamPathTemplate = "/api/user/{user}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
@@ -105,8 +60,14 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/product/{product}",
                             DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 8330,
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 8330,
+                                }
+                            },
                             UpstreamPathTemplate = "/api/product/{product}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }

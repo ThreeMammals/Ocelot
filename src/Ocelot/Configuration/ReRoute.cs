@@ -23,8 +23,6 @@ namespace Ocelot.Configuration
             CacheOptions cacheOptions, 
             string downstreamScheme, 
             string loadBalancer, 
-            string downstreamHost, 
-            int downstreamPort, 
             string reRouteKey, 
             bool isQos,
             QoSOptions qosOptions,
@@ -34,7 +32,8 @@ namespace Ocelot.Configuration
             bool useServiceDiscovery,
             string serviceName,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
-            List<HeaderFindAndReplace> downstreamHeadersFindAndReplace)
+            List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
+            List<DownstreamHostAndPort> downstreamAddresses)
         {
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace;
@@ -42,8 +41,7 @@ namespace Ocelot.Configuration
             UseServiceDiscovery = useServiceDiscovery;
             ReRouteKey = reRouteKey;
             LoadBalancer = loadBalancer;
-            DownstreamHost = downstreamHost;
-            DownstreamPort = downstreamPort;
+            DownstreamAddresses = downstreamAddresses;
             DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
@@ -88,8 +86,6 @@ namespace Ocelot.Configuration
         public bool IsQos { get; private set; }
         public QoSOptions QosOptionsOptions { get; private set; }
         public string LoadBalancer {get;private set;}
-        public string DownstreamHost { get; private set; }
-        public int DownstreamPort { get; private set; }
         public bool EnableEndpointEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
         public HttpHandlerOptions HttpHandlerOptions { get; private set; }
@@ -97,6 +93,7 @@ namespace Ocelot.Configuration
         public string ServiceName {get;private set;}
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace {get;private set;}
+        public List<DownstreamHostAndPort> DownstreamAddresses {get;private set;}
 
     }
 }

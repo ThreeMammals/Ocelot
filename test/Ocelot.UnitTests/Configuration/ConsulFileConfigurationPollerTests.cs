@@ -55,7 +55,13 @@ namespace Ocelot.UnitTests.Configuration
                 {   
                     new FileReRoute
                     {
-                        DownstreamHost = "test"
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "test"
+                            }
+                        },
                     }
                 }
             };
