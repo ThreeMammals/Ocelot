@@ -75,7 +75,7 @@
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
             _downstreamRouteFinder
-                .Setup(x => x.FindDownstreamRoute(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IOcelotConfiguration>()))
+                .Setup(x => x.FindDownstreamRoute(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IOcelotConfiguration>(), It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
 

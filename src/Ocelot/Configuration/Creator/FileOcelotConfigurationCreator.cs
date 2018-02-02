@@ -166,6 +166,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
+                .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .Build();
 
             return reRoute;

@@ -270,6 +270,46 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void configuration_is_valid_with_duplicate_reroutes_all_verbs_but_different_hosts()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+                {
+                    ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/products/",
+                            UpstreamPathTemplate = "/asdf/",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "bb.co.uk"
+                                }
+                            },
+                            UpstreamHost = "host1"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/www/test/",
+                            UpstreamPathTemplate = "/asdf/",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "bb.co.uk"
+                                }
+                            },
+                            UpstreamHost = "host1"
+                        }
+                    }
+                }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
         public void configuration_is_not_valid_with_duplicate_reroutes_specific_verbs()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
