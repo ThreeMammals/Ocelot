@@ -95,8 +95,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -109,8 +115,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -146,8 +158,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -155,8 +173,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -174,8 +198,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "127.0.0.1",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -183,8 +213,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "123.123.123",
-                        DownstreamPort = 443,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "123.123.123",
+                                Port = 443,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
@@ -218,8 +254,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -231,8 +273,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -301,22 +349,28 @@ namespace Ocelot.IntegrationTests
             result.Value.ShouldBe(expected);
         }
 
-        private void ThenTheResponseShouldBe(FileConfiguration expected)
+        private void ThenTheResponseShouldBe(FileConfiguration expecteds)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
 
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
             for (var i = 0; i < response.ReRoutes.Count; i++)
             {
-                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
+                for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                {
+                    var result = response.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+                    result.Host.ShouldBe(expected.Host);
+                    result.Port.ShouldBe(expected.Port);
+                }
+
+                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.ReRoutes[i].UpstreamHttpMethod);
             }
         }
 

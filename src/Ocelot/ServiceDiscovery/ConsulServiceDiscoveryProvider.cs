@@ -39,7 +39,7 @@ namespace Ocelot.ServiceDiscovery
         {
             return new Service(
                 serviceEntry.Service.Service,
-                new HostAndPort(serviceEntry.Service.Address, serviceEntry.Service.Port),
+                new ServiceHostAndPort(serviceEntry.Service.Address, serviceEntry.Service.Port),
                 serviceEntry.Service.ID,
                 GetVersionFromStrings(serviceEntry.Service.Tags),
                 serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
