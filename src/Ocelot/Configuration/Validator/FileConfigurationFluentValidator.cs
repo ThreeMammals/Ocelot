@@ -39,7 +39,8 @@ namespace Ocelot.Configuration.Validator
 
         private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> reRoutes)
         {
-            var matchingReRoutes = reRoutes.Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate).ToList();
+            var matchingReRoutes = reRoutes
+                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null)).ToList();
 
             if(matchingReRoutes.Count == 1)
             {
