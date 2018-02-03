@@ -421,6 +421,8 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		var codePackage = packagesDir + File(artifacts["nuget"]);
 
 		Information("Pushing package " + codePackage);
+		
+		Information("Calling NuGetPush");
 
         NuGetPush(
             codePackage,
