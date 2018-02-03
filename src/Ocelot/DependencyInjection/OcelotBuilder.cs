@@ -53,6 +53,14 @@ using Rafty.Infrastructure;
 using Rafty.Log;
 using Newtonsoft.Json;
 using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
+using Butterfly.OpenTracing;
+using Butterfly.Client;
+using Microsoft.Extensions.Hosting;
+using Ocelot.Tracing;
+using Butterfly.Client.Logging;
+using AspectCore.Extensions.DependencyInjection;
+using AspectCore.Configuration;
 
 namespace Ocelot.DependencyInjection
 {
@@ -207,7 +215,14 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            _services.AddButterfly(settings);
+            if (_services == null)
+            {
+                throw new ArgumentNullException(nameof(_services));
+            }
+            _services.AddTransient<OcelotHttpTracingHandler>();
+            _services.AddSingleton<ITracingDiagnosticListener, OcelotTracingDiagnosticListener>();
+            _services.AddSingleton<IOcelotRequestTracer, OcelotRequestTracer>();
+            _services.AddButterfly(settings);   
             return this;
         }
 

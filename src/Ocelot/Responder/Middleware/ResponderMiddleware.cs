@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
@@ -17,23 +18,34 @@ namespace Ocelot.Responder.Middleware
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
         private readonly IOcelotLogger _logger;
+        private readonly DiagnosticSource _diagnostics;
 
         public ResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
-            IErrorsToHttpStatusCodeMapper codeMapper)
+            IErrorsToHttpStatusCodeMapper codeMapper,
+            DiagnosticSource diagnostic)
             :base(requestScopedDataRepository)
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
+            _diagnostics = diagnostic;
             _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
 
         }
 
         public async Task Invoke(HttpContext context)
         {
+            if (_diagnostics.IsEnabled("Ocelot.Responder.Middleware.ResponderMiddlewareStarting"))
+            {
+                _diagnostics.Write("Ocelot.Responder.Middleware.ResponderMiddlewareStarting",
+                    new
+                    {
+                        httpContext = context
+                    });
+            }
             await _next.Invoke(context);
 
             if (PipelineError)

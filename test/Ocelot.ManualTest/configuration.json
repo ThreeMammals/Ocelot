@@ -5,9 +5,12 @@
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/api/values",
       "UpstreamHttpMethod": [ "Get" ],
-      "DownstreamHost": "localhost",
-      "DownstreamPort": 9030,
-      "FileCacheOptions": { "TtlSeconds": 15 },
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,

@@ -19,7 +19,7 @@ namespace Ocelot.Request
             QosProvider = qosProvider;
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
-            IsTracing = IsTracing;
+            IsTracing = isTracing;
         }
 
         public HttpRequestMessage HttpRequestMessage { get; private set; }
