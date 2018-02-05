@@ -55,7 +55,7 @@ namespace Ocelot.Responder
 
             using (Stream stream = new MemoryStream(content))
             {
-                if (response.StatusCode != HttpStatusCode.NotModified)
+                if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
                 {
                     await stream.CopyToAsync(context.Response.Body);
                 }
