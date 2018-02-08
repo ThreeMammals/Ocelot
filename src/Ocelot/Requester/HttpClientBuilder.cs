@@ -3,20 +3,51 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester
 {
-    internal class HttpClientBuilder : IHttpClientBuilder
+    public interface IDelegatingHandlerHandlerProvider
     {
-        private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
+        void Add(Func<DelegatingHandler> handler);
+        List<Func<DelegatingHandler>> Get();
+    }
+
+    public class DelegatingHandlerHandlerProvider : IDelegatingHandlerHandlerProvider
+    {
+        private Dictionary<int, Func<DelegatingHandler>> _handlers;
+
+        public DelegatingHandlerHandlerProvider()
+        {
+            _handlers = new Dictionary<int, Func<DelegatingHandler>>();
+        }
+
+        public void Add(Func<DelegatingHandler> handler)
+        {
+            var key = _handlers.Count - 1;
+            _handlers[key] = handler;
+        }
+
+        public List<Func<DelegatingHandler>> Get()
+        {
+            return _handlers.OrderByDescending(x => x.Key).Select(x => x.Value).ToList();
+        }
+    }
+
+
+    public class HttpClientBuilder : IHttpClientBuilder
+    {
+        private IDelegatingHandlerHandlerProvider _provider;
+
+        public HttpClientBuilder(IDelegatingHandlerHandlerProvider provider)
+        {
+            _provider = provider;
+        }
 
         public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
         {
-            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
-
+            _provider.Add(() => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
             return this;
         }  
 
@@ -31,9 +62,8 @@ namespace Ocelot.Requester
 
         private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {            
-            _handlers
-                .OrderByDescending(handler => handler.Key)
-                .Select(handler => handler.Value)
+            _provider.Get()
+                .Select(handler => handler)
                 .Reverse()
                 .ToList()
                 .ForEach(handler =>
@@ -43,24 +73,6 @@ namespace Ocelot.Requester
                     httpMessageHandler = delegatingHandler;
                 });
             return httpMessageHandler;
-        }
-    }
-
-    /// <summary>
-    /// This class was made to make unit testing easier when HttpClient is used.
-    /// </summary>
-    internal class HttpClientWrapper : IHttpClient
-    {
-        public HttpClient Client { get; }
-
-        public HttpClientWrapper(HttpClient client)
-        {
-            Client = client;
-        }
-
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
-        {
-            return Client.SendAsync(request);
         }
     }
 }

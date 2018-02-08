@@ -123,6 +123,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRequestMapper, RequestMapper>();
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerProvider, DelegatingHandlerHandlerProvider>();
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();

@@ -14,17 +14,19 @@ namespace Ocelot.Requester
     {
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
+        private readonly IDelegatingHandlerHandlerProvider _provider;
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, 
-            IHttpClientCache cacheHandlers)
+            IHttpClientCache cacheHandlers, IDelegatingHandlerHandlerProvider provider)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
+            _provider = provider;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            var builder = new HttpClientBuilder();
+            var builder = new HttpClientBuilder(_provider);
 
             var cacheKey = GetCacheKey(request, builder);
             
