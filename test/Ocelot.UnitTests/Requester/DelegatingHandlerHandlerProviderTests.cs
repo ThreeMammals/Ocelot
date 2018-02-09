@@ -10,7 +10,7 @@ namespace Ocelot.UnitTests.Requester
 {
     public class DelegatingHandlerHandlerProviderTests
     {
-        private DelegatingHandlerHandlerProvider _provider;
+        private readonly DelegatingHandlerHandlerProvider _provider;
         private List<Func<DelegatingHandler>> _handlers;
 
         public DelegatingHandlerHandlerProviderTests()
@@ -19,12 +19,25 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_get_delegating_handlers_in_order_last_one_in_last_one_out()
+        public void should_return_empty_list()
+        {
+            this.When(x => WhenIGet())
+                .Then(x => ThenAnEmptyListIsReturned())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_delegating_handlers_in_order_first_in_first_out()
         {   
             this.Given(x => GivenTheHandlers())
                 .When(x => WhenIGet())
                 .Then(x => ThenTheHandlersAreReturnedInOrder())
                 .BDDfy();
+        }
+
+        private void ThenAnEmptyListIsReturned()
+        {
+            _handlers.Count.ShouldBe(0);
         }
 
         private void ThenTheHandlersAreReturnedInOrder()

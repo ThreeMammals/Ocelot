@@ -1,5 +1,6 @@
 using CacheManager.Core;
 using System;
+using System.Net.Http;
 
 namespace Ocelot.DependencyInjection
 {
@@ -8,5 +9,6 @@ namespace Ocelot.DependencyInjection
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
         IOcelotAdministrationBuilder AddAdministration(string path, string secret);
+        IOcelotBuilder AddDelegatingHandler(DelegatingHandler delegatingHandler);
     }
 }

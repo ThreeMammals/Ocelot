@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.Provider;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -46,11 +45,14 @@ namespace Ocelot.LoadBalancer.Middleware
             }
 
             var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri);
+
             uriBuilder.Host = hostAndPort.Data.DownstreamHost;
+
             if (hostAndPort.Data.DownstreamPort > 0)
             {
                 uriBuilder.Port = hostAndPort.Data.DownstreamPort;
             }
+
             DownstreamRequest.RequestUri = uriBuilder.Uri;
 
             try

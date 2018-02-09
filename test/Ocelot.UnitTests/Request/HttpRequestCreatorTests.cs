@@ -17,8 +17,8 @@
         private readonly HttpRequestMessage _requestMessage;
         private readonly bool _useCookieContainer;
         private readonly bool _allowAutoRedirect;
-
         private Response<Ocelot.Request.Request> _response;
+        private string _reRouteKey;
 
         public HttpRequestCreatorTests()
         {
@@ -46,7 +46,7 @@
         private void WhenIBuildARequest()
         {
             _response = _requestCreator.Build(_requestMessage,
-                    _isQos, _qoSProvider, _useCookieContainer, _allowAutoRedirect)
+                    _isQos, _qoSProvider, _useCookieContainer, _allowAutoRedirect, _reRouteKey)
                 .GetAwaiter()
                 .GetResult();
         }

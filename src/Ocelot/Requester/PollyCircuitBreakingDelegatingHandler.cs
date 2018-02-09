@@ -16,10 +16,10 @@ namespace Ocelot.Requester
 
         public PollyCircuitBreakingDelegatingHandler(
             IQoSProvider qoSProvider,
-            IOcelotLogger logger)
+            IOcelotLoggerFactory loggerFactory)
         {
             _qoSProvider = qoSProvider;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<PollyCircuitBreakingDelegatingHandler>();
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
