@@ -37,6 +37,7 @@ namespace Ocelot.Configuration.Builder
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
         private string _upstreamHost;
+        private string _downstreamHealthcheckPath;
 
         public ReRouteBuilder()
         {
@@ -82,6 +83,12 @@ namespace Ocelot.Configuration.Builder
         public ReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithDownstreamHealthcheckPath(string input)
+        {
+            _downstreamHealthcheckPath = input;
             return this;
         }
 
@@ -242,7 +249,8 @@ namespace Ocelot.Configuration.Builder
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace,
                 _downstreamAddresses,
-                _upstreamHost);
+                _upstreamHost, 
+                _downstreamHealthcheckPath);
         }
     }
 }
