@@ -14,18 +14,10 @@ namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 
             downstreamPath.Append(downstreamPathTemplate.Value);
 
-            if (urlPathPlaceholderNameAndValues.Count > 0)
+            foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
             {
-                foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
-                {
-                    downstreamPath.Replace(placeholderVariableAndValue.Name, placeholderVariableAndValue.Value);
-                }
+                downstreamPath.Replace(placeholderVariableAndValue.Name, placeholderVariableAndValue.Value);
             }
-            else
-            {
-                
-            }
-           
 
             return new OkResponse<DownstreamPath>(new DownstreamPath(downstreamPath.ToString()));
         }

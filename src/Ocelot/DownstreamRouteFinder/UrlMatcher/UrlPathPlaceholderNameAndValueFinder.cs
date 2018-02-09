@@ -29,10 +29,6 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                         continue;
                     }
-                    else
-                    {
-                        continue;
-                    }
 
                     return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
                 }
