@@ -1,10 +1,8 @@
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Threading.Tasks;
 
 namespace Ocelot.Requester.Middleware
 {
@@ -13,18 +11,16 @@ namespace Ocelot.Requester.Middleware
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
         private readonly IOcelotLogger _logger;
-        private readonly DiagnosticSource _diagnostics;
 
         public HttpRequesterMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpRequester requester, 
-            IRequestScopedDataRepository requestScopedDataRepository,
-            DiagnosticSource diagnostic)
+            IRequestScopedDataRepository requestScopedDataRepository
+)
             :base(requestScopedDataRepository)
         {
             _next = next;
             _requester = requester;
-            _diagnostics = diagnostic;
             _logger = loggerFactory.CreateLogger<HttpRequesterMiddleware>();
         }
 

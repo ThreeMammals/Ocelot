@@ -1,11 +1,10 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -18,20 +17,18 @@ namespace Ocelot.Responder.Middleware
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
         private readonly IOcelotLogger _logger;
-        private readonly DiagnosticSource _diagnostics;
 
         public ResponderMiddleware(RequestDelegate next, 
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
-            IErrorsToHttpStatusCodeMapper codeMapper,
-            DiagnosticSource diagnostic)
+            IErrorsToHttpStatusCodeMapper codeMapper
+           )
             :base(requestScopedDataRepository)
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
-            _diagnostics = diagnostic;
             _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
 
         }
