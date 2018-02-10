@@ -7,23 +7,23 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(PathTemplate downstreamPathTemplate, 
-            PathTemplate upstreamPathTemplate, 
-            List<HttpMethod> upstreamHttpMethod, 
-            UpstreamPathTemplate upstreamTemplatePattern, 
-            bool isAuthenticated, 
-            AuthenticationOptions authenticationOptions, 
-            List<ClaimToThing> claimsToHeaders, 
-            List<ClaimToThing> claimsToClaims, 
-            Dictionary<string, string> routeClaimsRequirement, 
-            bool isAuthorised, 
-            List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, 
-            bool isCached, 
-            CacheOptions cacheOptions, 
-            string downstreamScheme, 
-            string loadBalancer, 
-            string reRouteKey, 
+        public ReRoute(PathTemplate downstreamPathTemplate,
+            PathTemplate upstreamPathTemplate,
+            List<HttpMethod> upstreamHttpMethod,
+            UpstreamPathTemplate upstreamTemplatePattern,
+            bool isAuthenticated,
+            AuthenticationOptions authenticationOptions,
+            List<ClaimToThing> claimsToHeaders,
+            List<ClaimToThing> claimsToClaims,
+            Dictionary<string, string> routeClaimsRequirement,
+            bool isAuthorised,
+            List<ClaimToThing> claimsToQueries,
+            string requestIdKey,
+            bool isCached,
+            CacheOptions cacheOptions,
+            string downstreamScheme,
+            string loadBalancer,
+            string reRouteKey,
             bool isQos,
             QoSOptions qosOptions,
             bool enableEndpointRateLimiting,
@@ -34,7 +34,8 @@ namespace Ocelot.Configuration
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
             List<DownstreamHostAndPort> downstreamAddresses,
-            string upstreamHost)
+            string upstreamHost,
+            string downstreamHealthcheckPath)
         {
             UpstreamHost = upstreamHost;
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
@@ -64,9 +65,10 @@ namespace Ocelot.Configuration
             EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
             RateLimitOptions = ratelimitOptions;
             HttpHandlerOptions = httpHandlerOptions;
+            DownstreamHealthcheckPath = downstreamHealthcheckPath;
         }
 
-        public string ReRouteKey {get;private set;}
+        public string ReRouteKey { get; private set; }
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamPathTemplate { get; private set; }
         public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
@@ -81,18 +83,20 @@ namespace Ocelot.Configuration
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
         public CacheOptions CacheOptions { get; private set; }
-        public string DownstreamScheme {get;private set;}
+        public string DownstreamScheme { get; private set; }
         public bool IsQos { get; private set; }
         public QoSOptions QosOptionsOptions { get; private set; }
-        public string LoadBalancer {get;private set;}
+        public string LoadBalancer { get; private set; }
         public bool EnableEndpointEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
         public HttpHandlerOptions HttpHandlerOptions { get; private set; }
-        public bool UseServiceDiscovery {get;private set;}
-        public string ServiceName {get;private set;}
-        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
-        public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace {get;private set;}
-        public List<DownstreamHostAndPort> DownstreamAddresses {get;private set;}
+        public bool UseServiceDiscovery { get; private set; }
+        public string ServiceName { get; private set; }
+        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace { get; private set; }
+        public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; private set; }
+        public List<DownstreamHostAndPort> DownstreamAddresses { get; private set; }
         public string UpstreamHost { get; private set; }
+
+        public string DownstreamHealthcheckPath { get; set; }
     }
 }

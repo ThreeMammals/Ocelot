@@ -250,6 +250,7 @@ namespace Ocelot.UnitTests.Configuration
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
                                     UpstreamHttpMethod = new List<string> { "Get" },
+                                    DownstreamHealthcheckPath = "/hc"
                                 }
                             },
                         }))
@@ -265,6 +266,7 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                    .WithDownstreamHealthcheckPath("/hc")
                                     .Build()
                             }))
                 .BDDfy();
@@ -286,6 +288,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     UpstreamPathTemplate = "/api/products/{productId}",
                                                     DownstreamPathTemplate = "/products/{productId}",
                                                     UpstreamHttpMethod = new List<string> { "Get" },
+                                                    DownstreamHealthcheckPath = "/hc"
                                                 }
                                             },
                                         }))
@@ -301,6 +304,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     .WithDownstreamPathTemplate("/products/{productId}")
                                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                                    .WithDownstreamHealthcheckPath("/hc")
                                                     .Build()
                                             }))
                                 .BDDfy();
@@ -651,7 +655,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
                 result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
                 result.RequestIdKey.ShouldBe(expected.RequestIdKey);
-            
+                result.DownstreamHealthcheckPath.ShouldBe(expected.DownstreamHealthcheckPath);
             }
         }
 
