@@ -9,6 +9,6 @@ namespace Ocelot.DependencyInjection
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
         IOcelotAdministrationBuilder AddAdministration(string path, string secret);
-        IOcelotBuilder AddDelegatingHandler(DelegatingHandler delegatingHandler);
+        IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler);
     }
 }

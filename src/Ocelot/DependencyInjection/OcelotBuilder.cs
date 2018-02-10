@@ -164,9 +164,9 @@ namespace Ocelot.DependencyInjection
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
-        public IOcelotBuilder AddDelegatingHandler(DelegatingHandler delegatingHandler)
+        public IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler)
         {
-            _provider.Add(() => delegatingHandler);
+            _provider.Add(delegatingHandler);
             return this;
         }
 

@@ -99,8 +99,8 @@ namespace Ocelot.AcceptanceTests
             {
                 s.AddSingleton(_webHostBuilder);
                 s.AddOcelot()
-                    .AddDelegatingHandler(handlerOne)
-                    .AddDelegatingHandler(handlerTwo);
+                    .AddDelegatingHandler(() => handlerOne)
+                    .AddDelegatingHandler(() => handlerTwo);
             });
             _webHostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
             {

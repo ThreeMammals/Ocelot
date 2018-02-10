@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void AddDelegate(DelegatingHandler handler)
         {
-            _ocelotBuilder.AddDelegatingHandler(handler);
+            _ocelotBuilder.AddDelegatingHandler(() => handler);
         }
 
         private void ThenAnOcelotBuilderIsReturned()
