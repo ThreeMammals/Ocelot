@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Butterfly.Client.Tracing;
 using Butterfly.OpenTracing;
 
-namespace Ocelot.Tracing
+namespace Ocelot.Requester
 {
     public class OcelotHttpTracingHandler : DelegatingHandler
     {
