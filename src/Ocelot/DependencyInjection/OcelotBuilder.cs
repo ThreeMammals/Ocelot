@@ -205,10 +205,6 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            if (_services == null)
-            {
-                throw new ArgumentNullException(nameof(_services));
-            }
             _services.AddTransient<OcelotHttpTracingHandler>();
             _services.AddButterfly(settings);   
             return this;
