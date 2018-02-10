@@ -39,7 +39,8 @@ namespace Ocelot.UnitTests.Configuration
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
                     AllowAutoRedirect = false,
-                    UseCookieContainer = false
+                    UseCookieContainer = false,
+                    UseTracing = false
                 }
             };
 
@@ -66,6 +67,7 @@ namespace Ocelot.UnitTests.Configuration
             _httpHandlerOptions.ShouldNotBeNull();
             _httpHandlerOptions.AllowAutoRedirect.ShouldBe(options.AllowAutoRedirect);
             _httpHandlerOptions.UseCookieContainer.ShouldBe(options.UseCookieContainer);
+            _httpHandlerOptions.UseTracing.ShouldBe(options.UseTracing);
         }
     }
 }

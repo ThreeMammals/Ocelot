@@ -29,7 +29,6 @@
             _useCookieContainer = false;
             _allowAutoRedirect = false;
             _useTracing = false;
-
             _requestMessage = new HttpRequestMessage();
         }
 
@@ -41,6 +40,7 @@
                 .Then(x => x.ThenTheRequestContainsTheIsQos())
                 .Then(x => x.ThenTheRequestContainsTheQosProvider())
                 .Then(x => x.ThenTheRequestContainsUseCookieContainer())
+                .Then(x => x.ThenTheRequestContainsUseTracing())
                 .Then(x => x.ThenTheRequestContainsAllowAutoRedirect())
                 .BDDfy();
         }
@@ -71,6 +71,11 @@
         private void ThenTheRequestContainsUseCookieContainer()
         {
             _response.Data.UseCookieContainer.ShouldBe(_useCookieContainer);
+        }
+
+        private void ThenTheRequestContainsUseTracing()
+        {
+            _response.Data.IsTracing.ShouldBe(_useTracing);
         }
 
         private void ThenTheRequestContainsAllowAutoRedirect()
