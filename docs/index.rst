@@ -33,6 +33,8 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/requestid
    features/middlewareinjection
    features/loadbalancer
+   features/delegatinghandlers
+
 
 .. toctree::
    :maxdepth: 2
