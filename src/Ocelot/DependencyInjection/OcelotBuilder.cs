@@ -220,8 +220,8 @@ namespace Ocelot.DependencyInjection
                 throw new ArgumentNullException(nameof(_services));
             }
             _services.AddTransient<OcelotHttpTracingHandler>();
-            _services.AddSingleton<ITracingDiagnosticListener, OcelotTracingDiagnosticListener>();
-            _services.AddSingleton<IOcelotRequestTracer, OcelotRequestTracer>();
+            //_services.AddSingleton<ITracingDiagnosticListener, OcelotTracingDiagnosticListener>();
+            //_services.AddSingleton<IOcelotRequestTracer, OcelotRequestTracer>();
             _services.AddButterfly(settings);   
             return this;
         }

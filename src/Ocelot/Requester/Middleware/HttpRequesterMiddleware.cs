@@ -29,17 +29,7 @@ namespace Ocelot.Requester.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {
-            if (_diagnostics.IsEnabled("Ocelot.Responder.Middleware.HttpRequesterMiddlewareStarting"))
-            {
-                _diagnostics.Write("Ocelot.Responder.Middleware.HttpRequesterMiddlewareStarting",
-                    new
-                    {
-                        httpContext = context,
-                        request = Request
-                    });
-            }
-
+        { 
             var response = await _requester.GetResponse(Request);
 
             if (response.IsError)
@@ -53,16 +43,6 @@ namespace Ocelot.Requester.Middleware
             _logger.LogDebug("setting http response message");
 
             SetHttpResponseMessageThisRequest(response.Data);
-
-            if (_diagnostics.IsEnabled("Ocelot.Responder.Middleware.HttpRequesterMiddlewareEnd"))
-            {
-                _diagnostics.Write("Ocelot.Responder.Middleware.HttpRequesterMiddlewareEnd",
-                    new
-                    {
-                        httpContext = context,
-                        request = Request
-                    });
-            }
         }
     }
 }

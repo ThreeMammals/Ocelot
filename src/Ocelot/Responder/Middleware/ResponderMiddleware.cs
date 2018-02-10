@@ -37,15 +37,7 @@ namespace Ocelot.Responder.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {
-            if (_diagnostics.IsEnabled("Ocelot.Responder.Middleware.ResponderMiddlewareStarting"))
-            {
-                _diagnostics.Write("Ocelot.Responder.Middleware.ResponderMiddlewareStarting",
-                    new
-                    {
-                        httpContext = context
-                    });
-            }
+        {           
             await _next.Invoke(context);
 
             if (PipelineError)
