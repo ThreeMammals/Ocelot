@@ -22,6 +22,6 @@ namespace Ocelot.Requester
         /// </summary>
         /// <param name="useCookies">Defines if http client should use cookie container</param>
         /// <param name="allowAutoRedirect">Defines if http client should allow auto redirect</param>
-        IHttpClient Create(bool useCookies, bool allowAutoRedirect);
+        IHttpClient Create(bool useCookies, bool allowAutoRedirect, bool isTracing, IServiceProvider provider);
     }
 }

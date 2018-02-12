@@ -46,16 +46,15 @@ namespace Ocelot.Request.Middleware
                     DownstreamRoute.ReRoute.IsQos,
                     qosProvider.Data,
                     DownstreamRoute.ReRoute.HttpHandlerOptions.UseCookieContainer,
-                    DownstreamRoute.ReRoute.HttpHandlerOptions.AllowAutoRedirect);
-
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.UseTracing);
             if (buildResult.IsError)
             {
                 _logger.LogDebug("IRequestCreator returned an error, setting pipeline error");
-
                 SetPipelineError(buildResult.Errors);
-
                 return;
             }
+
             _logger.LogDebug("setting upstream request");
 
             SetUpstreamRequestForThisRequest(buildResult.Data);

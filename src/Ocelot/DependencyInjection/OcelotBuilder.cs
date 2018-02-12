@@ -1,12 +1,19 @@
+using Butterfly.Client.AspNetCore;
 using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.Authorisation;
 using Ocelot.Cache;
 using Ocelot.Claims;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Authentication;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
@@ -25,6 +32,7 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings;
+using Ocelot.Raft;
 using Ocelot.RateLimit;
 using Ocelot.Request.Builder;
 using Ocelot.Request.Mapper;
@@ -32,26 +40,17 @@ using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.ServiceDiscovery;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
-using Ocelot.Raft;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
 using Rafty.Infrastructure;
 using Rafty.Log;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 
 namespace Ocelot.DependencyInjection
 {
@@ -201,6 +200,13 @@ namespace Ocelot.DependencyInjection
             _services.RemoveAll(typeof(IOcelotCache<FileConfiguration>));
             _services.AddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
             _services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
+            return this;
+        }
+
+        public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
+        {
+            _services.AddTransient<OcelotHttpTracingHandler>();
+            _services.AddButterfly(settings);   
             return this;
         }
 

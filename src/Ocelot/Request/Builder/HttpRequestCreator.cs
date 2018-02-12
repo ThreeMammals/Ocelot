@@ -12,9 +12,10 @@ namespace Ocelot.Request.Builder
             bool isQos,
             IQoSProvider qosProvider,
             bool useCookieContainer,
-            bool allowAutoRedirect)
+            bool allowAutoRedirect,
+            bool isTracing)
         {
-            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider, allowAutoRedirect, useCookieContainer));
+            return new OkResponse<Request>(new Request(httpRequestMessage, isQos, qosProvider, allowAutoRedirect, useCookieContainer, isTracing));
         }
     }
 }

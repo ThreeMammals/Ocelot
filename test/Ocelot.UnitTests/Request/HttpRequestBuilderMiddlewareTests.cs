@@ -17,6 +17,7 @@
     using Ocelot.Requester.QoS;
     using Ocelot.Configuration;
     using Microsoft.AspNetCore.Builder;
+    using Ocelot.Errors;
 
     public class HttpRequestBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
@@ -51,17 +52,38 @@
                 new ReRouteBuilder()
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true))
+                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true,false))
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false)))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false,false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
         }
+
+        [Fact]
+        public void should_call_scoped_data_repository_QosProviderError()
+        {
+
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithRequestIdKey("LSRequestId")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true))
+                    .Build());
+
+            this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
+                .And(x => x.GivenTheQosProviderHouseReturns(new ErrorResponse<IQoSProvider>(It.IsAny<Error>())))
+                .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false, false)))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheScopedDataRepositoryQosProviderError())
+                .BDDfy();
+        }
+
 
         protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
         {
@@ -109,7 +131,9 @@
                                     It.IsAny<bool>(),
                                     It.IsAny<IQoSProvider>(),
                                     It.IsAny<bool>(),
-                                    It.IsAny<bool>()))
+                                    It.IsAny<bool>(),
+                                    It.IsAny<bool>()
+                                    ))
                 .ReturnsAsync(_request);
         }
 
@@ -117,6 +141,12 @@
         {
             _scopedRepository
                 .Verify(x => x.Add("Request", _request.Data), Times.Once());
+        }
+
+        private void ThenTheScopedDataRepositoryQosProviderError()
+        {
+            _scopedRepository
+                .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once());
         }
     }
 }

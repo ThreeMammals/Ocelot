@@ -1,10 +1,10 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -22,7 +22,8 @@ namespace Ocelot.Responder.Middleware
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
-            IErrorsToHttpStatusCodeMapper codeMapper)
+            IErrorsToHttpStatusCodeMapper codeMapper
+           )
             :base(requestScopedDataRepository)
         {
             _next = next;
@@ -33,14 +34,13 @@ namespace Ocelot.Responder.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {
+        {           
             await _next.Invoke(context);
 
             if (PipelineError)
             {
                 var errors = PipelineErrors;
                 _logger.LogError($"{PipelineErrors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
-
                 SetErrorResponse(context, errors);
             }
             else
