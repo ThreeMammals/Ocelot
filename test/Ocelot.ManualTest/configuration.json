@@ -76,8 +76,7 @@
       "UpstreamHttpMethod": [ "Get" ],
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
-        "UseCookieContainer": true,
-        "UseTracing": true
+        "UseCookieContainer": true
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,

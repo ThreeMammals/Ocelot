@@ -82,12 +82,20 @@ namespace Ocelot.Cache.Middleware
             }
 
             var response = new HttpResponseMessage(cached.StatusCode);
+
             foreach (var header in cached.Headers)
             {
                 response.Headers.Add(header.Key, header.Value);
             }
+
             var content = new MemoryStream(Convert.FromBase64String(cached.Body));
+
             response.Content = new StreamContent(content);
+
+            foreach (var header in cached.ContentHeaders)
+            {
+                response.Content.Headers.Add(header.Key, header.Value);
+            }
 
             return response;
         }
@@ -109,7 +117,10 @@ namespace Ocelot.Cache.Middleware
                 body = Convert.ToBase64String(content);
             }
 
-            var cached = new CachedResponse(statusCode, headers, body);
+            var contentHeaders = response?.Content?.Headers.ToDictionary(v => v.Key, v => v.Value);
+
+
+            var cached = new CachedResponse(statusCode, headers, body, contentHeaders);
             return cached;
         }
     }
