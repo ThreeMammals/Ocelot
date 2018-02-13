@@ -1,10 +1,14 @@
 ﻿namespace Ocelot.UnitTests.Responder
 {
+    using System.Collections.Generic;
     using System.Net.Http;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
+    using Ocelot.DownstreamRouteFinder.Finder;
+    using Ocelot.Errors;
     using Ocelot.Logging;
+    using Ocelot.Requester;
     using Ocelot.Responder;
     using Ocelot.Responder.Middleware;
     using Ocelot.Responses;
@@ -30,6 +34,17 @@
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
                 .And(x => x.GivenThereAreNoPipelineErrors())
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenThereAreNoErrors())
+                .BDDfy();
+        }
+
+
+        [Fact]
+        public void should_return_any_errors()
+        {
+            this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
+                .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError()))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
@@ -68,5 +83,14 @@
         {
             //todo a better assert?
         }
+
+        private void GivenThereArePipelineErrors(Error error)
+        {
+            ScopedRepository
+                .Setup(x => x.Get<bool>("OcelotMiddlewareError"))
+                .Returns(new OkResponse<bool>(true));
+            ScopedRepository.Setup(x => x.Get<List<Error>>("OcelotMiddlewareErrors"))
+                .Returns(new OkResponse<List<Error>>(new List<Error>() { error }));
+        }  
     }
 }

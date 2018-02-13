@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Polly.CircuitBreaker;
@@ -14,21 +12,24 @@ namespace Ocelot.Requester
     {
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
+        private readonly IDelegatingHandlerHandlerHouse _house;
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, 
-            IHttpClientCache cacheHandlers)
+            IHttpClientCache cacheHandlers,
+            IDelegatingHandlerHandlerHouse house)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
+            _house = house;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
         {
-            var builder = new HttpClientBuilder();
+            var builder = new HttpClientBuilder(_house);
 
-            var cacheKey = GetCacheKey(request, builder);
+            var cacheKey = GetCacheKey(request);
             
-            var httpClient = GetHttpClient(cacheKey, builder, request.UseCookieContainer, request.AllowAutoRedirect);
+            var httpClient = GetHttpClient(cacheKey, builder, request);
 
             try
             {
@@ -56,24 +57,24 @@ namespace Ocelot.Requester
 
         }
 
-        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, bool useCookieContainer, bool allowAutoRedirect)
+        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, Request.Request request)
         {
             var httpClient = _cacheHandlers.Get(cacheKey);
 
             if (httpClient == null)
             {
-                httpClient = builder.Create(useCookieContainer, allowAutoRedirect);
+                httpClient = builder.Create(request);
             }
+
             return httpClient;
         }
 
-        private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
+        private string GetCacheKey(Request.Request request)
         {
-            string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
+            var baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
 
             if (request.IsQos)
             {
-                builder.WithQos(request.QosProvider, _logger);
                 baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
             }
            

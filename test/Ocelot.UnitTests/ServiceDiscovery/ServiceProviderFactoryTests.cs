@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;
@@ -15,10 +17,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private IServiceDiscoveryProvider _result;
         private readonly ServiceDiscoveryProviderFactory _factory;
         private ReRoute _reRoute;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
 
         public ServiceProviderFactoryTests()
         {
-            _factory = new ServiceDiscoveryProviderFactory();
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object);
         }
         
         [Fact]

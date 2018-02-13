@@ -62,7 +62,7 @@ namespace Ocelot.Errors.Middleware
         private async Task TrySetGlobalRequestId(HttpContext context)
         {
                 //try and get the global request id and set it for logs...
-                //shoudl this basically be immutable per request...i guess it should!
+                //should this basically be immutable per request...i guess it should!
                 //first thing is get config
                  var configuration = await _configProvider.Get(); 
             

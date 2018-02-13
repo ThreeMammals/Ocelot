@@ -13,6 +13,8 @@
             bool isQos,
             IQoSProvider qosProvider,
             bool useCookieContainer,
-            bool allowAutoRedirect);
+            bool allowAutoRedirect,
+            string reRouteKe,
+            bool isTracing);
     }
 }

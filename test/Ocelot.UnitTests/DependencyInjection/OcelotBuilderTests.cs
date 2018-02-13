@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
@@ -13,8 +12,10 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
-using Ocelot.Logging;
+using Ocelot.Requester;
+using Ocelot.UnitTests.Requester;
 using Shouldly;
+using System;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -22,11 +23,11 @@ namespace Ocelot.UnitTests.DependencyInjection
 {
     public class OcelotBuilderTests
     {
-        private IServiceCollection _services;
+        private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;
-        private IConfiguration _configRoot;
+        private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
-        private int _maxRetries;
+        private readonly int _maxRetries;
 
         public OcelotBuilderTests()
         {
@@ -39,6 +40,19 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _maxRetries = 100;
         }
         private Exception _ex;
+
+        [Fact]
+        public void should_add_delegating_handlers()
+        {
+            var fakeOne = new FakeDelegatingHandler(0);
+            var fakeTwo = new FakeDelegatingHandler(1);
+
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddDelegate(fakeOne))
+                .And(x => AddDelegate(fakeTwo))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers())
+                .BDDfy();
+        }
 
         [Fact]
         public void should_set_up_services()
@@ -56,7 +70,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-       
+
         [Fact]
         public void should_set_up_cache_manager()
         {
@@ -76,7 +90,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-         [Fact]
+        [Fact]
         public void should_set_up_rafty()
         {            
             this.Given(x => WhenISetUpOcelotServices())
@@ -97,6 +111,16 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        public void should_set_up_tracing()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpOpentracing())
+                .When(x => WhenIAccessOcelotHttpTracingHandler())
+                .BDDfy();
+        }
+
+
+        [Fact]
         public void should_set_up_without_passing_in_config()
         {
             this.When(x => WhenISetUpOcelotServicesWithoutConfig())
@@ -109,6 +133,17 @@ namespace Ocelot.UnitTests.DependencyInjection
             _serviceProvider = _services.BuildServiceProvider();
             var path = _serviceProvider.GetService<IAdministrationPath>();
             path.Path.ShouldBe("/administration");
+        }
+
+        private void ThenTheProviderIsRegisteredAndReturnsHandlers()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var provider = _serviceProvider.GetService<IDelegatingHandlerHandlerProvider>();
+            var handlers = provider.Get();
+            var handler = (FakeDelegatingHandler)handlers[0].Invoke();
+            handler.Order.ShouldBe(0);
+            handler = (FakeDelegatingHandler)handlers[1].Invoke();
+            handler.Order.ShouldBe(1);
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
@@ -147,6 +182,11 @@ namespace Ocelot.UnitTests.DependencyInjection
             {
                 _ex = e;
             }       
+        }
+
+        private void AddDelegate(DelegatingHandler handler)
+        {
+            _ocelotBuilder.AddDelegatingHandler(() => handler);
         }
 
         private void ThenAnOcelotBuilderIsReturned()
@@ -193,11 +233,41 @@ namespace Ocelot.UnitTests.DependencyInjection
             }
         }
 
+        private void WhenISetUpOpentracing()
+        {
+            try
+            {
+                _ocelotBuilder.AddOpenTracing(
+                    option =>
+                    {
+                        option.CollectorUrl = "http://localhost:9618";
+                        option.Service = "Ocelot.ManualTest";
+                    }
+               );
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
         private void WhenIAccessLoggerFactory()
         {
             try
             {
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
+        private void WhenIAccessOcelotHttpTracingHandler()
+        {
+            try
+            {
+                var tracingHandler = _serviceProvider.GetService<OcelotHttpTracingHandler>();
             }
             catch (Exception e)
             {

@@ -35,7 +35,6 @@ using Ocelot.ServiceDiscovery;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using IdentityServer4.AccessTokenValidation;
@@ -46,19 +45,16 @@ using Ocelot.Configuration.Builder;
 using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
-using Ocelot.Raft;
-using Rafty.Concensus;
-using Rafty.FiniteStateMachine;
-using Rafty.Infrastructure;
-using Rafty.Log;
-using Newtonsoft.Json;
+using System.Net.Http;
+using Butterfly.Client.AspNetCore;
 
 namespace Ocelot.DependencyInjection
 {
     public class OcelotBuilder : IOcelotBuilder
     {
-        private IServiceCollection _services;
-        private IConfiguration _configurationRoot;
+        private readonly IServiceCollection _services;
+        private readonly IConfiguration _configurationRoot;
+        private IDelegatingHandlerHandlerProvider _provider;
         
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
@@ -123,6 +119,9 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRequestMapper, RequestMapper>();
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerProviderFactory, DelegatingHandlerHandlerProviderFactory>();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerHouse, DelegatingHandlerHandlerHouse>();
+
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
             _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -143,6 +142,11 @@ namespace Ocelot.DependencyInjection
             _services.AddMiddlewareAnalysis();
             _services.AddWebEncoders();
             _services.AddSingleton<IAdministrationPath>(new NullAdministrationPath());
+
+            //these get picked out later and added to http request
+            _provider = new DelegatingHandlerHandlerProvider();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
+            _services.AddTransient<ITracingHandler, NoTracingHandler>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -160,6 +164,19 @@ namespace Ocelot.DependencyInjection
             var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
             _services.Replace(descriptor);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
+        }
+
+        public IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler)
+        {
+            _provider.Add(delegatingHandler);
+            return this;
+        }
+
+        public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
+        {
+            _services.AddTransient<ITracingHandler, OcelotHttpTracingHandler>();
+            _services.AddButterfly(settings);   
+            return this;
         }
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
@@ -273,35 +290,6 @@ namespace Ocelot.DependencyInjection
                     AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
-        }
-    }
-
-    public interface IOcelotAdministrationBuilder
-    {
-        IOcelotAdministrationBuilder AddRafty();
-    }
-
-    public class OcelotAdministrationBuilder : IOcelotAdministrationBuilder
-    {
-        private IServiceCollection _services;
-        private IConfiguration _configurationRoot;
-        
-        public OcelotAdministrationBuilder(IServiceCollection services, IConfiguration configurationRoot)
-        {
-            _configurationRoot = configurationRoot;
-            _services = services;    
-        }
-        
-        public IOcelotAdministrationBuilder AddRafty()
-        {
-            var settings = new InMemorySettings(4000, 5000, 100, 5000);
-            _services.AddSingleton<ILog, SqlLiteLog>();
-            _services.AddSingleton<IFiniteStateMachine, OcelotFiniteStateMachine>();
-            _services.AddSingleton<ISettings>(settings);
-            _services.AddSingleton<IPeersProvider, FilePeersProvider>();
-            _services.AddSingleton<INode, Node>();
-            _services.Configure<FilePeers>(_configurationRoot);
-            return this;
         }
     }
 }
