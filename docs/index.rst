@@ -30,6 +30,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/headerstransformation 
    features/claimstransformation 
    features/logging
+   features/tracing
    features/requestid
    features/middlewareinjection
    features/loadbalancer
