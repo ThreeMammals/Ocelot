@@ -58,7 +58,7 @@
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false,false)))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false, "", false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -78,7 +78,7 @@
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new ErrorResponse<IQoSProvider>(It.IsAny<Error>())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false, false)))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false, "", false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryQosProviderError())
                 .BDDfy();
@@ -132,8 +132,8 @@
                                     It.IsAny<IQoSProvider>(),
                                     It.IsAny<bool>(),
                                     It.IsAny<bool>(),
-                                    It.IsAny<bool>()
-                                    ))
+                                    It.IsAny<string>(),
+                                    It.IsAny<bool>()))
                 .ReturnsAsync(_request);
         }
 

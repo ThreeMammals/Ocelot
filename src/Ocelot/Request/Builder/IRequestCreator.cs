@@ -14,6 +14,7 @@
             IQoSProvider qosProvider,
             bool useCookieContainer,
             bool allowAutoRedirect,
+            string reRouteKe,
             bool isTracing);
     }
 }

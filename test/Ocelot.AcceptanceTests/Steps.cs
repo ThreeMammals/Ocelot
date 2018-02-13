@@ -91,6 +91,38 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
+        public void GivenOcelotIsRunningWithHandlers(DelegatingHandler handlerOne, DelegatingHandler handlerTwo)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddOcelot()
+                    .AddDelegatingHandler(() => handlerOne)
+                    .AddDelegatingHandler(() => handlerTwo);
+            });
+            _webHostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                config.AddJsonFile("configuration.json");
+                config.AddEnvironmentVariables();
+            }).Configure(a =>
+            {
+                a.UseOcelot().Wait();
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
         public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
         {
             _webHostBuilder = new WebHostBuilder();

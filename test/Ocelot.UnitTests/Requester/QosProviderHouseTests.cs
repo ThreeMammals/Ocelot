@@ -1,10 +1,8 @@
 ﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
-using Ocelot.UnitTests.LoadBalancer;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

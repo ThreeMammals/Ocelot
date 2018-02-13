@@ -10,13 +10,15 @@ using System.Net.Http;
 using System.Text;
 using TestStack.BDDfy;
 using Xunit;
+using Shouldly;
 
 namespace Ocelot.UnitTests.Requester
 {
     public class HttpClientHttpRequesterTest
     {
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IServiceProvider> _serviceProvider;
+        private Mock<IDelegatingHandlerHandlerHouse> _house;
+        private Mock<IDelegatingHandlerHandlerProvider> _provider;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
         private Ocelot.Request.Request _request;
@@ -25,29 +27,32 @@ namespace Ocelot.UnitTests.Requester
 
         public HttpClientHttpRequesterTest()
         {
-            _serviceProvider = new Mock<IServiceProvider>();
+            _provider = new Mock<IDelegatingHandlerHandlerProvider>();
+            _provider.Setup(x => x.Get()).Returns(new List<Func<DelegatingHandler>>());
+            _house = new Mock<IDelegatingHandlerHandlerHouse>();
+            _house.Setup(x => x.Get(It.IsAny<Ocelot.Request.Request>())).Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _loggerFactory
                 .Setup(x => x.CreateLogger<HttpClientHttpRequester>())
                 .Returns(_logger.Object);
             _cacheHandlers = new Mock<IHttpClientCache>();
-            _httpClientRequester = new HttpClientHttpRequester(_loggerFactory.Object, _cacheHandlers.Object, _serviceProvider.Object);            
+            _httpClientRequester = new HttpClientHttpRequester(_loggerFactory.Object, _cacheHandlers.Object, _house.Object);            
         }
 
         [Fact]
         public void should_call_request_correctly()
         {
-            this.Given(x=>x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() {  RequestUri = new Uri("http://www.bbc.co.uk") }, false, new NoQoSProvider(), false, false, false)))
+            this.Given(x=>x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() {  RequestUri = new Uri("http://www.bbc.co.uk") }, false, new NoQoSProvider(), false, false, "", false)))
                 .When(x=>x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledCorrectly())
                 .BDDfy();
         }
 
         [Fact]
-        public void should_call_request_UnableToCompleteRequest()
+        public void should_call_request_unable_to_complete_request()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }, false, new NoQoSProvider(), false, false, false)))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }, false, new NoQoSProvider(), false, false, "", false)))
                 .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledError())
                 .BDDfy();
@@ -65,12 +70,12 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheResponseIsCalledCorrectly()
         {
-            Assert.True(_response.IsError == false);
+            _response.IsError.ShouldBeFalse();
         }
 
         private void ThenTheResponseIsCalledError()
         {
-            Assert.True(_response.IsError == true);
+            _response.IsError.ShouldBeTrue();
         }
     }  
 }

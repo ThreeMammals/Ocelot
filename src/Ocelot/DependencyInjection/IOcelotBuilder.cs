@@ -1,6 +1,7 @@
 using Butterfly.Client.AspNetCore;
 using CacheManager.Core;
 using System;
+using System.Net.Http;
 
 namespace Ocelot.DependencyInjection
 {
@@ -10,5 +11,6 @@ namespace Ocelot.DependencyInjection
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
         IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings);      
         IOcelotAdministrationBuilder AddAdministration(string path, string secret);
+        IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler);
     }
 }

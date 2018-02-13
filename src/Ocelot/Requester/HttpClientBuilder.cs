@@ -1,48 +1,33 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Logging;
-using Ocelot.Requester.QoS;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
-    internal class HttpClientBuilder : IHttpClientBuilder
+    public class HttpClientBuilder : IHttpClientBuilder
     {
-        private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
+        private readonly IDelegatingHandlerHandlerHouse _house;
 
-        public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
+        public HttpClientBuilder(IDelegatingHandlerHandlerHouse house)
         {
-            _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
-
-            return this;
+            _house = house;
         }
 
-        private IHttpClientBuilder WithTracing(IServiceProvider provider)
+        public IHttpClient Create(Request.Request request)
         {
-            _handlers.Add(6000, () => provider.GetService<OcelotHttpTracingHandler>());
-            return this;
-        }
-
-        public IHttpClient Create(bool useCookies, bool allowAutoRedirect, bool isTracing, IServiceProvider provider)
-        {
-            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = allowAutoRedirect, UseCookies = useCookies };
-            if (isTracing)
-            {
-                WithTracing(provider);
-            }
-            var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler));                
+            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = request.AllowAutoRedirect, UseCookies = request.UseCookieContainer};
+            
+            var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler, request));                
             
             return new HttpClientWrapper(client);
         }
 
-        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler)
-        {            
-            _handlers
-                .OrderByDescending(handler => handler.Key)
-                .Select(handler => handler.Value)
+        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, Request.Request request)
+        {
+            var provider = _house.Get(request);
+
+            //todo handle error
+            provider.Data.Get()
+                .Select(handler => handler)
                 .Reverse()
                 .ToList()
                 .ForEach(handler =>
@@ -52,24 +37,6 @@ namespace Ocelot.Requester
                     httpMessageHandler = delegatingHandler;
                 });
             return httpMessageHandler;
-        }
-    }
-
-    /// <summary>
-    /// This class was made to make unit testing easier when HttpClient is used.
-    /// </summary>
-    internal class HttpClientWrapper : IHttpClient
-    {
-        public HttpClient Client { get; }
-
-        public HttpClientWrapper(HttpClient client)
-        {
-            Client = client;
-        }
-
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
-        {
-            return Client.SendAsync(request);
         }
     }
 }

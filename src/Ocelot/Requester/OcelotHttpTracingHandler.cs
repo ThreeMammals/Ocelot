@@ -8,7 +8,16 @@ using Butterfly.OpenTracing;
 
 namespace Ocelot.Requester
 {
-    public class OcelotHttpTracingHandler : DelegatingHandler
+    public interface ITracingHandler
+    {
+    }
+
+    public class NoTracingHandler : DelegatingHandler, ITracingHandler
+    {
+        
+    }
+
+    public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {
         private readonly IServiceTracer _tracer;
         private const string prefix_spanId = "ot-spanId";
