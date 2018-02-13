@@ -457,5 +457,10 @@ namespace Ocelot.AcceptanceTests
         {
             _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
         }
+
+        public void ThenTheContentLengthIs(int expected)
+        {
+            _response.Content.Headers.ContentLength.ShouldBe(expected);
+        }
     }
 }

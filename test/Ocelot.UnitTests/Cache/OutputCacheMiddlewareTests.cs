@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Cache
+﻿using System.Net;
+
+namespace Ocelot.UnitTests.Cache
 {
     using System;
     using System.Collections.Generic;
@@ -36,7 +38,7 @@
         [Fact]
         public void should_returned_cached_item_when_it_is_in_cache()
         {
-            var cachedResponse = new CachedResponse();
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", new Dictionary<string, IEnumerable<string>>());
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .And(x => x.GivenThereIsADownstreamUrl())
