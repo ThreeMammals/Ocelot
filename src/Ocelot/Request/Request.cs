@@ -10,7 +10,10 @@ namespace Ocelot.Request
             bool isQos,
             IQoSProvider qosProvider, 
             bool allowAutoRedirect,
-            bool useCookieContainer, string reRouteKey)
+            bool useCookieContainer,
+            string reRouteKey,
+            bool isTracing
+            )
         {
             HttpRequestMessage = httpRequestMessage;
             IsQos = isQos;
@@ -18,10 +21,12 @@ namespace Ocelot.Request
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
             ReRouteKey = reRouteKey;
+            IsTracing = isTracing;
         }
 
         public HttpRequestMessage HttpRequestMessage { get; private set; }
         public bool IsQos { get; private set; }
+        public bool IsTracing { get; private set; }
         public IQoSProvider QosProvider { get; private set; }
         public bool AllowAutoRedirect { get; private set; }
         public bool UseCookieContainer { get; private set; }

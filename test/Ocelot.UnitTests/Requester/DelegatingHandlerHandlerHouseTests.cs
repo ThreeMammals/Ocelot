@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_create_and_store_provider()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key" );
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
 
             this.Given(x => GivenTheRequest(request))
                 .And(x => GivenTheProviderReturns())
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_get_provider()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key");
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
 
             this.Given(x => GivenTheRequest(request))
                 .And(x => GivenTheProviderReturns())
@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key");
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
 
             this.Given(x => GivenTheRequest(request))
                 .And(x => GivenTheProviderThrows())

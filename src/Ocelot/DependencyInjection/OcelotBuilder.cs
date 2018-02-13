@@ -46,6 +46,7 @@ using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfiguratio
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
 using System.Net.Http;
+using Butterfly.Client.AspNetCore;
 
 namespace Ocelot.DependencyInjection
 {
@@ -145,6 +146,7 @@ namespace Ocelot.DependencyInjection
             //these get picked out later and added to http request
             _provider = new DelegatingHandlerHandlerProvider();
             _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
+            _services.AddTransient<ITracingHandler, NoTracingHandler>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -167,6 +169,13 @@ namespace Ocelot.DependencyInjection
         public IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler)
         {
             _provider.Add(delegatingHandler);
+            return this;
+        }
+
+        public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
+        {
+            _services.AddTransient<ITracingHandler, OcelotHttpTracingHandler>();
+            _services.AddButterfly(settings);   
             return this;
         }
 

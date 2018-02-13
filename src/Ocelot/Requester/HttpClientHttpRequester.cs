@@ -63,7 +63,7 @@ namespace Ocelot.Requester
 
             if (httpClient == null)
             {
-                httpClient = builder.Create(request.UseCookieContainer, request.AllowAutoRedirect, request);
+                httpClient = builder.Create(request);
             }
 
             return httpClient;

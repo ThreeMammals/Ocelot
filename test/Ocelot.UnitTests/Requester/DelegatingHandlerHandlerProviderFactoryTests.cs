@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _allRoutesProvider = new Mock<IDelegatingHandlerHandlerProvider>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object);
+            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object, null);
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Requester
                 () => new FakeDelegatingHandler(1)
             };
 
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "");
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "", false);
 
             this.Given(x => GivenTheFollowingRequest(request))
                 .And(x => GivenTheAllRoutesProviderReturns(handlers))
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_no_delegates()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), false, null, true, true, "");
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), false, null, true, true, "", false);
 
             this.Given(x => GivenTheFollowingRequest(request))
                 .And(x => GivenTheAllRoutesProviderReturns())
@@ -60,7 +60,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_qos_delegate()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "");
+            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "", false);
 
             this.Given(x => GivenTheFollowingRequest(request))
                 .And(x => GivenTheAllRoutesProviderReturns())

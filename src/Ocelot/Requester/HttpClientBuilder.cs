@@ -12,9 +12,9 @@ namespace Ocelot.Requester
             _house = house;
         }
 
-        public IHttpClient Create(bool useCookies, bool allowAutoRedirect, Request.Request request)
+        public IHttpClient Create(Request.Request request)
         {
-            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = allowAutoRedirect, UseCookies = useCookies};
+            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = request.AllowAutoRedirect, UseCookies = request.UseCookieContainer};
             
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler, request));                
             

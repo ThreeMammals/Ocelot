@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -20,6 +20,11 @@ namespace Ocelot.ManualTest
                     .AddCacheManager(x =>
                     {
                         x.WithDictionaryHandle();
+                    })
+                    .AddOpenTracing(option =>
+                    {
+                        option.CollectorUrl = "http://localhost:9618";
+                        option.Service = "Ocelot.ManualTest";
                     })
                     .AddAdministration("/administration", "secret");
         }

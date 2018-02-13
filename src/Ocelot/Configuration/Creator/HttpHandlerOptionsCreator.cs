@@ -7,7 +7,7 @@ namespace Ocelot.Configuration.Creator
         public HttpHandlerOptions Create(FileReRoute fileReRoute)
         {
             return new HttpHandlerOptions(fileReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                fileReRoute.HttpHandlerOptions.UseCookieContainer);
+                fileReRoute.HttpHandlerOptions.UseCookieContainer, fileReRoute.HttpHandlerOptions.UseTracing);
         }
     }
 }

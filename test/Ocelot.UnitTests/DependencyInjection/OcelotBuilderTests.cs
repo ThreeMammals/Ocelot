@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -15,6 +15,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Requester;
 using Ocelot.UnitTests.Requester;
 using Shouldly;
+using System;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -108,6 +109,16 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
         }
+
+        [Fact]
+        public void should_set_up_tracing()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpOpentracing())
+                .When(x => WhenIAccessOcelotHttpTracingHandler())
+                .BDDfy();
+        }
+
 
         [Fact]
         public void should_set_up_without_passing_in_config()
@@ -222,11 +233,41 @@ namespace Ocelot.UnitTests.DependencyInjection
             }
         }
 
+        private void WhenISetUpOpentracing()
+        {
+            try
+            {
+                _ocelotBuilder.AddOpenTracing(
+                    option =>
+                    {
+                        option.CollectorUrl = "http://localhost:9618";
+                        option.Service = "Ocelot.ManualTest";
+                    }
+               );
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
         private void WhenIAccessLoggerFactory()
         {
             try
             {
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
+        private void WhenIAccessOcelotHttpTracingHandler()
+        {
+            try
+            {
+                var tracingHandler = _serviceProvider.GetService<OcelotHttpTracingHandler>();
             }
             catch (Exception e)
             {

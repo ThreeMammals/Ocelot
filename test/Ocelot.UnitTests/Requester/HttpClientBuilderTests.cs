@@ -31,6 +31,7 @@ namespace Ocelot.UnitTests.Requester
         public void should_build_http_client()
         {
             this.Given(x => GivenTheProviderReturns())
+                .And(x => GivenARequest())
                 .And(x => GivenTheHouseReturns())
                 .When(x => WhenIBuild())
                 .Then(x => ThenTheHttpClientShouldNotBeNull())
@@ -50,12 +51,18 @@ namespace Ocelot.UnitTests.Requester
             };
 
             this.Given(x => GivenTheProviderReturns(handlers))
+                .And(x => GivenARequest())
                 .And(x => GivenTheHouseReturns())
                 .And(x => WhenIBuild())
                 .When(x => WhenICallTheClient())
                 .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
                 .And(x => ThenSomethingIsReturned())
                 .BDDfy();
+        }
+
+        private void GivenARequest()
+        {
+            _request = new Ocelot.Request.Request(null, false, null, false, false, "", false);
         }
 
         private void GivenTheHouseReturns()
@@ -96,7 +103,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIBuild()
         {
-            _httpClient = _builder.Create(false, false, _request);
+            _httpClient = _builder.Create(_request);
         }
 
         private void ThenTheHttpClientShouldNotBeNull()

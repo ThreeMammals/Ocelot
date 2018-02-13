@@ -1,6 +1,23 @@
 ﻿{
   "ReRoutes": [
     {
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/values",
+      "UpstreamHttpMethod": [ "Get" ],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": true
+      }
+    },
+    {
       "DownstreamPathTemplate": "/",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -282,6 +299,6 @@
   ],
 
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId"
+    "RequestIdKey": "ot-traceid"
   }
 }
