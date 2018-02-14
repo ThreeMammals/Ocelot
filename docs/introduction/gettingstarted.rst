@@ -68,6 +68,15 @@ AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot m
         }
     }
 
+AddOcelotBaseUrl
+^^^^^^^^^^^^^^^^
+
+The most important thing to note here is AddOcelotBaseUrl. Ocelot needs to know the URL it is running under
+in order to do Header find & replace and for certain administration configurations. When setting this URL it should be the external URL that clients will see Ocelot running on e.g. If you are running containers Ocelot might run on the url http://123.12.1.1:6543 but has something like nginx in front of it responding on https://api.mybusiness.com. In this case the Ocelot base url should be https://api.mybusiness.com. 
+
+If for some reason you are using containers and do want Ocelot to respond to client on http://123.12.1.1:6543
+then you can do this but if you are deploying multiple Ocelot's you will probably want to pass this on the command line in some kind of script. Hopefully whatever scheduler you are using can pass the IP.
+
 .NET Core 1.0
 ^^^^^^^^^^^^^
 
