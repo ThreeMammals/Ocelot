@@ -1,36 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Authentication.Middleware;
-using Ocelot.Cache.Middleware;
-using Ocelot.Claims.Middleware;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.Errors.Middleware;
-using Ocelot.Headers.Middleware;
-using Ocelot.Logging;
-using Ocelot.QueryStrings.Middleware;
-using Ocelot.Request.Middleware;
-using Ocelot.Requester.Middleware;
-using Ocelot.RequestId.Middleware;
-using Ocelot.Responder.Middleware;
-using Ocelot.RateLimit.Middleware;
-
-namespace Ocelot.Middleware
+﻿namespace Ocelot.Middleware
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-    using Newtonsoft.Json;
+    using System.Diagnostics;
+    using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
@@ -38,8 +16,21 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.Raft;
     using Ocelot.Responses;
+    using Ocelot.Authentication.Middleware;
+    using Ocelot.Cache.Middleware;
+    using Ocelot.Claims.Middleware;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.DownstreamUrlCreator.Middleware;
+    using Ocelot.Errors.Middleware;
+    using Ocelot.Headers.Middleware;
+    using Ocelot.Logging;
+    using Ocelot.QueryStrings.Middleware;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Requester.Middleware;
+    using Ocelot.RequestId.Middleware;
+    using Ocelot.Responder.Middleware;
+    using Ocelot.RateLimit.Middleware;
     using Rafty.Concensus;
     using Rafty.Infrastructure;
 
@@ -67,7 +58,7 @@ namespace Ocelot.Middleware
         {
             var configuration = await CreateConfiguration(builder);
             
-            await CreateAdministrationArea(builder, configuration);
+            CreateAdministrationArea(builder, configuration);
 
             if(UsingRafty(builder))
             {
@@ -290,15 +281,19 @@ namespace Ocelot.Middleware
             return new OkResponse();
         }
 
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IOcelotConfiguration configuration)
+        private static void CreateAdministrationArea(IApplicationBuilder builder, IOcelotConfiguration configuration)
         {
-            var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
-
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
             {
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    app.UseIdentityServer();
+                    //todo - hack so we know that we are using internal identity server
+                    var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
+                    if (identityServerConfiguration != null)
+                    {
+                        app.UseIdentityServer();
+                    }
+
                     app.UseAuthentication();
                     app.UseMvc();
                 });

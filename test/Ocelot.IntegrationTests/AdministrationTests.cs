@@ -341,12 +341,10 @@ namespace Ocelot.IntegrationTests
 
         private void GivenIHaveAToken(string url)
         {
-            var tokenUrl = $"{url}/connect/token";
-
             var formData = new List<KeyValuePair<string, string>>
             {
-                //new KeyValuePair<string, string>("client_id", "client"),
-                //new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("client_id", "api"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "api"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
@@ -356,7 +354,7 @@ namespace Ocelot.IntegrationTests
 
             using (var httpClient = new HttpClient())
             {
-                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
                 var responseContent = response.Content.ReadAsStringAsync().Result;
                 response.EnsureSuccessStatusCode();
                 _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
@@ -379,15 +377,12 @@ namespace Ocelot.IntegrationTests
                             new ApiResource
                             {
                                 Name = apiName,
-                                Description = "My API",
+                                Description = apiName,
                                 Enabled = true,
-                                DisplayName = "test",
+                                DisplayName = apiName,
                                 Scopes = new List<Scope>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("api.readOnly"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
+                                    new Scope(apiName)
                                 },
                                 // ApiSecrets = new List<Secret>()
                                 // {
@@ -406,10 +401,10 @@ namespace Ocelot.IntegrationTests
                         {
                             new Client
                             {
-                                ClientId = "api",
+                                ClientId = apiName,
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                                //ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
-                                AllowedScopes = new List<string> { apiName, "api.readOnly", "openid", "offline_access" },
+                                ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                                AllowedScopes = new List<string> { apiName },
                                 AccessTokenType = AccessTokenType.Jwt,
                                 Enabled = true
                                 //RequireClientSecret = false
