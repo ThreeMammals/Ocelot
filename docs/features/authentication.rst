@@ -135,3 +135,10 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
                 "AllowedScopes": []
             }
         }]
+
+Allowed Scopes
+^^^^^^^^^^^^^
+
+If you add scopes to AllowedScopes Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has all of the scopes in the list.
+
+This is a way to restrict access to a ReRoute on a per scope basis.

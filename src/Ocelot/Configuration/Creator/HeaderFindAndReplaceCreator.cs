@@ -8,15 +8,13 @@ namespace Ocelot.Configuration.Creator
     public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
     {
         private IBaseUrlFinder _finder;
-        private Dictionary<string, Func<string>> _placeholders;
+        private readonly Dictionary<string, Func<string>> _placeholders;
 
         public HeaderFindAndReplaceCreator(IBaseUrlFinder finder)
         {
             _finder = finder;
             _placeholders = new Dictionary<string, Func<string>>();
-            _placeholders.Add("{BaseUrl}", () => {
-                return _finder.Find();
-            });
+            _placeholders.Add("{BaseUrl}", () => _finder.Find());
         }
 
         public HeaderTransformations Create(FileReRoute fileReRoute)

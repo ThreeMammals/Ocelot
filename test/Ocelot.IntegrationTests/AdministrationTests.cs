@@ -4,11 +4,21 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -18,15 +28,16 @@ namespace Ocelot.IntegrationTests
 {
     public class AdministrationTests : IDisposable
     {
-        private readonly HttpClient _httpClient;
+        private HttpClient _httpClient;
         private readonly HttpClient _httpClientTwo;
         private HttpResponseMessage _response;
         private IWebHost _builder;
         private IWebHostBuilder _webHostBuilder;
-        private readonly string _ocelotBaseUrl;
+        private string _ocelotBaseUrl;
         private BearerToken _token;
         private IWebHostBuilder _webHostBuilderTwo;
         private IWebHost _builderTwo;
+        private IWebHost _identityServerBuilder;
 
         public AdministrationTests()
         {
@@ -61,6 +72,24 @@ namespace Ocelot.IntegrationTests
                  .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                  .BDDfy();
          }
+
+        [Fact]
+        public void should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_memory_with_no_webhostbuilder_registered()
+        {
+            _httpClient = new HttpClient();
+            _ocelotBaseUrl = "http://localhost:5011";
+            _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
+
+            var configuration = new FileConfiguration();
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithNoWebHostBuilder(_ocelotBaseUrl))
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
 
         [Fact]
         public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
@@ -304,6 +333,115 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+         [Fact]
+         public void should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
+         {
+            var configuration = new FileConfiguration();
+
+            var identityServerRootUrl = "http://localhost:5123";
+
+            Action<IdentityServerAuthenticationOptions> options = o => {
+                o.Authority = identityServerRootUrl;
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+            };
+
+             this.Given(x => GivenThereIsAConfiguration(configuration))
+                 .And(x => GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api"))
+                 .And(x => GivenOcelotIsRunningWithIdentityServerSettings(options))
+                 .And(x => GivenIHaveAToken(identityServerRootUrl))
+                 .And(x => GivenIHaveAddedATokenToMyRequest())
+                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                 .BDDfy();
+         }
+
+        private void GivenIHaveAToken(string url)
+        {
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "api"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api"),
+                new KeyValuePair<string, string>("username", "test"),
+                new KeyValuePair<string, string>("password", "test"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
+          private void GivenThereIsAnIdentityServerOn(string url, string apiName)
+        {
+            _identityServerBuilder = new WebHostBuilder()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureServices(services =>
+                {
+                    services.AddLogging();
+                    services.AddIdentityServer()
+                    .AddDeveloperSigningCredential()
+                        .AddInMemoryApiResources(new List<ApiResource>
+                        {
+                            new ApiResource
+                            {
+                                Name = apiName,
+                                Description = apiName,
+                                Enabled = true,
+                                DisplayName = apiName,
+                                Scopes = new List<Scope>()
+                                {
+                                    new Scope(apiName)
+                                }
+                            }
+                        })
+                        .AddInMemoryClients(new List<Client>
+                        {
+                            new Client
+                            {
+                                ClientId = apiName,
+                                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                                ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                                AllowedScopes = new List<string> { apiName },
+                                AccessTokenType = AccessTokenType.Jwt,
+                                Enabled = true
+                            }
+                        })
+                        .AddTestUsers(new List<TestUser>
+                        {
+                            new TestUser
+                            {
+                                Username = "test",
+                                Password = "test",
+                                SubjectId = "1231231"
+                            }
+                        });
+                })
+                .Configure(app =>
+                {
+                    app.UseIdentityServer();
+                })
+                .Build();
+
+                _identityServerBuilder.Start();
+
+                using (var httpClient = new HttpClient())
+                {
+                    var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                    response.EnsureSuccessStatusCode();
+                }        
+            }
+
         private void GivenAnotherOcelotIsRunning(string baseUrl)
         {
             _httpClientTwo.BaseAddress = new Uri(baseUrl);
@@ -312,10 +450,36 @@ namespace Ocelot.IntegrationTests
                .UseUrls(baseUrl)
                .UseKestrel()
                .UseContentRoot(Directory.GetCurrentDirectory())
-               .ConfigureServices(x => {
-                   x.AddSingleton(_webHostBuilderTwo);
+               .ConfigureAppConfiguration((hostingContext, config) =>
+               {
+                   config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                   var env = hostingContext.HostingEnvironment;
+                   config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                       .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                   config.AddJsonFile("configuration.json");
+                   config.AddOcelotBaseUrl(baseUrl);
+                   config.AddEnvironmentVariables();
                })
-               .UseStartup<IntegrationTestsStartup>();
+               .ConfigureServices(x =>
+               {
+                   Action<ConfigurationBuilderCachePart> settings = (s) =>
+                   {
+                       s.WithMicrosoftLogging(log =>
+                       {
+                           log.AddConsole(LogLevel.Debug);
+                       })
+                           .WithDictionaryHandle();
+                   };
+
+                   x.AddOcelot()
+                       .AddCacheManager(settings)
+                       .AddAdministration("/administration", "secret");
+               })
+               .Configure(app =>
+               {
+                   app.UseOcelot().Wait();
+               });
+
 
             _builderTwo = _webHostBuilderTwo.Build();
 
@@ -400,18 +564,110 @@ namespace Ocelot.IntegrationTests
             response.EnsureSuccessStatusCode();
         }
 
+        private void GivenOcelotIsRunningWithIdentityServerSettings(Action<IdentityServerAuthenticationOptions> configOptions)
+        {
+            _webHostBuilder = new WebHostBuilder()
+                .UseUrls(_ocelotBaseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(x => {
+                    x.AddSingleton(_webHostBuilder);
+                    x.AddOcelot()
+                    .AddCacheManager(c =>
+                    {
+                        c.WithDictionaryHandle();
+                    })
+                    .AddAdministration("/administration", configOptions);
+                    })
+                    .Configure(app => {
+                        app.UseOcelot().Wait();
+                    });
+
+              _builder = _webHostBuilder.Build();
+
+            _builder.Start();
+        }
+
         private void GivenOcelotIsRunning()
         {
             _webHostBuilder = new WebHostBuilder()
                 .UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddOcelotBaseUrl(_ocelotBaseUrl);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(x =>
+                {
+                    Action<ConfigurationBuilderCachePart> settings = (s) =>
+                    {
+                        s.WithMicrosoftLogging(log =>
+                            {
+                                log.AddConsole(LogLevel.Debug);
+                            })
+                            .WithDictionaryHandle();
+                    };
+
+                    x.AddOcelot()
+                        .AddCacheManager(settings)
+                        .AddAdministration("/administration", "secret");
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _builder = _webHostBuilder.Build();
+
+            _builder.Start();
+        }
+
+        private void GivenOcelotIsRunningWithNoWebHostBuilder(string baseUrl)
+        {
+            _webHostBuilder = new WebHostBuilder()
+                .UseUrls(_ocelotBaseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddOcelotBaseUrl(baseUrl);
+                    config.AddEnvironmentVariables();
+                })
                 .ConfigureServices(x => {
                     x.AddSingleton(_webHostBuilder);
+                    x.AddOcelot()
+                        .AddCacheManager(c =>
+                        {
+                            c.WithDictionaryHandle();
+                        })
+                        .AddAdministration("/administration", "secret");
                 })
-                .UseStartup<IntegrationTestsStartup>();
+                .Configure(app => {
+                    app.UseOcelot().Wait();
+                });
 
-              _builder = _webHostBuilder.Build();
+            _builder = _webHostBuilder.Build();
 
             _builder.Start();
         }
@@ -464,6 +720,7 @@ namespace Ocelot.IntegrationTests
             Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "");
             _builder?.Dispose();
             _httpClient?.Dispose();
+            _identityServerBuilder?.Dispose();
         }
     }
 }

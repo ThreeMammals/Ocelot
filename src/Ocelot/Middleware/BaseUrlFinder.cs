@@ -1,21 +1,21 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace Ocelot.Middleware
 {
     public class BaseUrlFinder : IBaseUrlFinder
     {
-        private readonly IWebHostBuilder _webHostBuilder;
+        private readonly IConfiguration _config;
 
-        public BaseUrlFinder(IWebHostBuilder webHostBuilder)
+        public BaseUrlFinder(IConfiguration config)
         {
-            _webHostBuilder = webHostBuilder;
+            _config = config;
         }
 
         public string Find()
         {
-            var baseSchemeUrlAndPort = _webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey);
+            var baseUrl = _config.GetValue("BaseUrl", "");
 
-            return string.IsNullOrEmpty(baseSchemeUrlAndPort) ? "http://localhost:5000" : baseSchemeUrlAndPort;
+            return string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000" : baseUrl;
         }
     }
 }
