@@ -7,7 +7,5 @@ namespace Ocelot.Requester
     public interface IHttpRequester
     {
         Task<Response<HttpResponseMessage>> GetResponse(Request.Request request);
-
-
     }
 }

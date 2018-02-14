@@ -1,4 +1,4 @@
-﻿namespace Ocelot.UnitTests.Requester
+namespace Ocelot.UnitTests.Requester
 {
     using System.Net.Http;
     using Microsoft.AspNetCore.Builder;
@@ -28,7 +28,7 @@
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider(), false, false)))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider(), false, false, "", false)))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())

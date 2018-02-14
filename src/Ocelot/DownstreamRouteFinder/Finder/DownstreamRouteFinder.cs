@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Responses;

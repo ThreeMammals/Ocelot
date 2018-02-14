@@ -1,6 +1,23 @@
 ﻿{
   "ReRoutes": [
     {
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/values",
+      "UpstreamHttpMethod": [ "Get" ],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": true
+      }
+    },
+    {
       "DownstreamPathTemplate": "/",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -57,6 +74,10 @@
       ],
       "UpstreamPathTemplate": "/posts",
       "UpstreamHttpMethod": [ "Get" ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10,
@@ -75,6 +96,11 @@
       "UpstreamPathTemplate": "/posts/{postId}",
       "UpstreamHttpMethod": [ "Get" ],
       "RequestIdKey": "ReRouteRequestId",
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": true
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10,
@@ -92,6 +118,11 @@
       ],
       "UpstreamPathTemplate": "/posts/{postId}/comments",
       "UpstreamHttpMethod": [ "Get" ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": true
+      },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10,
@@ -282,6 +313,6 @@
   ],
 
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId"
+    "RequestIdKey": "ot-traceid"
   }
 }

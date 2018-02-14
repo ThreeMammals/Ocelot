@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Threading.Tasks;
 
 namespace Ocelot.Requester.Middleware
 {
@@ -16,7 +15,8 @@ namespace Ocelot.Requester.Middleware
         public HttpRequesterMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpRequester requester, 
-            IRequestScopedDataRepository requestScopedDataRepository)
+            IRequestScopedDataRepository requestScopedDataRepository
+)
             :base(requestScopedDataRepository)
         {
             _next = next;
@@ -25,7 +25,7 @@ namespace Ocelot.Requester.Middleware
         }
 
         public async Task Invoke(HttpContext context)
-        {
+        { 
             var response = await _requester.GetResponse(Request);
 
             if (response.IsError)
