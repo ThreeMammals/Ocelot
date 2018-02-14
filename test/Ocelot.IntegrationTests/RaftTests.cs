@@ -17,6 +17,9 @@ using Shouldly;
 using Xunit;
 using static Rafty.Infrastructure.Wait;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace Ocelot.IntegrationTests
 {
@@ -28,7 +31,6 @@ namespace Ocelot.IntegrationTests
         private FilePeers _peers;
         private readonly HttpClient _httpClient;
         private readonly HttpClient _httpClientForAssertions;
-        private string _ocelotBaseUrl;
         private BearerToken _token;
         private HttpResponseMessage _response;
         private static readonly object _lock = new object();
@@ -37,8 +39,8 @@ namespace Ocelot.IntegrationTests
         {
             _httpClientForAssertions = new HttpClient();
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5000";
-            _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
+            var ocelotBaseUrl = "http://localhost:5000";
+            _httpClient.BaseAddress = new Uri(ocelotBaseUrl);
             _webHostBuilders = new List<IWebHostBuilder>();
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
@@ -331,12 +333,29 @@ namespace Ocelot.IntegrationTests
                 webHostBuilder.UseUrls(url)
                     .UseKestrel()
                     .UseContentRoot(Directory.GetCurrentDirectory())
+                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    {
+                        config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                        var env = hostingContext.HostingEnvironment;
+                        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                        config.AddJsonFile("configuration.json");
+                        config.AddJsonFile("peers.json", optional: true, reloadOnChange: true);
+                        config.AddOcelotBaseUrl(url);
+                        config.AddEnvironmentVariables();
+                    })
                     .ConfigureServices(x =>
                     {
-                        x.AddSingleton(webHostBuilder);
                         x.AddSingleton(new NodeId(url));
+                        x
+                            .AddOcelot()
+                            .AddAdministration("/administration", "secret")
+                            .AddRafty();
                     })
-                    .UseStartup<RaftStartup>();
+                    .Configure(app =>
+                    {
+                        app.UseOcelot().Wait();
+                    }); 
 
                 var builder = webHostBuilder.Build();
                 builder.Start();

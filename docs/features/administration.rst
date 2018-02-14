@@ -1,8 +1,39 @@
 Administration
 ==============
 
-Ocelot supports changing configuration during runtime via an authenticated HTTP API. The API is authenticated 
-using bearer tokens that you request from Ocelot iteself. This is provided by the amazing 
+Ocelot supports changing configuration during runtime via an authenticated HTTP API. This can be authenticated in two ways either using Ocelot's 
+internal IdentityServer (for authenticating requests to the administration API only) or hooking the administration API authentication into your own 
+IdentityServer.
+
+Providing your own IdentityServer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All you need to do to hook into your own IdentityServer is add the following to your ConfigureServices method.
+
+.. code-block:: csharp
+
+    public virtual void ConfigureServices(IServiceCollection services)
+    {
+        Action<IdentityServerAuthenticationOptions> options = o => {
+                // o.Authority = ;
+                // o.ApiName = ;
+                // etc....
+            };
+
+        services
+            .AddOcelot(Configuration)
+            .AddAdministration("/administration", options);
+    }
+
+You now need to get a token from your IdentityServer and use in subsequent requests to Ocelot's administration API.
+
+This feature was implemented for `issue 228 <https://github.com/TomPallister/Ocelot/issues/228>`_. It is useful because the IdentityServer authentication 
+middleware needs the URL of the IdentityServer. If you are using the internal IdentityServer it might not alaways be possible to have the Ocelot URL.  
+
+Internal IdentityServer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The API is authenticated using bearer tokens that you request from Ocelot iteself. This is provided by the amazing 
 `Identity Server <https://github.com/IdentityServer/IdentityServer4>`_ project that I have been using for a few years now. Check them out.
 
 In order to enable the administration section you need to do a few things. First of all add this to your
@@ -31,8 +62,6 @@ will need to be changed if you are running Ocelot on a different url to http://l
 The scripts show you how to request a bearer token from ocelot and then use it to GET the existing configuration and POST 
 a configuration.
 
-Administration running multiple Ocelot's
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you are running multiple Ocelot's in a cluster then you need to use a certificate to sign the bearer tokens used to access the administration API.
 
 In order to do this you need to add two more environmental variables for each Ocelot in the cluster.
@@ -43,6 +72,7 @@ In order to do this you need to add two more environmental variables for each Oc
     The password for the certificate.
 
 Normally Ocelot just uses temporary signing credentials but if you set these environmental variables then it will use the certificate. If all the other Ocelots in the cluster have the same certificate then you are good!
+
 
 Administration API
 ^^^^^^^^^^^^^^^^^^

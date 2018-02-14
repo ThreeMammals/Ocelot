@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+
 namespace Ocelot.DependencyInjection
 {
     using CacheManager.Core;
@@ -55,12 +57,12 @@ namespace Ocelot.DependencyInjection
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configurationRoot;
         private readonly IDelegatingHandlerHandlerProvider _provider;
-        
+
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
             _services = services;    
-            
+           
             //add default cache settings...
             Action<ConfigurationBuilderCachePart> defaultCachingSettings = x =>
             {
@@ -254,11 +256,10 @@ namespace Ocelot.DependencyInjection
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration));
 
-            //todo - refactor a method so we know why this is happening
-            var whb = _services.First(x => x.ServiceType == typeof(IWebHostBuilder));
-            var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
+            var urlFinder = new BaseUrlFinder(_configurationRoot);
             var baseSchemeUrlAndPort = urlFinder.Find();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            
 
             _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>

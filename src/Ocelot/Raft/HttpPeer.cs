@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Ocelot.Authentication;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Provider;
+using Ocelot.Middleware;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
 
@@ -23,7 +24,7 @@ namespace Ocelot.Raft
         private IOcelotConfiguration _config;
         private IIdentityServerConfiguration _identityServerConfiguration;
 
-        public HttpPeer(string hostAndPort, HttpClient httpClient, IWebHostBuilder builder, IOcelotConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
+        public HttpPeer(string hostAndPort, HttpClient httpClient, IBaseUrlFinder finder, IOcelotConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
         {
             _identityServerConfiguration = identityServerConfiguration;
             _config = config;
@@ -33,7 +34,7 @@ namespace Ocelot.Raft
             _jsonSerializerSettings = new JsonSerializerSettings() { 
                 TypeNameHandling = TypeNameHandling.All
             };
-            _baseSchemeUrlAndPort = builder.GetSetting(WebHostDefaults.ServerUrlsKey);
+            _baseSchemeUrlAndPort = finder.Find();
         }
 
         public string Id {get; private set;}

@@ -13,6 +13,11 @@ using Xunit;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using CacheManager.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace Ocelot.IntegrationTests
 {
@@ -97,11 +102,35 @@ namespace Ocelot.IntegrationTests
                 .UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddOcelotBaseUrl(_ocelotBaseUrl);
+                    config.AddEnvironmentVariables();
+                })
                 .ConfigureServices(x =>
                 {
-                    x.AddSingleton(_webHostBuilder);
+                    Action<ConfigurationBuilderCachePart> settings = (s) =>
+                    {
+                        s.WithMicrosoftLogging(log =>
+                            {
+                                log.AddConsole(LogLevel.Debug);
+                            })
+                            .WithDictionaryHandle();
+                    };
+
+                    x.AddOcelot()
+                        .AddCacheManager(settings)
+                        .AddAdministration("/administration", "secret");
                 })
-                .UseStartup<IntegrationTestsStartup>();
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
 
             _builder = _webHostBuilder.Build();
 
