@@ -166,6 +166,20 @@ namespace Ocelot.DependencyInjection
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
+        public IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configureOptions)
+        {
+            var administrationPath = new AdministrationPath(path);
+
+            if (configureOptions != null)
+            {
+                AddIdentityServer(configureOptions, administrationPath);
+            }
+
+            var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
+            _services.Replace(descriptor);
+            return new OcelotAdministrationBuilder(_services, _configurationRoot);
+        }
+
         public IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler)
         {
             _provider.Add(delegatingHandler);
@@ -219,6 +233,19 @@ namespace Ocelot.DependencyInjection
             _services.AddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
             _services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
             return this;
+        }
+
+        private void AddIdentityServer(Action<IdentityServerAuthenticationOptions> configOptions, IAdministrationPath adminPath)
+        {
+            //_services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            _services.TryAddSingleton<IHashMatcher, HashMatcher>();
+
+            //todo - refactor a method so we know why this is happening
+            //JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            _services
+                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(configOptions);
         }
 
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
