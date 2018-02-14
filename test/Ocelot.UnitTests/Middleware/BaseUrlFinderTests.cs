@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Moq;
 using Ocelot.Middleware;
 using Shouldly;
@@ -14,38 +16,41 @@ namespace Ocelot.UnitTests.Middleware
     public class BaseUrlFinderTests
     {
         private readonly BaseUrlFinder _baseUrlFinder;
-        private readonly Mock<IWebHostBuilder> _webHostBuilder;
+        private readonly Mock<IConfiguration> _config;
+
         private string _result;
 
         public BaseUrlFinderTests()
         {
-            _webHostBuilder = new Mock<IWebHostBuilder>();
-            _baseUrlFinder = new BaseUrlFinder(_webHostBuilder.Object);
-        }
-
-        [Fact]
-        public void should_find_base_url_based_on_webhostbuilder()
-        {
-            this.Given(x => GivenTheWebHostBuilderReturns("http://localhost:7000"))
-                .When(x => WhenIFindTheUrl())
-                .Then(x => ThenTheUrlIs("http://localhost:7000"))
-                .BDDfy();
+            _config = new Mock<IConfiguration>();
+            _baseUrlFinder = new BaseUrlFinder(_config.Object);
         }
 
         [Fact]
         public void should_use_default_base_url()
         {
-            this.Given(x => GivenTheWebHostBuilderReturns(""))
+            this.Given(x => GivenTheConfigBaseUrlIs(""))
+              .And(x => GivenTheConfigBaseUrlIs(""))
               .When(x => WhenIFindTheUrl())
               .Then(x => ThenTheUrlIs("http://localhost:5000"))
               .BDDfy();
         }
 
-        private void GivenTheWebHostBuilderReturns(string url)
+        [Fact]
+        public void should_use_file_config_base_url()
         {
-            _webHostBuilder
-                .Setup(x => x.GetSetting(WebHostDefaults.ServerUrlsKey))
-                .Returns(url);
+            this.Given(x => GivenTheConfigBaseUrlIs("http://localhost:7000"))
+                .And(x => GivenTheConfigBaseUrlIs("http://baseurlfromconfig.com:5181"))
+                .When(x => WhenIFindTheUrl())
+                .Then(x => ThenTheUrlIs("http://baseurlfromconfig.com:5181"))
+                .BDDfy();
+        }
+
+        private void GivenTheConfigBaseUrlIs(string configValue)
+        {
+            var configSection = new ConfigurationSection(new ConfigurationRoot(new List<IConfigurationProvider>{new MemoryConfigurationProvider(new MemoryConfigurationSource())}), "");
+            configSection.Value = configValue;
+            _config.Setup(x => x.GetSection(It.IsAny<string>())).Returns(configSection);
         }
 
         private void WhenIFindTheUrl()

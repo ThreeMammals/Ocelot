@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Provider;
+using Ocelot.Middleware;
 using Rafty.Concensus;
 using Rafty.Infrastructure;
 
@@ -15,15 +16,15 @@ namespace Ocelot.Raft
     {
         private readonly IOptions<FilePeers> _options;
         private List<IPeer> _peers;
-        private IWebHostBuilder _builder;
+        private IBaseUrlFinder _finder;
         private IOcelotConfigurationProvider _provider;
         private IIdentityServerConfiguration _identityServerConfig;
 
-        public FilePeersProvider(IOptions<FilePeers> options, IWebHostBuilder builder, IOcelotConfigurationProvider provider, IIdentityServerConfiguration identityServerConfig)
+        public FilePeersProvider(IOptions<FilePeers> options, IBaseUrlFinder finder, IOcelotConfigurationProvider provider, IIdentityServerConfiguration identityServerConfig)
         {
             _identityServerConfig = identityServerConfig;
             _provider = provider;
-            _builder = builder;
+            _finder = finder;
             _options = options;
             _peers = new List<IPeer>();
             //todo - sort out async nonsense..
@@ -32,7 +33,7 @@ namespace Ocelot.Raft
             {
                 var httpClient = new HttpClient();
                 //todo what if this errors?
-                var httpPeer = new HttpPeer(item.HostAndPort, httpClient, _builder, config.Data, _identityServerConfig);
+                var httpPeer = new HttpPeer(item.HostAndPort, httpClient, _finder, config.Data, _identityServerConfig);
                 _peers.Add(httpPeer);
             }
         }
