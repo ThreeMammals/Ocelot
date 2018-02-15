@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Errors
     using Moq;
     using Ocelot.Configuration;
     using Rafty.Concensus;
+    using Ocelot.Errors;
 
     public class ExceptionHandlerMiddlewareTests : ServerHostedMiddlewareTest
     {
@@ -38,11 +39,6 @@ namespace Ocelot.UnitTests.Errors
                 .Then(_ => ThenTheResponseIsOk())
                 .And(_ => TheRequestIdIsNotSet())
                 .BDDfy();
-        }
-
-        private void TheRequestIdIsNotSet()
-        {
-            ScopedRepository.Verify(x => x.Add<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -81,6 +77,55 @@ namespace Ocelot.UnitTests.Errors
                 .Then(_ => ThenTheResponseIsOk())
                 .And(_ => TheRequestIdIsNotSet())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_throw_exception_if_config_provider_returns_error()
+        {
+             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
+                .And(_ => GivenTheConfigReturnsError())
+                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+                .Then(_ => ThenAnExceptionIsThrown())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_throw_exception_if_config_provider_throws()
+        {
+             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
+                .And(_ => GivenTheConfigThrows())
+                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+                .Then(_ => ThenAnExceptionIsThrown())
+                .BDDfy();
+        }
+
+        private void GivenTheConfigThrows()
+        {
+            var ex = new Exception("outer", new  Exception("inner"));
+             _provider
+                .Setup(x => x.Get()).ThrowsAsync(ex);
+        }
+
+        private void ThenAnExceptionIsThrown()
+        {
+            ResponseMessage.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        }
+
+        private void GivenTheConfigReturnsError()
+        {
+            var config = new OcelotConfiguration(null, null, null, null);
+
+            var response = new Ocelot.Responses.ErrorResponse<IOcelotConfiguration>(new FakeError());
+            _provider
+                .Setup(x => x.Get()).ReturnsAsync(response);
+        }
+
+        public class FakeError : Error
+        {
+            public FakeError() 
+                : base("meh", OcelotErrorCode.CannotAddDataError)
+            {
+            }
         }
 
         private void TheRequestIdIsSet(string key, string value)
@@ -139,6 +184,11 @@ namespace Ocelot.UnitTests.Errors
         private void ThenTheResponseIsError()
         {
             ResponseMessage.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        }
+
+        private void TheRequestIdIsNotSet()
+        {
+            ScopedRepository.Verify(x => x.Add<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }

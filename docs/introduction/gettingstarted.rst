@@ -29,8 +29,8 @@ The following is a very basic configuration.json. It won't do anything but shoul
 
 **Program**
 
-Then in your Program.cs you will want to have the following. This can be changed if you 
-don't wan't to use the default url e.g. UseUrls(someUrls) and should work as long as you keep the WebHostBuilder registration.
+Then in your Program.cs you will want to have the following. The main things to note are AddOcelotBaseUrl("http://localhost:5000") (adds the url this instance of Ocelot will run under), 
+AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot middleware). It is important to call AddOcelotBaseUrl as Ocelot needs to know the URL that it is exposed to the outside world on.
 
 .. code-block:: csharp
 
@@ -38,53 +38,44 @@ don't wan't to use the default url e.g. UseUrls(someUrls) and should work as lon
     {
         public static void Main(string[] args)
         {
-            IWebHostBuilder builder = new WebHostBuilder();
-            builder.ConfigureServices(s => {
-                s.AddSingleton(builder);
-            });
-            builder.UseKestrel()
+             new WebHostBuilder()
+                .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("configuration.json");
-                    config.AddEnvironmentVariables();
+                    config
+                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                        .AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                        .AddJsonFile("configuration.json")
+                        .AddEnvironmentVariables()
+                        .AddOcelotBaseUrl("http://localhost:5000");
+                })
+                .ConfigureServices(s => {
+                    s.AddOcelot();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
+                    //add your logging
                 })
                 .UseIISIntegration()
-                .UseStartup<ManualTestStartup>();                
-            var host = builder.Build();
-            host.Run();
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                })
+                .Build()
+                .Run(); 
         }
     }
 
-Sadly we need to inject the IWebHostBuilder interface to get the applications scheme, url and port later. I cannot find a better way of doing this at the moment without setting this in a static or some kind of config.
+AddOcelotBaseUrl
+^^^^^^^^^^^^^^^^
 
-**Startup**
+The most important thing to note here is AddOcelotBaseUrl. Ocelot needs to know the URL it is running under
+in order to do Header find & replace and for certain administration configurations. When setting this URL it should be the external URL that clients will see Ocelot running on e.g. If you are running containers Ocelot might run on the url http://123.12.1.1:6543 but has something like nginx in front of it responding on https://api.mybusiness.com. In this case the Ocelot base url should be https://api.mybusiness.com. 
 
-An example startup using a json file for configuration can be seen below. This is the most basic startup and Ocelot has quite a few more options. Detailed in the rest of these docs! If you get a stuck a good place to look is at the ManualTests project in the source code.  
-
-.. code-block:: csharp
-
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddOcelot();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseOcelot().Wait();
-        }
-    }
+If for some reason you are using containers and do want Ocelot to respond to client on http://123.12.1.1:6543
+then you can do this but if you are deploying multiple Ocelot's you will probably want to pass this on the command line in some kind of script. Hopefully whatever scheduler you are using can pass the IP.
 
 .NET Core 1.0
 ^^^^^^^^^^^^^
@@ -109,8 +100,7 @@ The following is a very basic configuration.json. It won't do anything but shoul
 
 **Program**
 
-Then in your Program.cs you will want to have the following. This can be changed if you 
-don't wan't to use the default url e.g. UseUrls(someUrls) and should work as long as you keep the WebHostBuilder registration.
+Then in your Program.cs you will want to have the following. 
 
 .. code-block:: csharp
 
@@ -121,7 +111,6 @@ don't wan't to use the default url e.g. UseUrls(someUrls) and should work as lon
             IWebHostBuilder builder = new WebHostBuilder();
             
             builder.ConfigureServices(s => {
-                s.AddSingleton(builder);
             });
 
             builder.UseKestrel()
@@ -133,8 +122,6 @@ don't wan't to use the default url e.g. UseUrls(someUrls) and should work as lon
             host.Run();
         }
     }
-
-Sadly we need to inject the IWebHostBuilder interface to get the applications scheme, url and port later. I cannot find a better way of doing this at the moment without setting this in a static or some kind of config.
 
 **Startup**
 
@@ -151,7 +138,8 @@ An example startup using a json file for configuration can be seen below.
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddJsonFile("configuration.json")
-                .AddEnvironmentVariables();
+                .AddEnvironmentVariables()
+                .AddOcelotBaseUrl("http://localhost:5000");
 
             Configuration = builder.Build();
         }

@@ -16,6 +16,7 @@ using Ocelot.Requester;
 using Ocelot.UnitTests.Requester;
 using Shouldly;
 using System;
+using IdentityServer4.AccessTokenValidation;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -31,13 +32,11 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         public OcelotBuilderTests()
         {
-                IWebHostBuilder builder = new WebHostBuilder();
-                _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
-                _services = new ServiceCollection();
-                _services.AddSingleton(builder);
-                _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
-                _services.AddSingleton<IConfiguration>(_configRoot);
-                _maxRetries = 100;
+            _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
+            _services = new ServiceCollection();
+            _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+            _services.AddSingleton<IConfiguration>(_configRoot);
+            _maxRetries = 100;
         }
         private Exception _ex;
 
@@ -98,6 +97,40 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Then(x => ThenAnExceptionIsntThrown())
                 .Then(x => ThenTheCorrectAdminPathIsRegitered())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_up_administration_with_identity_server_options()
+        {
+            Action<IdentityServerAuthenticationOptions> options = o => {
+               
+            };
+
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpAdministration(options))
+                .Then(x => ThenAnExceptionIsntThrown())
+                .Then(x => ThenTheCorrectAdminPathIsRegitered())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_up_administration()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => WhenISetUpAdministration())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .Then(x => ThenTheCorrectAdminPathIsRegitered())
+                .BDDfy();
+        }
+
+        private void WhenISetUpAdministration()
+        {
+            _ocelotBuilder.AddAdministration("/administration", "secret");
+        }
+
+        private void WhenISetUpAdministration(Action<IdentityServerAuthenticationOptions> options)
+        {
+            _ocelotBuilder.AddAdministration("/administration", options);
         }
 
         [Fact]
@@ -255,6 +288,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
+                _serviceProvider = _services.BuildServiceProvider();
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
             }
             catch (Exception e)

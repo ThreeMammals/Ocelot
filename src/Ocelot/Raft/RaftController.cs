@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Raft;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
@@ -23,12 +24,12 @@ namespace Ocelot.Raft
         private string _baseSchemeUrlAndPort;
         private JsonSerializerSettings _jsonSerialiserSettings;
 
-        public RaftController(INode node, IOcelotLoggerFactory loggerFactory, IWebHostBuilder builder)
+        public RaftController(INode node, IOcelotLoggerFactory loggerFactory, IBaseUrlFinder finder)
         {
             _jsonSerialiserSettings = new JsonSerializerSettings {
                 TypeNameHandling = TypeNameHandling.All
             };
-            _baseSchemeUrlAndPort = builder.GetSetting(WebHostDefaults.ServerUrlsKey);
+            _baseSchemeUrlAndPort = finder.Find();
             _logger = loggerFactory.CreateLogger<RaftController>();
             _node = node;
         }

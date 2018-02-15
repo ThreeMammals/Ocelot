@@ -1,66 +1,68 @@
-using CacheManager.Core;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Authorisation;
-using Ocelot.Cache;
-using Ocelot.Claims;
-using Ocelot.Configuration.Authentication;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Parser;
-using Ocelot.Configuration.Provider;
-using Ocelot.Configuration.Repository;
-using Ocelot.Configuration.Setter;
-using Ocelot.Configuration.Validator;
-using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Headers;
-using Ocelot.Infrastructure.Claims.Parser;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using Ocelot.QueryStrings;
-using Ocelot.RateLimit;
-using Ocelot.Request.Builder;
-using Ocelot.Request.Mapper;
-using Ocelot.Requester;
-using Ocelot.Requester.QoS;
-using Ocelot.Responder;
-using Ocelot.ServiceDiscovery;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
-using System.Net.Http;
-using Butterfly.Client.AspNetCore;
+using Microsoft.Extensions.Options;
 
 namespace Ocelot.DependencyInjection
 {
+    using CacheManager.Core;
+    using IdentityServer4.Models;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Authorisation;
+    using Ocelot.Cache;
+    using Ocelot.Claims;
+    using Ocelot.Configuration.Authentication;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Parser;
+    using Ocelot.Configuration.Provider;
+    using Ocelot.Configuration.Repository;
+    using Ocelot.Configuration.Setter;
+    using Ocelot.Configuration.Validator;
+    using Ocelot.DownstreamRouteFinder.Finder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Ocelot.DownstreamUrlCreator;
+    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+    using Ocelot.Headers;
+    using Ocelot.Infrastructure.Claims.Parser;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.LoadBalancer.LoadBalancers;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.QueryStrings;
+    using Ocelot.RateLimit;
+    using Ocelot.Request.Builder;
+    using Ocelot.Request.Mapper;
+    using Ocelot.Requester;
+    using Ocelot.Requester.QoS;
+    using Ocelot.Responder;
+    using Ocelot.ServiceDiscovery;
+    using System;
+    using System.Collections.Generic;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
+    using IdentityServer4.AccessTokenValidation;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
+    using System.Linq;
+    using System.Net.Http;
+    using Butterfly.Client.AspNetCore;
+
     public class OcelotBuilder : IOcelotBuilder
     {
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configurationRoot;
-        private IDelegatingHandlerHandlerProvider _provider;
-        
+        private readonly IDelegatingHandlerHandlerProvider _provider;
+
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
             _services = services;    
-            
+           
             //add default cache settings...
             Action<ConfigurationBuilderCachePart> defaultCachingSettings = x =>
             {
@@ -109,7 +111,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             _services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             _services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
-            _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
+            _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
             _services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             _services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
@@ -161,6 +163,21 @@ namespace Ocelot.DependencyInjection
                 AddIdentityServer(identityServerConfiguration, administrationPath);
             }
 
+            var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
+            _services.Replace(descriptor);
+            return new OcelotAdministrationBuilder(_services, _configurationRoot);
+        }
+
+        public IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configureOptions)
+        {
+            var administrationPath = new AdministrationPath(path);
+
+            if (configureOptions != null)
+            {
+                AddIdentityServer(configureOptions);
+            }
+
+            //todo - hack because we add this earlier so it always exists for some reason...investigate..
             var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
             _services.Replace(descriptor);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
@@ -221,6 +238,13 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
+        private void AddIdentityServer(Action<IdentityServerAuthenticationOptions> configOptions)
+        {
+            _services
+                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(configOptions);
+        }
+
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
             _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
@@ -232,11 +256,10 @@ namespace Ocelot.DependencyInjection
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration));
 
-            //todo - refactor a method so we know why this is happening
-            var whb = _services.First(x => x.ServiceType == typeof(IWebHostBuilder));
-            var urlFinder = new BaseUrlFinder((IWebHostBuilder)whb.ImplementationInstance);
+            var urlFinder = new BaseUrlFinder(_configurationRoot);
             var baseSchemeUrlAndPort = urlFinder.Find();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            
 
             _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>
