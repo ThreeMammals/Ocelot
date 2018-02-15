@@ -457,7 +457,6 @@ namespace Ocelot.IntegrationTests
                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                    config.AddJsonFile("configuration.json");
-                   config.AddOcelotBaseUrl(baseUrl);
                    config.AddEnvironmentVariables();
                })
                .ConfigureServices(x =>
@@ -610,7 +609,6 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_ocelotBaseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
@@ -651,7 +649,6 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x => {
