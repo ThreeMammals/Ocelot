@@ -109,7 +109,6 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_ocelotBaseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>

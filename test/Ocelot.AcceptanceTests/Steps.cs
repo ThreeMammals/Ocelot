@@ -152,7 +152,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -189,7 +188,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -227,7 +225,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -256,7 +253,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
