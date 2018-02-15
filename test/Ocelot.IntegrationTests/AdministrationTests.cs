@@ -74,13 +74,19 @@ namespace Ocelot.IntegrationTests
          }
 
         [Fact]
-        public void should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_memory_with_no_webhostbuilder_registered()
+        public void should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5011";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
 
-            var configuration = new FileConfiguration();
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    BaseUrl = _ocelotBaseUrl
+                }
+            };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunningWithNoWebHostBuilder(_ocelotBaseUrl))
@@ -457,7 +463,6 @@ namespace Ocelot.IntegrationTests
                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                    config.AddJsonFile("configuration.json");
-                   config.AddOcelotBaseUrl(baseUrl);
                    config.AddEnvironmentVariables();
                })
                .ConfigureServices(x =>
@@ -610,7 +615,6 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_ocelotBaseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
@@ -651,7 +655,6 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x => {

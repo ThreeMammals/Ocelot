@@ -22,8 +22,7 @@ namespace Ocelot.ManualTest
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
                         .AddJsonFile("configuration.json")
-                        .AddEnvironmentVariables()
-                        .AddOcelotBaseUrl("http://localhost:5000");
+                        .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {
 
