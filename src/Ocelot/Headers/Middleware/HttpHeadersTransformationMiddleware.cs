@@ -34,7 +34,7 @@ namespace Ocelot.Headers.Middleware
 
             await _next.Invoke(context);
 
-            var postFAndRs = this.DownstreamRoute.ReRoute.DownstreamHeadersFindAndReplace;
+            var postFAndRs = this.DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
             _postReplacer.Replace(HttpResponseMessage, postFAndRs, DownstreamRequest);
         }

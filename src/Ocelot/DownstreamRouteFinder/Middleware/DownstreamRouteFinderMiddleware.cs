@@ -61,7 +61,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamPathTemplate);
+            _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamReRoute.DownstreamPathTemplate);
 
             SetDownstreamRouteForThisRequest(downstreamRoute.Data);
 

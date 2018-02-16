@@ -37,7 +37,7 @@ namespace Ocelot.Authorisation.Middleware
             {
                 _logger.LogDebug("route is authenticated scopes must be checked");
 
-                var authorised = _scopesAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.AuthenticationOptions.AllowedScopes);
+                var authorised = _scopesAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.DownstreamReRoute.AuthenticationOptions.AllowedScopes);
 
                 if (authorised.IsError)
                 {
@@ -67,7 +67,7 @@ namespace Ocelot.Authorisation.Middleware
             {
                 _logger.LogDebug("route is authorised");
 
-                var authorised = _claimsAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.RouteClaimsRequirement);
+                var authorised = _claimsAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.DownstreamReRoute.RouteClaimsRequirement);
 
                 if (authorised.IsError)
                 {
@@ -94,7 +94,7 @@ namespace Ocelot.Authorisation.Middleware
             }
             else
             {
-                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
                 await _next.Invoke(context);
             }
         }
@@ -106,12 +106,12 @@ namespace Ocelot.Authorisation.Middleware
 
         private static bool IsAuthenticatedRoute(ReRoute reRoute)
         {
-            return reRoute.IsAuthenticated;
+            return reRoute.DownstreamReRoute.IsAuthenticated;
         }
 
         private static bool IsAuthorisedRoute(ReRoute reRoute)
         {
-            return reRoute.IsAuthorised;
+            return reRoute.DownstreamReRoute.IsAuthorised;
         }
     }
 }

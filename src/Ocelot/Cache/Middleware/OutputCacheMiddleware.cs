@@ -32,7 +32,7 @@ namespace Ocelot.Cache.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (!DownstreamRoute.ReRoute.IsCached)
+            if (!DownstreamRoute.ReRoute.DownstreamReRoute.IsCached)
             {
                 await _next.Invoke(context);
                 return;
@@ -42,7 +42,7 @@ namespace Ocelot.Cache.Middleware
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
 
-            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -69,7 +69,7 @@ namespace Ocelot.Cache.Middleware
 
             cached = await CreateCachedResponse(HttpResponseMessage);
 
-            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
+            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.DownstreamReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.DownstreamReRoute.CacheOptions.Region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
         }

@@ -26,11 +26,11 @@ namespace Ocelot.QueryStrings.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (DownstreamRoute.ReRoute.ClaimsToQueries.Any())
+            if (DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToQueries.Any())
             {
-                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
-                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(DownstreamRoute.ReRoute.ClaimsToQueries, context.User.Claims, DownstreamRequest);
+                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToQueries, context.User.Claims, DownstreamRequest);
 
                 if (response.IsError)
                 {

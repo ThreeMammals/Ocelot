@@ -36,7 +36,7 @@ namespace Ocelot.RequestId.Middleware
         private void SetOcelotRequestId(HttpContext context)
         {
             // if get request ID is set on upstream request then retrieve it
-            var key = DownstreamRoute.ReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
+            var key = DownstreamRoute.ReRoute.DownstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
             
             StringValues upstreamRequestIds;
             if (context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
@@ -60,7 +60,7 @@ namespace Ocelot.RequestId.Middleware
             }
 
             // set request ID on downstream request, if required
-            var requestId = new RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier);
+            var requestId = new RequestId(DownstreamRoute?.ReRoute?.DownstreamReRoute.RequestIdKey, context.TraceIdentifier);
 
             if (ShouldAddRequestId(requestId, DownstreamRequest.Headers))
             {

@@ -26,11 +26,11 @@ namespace Ocelot.Claims.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (DownstreamRoute.ReRoute.ClaimsToClaims.Any())
+            if (DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToClaims.Any())
             {
                 _logger.LogDebug("this route has instructions to convert claims to other claims");
 
-                var result = _addClaimsToRequest.SetClaimsOnContext(DownstreamRoute.ReRoute.ClaimsToClaims, context);
+                var result = _addClaimsToRequest.SetClaimsOnContext(DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToClaims, context);
 
                 if (result.IsError)
                 {

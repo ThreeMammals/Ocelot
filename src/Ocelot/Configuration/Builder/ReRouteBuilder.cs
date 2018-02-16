@@ -16,7 +16,7 @@ namespace Ocelot.Configuration.Builder
         private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private bool _isAuthenticated;
-        private List<ClaimToThing> _configHeaderExtractorProperties;
+        private List<ClaimToThing> _claimsToHeaders;
         private List<ClaimToThing> _claimToClaims;
         private Dictionary<string, string> _routeClaimRequirement;
         private bool _isAuthorised;
@@ -111,7 +111,7 @@ namespace Ocelot.Configuration.Builder
 
         public ReRouteBuilder WithClaimsToHeaders(List<ClaimToThing> input)
         {
-            _configHeaderExtractorProperties = input;
+            _claimsToHeaders = input;
             return this;
         }
 
@@ -214,34 +214,36 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-            return new ReRoute(
-                new PathTemplate(_downstreamPathTemplate), 
-                new PathTemplate(_upstreamTemplate), 
-                _upstreamHttpMethod, 
-                _upstreamTemplatePattern, 
-                _isAuthenticated, 
-                _authenticationOptions,
-                _configHeaderExtractorProperties, 
-                _claimToClaims, 
-                _routeClaimRequirement, 
-                _isAuthorised, 
-                _claimToQueries, 
+            var downstreamReRoute = new DownstreamReRoute(_downstreamHeaderFindAndReplace, 
+                _downstreamAddresses,
+                _serviceName, 
+                _httpHandlerOptions, 
+                _useServiceDiscovery, 
+                _enableRateLimiting, 
+                _useQos, 
+                _qosOptions,
+                _downstreamScheme, 
                 _requestIdHeaderKey, 
                 _isCached, 
                 _fileCacheOptions, 
-                _downstreamScheme, 
-                _loadBalancer,
-                _reRouteKey, 
-                _useQos, 
-                _qosOptions,
-                _enableRateLimiting,
+                _loadBalancer, 
                 _rateLimitOptions,
-                _httpHandlerOptions,
-                _useServiceDiscovery,
-                _serviceName,
+                _routeClaimRequirement, 
+                _claimToQueries, 
+                _claimsToHeaders, 
+                _claimToClaims,
+                _isAuthenticated, 
+                _isAuthorised, 
+                _authenticationOptions, 
+                new PathTemplate(_downstreamPathTemplate),
+                _reRouteKey);
+
+            return new ReRoute(
+                downstreamReRoute, 
+                new PathTemplate(_upstreamTemplate), 
+                _upstreamHttpMethod, 
+                _upstreamTemplatePattern, 
                 _upstreamHeaderFindAndReplace,
-                _downstreamHeaderFindAndReplace,
-                _downstreamAddresses,
                 _upstreamHost);
         }
     }

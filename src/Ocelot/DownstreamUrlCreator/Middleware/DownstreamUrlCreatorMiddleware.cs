@@ -31,7 +31,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(HttpContext context)
         {
             var dsPath = _replacer
-                .Replace(DownstreamRoute.ReRoute.DownstreamPathTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
+                .Replace(DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
 
             if (dsPath.IsError)
             {
@@ -44,7 +44,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri)
             {
                 Path = dsPath.Data.Value,
-                Scheme = DownstreamRoute.ReRoute.DownstreamScheme
+                Scheme = DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamScheme
             };
 
             DownstreamRequest.RequestUri = uriBuilder.Uri;

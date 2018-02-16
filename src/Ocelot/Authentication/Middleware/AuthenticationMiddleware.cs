@@ -36,7 +36,7 @@ namespace Ocelot.Authentication.Middleware
             {
                 _logger.LogDebug($"{context.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
                 
-                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.AuthenticationOptions.AuthenticationProviderKey);
+                var result = await context.AuthenticateAsync(DownstreamRoute.ReRoute.DownstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
                 
                 context.User = result.Principal;
 
@@ -67,7 +67,7 @@ namespace Ocelot.Authentication.Middleware
 
         private static bool IsAuthenticatedRoute(ReRoute reRoute)
         {
-            return reRoute.IsAuthenticated;
+            return reRoute.DownstreamReRoute.IsAuthenticated;
         }
     }
 }

@@ -643,14 +643,14 @@ namespace Ocelot.UnitTests.Configuration
                 var result = _config.Data.ReRoutes[i];
                 var expected = expectedReRoutes[i];
 
-                result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
+                result.DownstreamReRoute.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute.DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
                 result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
-                result.ClaimsToClaims.Count.ShouldBe(expected.ClaimsToClaims.Count);
-                result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
-                result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
-                result.RequestIdKey.ShouldBe(expected.RequestIdKey);
+                result.DownstreamReRoute.ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToClaims.Count);
+                result.DownstreamReRoute.ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToHeaders.Count);
+                result.DownstreamReRoute.ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToQueries.Count);
+                result.DownstreamReRoute.RequestIdKey.ShouldBe(expected.DownstreamReRoute.RequestIdKey);
             
             }
         }
@@ -659,8 +659,8 @@ namespace Ocelot.UnitTests.Configuration
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
-                var result = _config.Data.ReRoutes[i].AuthenticationOptions;
-                var expected = expectedReRoutes[i].AuthenticationOptions;
+                var result = _config.Data.ReRoutes[i].DownstreamReRoute.AuthenticationOptions;
+                var expected = expectedReRoutes[i].DownstreamReRoute.AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
         }
@@ -714,10 +714,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
 
-            _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
 
         private void ThenTheServiceProviderCreatorIsCalledCorrectly()

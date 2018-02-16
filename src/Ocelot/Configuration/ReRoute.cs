@@ -7,92 +7,101 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(PathTemplate downstreamPathTemplate, 
+        public ReRoute(DownstreamReRoute downstreamReRoute, 
             PathTemplate upstreamPathTemplate, 
             List<HttpMethod> upstreamHttpMethod, 
             UpstreamPathTemplate upstreamTemplatePattern, 
-            bool isAuthenticated, 
-            AuthenticationOptions authenticationOptions, 
-            List<ClaimToThing> claimsToHeaders, 
-            List<ClaimToThing> claimsToClaims, 
-            Dictionary<string, string> routeClaimsRequirement, 
-            bool isAuthorised, 
-            List<ClaimToThing> claimsToQueries, 
-            string requestIdKey, 
-            bool isCached, 
-            CacheOptions cacheOptions, 
-            string downstreamScheme, 
-            string loadBalancer, 
-            string reRouteKey, 
-            bool isQos,
-            QoSOptions qosOptions,
-            bool enableEndpointRateLimiting,
-            RateLimitOptions ratelimitOptions,
-            HttpHandlerOptions httpHandlerOptions,
-            bool useServiceDiscovery,
-            string serviceName,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
-            List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
-            List<DownstreamHostAndPort> downstreamAddresses,
             string upstreamHost)
         {
             UpstreamHost = upstreamHost;
-            DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
+            DownstreamReRoute = downstreamReRoute;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
-            ServiceName = serviceName;
-            UseServiceDiscovery = useServiceDiscovery;
-            ReRouteKey = reRouteKey;
-            LoadBalancer = loadBalancer;
-            DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
-            DownstreamPathTemplate = downstreamPathTemplate;
             UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
-            IsAuthenticated = isAuthenticated;
-            AuthenticationOptions = authenticationOptions;
-            RouteClaimsRequirement = routeClaimsRequirement;
-            IsAuthorised = isAuthorised;
-            RequestIdKey = requestIdKey;
-            IsCached = isCached;
-            CacheOptions = cacheOptions;
-            ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
-            ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
-            ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
-            DownstreamScheme = downstreamScheme;
-            IsQos = isQos;
-            QosOptionsOptions = qosOptions;
-            EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
-            RateLimitOptions = ratelimitOptions;
-            HttpHandlerOptions = httpHandlerOptions;
         }
 
-        public string ReRouteKey {get;private set;}
-        public PathTemplate DownstreamPathTemplate { get; private set; }
         public PathTemplate UpstreamPathTemplate { get; private set; }
         public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
-        public bool IsAuthenticated { get; private set; }
-        public bool IsAuthorised { get; private set; }
-        public AuthenticationOptions AuthenticationOptions { get; private set; }
-        public List<ClaimToThing> ClaimsToQueries { get; private set; }
-        public List<ClaimToThing> ClaimsToHeaders { get; private set; }
-        public List<ClaimToThing> ClaimsToClaims { get; private set; }
-        public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
+        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
+        public string UpstreamHost { get; private set; }
+        public DownstreamReRoute DownstreamReRoute { get; private set; }
+    }
+
+    public class DownstreamReRoute
+    {
+        public DownstreamReRoute(List<HeaderFindAndReplace> downstreamHeadersFindAndReplace, 
+            List<DownstreamHostAndPort> downstreamAddresses, 
+            string serviceName, 
+            HttpHandlerOptions httpHandlerOptions, 
+            bool useServiceDiscovery, 
+            bool enableEndpointEndpointRateLimiting, 
+            bool isQos, 
+            QoSOptions qosOptionsOptions, 
+            string downstreamScheme, 
+            string requestIdKey, 
+            bool isCached, 
+            CacheOptions cacheOptions, 
+            string loadBalancer, 
+            RateLimitOptions rateLimitOptions, 
+            Dictionary<string, string> routeClaimsRequirement, 
+            List<ClaimToThing> claimsToQueries, 
+            List<ClaimToThing> claimsToHeaders, 
+            List<ClaimToThing> claimsToClaims, 
+            bool isAuthenticated, 
+            bool isAuthorised, 
+            AuthenticationOptions authenticationOptions, 
+            PathTemplate downstreamPathTemplate, 
+            string reRouteKey)
+        {
+            DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
+            DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
+            ServiceName = serviceName;
+            HttpHandlerOptions = httpHandlerOptions;
+            UseServiceDiscovery = useServiceDiscovery;
+            EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
+            IsQos = isQos;
+            QosOptionsOptions = qosOptionsOptions;
+            DownstreamScheme = downstreamScheme;
+            RequestIdKey = requestIdKey;
+            IsCached = isCached;
+            CacheOptions = cacheOptions;
+            LoadBalancer = loadBalancer;
+            RateLimitOptions = rateLimitOptions;
+            RouteClaimsRequirement = routeClaimsRequirement;
+            ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
+            ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
+            ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
+            IsAuthenticated = isAuthenticated;
+            IsAuthorised = isAuthorised;
+            AuthenticationOptions = authenticationOptions;
+            DownstreamPathTemplate = downstreamPathTemplate;
+            ReRouteKey = reRouteKey;
+        }
+        public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; private set; }
+        public List<DownstreamHostAndPort> DownstreamAddresses { get; private set; }
+        public string ServiceName { get; private set; }
+        public HttpHandlerOptions HttpHandlerOptions { get; private set; }
+        public bool UseServiceDiscovery { get; private set; }
+        public bool EnableEndpointEndpointRateLimiting { get; private set; }
+        public bool IsQos { get; private set; }
+        public QoSOptions QosOptionsOptions { get; private set; }
+        public string DownstreamScheme { get; private set; }
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
         public CacheOptions CacheOptions { get; private set; }
-        public string DownstreamScheme {get;private set;}
-        public bool IsQos { get; private set; }
-        public QoSOptions QosOptionsOptions { get; private set; }
-        public string LoadBalancer {get;private set;}
-        public bool EnableEndpointEndpointRateLimiting { get; private set; }
+        public string LoadBalancer { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
-        public HttpHandlerOptions HttpHandlerOptions { get; private set; }
-        public bool UseServiceDiscovery {get;private set;}
-        public string ServiceName {get;private set;}
-        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
-        public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace {get;private set;}
-        public List<DownstreamHostAndPort> DownstreamAddresses {get;private set;}
-        public string UpstreamHost { get; private set; }
+        public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
+        public List<ClaimToThing> ClaimsToQueries { get; private set; }
+        public List<ClaimToThing> ClaimsToHeaders { get; private set; }
+        public List<ClaimToThing> ClaimsToClaims { get; private set; }
+        public bool IsAuthenticated { get; private set; }
+        public bool IsAuthorised { get; private set; }
+        public AuthenticationOptions AuthenticationOptions { get; private set; }
+        public PathTemplate DownstreamPathTemplate { get; private set; }
+        public string ReRouteKey { get; private set; }
     }
 }

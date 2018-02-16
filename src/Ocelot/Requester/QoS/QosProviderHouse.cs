@@ -21,26 +21,26 @@ namespace Ocelot.Requester.QoS
         {
             try
             {
-                if (_qoSProviders.TryGetValue(reRoute.ReRouteKey, out var qosProvider))
+                if (_qoSProviders.TryGetValue(reRoute.DownstreamReRoute.ReRouteKey, out var qosProvider))
                 {
-                    if (reRoute.IsQos && qosProvider.CircuitBreaker == null)
+                    if (reRoute.DownstreamReRoute.IsQos && qosProvider.CircuitBreaker == null)
                     {
                         qosProvider = _qoSProviderFactory.Get(reRoute);
-                        Add(reRoute.ReRouteKey, qosProvider);
+                        Add(reRoute.DownstreamReRoute.ReRouteKey, qosProvider);
                     }
 
-                    return new OkResponse<IQoSProvider>(_qoSProviders[reRoute.ReRouteKey]);
+                    return new OkResponse<IQoSProvider>(_qoSProviders[reRoute.DownstreamReRoute.ReRouteKey]);
                 }
 
                 qosProvider = _qoSProviderFactory.Get(reRoute);
-                Add(reRoute.ReRouteKey, qosProvider);
+                Add(reRoute.DownstreamReRoute.ReRouteKey, qosProvider);
                 return new OkResponse<IQoSProvider>(qosProvider);
             }
             catch (Exception ex)
             {
                 return new ErrorResponse<IQoSProvider>(new List<Ocelot.Errors.Error>()
                 {
-                    new UnableToFindQoSProviderError($"unabe to find qos provider for {reRoute.ReRouteKey}, exception was {ex}")
+                    new UnableToFindQoSProviderError($"unabe to find qos provider for {reRoute.DownstreamReRoute.ReRouteKey}, exception was {ex}")
                 });
             }
         }

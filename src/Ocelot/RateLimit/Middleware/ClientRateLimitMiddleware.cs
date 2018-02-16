@@ -31,11 +31,11 @@ namespace Ocelot.RateLimit.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var options = DownstreamRoute.ReRoute.RateLimitOptions;
+            var options = DownstreamRoute.ReRoute.DownstreamReRoute.RateLimitOptions;
             // check if rate limiting is enabled
-            if (!DownstreamRoute.ReRoute.EnableEndpointEndpointRateLimiting)
+            if (!DownstreamRoute.ReRoute.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamPathTemplate}");
+                _logger.LogDebug($"EndpointRateLimiting is not enabled for {DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate}");
                 await _next.Invoke(context);
                 return;
             }
@@ -45,7 +45,7 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate} is white listed from rate limiting");
+                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate} is white listed from rate limiting");
                 await _next.Invoke(context);
                 return;
             }

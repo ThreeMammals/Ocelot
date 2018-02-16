@@ -26,11 +26,11 @@ namespace Ocelot.Headers.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (DownstreamRoute.ReRoute.ClaimsToHeaders.Any())
+            if (DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToHeaders.Any())
             {
-                _logger.LogDebug($"{ DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
+                _logger.LogDebug($"{ DownstreamRoute.ReRoute.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
-                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(DownstreamRoute.ReRoute.ClaimsToHeaders, context.User.Claims, DownstreamRequest);
+                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(DownstreamRoute.ReRoute.DownstreamReRoute.ClaimsToHeaders, context.User.Claims, DownstreamRequest);
 
                 if (response.IsError)
                 {
