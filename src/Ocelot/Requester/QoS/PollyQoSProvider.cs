@@ -15,19 +15,19 @@ namespace Ocelot.Requester.QoS
         private readonly IOcelotLogger _logger;
         private readonly CircuitBreaker _circuitBreaker;
 
-        public PollyQoSProvider(ReRoute reRoute, IOcelotLoggerFactory loggerFactory)
+        public PollyQoSProvider(DownstreamReRoute reRoute, IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
 
-            _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(reRoute.DownstreamReRoute.QosOptionsOptions.TimeoutValue), reRoute.DownstreamReRoute.QosOptionsOptions.TimeoutStrategy);
+            _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(reRoute.QosOptionsOptions.TimeoutValue), reRoute.QosOptionsOptions.TimeoutStrategy);
 
             _circuitBreakerPolicy = Policy
                 .Handle<HttpRequestException>()
                 .Or<TimeoutRejectedException>()
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(
-                    exceptionsAllowedBeforeBreaking: reRoute.DownstreamReRoute.QosOptionsOptions.ExceptionsAllowedBeforeBreaking,
-                    durationOfBreak: TimeSpan.FromMilliseconds(reRoute.DownstreamReRoute.QosOptionsOptions.DurationOfBreak),
+                    exceptionsAllowedBeforeBreaking: reRoute.QosOptionsOptions.ExceptionsAllowedBeforeBreaking,
+                    durationOfBreak: TimeSpan.FromMilliseconds(reRoute.QosOptionsOptions.DurationOfBreak),
                     onBreak: (ex, breakDelay) =>
                     {
                         _logger.LogError(

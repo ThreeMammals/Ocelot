@@ -97,14 +97,14 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheServiceProviderFactoryReturns()
         {
             _serviceProviderFactory
-                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<ReRoute>()))
+                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()))
                 .Returns(_serviceProvider.Object);
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()
         {
             _serviceProviderFactory
-                .Verify(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<ReRoute>()), Times.Once);
+                .Verify(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()), Times.Once);
         }
 
         private void GivenAReRoute(ReRoute reRoute)
@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheLoadBalancer()
         {
-            _result = _factory.Get(_reRoute, _serviceProviderConfig).Result;
+            _result = _factory.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig).Result;
         }
 
         private void ThenTheLoadBalancerIsReturned<T>()

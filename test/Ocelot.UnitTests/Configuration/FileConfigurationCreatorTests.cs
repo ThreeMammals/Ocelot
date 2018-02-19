@@ -643,14 +643,14 @@ namespace Ocelot.UnitTests.Configuration
                 var result = _config.Data.ReRoutes[i];
                 var expected = expectedReRoutes[i];
 
-                result.DownstreamReRoute.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute.DownstreamPathTemplate.Value);
+                result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
                 result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
-                result.DownstreamReRoute.ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToClaims.Count);
-                result.DownstreamReRoute.ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToHeaders.Count);
-                result.DownstreamReRoute.ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute.ClaimsToQueries.Count);
-                result.DownstreamReRoute.RequestIdKey.ShouldBe(expected.DownstreamReRoute.RequestIdKey);
+                result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
+                result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
+                result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);
             
             }
         }
@@ -659,8 +659,8 @@ namespace Ocelot.UnitTests.Configuration
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
-                var result = _config.Data.ReRoutes[i].DownstreamReRoute.AuthenticationOptions;
-                var expected = expectedReRoutes[i].DownstreamReRoute.AuthenticationOptions;
+                var result = _config.Data.ReRoutes[i].DownstreamReRoute[0].AuthenticationOptions;
+                var expected = expectedReRoutes[i].DownstreamReRoute[0].AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
         }
@@ -714,10 +714,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
 
-            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].DownstreamReRoute.QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
 
         private void ThenTheServiceProviderCreatorIsCalledCorrectly()

@@ -88,8 +88,8 @@ namespace Ocelot.UnitTests.Requester
         private void WhenIGetTheReRouteWithTheSameKeyButDifferentQosProvider(ReRoute reRoute)
         {
             _reRoute = reRoute;
-            _factory.Setup(x => x.Get(_reRoute)).Returns(new FakePollyQoSProvider());
-            _getResult = _qosProviderHouse.Get(_reRoute);
+            _factory.Setup(x => x.Get(_reRoute.DownstreamReRoute[0])).Returns(new FakePollyQoSProvider());
+            _getResult = _qosProviderHouse.Get(_reRoute.DownstreamReRoute[0]);
         }
 
         private void ThenAnErrorIsReturned()
@@ -107,7 +107,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _getResult.IsError.ShouldBe(false);
             _getResult.ShouldBeOfType<OkResponse<IQoSProvider>>();
-            _factory.Verify(x => x.Get(_reRoute), Times.Once);
+            _factory.Verify(x => x.Get(_reRoute.DownstreamReRoute[0]), Times.Once);
             _getResult.Data.ShouldBe(_qoSProvider);
         }
 
@@ -116,19 +116,19 @@ namespace Ocelot.UnitTests.Requester
         {
             _reRoute = reRoute;
             _qoSProvider = qoSProvider;
-            _factory.Setup(x => x.Get(_reRoute)).Returns(_qoSProvider);
-            _getResult = _qosProviderHouse.Get(reRoute);
+            _factory.Setup(x => x.Get(_reRoute.DownstreamReRoute[0])).Returns(_qoSProvider);
+            _getResult = _qosProviderHouse.Get(reRoute.DownstreamReRoute[0]);
         }
 
         private void WhenWeGetTheQoSProvider(ReRoute reRoute)
         {
-            _getResult = _qosProviderHouse.Get(reRoute);
+            _getResult = _qosProviderHouse.Get(reRoute.DownstreamReRoute[0]);
         }
 
         private void ThenItIsReturned()
         {
             _getResult.Data.ShouldBe(_qoSProvider);
-            _factory.Verify(x => x.Get(_reRoute), Times.Once);
+            _factory.Verify(x => x.Get(_reRoute.DownstreamReRoute[0]), Times.Once);
         }
 
         class FakeQoSProvider : IQoSProvider

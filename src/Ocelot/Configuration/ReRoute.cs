@@ -7,7 +7,7 @@ namespace Ocelot.Configuration
 {
     public class ReRoute
     {
-        public ReRoute(DownstreamReRoute downstreamReRoute, 
+        public ReRoute(List<DownstreamReRoute> downstreamReRoute, 
             PathTemplate upstreamPathTemplate, 
             List<HttpMethod> upstreamHttpMethod, 
             UpstreamPathTemplate upstreamTemplatePattern, 
@@ -27,12 +27,15 @@ namespace Ocelot.Configuration
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
         public string UpstreamHost { get; private set; }
-        public DownstreamReRoute DownstreamReRoute { get; private set; }
+        public List<DownstreamReRoute> DownstreamReRoute { get; private set; }
     }
 
     public class DownstreamReRoute
     {
-        public DownstreamReRoute(List<HeaderFindAndReplace> downstreamHeadersFindAndReplace, 
+        public DownstreamReRoute(
+            PathTemplate upstreamPathTemplate,
+            List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
+            List<HeaderFindAndReplace> downstreamHeadersFindAndReplace, 
             List<DownstreamHostAndPort> downstreamAddresses, 
             string serviceName, 
             HttpHandlerOptions httpHandlerOptions, 
@@ -56,6 +59,8 @@ namespace Ocelot.Configuration
             PathTemplate downstreamPathTemplate, 
             string reRouteKey)
         {
+            UpstreamPathTemplate = upstreamPathTemplate;
+            UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
             ServiceName = serviceName;
@@ -80,6 +85,8 @@ namespace Ocelot.Configuration
             DownstreamPathTemplate = downstreamPathTemplate;
             ReRouteKey = reRouteKey;
         }
+        public PathTemplate UpstreamPathTemplate { get;private set; }
+        public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; private set; }
         public List<DownstreamHostAndPort> DownstreamAddresses { get; private set; }
         public string ServiceName { get; private set; }

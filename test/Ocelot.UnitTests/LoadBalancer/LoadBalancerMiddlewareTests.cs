@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheLoadBalancerHouseReturns()
         {
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<ReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
                 .ReturnsAsync(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
         }
 
@@ -170,7 +170,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             });
 
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<ReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
                 .ReturnsAsync(_getLoadBalancerHouseError);
         }
 

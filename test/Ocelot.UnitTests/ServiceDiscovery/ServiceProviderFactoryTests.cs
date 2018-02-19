@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private void WhenIGetTheServiceProvider()
         {
-            _result = _factory.Get(_serviceConfig, _reRoute);
+            _result = _factory.Get(_serviceConfig, _reRoute.DownstreamReRoute[0]);
         }
 
         private void ThenTheServiceProviderIs<T>()

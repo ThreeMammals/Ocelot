@@ -18,32 +18,32 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
         }
 
-        public async Task<Response<ILoadBalancer>> Get(ReRoute reRoute, ServiceProviderConfiguration config)
+        public async Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
         {
             try
             {
-                if(_loadBalancers.TryGetValue(reRoute.DownstreamReRoute.ReRouteKey, out var loadBalancer))
+                if(_loadBalancers.TryGetValue(reRoute.ReRouteKey, out var loadBalancer))
                 {
-                    loadBalancer = _loadBalancers[reRoute.DownstreamReRoute.ReRouteKey];
+                    loadBalancer = _loadBalancers[reRoute.ReRouteKey];
 
-                    if(reRoute.DownstreamReRoute.LoadBalancer != loadBalancer.GetType().Name)
+                    if(reRoute.LoadBalancer != loadBalancer.GetType().Name)
                     {
                         loadBalancer = await _factory.Get(reRoute, config);
-                        AddLoadBalancer(reRoute.DownstreamReRoute.ReRouteKey, loadBalancer);
+                        AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
                     }
 
                     return new OkResponse<ILoadBalancer>(loadBalancer);
                 }
 
                 loadBalancer = await _factory.Get(reRoute, config);
-                AddLoadBalancer(reRoute.DownstreamReRoute.ReRouteKey, loadBalancer);
+                AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
                 return new OkResponse<ILoadBalancer>(loadBalancer);
             }
             catch(Exception ex)
             {
                 return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
                 {
-                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.DownstreamReRoute.ReRouteKey} exception is {ex}")
+                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.ReRouteKey} exception is {ex}")
                 });
             }
         }

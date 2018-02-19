@@ -110,7 +110,7 @@
         private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
         {
             _qosProviderHouse
-                .Setup(x => x.Get(It.IsAny<ReRoute>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                 .Returns(qosProvider);
         }
 

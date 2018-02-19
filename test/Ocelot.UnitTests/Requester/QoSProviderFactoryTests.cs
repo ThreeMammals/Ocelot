@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIGetTheQoSProvider()
         {
-            _result = _factory.Get(_reRoute);
+            _result = _factory.Get(_reRoute.DownstreamReRoute[0]);
         }
 
         private void ThenTheQoSProviderIsReturned<T>()

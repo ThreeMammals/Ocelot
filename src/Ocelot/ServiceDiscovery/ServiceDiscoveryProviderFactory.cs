@@ -14,18 +14,18 @@ namespace Ocelot.ServiceDiscovery
             _factory = factory;
         }
 
-        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
+        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
         {
-            if (reRoute.DownstreamReRoute.UseServiceDiscovery)
+            if (reRoute.UseServiceDiscovery)
             {
-                return GetServiceDiscoveryProvider(reRoute.DownstreamReRoute.ServiceName, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
+                return GetServiceDiscoveryProvider(reRoute.ServiceName, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
             }
 
             var services = new List<Service>();
 
-            foreach (var downstreamAddress in reRoute.DownstreamReRoute.DownstreamAddresses)
+            foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
-                var service = new Service(reRoute.DownstreamReRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
+                var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
                 
                 services.Add(service);
             }

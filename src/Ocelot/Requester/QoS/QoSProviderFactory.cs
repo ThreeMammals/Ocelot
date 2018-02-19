@@ -12,9 +12,9 @@ namespace Ocelot.Requester.QoS
             _loggerFactory = loggerFactory;
         }
 
-        public IQoSProvider Get(ReRoute reRoute)
+        public IQoSProvider Get(DownstreamReRoute reRoute)
         {
-            if (reRoute.DownstreamReRoute.IsQos)
+            if (reRoute.IsQos)
             {
                 return new PollyQoSProvider(reRoute, _loggerFactory);
             }

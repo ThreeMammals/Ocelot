@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -8,19 +10,17 @@ using Ocelot.Requester.QoS;
 
 namespace Ocelot.Request.Middleware
 {
-    public class HttpRequestBuilderMiddleware : OcelotMiddleware
+    public class HttpRequestBuilderMiddleware : OcelotMiddlewareV2
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IRequestCreator _requestCreator;
         private readonly IOcelotLogger _logger;
         private readonly IQosProviderHouse _qosProviderHouse;
 
-        public HttpRequestBuilderMiddleware(RequestDelegate next,
+        public HttpRequestBuilderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository requestScopedDataRepository, 
             IRequestCreator requestCreator, 
             IQosProviderHouse qosProviderHouse)
-            :base(requestScopedDataRepository)
         {
             _next = next;
             _requestCreator = requestCreator;
@@ -28,40 +28,44 @@ namespace Ocelot.Request.Middleware
             _logger = loggerFactory.CreateLogger<HttpRequestBuilderMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            var qosProvider = _qosProviderHouse.Get(DownstreamRoute.ReRoute);
+            var qosProvider = _qosProviderHouse.Get(context.DownstreamReRoute);
 
             if (qosProvider.IsError)
             {
                 _logger.LogDebug("IQosProviderHouse returned an error, setting pipeline error");
 
-                SetPipelineError(qosProvider.Errors);
-
+                SetPipelineError(context, qosProvider.Errors);
                 return;
             }
 
             var buildResult = await _requestCreator.Build(
-                    DownstreamRequest,
-                    DownstreamRoute.ReRoute.DownstreamReRoute.IsQos,
+                    context.DownstreamRequest,
+                    context.DownstreamReRoute.IsQos,
                     qosProvider.Data,
-                    DownstreamRoute.ReRoute.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                    DownstreamRoute.ReRoute.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                    DownstreamRoute.ReRoute.DownstreamReRoute.ReRouteKey,
-                    DownstreamRoute.ReRoute.DownstreamReRoute.HttpHandlerOptions.UseTracing);
+                    context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                    context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    context.DownstreamReRoute.ReRouteKey,
+                    context.DownstreamReRoute.HttpHandlerOptions.UseTracing);
                     
             if (buildResult.IsError)
             {
                 _logger.LogDebug("IRequestCreator returned an error, setting pipeline error");
-                SetPipelineError(buildResult.Errors);
+                SetPipelineError(context, buildResult.Errors);
                 return;
             }
 
             _logger.LogDebug("setting upstream request");
 
-            SetUpstreamRequestForThisRequest(buildResult.Data);
+            SetUpstreamRequestForThisRequest(context, buildResult.Data);
 
             await _next.Invoke(context);
+        }
+
+        private void SetUpstreamRequestForThisRequest(DownstreamContext context, Request request)
+        {
+            context.Request = request;
         }
     }
 }

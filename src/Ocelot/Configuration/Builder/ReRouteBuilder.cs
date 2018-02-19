@@ -214,7 +214,10 @@ namespace Ocelot.Configuration.Builder
 
         public ReRoute Build()
         {
-            var downstreamReRoute = new DownstreamReRoute(_downstreamHeaderFindAndReplace, 
+            var downstreamReRoute = new DownstreamReRoute(
+                new PathTemplate(_upstreamTemplate),
+                _upstreamHeaderFindAndReplace,
+                _downstreamHeaderFindAndReplace, 
                 _downstreamAddresses,
                 _serviceName, 
                 _httpHandlerOptions, 
@@ -239,7 +242,7 @@ namespace Ocelot.Configuration.Builder
                 _reRouteKey);
 
             return new ReRoute(
-                downstreamReRoute, 
+                new List<DownstreamReRoute>(){downstreamReRoute}, 
                 new PathTemplate(_upstreamTemplate), 
                 _upstreamHttpMethod, 
                 _upstreamTemplatePattern, 

@@ -93,8 +93,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void WhenIGetTheReRouteWithTheSameKeyButDifferentLoadBalancer(ReRoute reRoute)
         {
             _reRoute = reRoute;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new LeastConnection(null, null));
-            _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig).Result;
+            _factory.Setup(x => x.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig)).ReturnsAsync(new LeastConnection(null, null));
+            _getResult = _loadBalancerHouse.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig).Result;
         }
 
          private void ThenAnErrorIsReturned()
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _getResult.IsError.ShouldBe(false);
             _getResult.ShouldBeOfType<OkResponse<ILoadBalancer>>();
             _getResult.Data.ShouldBe(_loadBalancer);
-            _factory.Verify(x => x.Get(_reRoute, _serviceProviderConfig), Times.Once);
+            _factory.Verify(x => x.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig), Times.Once);
         }
 
 
@@ -121,19 +121,19 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _reRoute = reRoute;
             _loadBalancer = loadBalancer;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(loadBalancer);
-            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig).Result;
+            _factory.Setup(x => x.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig)).ReturnsAsync(loadBalancer);
+            _getResult = _loadBalancerHouse.Get(reRoute.DownstreamReRoute[0], _serviceProviderConfig).Result;
         }
 
         private void WhenWeGetTheLoadBalancer(ReRoute reRoute)
         {
-            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig).Result;
+            _getResult = _loadBalancerHouse.Get(reRoute.DownstreamReRoute[0], _serviceProviderConfig).Result;
         }
 
         private void ThenItIsReturned()
         {
             _getResult.Data.ShouldBe(_loadBalancer);
-            _factory.Verify(x => x.Get(_reRoute, _serviceProviderConfig), Times.Once);
+            _factory.Verify(x => x.Get(_reRoute.DownstreamReRoute[0], _serviceProviderConfig), Times.Once);
         }
 
         class FakeLoadBalancer : ILoadBalancer

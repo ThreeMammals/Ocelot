@@ -17,30 +17,30 @@ namespace Ocelot.Requester.QoS
             _qoSProviders = new ConcurrentDictionary<string, IQoSProvider>();
         }
 
-        public Response<IQoSProvider> Get(ReRoute reRoute)
+        public Response<IQoSProvider> Get(DownstreamReRoute reRoute)
         {
             try
             {
-                if (_qoSProviders.TryGetValue(reRoute.DownstreamReRoute.ReRouteKey, out var qosProvider))
+                if (_qoSProviders.TryGetValue(reRoute.ReRouteKey, out var qosProvider))
                 {
-                    if (reRoute.DownstreamReRoute.IsQos && qosProvider.CircuitBreaker == null)
+                    if (reRoute.IsQos && qosProvider.CircuitBreaker == null)
                     {
                         qosProvider = _qoSProviderFactory.Get(reRoute);
-                        Add(reRoute.DownstreamReRoute.ReRouteKey, qosProvider);
+                        Add(reRoute.ReRouteKey, qosProvider);
                     }
 
-                    return new OkResponse<IQoSProvider>(_qoSProviders[reRoute.DownstreamReRoute.ReRouteKey]);
+                    return new OkResponse<IQoSProvider>(_qoSProviders[reRoute.ReRouteKey]);
                 }
 
                 qosProvider = _qoSProviderFactory.Get(reRoute);
-                Add(reRoute.DownstreamReRoute.ReRouteKey, qosProvider);
+                Add(reRoute.ReRouteKey, qosProvider);
                 return new OkResponse<IQoSProvider>(qosProvider);
             }
             catch (Exception ex)
             {
                 return new ErrorResponse<IQoSProvider>(new List<Ocelot.Errors.Error>()
                 {
-                    new UnableToFindQoSProviderError($"unabe to find qos provider for {reRoute.DownstreamReRoute.ReRouteKey}, exception was {ex}")
+                    new UnableToFindQoSProviderError($"unabe to find qos provider for {reRoute.ReRouteKey}, exception was {ex}")
                 });
             }
         }

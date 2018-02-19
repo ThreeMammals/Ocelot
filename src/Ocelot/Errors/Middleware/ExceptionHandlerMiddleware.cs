@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.Provider;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -14,26 +15,22 @@ namespace Ocelot.Errors.Middleware
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
-    public class ExceptionHandlerMiddleware : OcelotMiddleware
+    public class ExceptionHandlerMiddleware : OcelotMiddlewareV2
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IOcelotConfigurationProvider _configProvider;
 
-        public ExceptionHandlerMiddleware(RequestDelegate next,
+        public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory, 
-            IRequestScopedDataRepository requestScopedDataRepository,
             IOcelotConfigurationProvider configProvider)
-            :base(requestScopedDataRepository)
         {
             _configProvider = configProvider;
             _next = next;
-            _requestScopedDataRepository = requestScopedDataRepository;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
             try
             {               
@@ -58,7 +55,7 @@ namespace Ocelot.Errors.Middleware
             _logger.LogDebug("ocelot pipeline finished");
         }
 
-        private async Task TrySetGlobalRequestId(HttpContext context)
+        private async Task TrySetGlobalRequestId(DownstreamContext context)
         {
                 //try and get the global request id and set it for logs...
                 //should this basically be immutable per request...i guess it should!
@@ -75,22 +72,22 @@ namespace Ocelot.Errors.Middleware
                 var key = configuration.Data.RequestId;
 
                 StringValues upstreamRequestIds;
-                if (!string.IsNullOrEmpty(key) && context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
+                if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out upstreamRequestIds))
                 {
-                    context.TraceIdentifier = upstreamRequestIds.First();
-                    _requestScopedDataRepository.Add<string>("RequestId", context.TraceIdentifier);
+                    context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
+                    context.RequestId = context.HttpContext.TraceIdentifier;
                 }
         }
 
-        private void SetInternalServerErrorOnResponse(HttpContext context)
+        private void SetInternalServerErrorOnResponse(DownstreamContext context)
         {
-            if (!context.Response.HasStarted)
+            if (!context.HttpContext.Response.HasStarted)
             {
-                context.Response.StatusCode = 500;
+                context.HttpContext.Response.StatusCode = 500;
             }
         }
 
-        private string CreateMessage(HttpContext context, Exception e)
+        private string CreateMessage(DownstreamContext context, Exception e)
         {
             var message =
                 $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";
@@ -100,7 +97,7 @@ namespace Ocelot.Errors.Middleware
                 message =
                     $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
             }
-            return $"{message} RequestId: {context.TraceIdentifier}";
+            return $"{message} RequestId: {context.HttpContext.TraceIdentifier}";
         }
     }
 }
