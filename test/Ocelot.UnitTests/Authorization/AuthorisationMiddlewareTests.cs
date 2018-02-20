@@ -2,8 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Security.Claims;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Authorisation;
     using Ocelot.Authorisation.Middleware;
@@ -14,19 +12,31 @@
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class AuthorisationMiddlewareTests : ServerHostedMiddlewareTest
+    public class AuthorisationMiddlewareTests
     {
         private readonly Mock<IClaimsAuthoriser> _authService;
         private readonly Mock<IScopesAuthoriser> _authScopesService;
-        private OkResponse<DownstreamRoute> _downstreamRoute;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private readonly AuthorisationMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public AuthorisationMiddlewareTests()
         {
             _authService = new Mock<IClaimsAuthoriser>();
             _authScopesService = new Mock<IScopesAuthoriser>();
-
-            GivenTheTestServerIsConfigured();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                //do nothing
+            };
+            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
         }
 
         [Fact]
@@ -43,26 +53,15 @@
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        private void WhenICallTheMiddleware()
         {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_authService.Object);
-            services.AddSingleton(_authScopesService.Object);
-            services.AddSingleton(ScopedRepository.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseAuthorisationMiddleware();
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.DownstreamRoute = downstreamRoute;
+            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

@@ -39,6 +39,7 @@
             };
             _addQueries = new Mock<IAddQueriesToRequest>();
             _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 
         [Fact]
@@ -63,7 +64,6 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 

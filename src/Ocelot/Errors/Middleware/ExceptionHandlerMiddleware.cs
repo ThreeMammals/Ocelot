@@ -19,13 +19,16 @@ namespace Ocelot.Errors.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
-        private readonly IOcelotConfigurationProvider _configProvider;
+        private readonly IOcelotConfigurationProvider _provider;
+        private readonly IRequestScopedDataRepository _repo;
 
         public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory, 
-            IOcelotConfigurationProvider configProvider)
+            IOcelotConfigurationProvider provider, 
+            IRequestScopedDataRepository repo)
         {
-            _configProvider = configProvider;
+            _provider = provider;
+            _repo = repo;
             _next = next;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         }
@@ -60,7 +63,7 @@ namespace Ocelot.Errors.Middleware
                 //try and get the global request id and set it for logs...
                 //should this basically be immutable per request...i guess it should!
                 //first thing is get config
-                 var configuration = await _configProvider.Get(); 
+                 var configuration = await _provider.Get(); 
             
                 //if error throw to catch below..
                 if(configuration.IsError)
@@ -74,9 +77,11 @@ namespace Ocelot.Errors.Middleware
                 StringValues upstreamRequestIds;
                 if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out upstreamRequestIds))
                 {
+                    //todo fix looking in both places
                     context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
                     context.RequestId = context.HttpContext.TraceIdentifier;
-                }
+                    _repo.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
+            }
         }
 
         private void SetInternalServerErrorOnResponse(DownstreamContext context)

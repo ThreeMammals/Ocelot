@@ -20,7 +20,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private Response _addResult;
         private Response<ILoadBalancer> _getResult;
         private string _key;
-        private Mock<ILoadBalancerFactory> _factory;
+        private readonly Mock<ILoadBalancerFactory> _factory;
         private ServiceProviderConfiguration _serviceProviderConfig;
 
         public LoadBalancerHouseTests()
@@ -53,8 +53,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_store_load_balancers_by_key()
         {
-            var reRoute = new ReRouteBuilder().WithReRouteKey("test").Build();
-            var reRouteTwo = new ReRouteBuilder().WithReRouteKey("testtwo").Build();
+            var reRoute = new ReRouteBuilder().WithLoadBalancer("FakeLoadBalancer").WithReRouteKey("test").Build();
+            var reRouteTwo = new ReRouteBuilder().WithLoadBalancer("FakeRoundRobinLoadBalancer").WithReRouteKey("testtwo").Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
                 .And(x => x.GivenThereIsALoadBalancer(reRouteTwo, new FakeRoundRobinLoadBalancer()))

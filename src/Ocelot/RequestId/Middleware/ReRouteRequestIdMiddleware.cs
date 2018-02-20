@@ -16,11 +16,15 @@ namespace Ocelot.RequestId.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
+
 
         public ReRouteRequestIdMiddleware(OcelotRequestDelegate next,
-            IOcelotLoggerFactory loggerFactory)
+            IOcelotLoggerFactory loggerFactory, 
+            IRequestScopedDataRepository requestScopedDataRepository)
         {
             _next = next;
+            _requestScopedDataRepository = requestScopedDataRepository;
             _logger = loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>();
         }
 
@@ -41,12 +45,27 @@ namespace Ocelot.RequestId.Middleware
                 //set the traceidentifier
                 context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
 
-                //check if we have previous id
-                var previousRequestId = context.RequestId;
-                if(!string.IsNullOrEmpty(previousRequestId))
+                //todo fix looking in both places
+                //check if we have previous id in scoped repo
+                var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
+                if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data))
                 {
                     //we have a previous request id lets store it and update request id
-                    context.PreviousRequestId = previousRequestId;
+                    _requestScopedDataRepository.Add<string>("PreviousRequestId", previousRequestId.Data);
+                    _requestScopedDataRepository.Update<string>("RequestId", context.HttpContext.TraceIdentifier);
+                }
+                else
+                {
+                    //else just add request id
+                    _requestScopedDataRepository.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
+                }
+
+                //check if we have previous id
+                var previousRequestIdAgain = context.RequestId;
+                if(!string.IsNullOrEmpty(previousRequestIdAgain))
+                {
+                    //we have a previous request id lets store it and update request id
+                    context.PreviousRequestId = previousRequestIdAgain;
                     context.RequestId = context.HttpContext.TraceIdentifier;
                 }
                 else
