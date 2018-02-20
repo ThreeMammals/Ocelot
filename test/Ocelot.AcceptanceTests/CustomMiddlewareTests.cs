@@ -58,8 +58,8 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .And(x => x.ThenTheFakeMiddlewareCounterIs(1))
                 .BDDfy();
         }
 
@@ -339,20 +339,27 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(context =>
                     {
-                        if(context.Request.Path.Value != basePath)
-                        {
-                            context.Response.StatusCode = 404;;
-                        }
-                        else
+
+                        if(string.IsNullOrEmpty(basePath))
                         {
                             context.Response.StatusCode = statusCode;
                         }
+                        else if(context.Request.Path.Value != basePath)
+                        {
+                            context.Response.StatusCode = 404;;
+                        }
+
                         return Task.CompletedTask;
                     });
                 })
                 .Build();
 
             _builder.Start();
+        }
+
+        private void ThenTheFakeMiddlewareCounterIs(int expected)
+        {
+            FakeMiddleware.Count.ShouldBe(expected);
         }
 
         public void Dispose()
@@ -365,10 +372,15 @@ namespace Ocelot.AcceptanceTests
     public class FakeMiddleware
     {
         private readonly RequestDelegate _next;
+        private static int _count;
+
         public FakeMiddleware(RequestDelegate next)
         {
             _next = next;
+            _count = 0;
         }
+
+        public static int Count => _count;
 
         public async Task Invoke(HttpContext context)
         {
@@ -379,9 +391,8 @@ namespace Ocelot.AcceptanceTests
                 var httpContext = (HttpContext)state;
 
                 if (httpContext.Response.StatusCode > 400)
-                    Debug.WriteLine("An error has been ocurred");
-                else
-                    Debug.WriteLine("All its ok");
+                    _count++;
+
                 return Task.CompletedTask;
             }, context);
         }
