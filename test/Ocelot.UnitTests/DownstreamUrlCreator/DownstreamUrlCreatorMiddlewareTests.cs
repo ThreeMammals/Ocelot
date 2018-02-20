@@ -19,27 +19,32 @@
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Microsoft.AspNetCore.Http;
 
-    public class DownstreamUrlCreatorMiddlewareTests : ServerHostedMiddlewareTest
+    public class DownstreamUrlCreatorMiddlewareTests
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private readonly Mock<IUrlBuilder> _urlBuilder;
-        private Response<DownstreamRoute> _downstreamRoute;
         private OkResponse<DownstreamPath> _downstreamPath;
-        private HttpRequestMessage _downstreamRequest;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private DownstreamUrlCreatorMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
             _urlBuilder = new Mock<IUrlBuilder>();
-
-            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
-
-            ScopedRepository
-                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
-                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
-
-            GivenTheTestServerIsConfigured();
+            _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
+            _next = async context => {
+                //do nothing
+            };
         }
 
         [Fact]
@@ -60,31 +65,21 @@
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        private void WhenICallTheMiddleware()
         {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_downstreamUrlTemplateVariableReplacer.Object);
-            services.AddSingleton(ScopedRepository.Object);
-            services.AddSingleton(_urlBuilder.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseDownstreamUrlCreatorMiddleware();
+            _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object, _urlBuilder.Object);
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.DownstreamRoute = downstreamRoute;
+            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 
         private void GivenTheDownstreamRequestUriIs(string uri)
         {
-            _downstreamRequest.RequestUri = new Uri(uri);
+            _downstreamContext.DownstreamRequest.RequestUri = new Uri(uri);
         }
 
         private void GivenTheUrlReplacerWillReturn(string path)
@@ -97,7 +92,8 @@
 
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
-            _downstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            //_downstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Ocelot.LoadBalancer.Middleware
             ILoadBalancerHouse loadBalancerHouse) 
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
+            _logger = loggerFactory.CreateLogger<LoadBalancingMiddleware>();
             _loadBalancerHouse = loadBalancerHouse;
         }
 

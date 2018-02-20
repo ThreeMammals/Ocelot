@@ -16,16 +16,13 @@ namespace Ocelot.Authentication.Middleware
     public class AuthenticationMiddleware : OcelotMiddlewareV2
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IApplicationBuilder _app;
         private readonly IAuthenticationSchemeProvider _authSchemeProvider;
         private readonly IOcelotLogger _logger;
 
         public AuthenticationMiddleware(OcelotRequestDelegate next,
-            IApplicationBuilder app,
             IOcelotLoggerFactory loggerFactory)
         {
             _next = next;
-            _app = app;
             _logger = loggerFactory.CreateLogger<AuthenticationMiddleware>();
         }
 

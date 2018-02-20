@@ -40,7 +40,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
         public DownstreamRoute DownstreamRoute {get; set;}
         public ServiceProviderConfiguration ServiceProviderConfiguration {get; set;}
-        public HttpContext HttpContext { get; set; }
+        public HttpContext HttpContext { get; private set; }
         public DownstreamReRoute DownstreamReRoute { get; set; }
         public HttpRequestMessage DownstreamRequest { get; set; }
         public HttpResponseMessage DownstreamResponse { get; set; }
