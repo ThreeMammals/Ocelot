@@ -59,7 +59,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-                .And(x => x.ThenTheFakeMiddlewareCounterIs(1))
                 .BDDfy();
         }
 
@@ -357,44 +356,36 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        private void ThenTheFakeMiddlewareCounterIs(int expected)
-        {
-            FakeMiddleware.Count.ShouldBe(expected);
-        }
-
         public void Dispose()
         {
             _builder?.Dispose();
             _steps.Dispose();
         }
-    }
 
-    public class FakeMiddleware
-    {
-        private readonly RequestDelegate _next;
-        private static int _count;
-
-        public FakeMiddleware(RequestDelegate next)
+        public class FakeMiddleware
         {
-            _next = next;
-            _count = 0;
-        }
-
-        public static int Count => _count;
-
-        public async Task Invoke(HttpContext context)
-        {
-            await _next(context);
-            
-            context.Response.OnCompleted(state =>
+            private readonly RequestDelegate _next;
+            public FakeMiddleware(RequestDelegate next)
             {
-                var httpContext = (HttpContext)state;
+                _next = next;
+            }
 
-                if (httpContext.Response.StatusCode > 400)
-                    _count++;
+            public async Task Invoke(HttpContext context)
+            {
+                await _next(context);
+                
+                context.Response.OnCompleted(state =>
+                {
+                    var httpContext = (HttpContext)state;
 
-                return Task.CompletedTask;
-            }, context);
+                    if (httpContext.Response.StatusCode > 400)
+                    {
+                        
+                    }
+
+                    return Task.CompletedTask;
+                }, context);
+            }
         }
     }
 }
