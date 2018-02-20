@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.RequestId
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.RequestId
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;

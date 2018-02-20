@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.QueryStrings
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.QueryStrings
 {
     using System.Collections.Generic;
     using System.Net.Http;

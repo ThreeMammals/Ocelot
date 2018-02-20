@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Authentication
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Authentication
 {
     using System.Collections.Generic;
     using System.IO;

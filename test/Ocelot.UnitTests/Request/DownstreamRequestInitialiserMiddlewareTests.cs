@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Request
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Request
 {
     using System.Net.Http;
     using Microsoft.AspNetCore.Http;

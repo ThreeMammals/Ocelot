@@ -1,3 +1,5 @@
+using Ocelot.Middleware;
+
 namespace Ocelot.UnitTests.LoadBalancer
 {
     using System.Collections.Generic;

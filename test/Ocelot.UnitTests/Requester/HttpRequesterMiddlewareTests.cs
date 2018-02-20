@@ -1,3 +1,5 @@
+using Ocelot.Middleware;
+
 namespace Ocelot.UnitTests.Requester
 {
     using Microsoft.AspNetCore.Http;

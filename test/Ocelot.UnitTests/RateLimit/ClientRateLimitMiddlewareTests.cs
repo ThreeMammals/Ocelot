@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.RateLimit
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.RateLimit
 {
     using System.Collections.Generic;
     using System.Net.Http;

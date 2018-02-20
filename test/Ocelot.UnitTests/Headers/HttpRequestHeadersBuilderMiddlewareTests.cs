@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Headers
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Headers
 {
     using System.Collections.Generic;
     using System.Net.Http;

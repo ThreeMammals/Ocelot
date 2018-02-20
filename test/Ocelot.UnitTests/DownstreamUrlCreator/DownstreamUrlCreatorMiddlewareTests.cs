@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
     using System;
     using System.Collections.Generic;

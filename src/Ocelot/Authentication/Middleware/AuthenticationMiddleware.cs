@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -16,7 +12,6 @@ namespace Ocelot.Authentication.Middleware
     public class AuthenticationMiddleware : OcelotMiddlewareV2
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IAuthenticationSchemeProvider _authSchemeProvider;
         private readonly IOcelotLogger _logger;
 
         public AuthenticationMiddleware(OcelotRequestDelegate next,

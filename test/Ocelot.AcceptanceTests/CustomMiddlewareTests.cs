@@ -30,7 +30,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_pre_query_string_builder_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 AuthorisationMiddleware = async (ctx, next) =>
                 {
@@ -73,7 +73,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_authorisation_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 AuthorisationMiddleware = async (ctx, next) =>
                 {
@@ -116,7 +116,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_authentication_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 AuthenticationMiddleware = async (ctx, next) =>
                 {
@@ -159,7 +159,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_pre_error_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 PreErrorResponderMiddleware = async (ctx, next) =>
                 {
@@ -202,7 +202,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_pre_authorisation_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 PreAuthorisationMiddleware = async (ctx, next) =>
                 {
@@ -245,7 +245,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_pre_http_authentication_middleware()
         {
-            var configuration = new OcelotMiddlewareConfiguration
+            var configuration = new OcelotPipelineConfiguration
             {
                 PreAuthenticationMiddleware = async (ctx, next) =>
                 {

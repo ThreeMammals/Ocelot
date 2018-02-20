@@ -1,4 +1,5 @@
 ﻿using Ocelot.Infrastructure.RequestData;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
 {

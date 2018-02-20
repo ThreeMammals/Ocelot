@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Claims
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Claims
 {
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Http;

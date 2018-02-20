@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Responder
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Responder
 {
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;

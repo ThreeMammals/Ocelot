@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.DownstreamRouteFinder
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Builder;

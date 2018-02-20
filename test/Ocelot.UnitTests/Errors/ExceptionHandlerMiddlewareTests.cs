@@ -1,3 +1,5 @@
+using Ocelot.Middleware;
+
 namespace Ocelot.UnitTests.Errors
 {
     using System;

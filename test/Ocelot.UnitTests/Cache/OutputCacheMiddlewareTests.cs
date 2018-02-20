@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
 {

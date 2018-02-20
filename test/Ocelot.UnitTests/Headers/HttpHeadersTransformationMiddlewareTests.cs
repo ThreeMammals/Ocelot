@@ -12,6 +12,7 @@ using Ocelot.Headers;
 using System.Net.Http;
 using Ocelot.Authorisation.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {

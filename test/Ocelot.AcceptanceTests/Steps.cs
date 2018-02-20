@@ -307,7 +307,7 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
-        public void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
+        public void GivenOcelotIsRunning(OcelotPipelineConfiguration ocelotPipelineConfig)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -344,7 +344,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(a =>
                 {
-                    a.UseOcelot(ocelotMiddlewareConfig).Wait();
+                    a.UseOcelot(ocelotPipelineConfig).Wait();
                 }));
 
             _ocelotClient = _ocelotServer.CreateClient();
