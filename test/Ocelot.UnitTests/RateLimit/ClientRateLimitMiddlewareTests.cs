@@ -21,6 +21,7 @@
     using Microsoft.Extensions.Caching.Memory;
     using System.Text;
     using System.IO;
+    using Microsoft.AspNetCore.Http.Internal;
 
     public class ClientRateLimitMiddlewareTests
     {
@@ -39,7 +40,11 @@
             _url = "http://localhost:51879";
             var cacheEntryOptions = new MemoryCacheOptions();
             _rateLimitCounterHandler = new MemoryCacheRateLimitCounterHandler(new MemoryCache(cacheEntryOptions));
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            var httpContext = new DefaultHttpContext();
+            var httpResponse = new DefaultHttpResponse(httpContext);
+            var httpRequest = new DefaultHttpRequest(httpContext);
+
+            _downstreamContext = new DownstreamContext(httpContext);
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
