@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Shouldly;
@@ -25,6 +27,40 @@ namespace Ocelot.AcceptanceTests
             _counter = 0;
             _steps = new Steps();;
             _configurationPath = "configuration.json";
+        }
+
+        [Fact]
+        public void should_fix_issue_237()
+        {
+            var fileConfiguration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/west",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 41879,
+                                }
+                            },
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, "/test"))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheCounterIs(1))
+                .BDDfy();
         }
 
         [Fact]
@@ -61,7 +97,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -104,7 +140,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -147,7 +183,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -190,7 +226,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -233,7 +269,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -276,7 +312,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -290,7 +326,7 @@ namespace Ocelot.AcceptanceTests
             _counter.ShouldBe(expected);
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string basePath)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(url)
@@ -300,9 +336,17 @@ namespace Ocelot.AcceptanceTests
                 .UseUrls(url)
                 .Configure(app =>
                 {
+                    app.UsePathBase(basePath);
                     app.Run(context =>
                     {
-                        context.Response.StatusCode = statusCode;
+                        if(context.Request.Path.Value != basePath)
+                        {
+                            context.Response.StatusCode = 404;;
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = statusCode;
+                        }
                         return Task.CompletedTask;
                     });
                 })
@@ -315,6 +359,31 @@ namespace Ocelot.AcceptanceTests
         {
             _builder?.Dispose();
             _steps.Dispose();
+        }
+    }
+
+    public class FakeMiddleware
+    {
+        private readonly RequestDelegate _next;
+        public FakeMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            await _next(context);
+            
+            context.Response.OnCompleted(state =>
+            {
+                var httpContext = (HttpContext)state;
+
+                if (httpContext.Response.StatusCode > 400)
+                    Debug.WriteLine("An error has been ocurred");
+                else
+                    Debug.WriteLine("All its ok");
+                return Task.CompletedTask;
+            }, context);
         }
     }
 }

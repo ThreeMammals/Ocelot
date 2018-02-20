@@ -42,7 +42,6 @@ namespace Ocelot.Errors.Middleware
                 _logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(context);
-
             }
             catch (Exception e)
             {
