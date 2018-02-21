@@ -103,6 +103,35 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseMiddleware<T>(callback);
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>

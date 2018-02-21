@@ -20,22 +20,22 @@ namespace Ocelot.Authorisation
         {
             foreach (var required in routeClaimsRequirement)
             {
-                var value = _claimsParser.GetValue(claimsPrincipal.Claims, required.Key, string.Empty, 0);
+                var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
 
-                if (value.IsError)
+                if (values.IsError)
                 {
-                    return new ErrorResponse<bool>(value.Errors);
+                    return new ErrorResponse<bool>(values.Errors);
                 }
 
-                if (value.Data != null)
+                if (values.Data != null)
                 {
-                    var authorised = value.Data == required.Value;
+                    var authorised = values.Data.Contains(required.Value);
                     if (!authorised)
                     {
                         return new ErrorResponse<bool>(new List<Error>
                         {
                             new ClaimValueNotAuthorisedError(
-                                $"claim value: {value.Data} is not the same as required value: {required.Value} for type: {required.Key}")
+                                $"claim value: {values.Data} is not the same as required value: {required.Value} for type: {required.Key}")
                         });
                     }
                 }
