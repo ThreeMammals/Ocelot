@@ -27,7 +27,9 @@ namespace Ocelot.UnitTests.Authorization
         {
             this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim("UserType", "registered")
+                    new Claim("UserType", "registered, balls"),
+                    new Claim("UserType", "balls")
+
                 }))))
                 .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
