@@ -7,7 +7,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
-    public class DownstreamRouteFinderMiddleware : OcelotMiddlewareV2
+    public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;

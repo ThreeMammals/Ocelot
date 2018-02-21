@@ -1,4 +1,5 @@
-﻿using Ocelot.Infrastructure.RequestData;
+﻿using Ocelot.Errors;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
@@ -109,7 +110,7 @@ namespace Ocelot.UnitTests.Cache
 
         private void GivenThereAreNoErrors()
         {
-            _downstreamContext.Response = new OkResponse<DownstreamContext>(null);
+            _downstreamContext.Errors = new List<Error>();
         }
     }
 }

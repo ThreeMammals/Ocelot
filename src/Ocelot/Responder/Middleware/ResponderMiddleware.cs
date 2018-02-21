@@ -12,7 +12,7 @@ namespace Ocelot.Responder.Middleware
     /// <summary>
     /// Completes and returns the request and request body, if any pipeline errors occured then sets the appropriate HTTP status code instead.
     /// </summary>
-    public class ResponderMiddleware : OcelotMiddlewareV2
+    public class ResponderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IHttpResponder _responder;
@@ -36,9 +36,9 @@ namespace Ocelot.Responder.Middleware
         {           
             await _next.Invoke(context);
 
-            if (context.Response.IsError)
+            if (context.IsError)
             {
-                var errors = context.Response.Errors;
+                var errors = context.Errors;
                 _logger.LogError($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
                 SetErrorResponse(context.HttpContext, errors);
             }

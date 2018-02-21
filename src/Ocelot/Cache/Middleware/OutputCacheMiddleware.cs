@@ -11,7 +11,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.Cache.Middleware
 {
-    public class OutputCacheMiddleware : OcelotMiddlewareV2
+    public class OutputCacheMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
@@ -59,7 +59,7 @@ namespace Ocelot.Cache.Middleware
 
             await _next.Invoke(context);
 
-            if (context.Response.IsError)
+            if (context.IsError)
             {
                 _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
 

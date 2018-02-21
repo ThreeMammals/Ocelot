@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using Ocelot.Middleware.Pipeline;
-
-namespace Ocelot.Middleware
+﻿namespace Ocelot.Middleware
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
@@ -18,24 +14,11 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
-    using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Responses;
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Claims.Middleware;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Headers.Middleware;
     using Ocelot.Logging;
-    using Ocelot.QueryStrings.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Requester.Middleware;
-    using Ocelot.RequestId.Middleware;
-    using Ocelot.Responder.Middleware;
-    using Ocelot.RateLimit.Middleware;
     using Rafty.Concensus;
     using Rafty.Infrastructure;
+    using Ocelot.Middleware.Pipeline;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -71,37 +54,23 @@ namespace Ocelot.Middleware
             ConfigureDiagnosticListener(builder);
 
             var pipelineBuilder = new OcelotPipelineBuilder(builder.ApplicationServices);
+
             pipelineBuilder.BuildOcelotPipeline(pipelineConfiguration);
+
             var firstDelegate = pipelineBuilder.Build();
 
-            //inject first delegate into first piece of asp.net middleware..maybe not like this..then map it back out to http context?
+            //inject first delegate into first piece of asp.net middleware..maybe not like this
+            //then because we are updating the http context in ocelot it comes out correct for
+            //rest of asp.net..
 
             builder.Use(async (context, task) =>
             {
                 var downstreamContext = new DownstreamContext(context);
                 await firstDelegate.Invoke(downstreamContext);
-
-                //MapContext(context, downstreamContext.HttpContext);
             });
 
             return builder;
         }
-/*
-        private static void MapContext(HttpContext context, HttpContext ocelot)
-        {
-            //headers
-            context.Response.Headers.Clear();
-
-            foreach (var responseHeader in ocelot.Response.Headers)
-            {
-                context.Response.Headers.TryAdd(responseHeader.Key, responseHeader.Value);
-            }
-
-            //body
-            context.Response.Body = ocelot.Response.Body;
-
-
-        }*/
 
         private static bool UsingRafty(IApplicationBuilder builder)
         {

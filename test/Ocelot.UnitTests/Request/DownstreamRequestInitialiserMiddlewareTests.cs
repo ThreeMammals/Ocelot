@@ -118,21 +118,17 @@ namespace Ocelot.UnitTests.Request
         private void ThenTheDownstreamRequestIsStored()
         {
             _downstreamContext.DownstreamRequest.ShouldNotBeNull();
-            //_repo.Verify(r => r.Add("DownstreamRequest", _mappedRequest.Data), Times.Once);
         }
 
         private void ThenTheDownstreamRequestIsNotStored()
         {
             _downstreamContext.DownstreamRequest.ShouldBeNull();
-            //_repo.Verify(r => r.Add("DownstreamRequest", It.IsAny<HttpRequestMessage>()), Times.Never);
         }
 
         private void ThenAPipelineErrorIsStored()
         {
-            _downstreamContext.Response.IsError.ShouldBeTrue();
-            _downstreamContext.Response.Errors.ShouldBe(_mappedRequest.Errors);
-            //_repo.Verify(r => r.Add("OcelotMiddlewareError", true), Times.Once);
-            //_repo.Verify(r => r.Add("OcelotMiddlewareErrors", _mappedRequest.Errors), Times.Once);
+            _downstreamContext.IsError.ShouldBeTrue();
+            _downstreamContext.Errors.ShouldBe(_mappedRequest.Errors);
         }
 
         private void ThenTheNextMiddlewareIsInvoked()

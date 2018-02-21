@@ -12,7 +12,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.RequestId.Middleware
 {
-    public class ReRouteRequestIdMiddleware : OcelotMiddlewareV2
+    public class ReRouteRequestIdMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

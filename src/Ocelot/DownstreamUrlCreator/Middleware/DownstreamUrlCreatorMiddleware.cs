@@ -9,7 +9,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
-    public class DownstreamUrlCreatorMiddleware : OcelotMiddlewareV2
+    public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;

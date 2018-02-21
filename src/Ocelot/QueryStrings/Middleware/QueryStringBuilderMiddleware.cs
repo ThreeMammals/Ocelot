@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.QueryStrings.Middleware
 {
-    public class QueryStringBuilderMiddleware : OcelotMiddlewareV2
+    public class QueryStringBuilderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IAddQueriesToRequest _addQueriesToRequest;

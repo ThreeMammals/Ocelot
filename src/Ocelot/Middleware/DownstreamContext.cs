@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder;
+using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Middleware
@@ -11,7 +13,7 @@ namespace Ocelot.Middleware
         public DownstreamContext(HttpContext httpContext)
         {
             this.HttpContext = httpContext;
-            Response = new OkResponse<DownstreamContext>(this);
+            Errors = new List<Error>();
         }
 
         public DownstreamRoute DownstreamRoute {get; set;}
@@ -20,8 +22,9 @@ namespace Ocelot.Middleware
         public DownstreamReRoute DownstreamReRoute { get; set; }
         public HttpRequestMessage DownstreamRequest { get; set; }
         public HttpResponseMessage DownstreamResponse { get; set; }
-        public Ocelot.Responses.Response<DownstreamContext> Response { get;set; }
+        public List<Error> Errors { get;set; }
         public string RequestId {get;set;}
         public string PreviousRequestId {get;set;}
+        public bool IsError => Errors.Count > 0;
     }
 }

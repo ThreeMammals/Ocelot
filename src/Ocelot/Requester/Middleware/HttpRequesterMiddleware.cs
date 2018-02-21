@@ -8,7 +8,7 @@ using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester.Middleware
 {
-    public class HttpRequesterMiddleware : OcelotMiddlewareV2
+    public class HttpRequesterMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IHttpRequester _requester;

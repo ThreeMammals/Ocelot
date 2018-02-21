@@ -178,44 +178,26 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()
         {
-            _downstreamContext.Response.IsError.ShouldBeTrue();
-            _downstreamContext.Response.Errors.ShouldBe(_getLoadBalancerHouseError.Errors);
-
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
-
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareErrors", _getLoadBalancerHouseError.Errors), Times.Once);
+            _downstreamContext.IsError.ShouldBeTrue();
+            _downstreamContext.Errors.ShouldBe(_getLoadBalancerHouseError.Errors);
         }
 
         private void ThenAnErrorSayingReleaseFailedIsSetOnThePipeline()
         {
-            _downstreamContext.Response.IsError.ShouldBeTrue();
-            _downstreamContext.Response.Errors.ShouldBe(It.IsAny<List<Error>>());
-
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
-
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareErrors", It.IsAny<List<Error>>()), Times.Once);
+            _downstreamContext.IsError.ShouldBeTrue();
+            _downstreamContext.Errors.ShouldBe(It.IsAny<List<Error>>());
         }
 
         private void ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline()
         {
-            _downstreamContext.Response.IsError.ShouldBeTrue();
-            _downstreamContext.Response.Errors.ShouldBe(_getHostAndPortError.Errors);
+            _downstreamContext.IsError.ShouldBeTrue();
+            _downstreamContext.Errors.ShouldBe(_getHostAndPortError.Errors);
 
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareError", true), Times.Once);
-
-            // ScopedRepository
-            //     .Verify(x => x.Add("OcelotMiddlewareErrors", _getHostAndPortError.Errors), Times.Once);
         }
 
         private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)
         {
             _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
-            //_downstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

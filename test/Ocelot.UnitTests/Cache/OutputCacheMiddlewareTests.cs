@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Ocelot.Errors;
 using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
@@ -105,7 +106,7 @@ namespace Ocelot.UnitTests.Cache
 
         private void GivenThereAreNoErrors()
         {
-            _downstreamContext.Response = new OkResponse<DownstreamContext>(null);
+            _downstreamContext.Errors = new List<Error>();
 
         }
 

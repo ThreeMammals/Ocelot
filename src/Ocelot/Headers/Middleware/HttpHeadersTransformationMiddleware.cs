@@ -7,7 +7,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Headers.Middleware
 {
-    public class HttpHeadersTransformationMiddleware : OcelotMiddlewareV2
+    public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

@@ -11,7 +11,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.RateLimit.Middleware
 {
-    public class ClientRateLimitMiddleware : OcelotMiddlewareV2
+    public class ClientRateLimitMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

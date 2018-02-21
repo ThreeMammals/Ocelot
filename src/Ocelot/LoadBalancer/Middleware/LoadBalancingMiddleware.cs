@@ -10,7 +10,7 @@ using Ocelot.QueryStrings.Middleware;
 
 namespace Ocelot.LoadBalancer.Middleware
 {
-    public class LoadBalancingMiddleware : OcelotMiddlewareV2
+    public class LoadBalancingMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

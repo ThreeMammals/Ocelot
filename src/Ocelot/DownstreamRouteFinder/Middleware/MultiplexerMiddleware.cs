@@ -4,7 +4,7 @@ using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
-    public class MultiplexerMiddleware : OcelotMiddlewareV2
+    public class MultiplexerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
 
@@ -38,7 +38,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var finished = tasks[0].Result;
 
-            context.Response = finished.Response;
+            context.Errors = finished.Errors;
             context.DownstreamRequest = finished.DownstreamRequest;
             context.DownstreamResponse = finished.DownstreamResponse;
             context.RequestId = finished.RequestId;

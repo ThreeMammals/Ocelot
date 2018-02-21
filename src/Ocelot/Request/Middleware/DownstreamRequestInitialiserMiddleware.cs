@@ -7,7 +7,7 @@ namespace Ocelot.Request.Middleware
     using Ocelot.Logging;
     using Ocelot.Middleware;
 
-    public class DownstreamRequestInitialiserMiddleware : OcelotMiddlewareV2
+    public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

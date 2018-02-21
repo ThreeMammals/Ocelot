@@ -1,4 +1,5 @@
-﻿using Ocelot.Middleware;
+﻿using System.Collections.Generic;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Responder
 {
@@ -73,7 +74,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void GivenThereAreNoPipelineErrors()
         {
-            _downstreamContext.Response = new OkResponse<DownstreamContext>(null);
+            _downstreamContext.Errors = new List<Error>();
         }
 
         private void ThenThereAreNoErrors()
@@ -83,7 +84,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void GivenThereArePipelineErrors(Error error)
         {
-            _downstreamContext.Response = new ErrorResponse<DownstreamContext>(error);
+            _downstreamContext.Errors = new List<Error>(){error};
         }  
     }
 }

@@ -15,7 +15,7 @@ namespace Ocelot.Errors.Middleware
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
-    public class ExceptionHandlerMiddleware : OcelotMiddlewareV2
+    public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

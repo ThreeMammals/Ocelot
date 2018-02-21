@@ -12,7 +12,7 @@ namespace Ocelot.Authorisation.Middleware
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Middleware;
 
-    public class AuthorisationMiddleware : OcelotMiddlewareV2
+    public class AuthorisationMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IClaimsAuthoriser _claimsAuthoriser;

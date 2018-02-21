@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Claims.Middleware
 {
-    public class ClaimsBuilderMiddleware : OcelotMiddlewareV2
+    public class ClaimsBuilderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IAddClaimsToRequest _addClaimsToRequest;

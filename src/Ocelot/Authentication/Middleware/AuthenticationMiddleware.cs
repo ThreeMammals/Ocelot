@@ -9,7 +9,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Authentication.Middleware
 {
-    public class AuthenticationMiddleware : OcelotMiddlewareV2
+    public class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;

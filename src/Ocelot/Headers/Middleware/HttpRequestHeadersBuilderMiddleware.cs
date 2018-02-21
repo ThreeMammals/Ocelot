@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Headers.Middleware
 {
-    public class HttpRequestHeadersBuilderMiddleware : OcelotMiddlewareV2
+    public class HttpRequestHeadersBuilderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IAddHeadersToRequest _addHeadersToRequest;
