@@ -20,7 +20,6 @@ namespace Ocelot.Middleware
         public DownstreamReRoute DownstreamReRoute { get; set; }
         public HttpRequestMessage DownstreamRequest { get; set; }
         public HttpResponseMessage DownstreamResponse { get; set; }
-        public Request.Request Request { get; set; }
         public Ocelot.Responses.Response<DownstreamContext> Response { get;set; }
         public string RequestId {get;set;}
         public string PreviousRequestId {get;set;}

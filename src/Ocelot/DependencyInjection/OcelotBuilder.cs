@@ -30,7 +30,6 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Middleware;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;
-    using Ocelot.Request.Builder;
     using Ocelot.Request.Mapper;
     using Ocelot.Requester;
     using Ocelot.Requester.QoS;
@@ -114,7 +113,6 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
             _services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
-            _services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
             _services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             _services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             _services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();

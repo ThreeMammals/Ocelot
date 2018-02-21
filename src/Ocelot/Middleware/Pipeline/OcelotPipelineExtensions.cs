@@ -105,9 +105,6 @@ namespace Ocelot.Middleware.Pipeline
             // as the basis for our cache key.
             builder.UseOutputCacheMiddleware();
 
-            // Everything should now be ready to build or HttpRequest
-            builder.UseHttpRequestBuilderMiddleware();
-
             //We fire off the request and set the response on the scoped data repo
             builder.UseHttpRequesterMiddleware();
 

@@ -39,7 +39,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             var finished = tasks[0].Result;
 
             context.Response = finished.Response;
-            context.Request = finished.Request;
             context.DownstreamRequest = finished.DownstreamRequest;
             context.DownstreamResponse = finished.DownstreamResponse;
             context.RequestId = finished.RequestId;

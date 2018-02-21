@@ -4,6 +4,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Threading.Tasks;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester.Middleware
 {
@@ -23,8 +24,8 @@ namespace Ocelot.Requester.Middleware
         }
 
         public async Task Invoke(DownstreamContext context)
-        { 
-            var response = await _requester.GetResponse(context.Request);
+        {
+            var response = await _requester.GetResponse(context);
 
             if (response.IsError)
             {
