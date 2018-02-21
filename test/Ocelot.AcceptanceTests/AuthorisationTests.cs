@@ -260,12 +260,6 @@ namespace Ocelot.AcceptanceTests
                            {
                                AuthenticationProviderKey = "Test"
                            },
-                           AddClaimsToRequest =
-                           {
-                            //    {"CustomerId", "Claims[CustomerId] > value"},
-                            //    {"UserType", "Claims[sub] > value[0] > |"},
-                            //    {"Role", "Claims[sub] > value[1] > |"}
-                           },
                            RouteClaimsRequirement =
                            {
                                {"Role", "User"}
@@ -283,10 +277,9 @@ namespace Ocelot.AcceptanceTests
                     SubjectId = "registered|1231231",
                     Claims = new List<Claim>
                     {
-                        new Claim("Role", "User"),
-                        //new Claim("Role", "User, AdminUser"),
+                        new Claim("Role", "AdminUser"), 
+                        new Claim("Role", "User")
                     },
-
                 }
             };
 
