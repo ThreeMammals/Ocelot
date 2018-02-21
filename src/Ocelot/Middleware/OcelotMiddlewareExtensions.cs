@@ -1,4 +1,5 @@
-﻿using Ocelot.Middleware.Pipeline;
+﻿using System.Collections.Generic;
+using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.Middleware
 {
@@ -79,11 +80,28 @@ namespace Ocelot.Middleware
             {
                 var downstreamContext = new DownstreamContext(context);
                 await firstDelegate.Invoke(downstreamContext);
-                Console.WriteLine(downstreamContext);
+
+                //MapContext(context, downstreamContext.HttpContext);
             });
 
             return builder;
         }
+/*
+        private static void MapContext(HttpContext context, HttpContext ocelot)
+        {
+            //headers
+            context.Response.Headers.Clear();
+
+            foreach (var responseHeader in ocelot.Response.Headers)
+            {
+                context.Response.Headers.TryAdd(responseHeader.Key, responseHeader.Value);
+            }
+
+            //body
+            context.Response.Body = ocelot.Response.Body;
+
+
+        }*/
 
         private static bool UsingRafty(IApplicationBuilder builder)
         {

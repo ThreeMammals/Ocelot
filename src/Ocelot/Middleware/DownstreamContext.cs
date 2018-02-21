@@ -2,6 +2,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder;
+using Ocelot.Responses;
 
 namespace Ocelot.Middleware
 {
@@ -10,6 +11,7 @@ namespace Ocelot.Middleware
         public DownstreamContext(HttpContext httpContext)
         {
             this.HttpContext = httpContext;
+            Response = new OkResponse<DownstreamContext>(this);
         }
 
         public DownstreamRoute DownstreamRoute {get; set;}

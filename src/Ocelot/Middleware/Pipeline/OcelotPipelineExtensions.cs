@@ -36,6 +36,8 @@ namespace Ocelot.Middleware.Pipeline
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
 
+            builder.UseMultiplexerMiddleware();
+
             // Now we have the ds route we can transform headers and stuff?
             builder.UseHttpHeadersTransformationMiddleware();
 
