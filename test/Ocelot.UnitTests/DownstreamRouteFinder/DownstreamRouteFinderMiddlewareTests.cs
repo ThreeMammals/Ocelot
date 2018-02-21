@@ -87,8 +87,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
-            _downstreamContext.DownstreamRoute.ShouldBe(_downstreamRoute.Data);
-
+            _downstreamContext.TemplatePlaceholderNameAndValues.ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
             _downstreamContext.ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
         }
     }

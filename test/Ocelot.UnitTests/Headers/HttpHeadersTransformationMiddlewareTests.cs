@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.Headers
             var reRoute = new ReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs).WithDownstreamHeaderFindAndReplace(fAndRs).Build();
             var dR = new DownstreamRoute(null, reRoute);
 
-            _downstreamContext.DownstreamRoute = dR;
+            _downstreamContext.TemplatePlaceholderNameAndValues = dR.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = dR.ReRoute.DownstreamReRoute[0];
 
         }

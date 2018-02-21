@@ -75,7 +75,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.DownstreamRoute = downstreamRoute;
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 
@@ -95,7 +95,6 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
             _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
-            //_downstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

@@ -153,7 +153,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _downstreamContext.DownstreamRoute = downstreamRoute;
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 

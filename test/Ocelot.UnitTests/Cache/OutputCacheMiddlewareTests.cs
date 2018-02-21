@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests.Cache
                 
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
 
-            _downstreamContext.DownstreamRoute = downstreamRoute;
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 

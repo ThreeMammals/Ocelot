@@ -30,7 +30,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var dsPath = _replacer
-                .Replace(context.DownstreamReRoute.DownstreamPathTemplate, context.DownstreamRoute.TemplatePlaceholderNameAndValues);
+                .Replace(context.DownstreamReRoute.DownstreamPathTemplate, context.TemplatePlaceholderNameAndValues);
 
             if (dsPath.IsError)
             {
