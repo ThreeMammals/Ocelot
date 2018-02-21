@@ -30,39 +30,6 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_fix_issue_237()
-        {
-            var fileConfiguration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/west",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 41879,
-                                }
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, "/test"))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
-                .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_call_pre_query_string_builder_middleware()
         {
             var configuration = new OcelotMiddlewareConfiguration
@@ -320,6 +287,53 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        
+        [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
+        public void should_fix_issue_237()
+        {
+            Func<object, Task> callback = state =>
+            {
+                var httpContext = (HttpContext)state;
+
+                if (httpContext.Response.StatusCode > 400)
+                {                    
+                    Debug.WriteLine("COUNT CALLED");
+                    Console.WriteLine("COUNT CALLED");
+                }
+
+                return Task.CompletedTask;
+            };
+
+            var fileConfiguration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/west",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 41880,
+                                }
+                            },
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41880", 200, "/test"))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>(callback))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
+
         private void ThenTheCounterIs(int expected)
         {
             _counter.ShouldBe(expected);
@@ -365,26 +379,19 @@ namespace Ocelot.AcceptanceTests
         public class FakeMiddleware
         {
             private readonly RequestDelegate _next;
-            public FakeMiddleware(RequestDelegate next)
+            private readonly Func<object, Task> _callback; 
+            
+            public FakeMiddleware(RequestDelegate next, Func<object, Task> callback)
             {
                 _next = next;
+                _callback = callback;
             }
 
             public async Task Invoke(HttpContext context)
             {
                 await _next(context);
                 
-                context.Response.OnCompleted(state =>
-                {
-                    var httpContext = (HttpContext)state;
-
-                    if (httpContext.Response.StatusCode > 400)
-                    {
-                        
-                    }
-
-                    return Task.CompletedTask;
-                }, context);
+                context.Response.OnCompleted(_callback, context);
             }
         }
     }

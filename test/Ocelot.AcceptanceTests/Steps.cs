@@ -103,7 +103,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>()
+        public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
             _webHostBuilder = new WebHostBuilder();
 
@@ -123,7 +123,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(app =>
                 {
-                    app.UseMiddleware<T>();
+                    app.UseMiddleware<T>(callback);
                     app.UseOcelot().Wait();
                 });
 
