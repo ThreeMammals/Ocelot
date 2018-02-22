@@ -1,0 +1,24 @@
+﻿{
+  "ReRoutes": [
+    {
+      "DownstreamPathTemplate": "/api/values/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+
+        {
+          "Host": "localhost",
+          "Port": 6002
+        },
+        {
+          "Host": "localhost",
+          "Port": 6001
+        }
+      ],
+      "LoadBalancer": "RoundRobin",
+      "UpstreamPathTemplate": "/api/v1/values/{id}",
+      "DownstreamHealthcheckPath": "/hc?apikey=testapi",
+      "UpstreamHttpMethod": [ "GET", "Put", "Delete" ]
+    }
+  ],
+  "GlobalConfiguration": {}
+}

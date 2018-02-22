@@ -1,0 +1,82 @@
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Carousel */
+.carousel-caption p {
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+/* Make .svg files in the carousel display properly in older browsers */
+.carousel-inner .item img[src$=".svg"] {
+    width: 100%;
+}
+
+/* QR code generator */
+#qrCode {
+    margin: 15px;
+}
+
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+    /* Hide captions */
+    .carousel-caption {
+        display: none;
+    }
+}
+
+#oceloctManager {
+    font-family: Consolas;
+}
+
+    #oceloctManager .col-sm-4 span.line {
+        display: block;
+    }
+
+    #oceloctManager dt {
+        font-size: 18px;
+    }
+
+    #oceloctManager span.value {
+        color: red;
+        font-weight: 700;
+    }
+
+    #oceloctManager span.hc {
+        display: inline;
+        padding: .2em .6em .3em;
+        font-size: 75%;
+        font-weight: bold;
+        line-height: 1;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: .25em;
+    }
+
+    #oceloctManager span.hc-online {
+        background-color: #62c462;
+    }
+
+    #oceloctManager span.hc-offline {
+        background-color: red;
+    }
+
+hr {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 0;
+    border-top: 1px solid #eee;
+    width: 100%;
+    float: left;
+}

@@ -1,0 +1,50 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "OcelotManager";
+    var index = 1;
+}
+
+<h2>Ocelot Configuration Manager</h2>
+<h3>You have @(Model.OcelotConfiguration?.ReRoutes?.Count) Route</h3>
+
+@if (Model.OcelotConfiguration != null && Model.OcelotConfiguration.ReRoutes != null)
+{
+    foreach (var reRoute in Model.OcelotConfiguration.ReRoutes)
+    {
+        <dl id="oceloctManager">
+            <dt>service index:@(index++) name:@reRoute.ServiceName</dt>
+            <dd>upstream tempalte:<span class="value">@reRoute.UpstreamPathTemplate.Value</span></dd>
+            <dd>down template:<span class="value">@reRoute.DownstreamPathTemplate.Value</span></dd>
+            @if (!String.IsNullOrEmpty(reRoute.DownstreamHealthcheckPath))
+            {
+                <dd>
+                    Health Check Page:@reRoute.DownstreamHealthcheckPath<br />
+                </dd>
+
+            }
+            <dd>downstream host:</dd>
+            <dd>
+                <div class="col-sm-12">
+                    @for (int i = 0; i < reRoute.DownstreamAddresses.Count; i++)
+                    {
+                        <span class="col-sm-4">
+                            <span class="line">Host @(i + 1)</span>
+                            <span class="line value">@(String.Format("{0}:{1}", reRoute.DownstreamAddresses[i].Host, reRoute.DownstreamAddresses[i].Port))</span>
+                            @if (!String.IsNullOrEmpty(reRoute.DownstreamHealthcheckPath))
+                            {
+                                <span class="line">Host Status:<span class="hc" url="@String.Format("http://{0}:{1}{2}", reRoute.DownstreamAddresses[i].Host, reRoute.DownstreamAddresses[i].Port, reRoute.DownstreamHealthcheckPath)"></span></span>
+
+                            }
+                        </span>
+                    }
+                </div>
+
+            </dd>
+
+
+
+        </dl>
+    }
+
+}
