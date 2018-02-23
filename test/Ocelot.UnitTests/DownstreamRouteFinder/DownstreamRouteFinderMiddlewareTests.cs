@@ -1,4 +1,5 @@
 ﻿using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
@@ -31,6 +32,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private DownstreamRouteFinderMiddleware _middleware;
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
+        private readonly Mock<IMultiplexer> _multiplexer;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
@@ -43,7 +45,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _next = async context => {
                 //do nothing
             };
-            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _finder.Object, _provider.Object);
+            _multiplexer = new Mock<IMultiplexer>();
+            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _finder.Object, _provider.Object, _multiplexer.Object);
         }
 
         [Fact]

@@ -5,6 +5,7 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
@@ -14,14 +15,17 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
         private readonly IOcelotLogger _logger;
         private readonly IOcelotConfigurationProvider _configProvider;
+        private readonly IMultiplexer _multiplexer;
 
 
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder,
-            IOcelotConfigurationProvider configProvider)
+            IOcelotConfigurationProvider configProvider,
+            IMultiplexer multiplexer)
         {
             _configProvider = configProvider;
+            _multiplexer = multiplexer;
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
             _logger = loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>();
@@ -61,46 +65,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 
-            await Multiplex(context, downstreamRoute.Data.ReRoute);
-        }
-
-        private async Task Multiplex(DownstreamContext context, ReRoute reRoute)
-        {
-            var tasks = new Task<DownstreamContext>[reRoute.DownstreamReRoute.Count];
-            for (int i = 0; i < reRoute.DownstreamReRoute.Count; i++)
-            {
-                var downstreamContext = new DownstreamContext(context.HttpContext)
-                {
-                    TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
-                    ServiceProviderConfiguration = context.ServiceProviderConfiguration,
-                    DownstreamReRoute = reRoute.DownstreamReRoute[i],
-                    //todo do we want these set here
-                    RequestId = context.RequestId,
-                    PreviousRequestId = context.PreviousRequestId,
-                };
-
-                tasks[i] = Fire(downstreamContext);
-            }
-
-            await Task.WhenAll(tasks);
-
-            //now cast the complete tasks to whatever they need to be
-            //store them and let the response middleware handle them..
-
-            var finished = tasks[0].Result;
-
-            context.Errors = finished.Errors;
-            context.DownstreamRequest = finished.DownstreamRequest;
-            context.DownstreamResponse = finished.DownstreamResponse;
-            context.RequestId = finished.RequestId;
-            context.PreviousRequestId = finished.RequestId;
-            
-        }
-
-        private async Task<DownstreamContext> Fire(DownstreamContext context)
-        {
-            await _next.Invoke(context);
-            return context;
+            await _multiplexer.Multiplex(context, downstreamRoute.Data.ReRoute, _next);
         }
     }
 }

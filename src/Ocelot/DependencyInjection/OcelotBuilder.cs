@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.DependencyInjection
 {
@@ -147,6 +148,7 @@ namespace Ocelot.DependencyInjection
             _provider = new DelegatingHandlerHandlerProvider();
             _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
             _services.AddTransient<ITracingHandler, NoTracingHandler>();
+            _services.TryAddSingleton<IMultiplexer, Multiplexer>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
