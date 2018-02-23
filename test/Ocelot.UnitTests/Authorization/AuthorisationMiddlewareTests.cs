@@ -16,6 +16,7 @@ namespace Ocelot.UnitTests.Authorization
     using Xunit;
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Configuration;
 
     public class AuthorisationMiddlewareTests
     {
@@ -44,11 +45,11 @@ namespace Ocelot.UnitTests.Authorization
         [Fact]
         public void should_call_authorisation_service()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<PlaceholderNameAndValue>(), 
-                new ReRouteBuilder()
+            this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(), 
+                new DownstreamReRouteBuilder()
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())))
+                    .Build()))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
@@ -60,10 +61,10 @@ namespace Ocelot.UnitTests.Authorization
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _downstreamContext.TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;
+            _downstreamContext.DownstreamReRoute = downstreamReRoute;
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

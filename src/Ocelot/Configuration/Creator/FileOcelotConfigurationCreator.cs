@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -97,9 +98,19 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var reRoute in fileConfiguration.ReRoutes)
             {
-                var ocelotReRoute = SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration);
+                var downstreamReRoute = SetUpDownstreamReRoute(reRoute, fileConfiguration.GlobalConfiguration);
+
+                var ocelotReRoute = SetUpReRoute(reRoute, fileConfiguration.GlobalConfiguration, downstreamReRoute);
+                
                 reRoutes.Add(ocelotReRoute);
             }
+
+            //todo - refactor builer and make sure tests pass before this
+            // foreach(var aggregate in fileConfiguration.Aggregates)
+            // {
+            //     var ocelotReRoute = SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration);
+            //     reRoutes.Add(ocelotReRoute);
+            // }
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
@@ -108,7 +119,35 @@ namespace Ocelot.Configuration.Creator
             return new OkResponse<IOcelotConfiguration>(config);
         }
 
-        private ReRoute SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
+        public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var applicableReRoutes = reRoutes.Where(r => aggregateRoute.ReRouteKeys.Contains(r.Key)).ToList();
+            if(applicableReRoutes.Count != aggregateRoute.ReRouteKeys.Count)
+            {
+                //todo - log or throw or return error whatever?
+            }
+
+            //make another re route out of these
+
+            throw new NotImplementedException();
+        }
+
+        private ReRoute SetUpReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration, DownstreamReRoute downstreamReRoutes)
+        {
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
+
+            var reRoute = new ReRouteBuilder()
+                .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
+                .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
+                .WithUpstreamTemplatePattern(upstreamTemplatePattern)
+                .WithDownstreamReRoute(downstreamReRoutes)
+                .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .Build();
+
+            return reRoute;
+        }
+
+         private DownstreamReRoute SetUpDownstreamReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
@@ -138,7 +177,7 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
-            var reRoute = new ReRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)

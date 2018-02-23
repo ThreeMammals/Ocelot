@@ -97,15 +97,13 @@ namespace Ocelot.UnitTests.Cache
 
         private void GivenTheDownstreamRouteIs()
         {
-            var reRoute = new ReRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithIsCached(true)
                 .WithCacheOptions(new CacheOptions(100, "kanken"))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
-
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _downstreamContext.DownstreamReRoute = reRoute;
         }
 
         private void GivenThereAreNoErrors()
