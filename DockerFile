@@ -19,4 +19,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
 VOLUME /app/Configurations
+RUN dotnet bundle
 ENTRYPOINT ["dotnet", "ApiGateway.Web.dll"]
