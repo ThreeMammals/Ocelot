@@ -4,7 +4,6 @@ EXPOSE 80
 
 FROM microsoft/aspnetcore-build:2.0 AS build
 WORKDIR /src
-COPY *.sln ./
 COPY demos/ApiGateway.Web/ApiGateway.Web.csproj demos/ApiGateway.Web/
 COPY src/Ocelot/Ocelot.csproj src/Ocelot/
 RUN dotnet restore
