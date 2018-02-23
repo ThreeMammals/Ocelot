@@ -10,3 +10,4 @@ docker-compose.*.yml
 */obj
 !obj/Docker/publish/*
 !obj/Docker/empty/
+global.json
