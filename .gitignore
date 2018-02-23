@@ -257,4 +257,3 @@ _templates/
 /docker-compose.dcproj
 /docker-compose.ci.build.yml
 /.dockerignore
-/demos/ApiGateway.Web/tempkey.rsa
