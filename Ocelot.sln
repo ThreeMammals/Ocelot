@@ -41,9 +41,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.IntegrationTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{A076369E-1DBF-4254-B8D8-E5F066B33E10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.Values", "demos\Api.Values\Api.Values.csproj", "{05C946D8-441A-4B3C-A352-4BD5A6239780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Values", "demos\Api.Values\Api.Values.csproj", "{05C946D8-441A-4B3C-A352-4BD5A6239780}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway.Web", "demos\ApiGateway.Web\ApiGateway.Web.csproj", "{16AC6007-6F83-4A0A-881E-406BBD81200B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway.Web", "demos\ApiGateway.Web\ApiGateway.Web.csproj", "{16AC6007-6F83-4A0A-881E-406BBD81200B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -252,3 +252,9 @@ _templates/
 
 # JetBrains Rider
 .idea/
+/docker-compose.yml
+/docker-compose.override.yml
+/docker-compose.dcproj
+/docker-compose.ci.build.yml
+/.dockerignore
+/demos/ApiGateway.Web/tempkey.rsa
