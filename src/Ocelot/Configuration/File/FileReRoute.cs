@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File
 {
-    public class FileReRoute
+    public class FileReRoute : IReRoute
     {
         public FileReRoute()
         {

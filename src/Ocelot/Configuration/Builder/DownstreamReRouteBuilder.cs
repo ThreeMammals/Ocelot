@@ -220,6 +220,7 @@ namespace Ocelot.Configuration.Builder
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
+                _key,
                 new PathTemplate(_upstreamTemplate),
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace, 

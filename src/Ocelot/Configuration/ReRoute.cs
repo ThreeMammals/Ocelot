@@ -12,10 +12,8 @@ namespace Ocelot.Configuration
             PathTemplate upstreamPathTemplate, 
             List<HttpMethod> upstreamHttpMethod, 
             UpstreamPathTemplate upstreamTemplatePattern, 
-            string upstreamHost,
-            string key)
+            string upstreamHost)
         {
-            Key = key;
             UpstreamHost = upstreamHost;
             DownstreamReRoute = downstreamReRoute;
             UpstreamPathTemplate = upstreamPathTemplate;
@@ -28,6 +26,5 @@ namespace Ocelot.Configuration
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public string UpstreamHost { get; private set; }
         public List<DownstreamReRoute> DownstreamReRoute { get; private set; }
-        public string Key { get;set; }
     }
 }

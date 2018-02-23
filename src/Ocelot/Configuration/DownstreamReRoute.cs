@@ -6,6 +6,7 @@ namespace Ocelot.Configuration
     public class DownstreamReRoute
     {
         public DownstreamReRoute(
+            string key,
             PathTemplate upstreamPathTemplate,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace, 
@@ -32,6 +33,7 @@ namespace Ocelot.Configuration
             PathTemplate downstreamPathTemplate, 
             string reRouteKey)
         {
+            Key = key;
             UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
@@ -58,6 +60,8 @@ namespace Ocelot.Configuration
             DownstreamPathTemplate = downstreamPathTemplate;
             ReRouteKey = reRouteKey;
         }
+
+        public string Key { get; private set; }
         public PathTemplate UpstreamPathTemplate { get;private set; }
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace {get;private set;}
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; private set; }

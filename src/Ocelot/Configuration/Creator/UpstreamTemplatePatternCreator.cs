@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.Creator
         private const string RegExForwardSlashOnly = "^/$";
         private const string RegExForwardSlashAndOnePlaceHolder = "^/.*";
 
-        public UpstreamPathTemplate Create(FileReRoute reRoute)
+        public UpstreamPathTemplate Create(IReRoute reRoute)
         {
             var upstreamTemplate = reRoute.UpstreamPathTemplate;
 

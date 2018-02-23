@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Castle.Components.DictionaryAdapter;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Cache;
@@ -79,6 +80,125 @@ namespace Ocelot.UnitTests.Configuration
                 _adminPath.Object,
                 _headerFindAndReplaceCreator.Object,
                 _downstreamAddressesCreator.Object);
+        }
+
+        [Fact]
+        public void should_set_up_aggregate_re_route()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura",
+                            UpstreamHost = "localhost"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom",
+                            UpstreamHost = "localhost",
+                        }
+                    },
+                Aggregates = new List<FileAggregateRoute>
+                    {
+                        new FileAggregateRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            var expected = new List<ReRoute>();
+
+            var lauraDownstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamHost("localhost")
+                .WithKey("Laura")
+                .WithDownstreamPathTemplate("/")
+                .WithDownstreamScheme("http")
+                .WithUpstreamHttpMethod(new List<string>() {"Get"})
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("localhost", 51878)})
+                .Build();
+
+            var lauraReRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithUpstreamHost("localhost")
+                .WithUpstreamPathTemplate("/laura")
+                .WithDownstreamReRoute(lauraDownstreamReRoute)
+                .Build();
+
+            expected.Add(lauraReRoute);
+
+            var tomDownstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamHost("localhost")
+                .WithKey("Tom")
+                .WithDownstreamPathTemplate("/")
+                .WithDownstreamScheme("http")
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("localhost", 51878) })
+                .Build();
+
+            var tomReRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithUpstreamHost("localhost")
+                .WithUpstreamPathTemplate("/tom")
+                .WithDownstreamReRoute(tomDownstreamReRoute)
+                .Build();
+
+            expected.Add(tomReRoute);
+
+            var aggregateReReRoute = new ReRouteBuilder()
+                .WithUpstreamPathTemplate("/")
+                .WithUpstreamHost("localhost")
+                .WithDownstreamReRoute(lauraDownstreamReRoute)
+                .WithDownstreamReRoute(tomDownstreamReRoute)
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .Build();
+
+            expected.Add(aggregateReReRoute);
+
+            this.Given(x => x.GivenTheConfigIs(configuration))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(new ReRouteOptionsBuilder().Build()))
+                .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => GivenTheDownstreamAddresses())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+                .And(x => x.GivenTheConfigIsValid())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .BDDfy();
         }
 
         [Fact]
@@ -693,6 +813,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 var result = _config.Data.ReRoutes[i];
                 var expected = expectedReRoutes[i];
+
+                result.DownstreamReRoute.Count.ShouldBe(expected.DownstreamReRoute.Count);
 
                 result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
