@@ -7,11 +7,14 @@ WORKDIR /src
 COPY *.sln ./
 COPY demos/ApiGateway.Web/ApiGateway.Web.csproj demos/ApiGateway.Web/
 COPY src/Ocelot/Ocelot.csproj src/Ocelot/
+
+RUN dotnet restore
+
+COPY . .
+WORKDIR /src/demos/ApiGateway.Web
 RUN dotnet add package BuildBundlerMinifier
 RUN dotnet restore
 RUN dotnet bundle
-COPY . .
-WORKDIR /src/demos/ApiGateway.Web
 RUN dotnet build -c Release -o /app
 
 FROM build AS publish
