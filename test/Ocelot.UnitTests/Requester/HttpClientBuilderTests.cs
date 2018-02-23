@@ -64,9 +64,8 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequest()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
 
             _request = reRoute;
         }

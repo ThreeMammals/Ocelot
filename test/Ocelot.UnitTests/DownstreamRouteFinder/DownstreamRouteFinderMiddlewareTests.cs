@@ -51,11 +51,16 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             var config = new OcelotConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "");
 
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .Build();
+
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
                 new DownstreamRoute(
                     new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("any old string")
+                        .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .And(x => GivenTheFollowingConfig(config))

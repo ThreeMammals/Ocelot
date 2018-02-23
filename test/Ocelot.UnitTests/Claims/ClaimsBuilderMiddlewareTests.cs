@@ -45,11 +45,14 @@ namespace Ocelot.UnitTests.Claims
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToClaims(new List<ClaimToThing>
-                    {
-                        new ClaimToThing("sub", "UserType", "|", 0)
-                    })
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithClaimsToClaims(new List<ClaimToThing>
+                        {
+                            new ClaimToThing("sub", "UserType", "|", 0)
+                        })
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 

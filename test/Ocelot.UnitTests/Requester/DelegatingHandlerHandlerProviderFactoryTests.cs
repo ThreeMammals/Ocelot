@@ -49,9 +49,8 @@ namespace Ocelot.UnitTests.Requester
                 () => new FakeDelegatingHandler(1)
             };
 
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
@@ -66,9 +65,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_no_delegates()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheAllRoutesProviderReturns())
@@ -80,9 +78,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_qos_delegate()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
@@ -96,9 +93,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheQosProviderHouseReturns(new ErrorResponse<IQoSProvider>(It.IsAny<Error>())))

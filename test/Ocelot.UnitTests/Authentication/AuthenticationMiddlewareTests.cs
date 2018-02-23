@@ -1,4 +1,5 @@
-﻿using Ocelot.Middleware;
+﻿using Ocelot.Configuration;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Authentication
 {
@@ -41,9 +42,7 @@ namespace Ocelot.UnitTests.Authentication
         public void should_call_next_middleware_if_route_is_not_authenticated()
         {
             this.Given(x => GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
-                    new List<PlaceholderNameAndValue>(), 
-                    new ReRouteBuilder().WithUpstreamHttpMethod(new List<string> { "Get" }).Build())))
+                    new DownstreamReRouteBuilder().WithUpstreamHttpMethod(new List<string> { "Get" }).Build()))
                 .And(x => GivenTheTestServerPipelineIsConfigured())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheUserIsAuthenticated())
@@ -76,9 +75,9 @@ namespace Ocelot.UnitTests.Authentication
             content.ShouldBe("The user is authenticated");
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void GivenTheDownStreamRouteIs(DownstreamReRoute downstreamRoute)
         {
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _downstreamContext.DownstreamReRoute = downstreamRoute;
         }
     }
 

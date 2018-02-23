@@ -71,7 +71,11 @@ namespace Ocelot.UnitTests.Headers
         private void GivenTheReRouteHasPreFindAndReplaceSetUp()
         {
             var fAndRs = new List<HeaderFindAndReplace>();
-            var reRoute = new ReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs).WithDownstreamHeaderFindAndReplace(fAndRs).Build();
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(new DownstreamReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs)
+                    .WithDownstreamHeaderFindAndReplace(fAndRs).Build())
+                .Build();
+
             var dR = new DownstreamRoute(null, reRoute);
 
             _downstreamContext.TemplatePlaceholderNameAndValues = dR.TemplatePlaceholderNameAndValues;

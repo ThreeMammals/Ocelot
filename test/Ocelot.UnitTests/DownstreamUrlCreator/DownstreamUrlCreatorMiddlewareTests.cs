@@ -52,13 +52,18 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         [Fact]
         public void should_replace_scheme_and_path()
         {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithDownstreamScheme("https")
+                .Build();
+
             this.Given(x => x.GivenTheDownStreamRouteIs(
                     new DownstreamRoute(
                     new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("any old string")
+                        .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithDownstreamScheme("https")
                         .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123"))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))

@@ -49,11 +49,14 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToQueries(new List<ClaimToThing>
-                    {
-                        new ClaimToThing("UserId", "Subject", "", 0)
-                    })
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithClaimsToQueries(new List<ClaimToThing>
+                        {
+                            new ClaimToThing("UserId", "Subject", "", 0)
+                        })
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 

@@ -30,9 +30,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_create_and_store_provider()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
             this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderReturns())
@@ -45,9 +44,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_get_provider()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
             this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderReturns())
@@ -62,9 +60,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
             this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderThrows())
@@ -76,9 +73,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error_if_factory_errors()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(true)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
             this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderReturnsError())

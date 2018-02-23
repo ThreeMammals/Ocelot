@@ -54,8 +54,11 @@ namespace Ocelot.UnitTests.RequestId
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
 
@@ -74,10 +77,13 @@ namespace Ocelot.UnitTests.RequestId
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenThereIsNoGlobalRequestId())
@@ -91,10 +97,13 @@ namespace Ocelot.UnitTests.RequestId
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             var requestId = Guid.NewGuid().ToString();
 
@@ -112,10 +121,13 @@ namespace Ocelot.UnitTests.RequestId
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             var requestId = Guid.NewGuid().ToString();
 

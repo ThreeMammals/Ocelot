@@ -44,9 +44,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
 
             var context = new DownstreamContext(new DefaultHttpContext())
             {
@@ -63,9 +62,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
-            var reRoute = new ReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build()
-                .DownstreamReRoute[0];
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
 
             var context = new DownstreamContext(new DefaultHttpContext())
             {
