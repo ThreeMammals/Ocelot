@@ -7,6 +7,7 @@ WORKDIR /src
 COPY *.sln ./
 COPY demos/ApiGateway.Web/ApiGateway.Web.csproj demos/ApiGateway.Web/
 COPY src/Ocelot/Ocelot.csproj src/Ocelot/
+RUN dotnet add package BuildBundlerMinifier
 RUN dotnet restore
 RUN dotnet bundle
 COPY . .
