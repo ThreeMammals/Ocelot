@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Ocelot.Configuration;
 
 namespace Ocelot.Middleware.Multiplexer
 {
-    public class SimpleResponseAggregator : IResponseAggregator
+    public class SimpleJsonResponseAggregator : IResponseAggregator
     {
         public async Task Aggregate(ReRoute reRoute, DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
         {
@@ -31,7 +32,7 @@ namespace Ocelot.Middleware.Multiplexer
         {
             var contentBuilder = new StringBuilder();
 
-            contentBuilder.Append("{\r\n\t");
+            contentBuilder.Append("{");
 
             for (int i = 0; i < downstreamContexts.Count; i++)
             {
@@ -43,19 +44,22 @@ namespace Ocelot.Middleware.Multiplexer
 
                 var content = await downstreamContexts[i].DownstreamResponse.Content.ReadAsStringAsync();
 
-                contentBuilder.Append($"\"{downstreamContexts[i].DownstreamReRoute.Key}\": \"{content}\"");
+                contentBuilder.Append($"\"{downstreamContexts[i].DownstreamReRoute.Key}\":{content}");
 
                 if (i + 1 < downstreamContexts.Count)
                 {
-                    contentBuilder.Append(",\r\n\t");
+                    contentBuilder.Append(",");
                 }
             }
 
-            contentBuilder.Append("\r\n}");
+            contentBuilder.Append("}");
 
             originalContext.DownstreamResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(contentBuilder.ToString())
+                {
+                    Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
+                }
             };
         }
 

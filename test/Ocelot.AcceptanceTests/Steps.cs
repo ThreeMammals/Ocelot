@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -523,7 +525,6 @@ namespace Ocelot.AcceptanceTests
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
-
         public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
         {
             var responseStatusCode = (int)_response.StatusCode;
@@ -549,6 +550,52 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheContentLengthIs(int expected)
         {
             _response.Content.Headers.ContentLength.ShouldBe(expected);
+        }
+
+        public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+        {
+            int numberOfRequests = 100;
+            var aggregateUrl = "/";
+            var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
+            var tomUrl = "/tom";
+            var tomExpected = "{Hello from Tom}";
+            var lauraUrl = "/laura";
+            var lauraExpected = "{Hello from Laura}";
+            var random = new Random();
+
+            var aggregateTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
+            }
+
+            var tomTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                tomTasks[i] = Fire(tomUrl, tomExpected, random);
+            }
+
+            var lauraTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
+            }
+
+            Task.WaitAll(lauraTasks);
+            Task.WaitAll(tomTasks);
+            Task.WaitAll(aggregateTasks);
+        }
+
+        private async Task Fire(string url, string expectedBody, Random random)
+        {
+            var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+            await Task.Delay(random.Next(0, 2));
+            var response = await _ocelotClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+            content.ShouldBe(expectedBody);
         }
     }
 }

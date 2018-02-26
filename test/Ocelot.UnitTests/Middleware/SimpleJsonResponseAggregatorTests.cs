@@ -16,16 +16,16 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    public class SimpleResponseAggregatorTests
+    public class SimpleJsonResponseAggregatorTests
     {
-        private readonly SimpleResponseAggregator _aggregator;
+        private readonly SimpleJsonResponseAggregator _aggregator;
         private List<DownstreamContext> _downstreamContexts;
         private DownstreamContext _upstreamContext;
         private ReRoute _reRoute;
 
-        public SimpleResponseAggregatorTests()
+        public SimpleJsonResponseAggregatorTests()
         {
-            _aggregator = new SimpleResponseAggregator();
+            _aggregator = new SimpleJsonResponseAggregator();
         }
 
         [Fact]
@@ -96,13 +96,14 @@ namespace Ocelot.UnitTests.Middleware
 
             var downstreamContexts = new List<DownstreamContext> { billDownstreamContext, georgeDownstreamContext };
 
-            var expected = "{\r\n\t\"Bill\": \"Bill says hi\",\r\n\t\"George\": \"George says hi\"\r\n}";
+            var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
 
             this.Given(x => GivenTheUpstreamContext(new DownstreamContext(new DefaultHttpContext())))
                 .And(x => GivenTheReRoute(reRoute))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
+                .And(x => ThenTheContentTypeIs("application/json"))
                 .BDDfy();
         }
 
@@ -184,6 +185,11 @@ namespace Ocelot.UnitTests.Middleware
                 .GetResult();
 
             content.ShouldBe(expected);
+        }
+
+        private void ThenTheContentTypeIs(string expected)
+        {
+            _upstreamContext.DownstreamResponse.Content.Headers.ContentType.MediaType.ShouldBe(expected);
         }
 
         private void ThenTheUpstreamContextIsMappedForNonAggregate()
