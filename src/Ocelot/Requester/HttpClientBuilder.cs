@@ -33,7 +33,10 @@ namespace Ocelot.Requester
                 .ForEach(handler =>
                 {
                     var delegatingHandler = handler();
-                    delegatingHandler.InnerHandler = httpMessageHandler;
+                    if( delegatingHandler.InnerHandler==null)
+                    {
+                        delegatingHandler.InnerHandler = httpMessageHandler;
+                    }
                     httpMessageHandler = delegatingHandler;
                 });
             return httpMessageHandler;
