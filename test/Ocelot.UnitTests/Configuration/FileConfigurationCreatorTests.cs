@@ -124,9 +124,9 @@ namespace Ocelot.UnitTests.Configuration
                             UpstreamHost = "localhost",
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
+                Aggregates = new List<FileAggregateReRoute>
                     {
-                        new FileAggregateRoute
+                        new FileAggregateReRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",

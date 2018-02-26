@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Middleware;
@@ -17,12 +18,14 @@ namespace Ocelot.UnitTests.Middleware
         private ReRoute _reRoute;
         private readonly OcelotRequestDelegate _pipeline;
         private int _count;
+        private Mock<IResponseAggregator> _aggregator;
 
         public MultiplexerTests()
         {
+            _aggregator = new Mock<IResponseAggregator>();
             _context = new DownstreamContext(new DefaultHttpContext());
             _pipeline = async context => { _count++; }; 
-            _multiplexer = new Multiplexer();
+            _multiplexer = new Multiplexer(_aggregator.Object);
         }
 
         [Fact]

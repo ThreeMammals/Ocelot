@@ -112,27 +112,27 @@ namespace Ocelot.Configuration.Creator
             return new OkResponse<IOcelotConfiguration>(config);
         }
 
-        public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
+        public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var applicableReRoutes = reRoutes
                 .SelectMany(x => x.DownstreamReRoute)
-                .Where(r => aggregateRoute.ReRouteKeys.Contains(r.Key))
+                .Where(r => aggregateReRoute.ReRouteKeys.Contains(r.Key))
                 .ToList();
 
-            if(applicableReRoutes.Count != aggregateRoute.ReRouteKeys.Count)
+            if(applicableReRoutes.Count != aggregateReRoute.ReRouteKeys.Count)
             {
                 //todo - log or throw or return error whatever?
             }
 
             //make another re route out of these
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateRoute);
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateReRoute);
 
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate(aggregateRoute.UpstreamPathTemplate)
-                .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
+                .WithUpstreamPathTemplate(aggregateReRoute.UpstreamPathTemplate)
+                .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
-                .WithUpstreamHost(aggregateRoute.UpstreamHost)
+                .WithUpstreamHost(aggregateReRoute.UpstreamHost)
                 .Build();
 
             return reRoute;

@@ -149,6 +149,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
             _services.AddTransient<ITracingHandler, NoTracingHandler>();
             _services.TryAddSingleton<IMultiplexer, Multiplexer>();
+            _services.TryAddSingleton<IResponseAggregator, SimpleResponseAggregator>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)

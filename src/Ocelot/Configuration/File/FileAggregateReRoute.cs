@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Ocelot.Configuration.File
 {
-    public class FileAggregateRoute : IReRoute
+    public class FileAggregateReRoute : IReRoute
     {
         public List<string> ReRouteKeys { get;set; }
         public string UpstreamPathTemplate { get;set; }

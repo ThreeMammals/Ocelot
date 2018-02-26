@@ -66,9 +66,9 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom"
                         }
                     },
-                    Aggregates = new List<FileAggregateRoute>
+                    Aggregates = new List<FileAggregateReRoute>
                     {
-                        new FileAggregateRoute
+                        new FileAggregateReRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -81,16 +81,16 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            var expectedResponse = "Laura:Hello from Laura\r\nTom:Hello from Tom\r\n";
+            var expected = "{\r\n\t\"Laura\": \"Hello from Laura\",\r\n\t\"Tom\": \"Hello from Tom\"\r\n}";
 
             this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51878", "/", 200, "Hello from Laura"))
-                .Given(x => x.GivenServiceOneIsRunning("http://localhost:51880", "/", 200, "Hello from Tom"))
+                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51880", "/", 200, "Hello from Tom"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expectedResponse))
-                //.And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
 

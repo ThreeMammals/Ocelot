@@ -19,6 +19,21 @@ namespace Ocelot.Configuration.Validator
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
+
+            RuleForEach(configuration => configuration.Aggregates)
+                .Must((config, aggregateReRoute) => AllReRoutesForAggregateExist(aggregateReRoute, config.ReRoutes))
+                .WithMessage((config, aggregateReRoute) => $"ReRoutes for {nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} either do not exist or do not have correct Key property");
+
+            RuleForEach(configuration => configuration.Aggregates)
+                .Must((config, aggregateReRoute) => DoesNotContainReRoutesWithSpecificRequestIdKeys(aggregateReRoute, config.ReRoutes))
+                .WithMessage((config, aggregateReRoute) => $"{nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} contains ReRoute with specific RequestIdKey, this is not possible with Aggregates");
+        }
+
+        private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)
+        {
+            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
+
+            return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
@@ -35,6 +50,14 @@ namespace Ocelot.Configuration.Validator
             var result = new ConfigurationValidationResult(true, errors.Cast<Error>().ToList());
 
             return new OkResponse<ConfigurationValidationResult>(result);
+        }
+
+        private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute, 
+            List<FileReRoute> reRoutes)
+        {
+            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
+
+            return reRoutesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }
 
         private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> reRoutes)
