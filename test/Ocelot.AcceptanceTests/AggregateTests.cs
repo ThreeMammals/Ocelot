@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51881,
+                                    Port = 51885,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -57,7 +57,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51882,
+                                    Port = 51886,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -82,8 +82,144 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51881", "/", 200, "{Hello from Laura}"))
+            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51885", "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51886", "/", 200, "{Hello from Tom}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_with_simple_url_one_service_404()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51881,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51882,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
+
+            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51881", "/", 404, ""))
                 .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51882", "/", 200, "{Hello from Tom}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_with_simple_url_both_service_404()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51883,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51884,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            var expected = "{\"Laura\":,\"Tom\":}";
+
+            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51883", "/", 404, ""))
+                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51884", "/", 404, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -148,8 +284,6 @@ namespace Ocelot.AcceptanceTests
                         }
                     }
             };
-
-            var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
 
             this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51878", "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51880", "/", 200, "{Hello from Tom}"))

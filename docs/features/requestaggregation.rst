@@ -80,3 +80,16 @@ You cannot use ReRoutes with specific RequestIdKeys as this would be crazy compl
 
 Aggregation only supports the GET HTTP Verb.
 
+If you downstream services return a 404 the aggregate will just return nothing for that downstream service. 
+It will not change the aggregate response into a 404 even if all the downstreams return a 404.
+
+Future
+^^^^^^
+
+There are loads of cool ways to enchance this such as..
+
+What happens when downstream goes slow..should we timeout?
+Can we do something like GraphQL where the user chooses what fields are returned?
+Can we handle 404 better etc?
+Can we make this not just support a JSON dictionary response?
+

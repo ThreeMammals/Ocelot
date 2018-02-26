@@ -20,6 +20,14 @@ namespace Ocelot.Configuration.Validator
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
 
+            RuleForEach(configuration => configuration.ReRoutes)
+                .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.Aggregates))
+                .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate aggregate");
+
+            RuleForEach(configuration => configuration.Aggregates)
+                .Must((config, aggregateReRoute) => IsNotDuplicateIn(aggregateReRoute, config.Aggregates))
+                .WithMessage((config, aggregate) => $"{nameof(aggregate)} {aggregate.UpstreamPathTemplate} has duplicate aggregate");
+
             RuleForEach(configuration => configuration.Aggregates)
                 .Must((config, aggregateReRoute) => AllReRoutesForAggregateExist(aggregateReRoute, config.ReRoutes))
                 .WithMessage((config, aggregateReRoute) => $"ReRoutes for {nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} either do not exist or do not have correct Key property");
@@ -60,10 +68,13 @@ namespace Ocelot.Configuration.Validator
             return reRoutesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }
 
-        private static bool IsNotDuplicateIn(FileReRoute reRoute, List<FileReRoute> reRoutes)
+        private static bool IsNotDuplicateIn(FileReRoute reRoute, 
+            List<FileReRoute> reRoutes)
         {
             var matchingReRoutes = reRoutes
-                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null)).ToList();
+                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate 
+                            && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null))
+                .ToList();
 
             if(matchingReRoutes.Count == 1)
             {
@@ -84,6 +95,28 @@ namespace Ocelot.Configuration.Validator
             }
 
             return true;
+        }
+
+        private static bool IsNotDuplicateIn(FileReRoute reRoute,
+            List<FileAggregateReRoute> aggregateReRoutes)
+        {
+            var duplicate = aggregateReRoutes
+                .Any(a => a.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
+                            && a.UpstreamHost == reRoute.UpstreamHost
+                            && reRoute.UpstreamHttpMethod.Select(x => x.ToLower()).Contains("get"));
+
+            return !duplicate;
+        }
+
+        private static bool IsNotDuplicateIn(FileAggregateReRoute reRoute,
+            List<FileAggregateReRoute> aggregateReRoutes)
+        {
+            var matchingReRoutes = aggregateReRoutes
+                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
+                            && r.UpstreamHost == reRoute.UpstreamHost)
+                .ToList();
+
+            return matchingReRoutes.Count <= 1;
         }
     }
 }
