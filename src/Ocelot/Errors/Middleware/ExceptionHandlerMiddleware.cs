@@ -79,7 +79,6 @@ namespace Ocelot.Errors.Middleware
                 {
                     //todo fix looking in both places
                     context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
-                    context.RequestId = context.HttpContext.TraceIdentifier;
                     _repo.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
             }
         }

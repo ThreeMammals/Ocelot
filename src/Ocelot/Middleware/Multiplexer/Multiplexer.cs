@@ -24,8 +24,6 @@ namespace Ocelot.Middleware.Multiplexer
                     TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
                     ServiceProviderConfiguration = context.ServiceProviderConfiguration,
                     DownstreamReRoute = reRoute.DownstreamReRoute[i],
-                    RequestId = context.RequestId,
-                    PreviousRequestId = context.PreviousRequestId,
                 };
 
                 tasks[i] = Fire(downstreamContext, next);

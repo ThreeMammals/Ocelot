@@ -75,10 +75,6 @@ namespace Ocelot.Middleware.Multiplexer
             originalContext.DownstreamRequest = finished.DownstreamRequest;
 
             originalContext.DownstreamResponse = finished.DownstreamResponse;
-
-            originalContext.RequestId = finished.RequestId;
-
-            originalContext.PreviousRequestId = finished.PreviousRequestId;
         }
     }
 }

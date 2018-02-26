@@ -59,20 +59,6 @@ namespace Ocelot.RequestId.Middleware
                     //else just add request id
                     _requestScopedDataRepository.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
                 }
-
-                //check if we have previous id
-                var previousRequestIdAgain = context.RequestId;
-                if(!string.IsNullOrEmpty(previousRequestIdAgain))
-                {
-                    //we have a previous request id lets store it and update request id
-                    context.PreviousRequestId = previousRequestIdAgain;
-                    context.RequestId = context.HttpContext.TraceIdentifier;
-                }
-                else
-                {
-                    //else just add request id
-                    context.RequestId = context.HttpContext.TraceIdentifier;
-                }
             }
 
             // set request ID on downstream request, if required

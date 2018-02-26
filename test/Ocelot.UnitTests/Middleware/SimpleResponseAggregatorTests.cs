@@ -50,8 +50,6 @@ namespace Ocelot.UnitTests.Middleware
                 DownstreamReRoute = billDownstreamReRoute,
                 Errors = new List<Error> { new AnyError() },
                 DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("http://www.bbc.co.uk")),
-                RequestId = "123",
-                PreviousRequestId = "321",
             };
 
             var downstreamContexts = new List<DownstreamContext> { billDownstreamContext };
@@ -193,8 +191,6 @@ namespace Ocelot.UnitTests.Middleware
             _upstreamContext.DownstreamRequest.ShouldBe(_downstreamContexts[0].DownstreamRequest);
             _upstreamContext.DownstreamResponse.ShouldBe(_downstreamContexts[0].DownstreamResponse);
             _upstreamContext.Errors.ShouldBe(_downstreamContexts[0].Errors);
-            _upstreamContext.RequestId.ShouldBe(_downstreamContexts[0].RequestId);
-            _upstreamContext.PreviousRequestId.ShouldBe(_downstreamContexts[0].PreviousRequestId);
         }
     }
 }

@@ -147,25 +147,21 @@ namespace Ocelot.UnitTests.RequestId
 
         private void GivenThereIsNoGlobalRequestId()
         {
-            _downstreamContext.RequestId = null;
             _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>(null));
         }
 
         private void GivenTheRequestIdWasSetGlobally()
         {
-            _downstreamContext.RequestId = "alreadyset";
             _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
         }
 
         private void ThenTheRequestIdIsSaved()
         {
-            _downstreamContext.RequestId.ShouldBe(_value);
             _repo.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
         }
 
         private void ThenTheRequestIdIsUpdated()
         {
-            _downstreamContext.RequestId.ShouldBe(_value);
             _repo.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
         }
 
