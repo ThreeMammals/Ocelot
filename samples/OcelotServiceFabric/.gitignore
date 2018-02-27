@@ -12,7 +12,12 @@
 
 # Service fabric
 OcelotApplicationApiGatewayPkg/Code
+OcelotApplication/OcelotApplicationApiGatewayPkg/Code/appsettings.json
+OcelotApplication/OcelotApplicationApiGatewayPkg/Code/configuration.json
+OcelotApplication/OcelotApplicationApiGatewayPkg/Code/runtimes/
 OcelotApplicationServicePkg/Code
+OcelotApplication/OcelotApplicationApiGatewayPkg/Code/web.config
+OcelotApplication/OcelotApplicationServicePkg/Code/runtimes/
 !entryPoint.cmd
 !entryPoint.sh
 
