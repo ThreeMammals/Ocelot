@@ -9,11 +9,25 @@
           "DownstreamScheme": "http",
           "DownstreamHostAndPorts": [
               {
-                  "Host": "localhost",
+                  "Host": "service1.application1",
                   "Port": 31003
               }
           ]        
-      }
+      },
+      {
+        "DownstreamPathTemplate": "/posts",
+        "UpstreamPathTemplate": "/",
+        "UpstreamHttpMethod": [
+            "Get"
+        ],
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+            {
+                "Host": "jsonplaceholder.typicode.com",
+                "Port": 80
+            }
+        ]        
+    }
   ],
   "GlobalConfiguration": {
       "RequestIdKey": "OcRequestId"

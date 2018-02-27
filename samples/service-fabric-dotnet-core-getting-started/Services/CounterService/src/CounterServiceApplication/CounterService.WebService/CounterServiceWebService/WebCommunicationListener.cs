@@ -14,6 +14,11 @@ namespace CounterServiceApp
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.ServiceFabric.Services.Communication.Runtime;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
 
     public class WebCommunicationListener : ICommunicationListener
     {
@@ -54,12 +59,27 @@ namespace CounterServiceApp
             {
                 this.webHost = new WebHostBuilder()
                .UseKestrel()
-               .UseStartup<Startup>()
+               //.UseStartup<Startup>()
                .UseUrls(this.listeningAddress)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config
+                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                        .AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                        .AddJsonFile("configuration.json")
+                        .AddEnvironmentVariables();
+                })
                .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
+                })
+                .ConfigureServices(s => {
+                    s.AddOcelot();
+                })
+                .Configure(a => {
+                    a.UseOcelot().Wait();
                 })
                .Build();
 

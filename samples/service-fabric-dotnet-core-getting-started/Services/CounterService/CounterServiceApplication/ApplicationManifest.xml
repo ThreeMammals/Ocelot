@@ -5,8 +5,8 @@
                      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Parameters>
-    <Parameter Name="CounterService_InstanceCount" DefaultValue="-1" />
-    <Parameter Name="CounterServiceWebService_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="CounterService_InstanceCount" DefaultValue="1" />
+    <Parameter Name="CounterServiceWebService_InstanceCount" DefaultValue="1" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion
        should match the Name and Version attributes of the ServiceManifest element defined in the
@@ -25,7 +25,7 @@
          ServiceFabric PowerShell module.
 
          The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. -->
-    <Service Name="CounterService">
+    <Service Name="CounterService" ServiceDnsName="service1.application1">
       <StatelessService ServiceTypeName="CounterServiceType" InstanceCount="[CounterService_InstanceCount]">
         <SingletonPartition />
       </StatelessService>
