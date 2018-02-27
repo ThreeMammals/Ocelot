@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.DependencyInjection
 {
@@ -30,7 +31,6 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Middleware;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;
-    using Ocelot.Request.Builder;
     using Ocelot.Request.Mapper;
     using Ocelot.Requester;
     using Ocelot.Requester.QoS;
@@ -114,7 +114,6 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
             _services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
-            _services.TryAddSingleton<IRequestCreator, HttpRequestCreator>();
             _services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             _services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
             _services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
@@ -126,7 +125,7 @@ namespace Ocelot.DependencyInjection
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
-            _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();		
             _services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             _services.AddMemoryCache();
             _services.TryAddSingleton<OcelotDiagnosticListener>();
@@ -149,6 +148,8 @@ namespace Ocelot.DependencyInjection
             _provider = new DelegatingHandlerHandlerProvider();
             _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
             _services.AddTransient<ITracingHandler, NoTracingHandler>();
+            _services.TryAddSingleton<IMultiplexer, Multiplexer>();
+            _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)

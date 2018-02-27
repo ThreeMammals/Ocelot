@@ -9,6 +9,6 @@ namespace Ocelot.Requester
         /// Creates the <see cref="HttpClient"/>
         /// </summary>
         /// <param name="request"></param>
-        IHttpClient Create(Request.Request request);
+        IHttpClient Create(DownstreamReRoute request);
     }
 }

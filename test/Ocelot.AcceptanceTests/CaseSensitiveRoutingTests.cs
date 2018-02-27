@@ -36,7 +36,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -46,7 +46,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -69,7 +69,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -80,7 +80,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -103,7 +103,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -114,7 +114,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -137,7 +137,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -148,7 +148,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -171,7 +171,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -182,7 +182,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -205,7 +205,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51877,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -216,7 +216,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51877", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))

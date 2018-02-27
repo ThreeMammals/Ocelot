@@ -1,11 +1,10 @@
-﻿namespace Ocelot.UnitTests.RateLimit
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.RateLimit
 {
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
@@ -13,27 +12,51 @@
     using Ocelot.Logging;
     using Ocelot.RateLimit;
     using Ocelot.RateLimit.Middleware;
-    using Ocelot.Responses;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Microsoft.Extensions.Caching.Memory;
+    using System.IO;
 
-    public class ClientRateLimitMiddlewareTests : ServerHostedMiddlewareTest
+
+    public class ClientRateLimitMiddlewareTests
     {
-        private OkResponse<DownstreamRoute> _downstreamRoute;
-        private int responseStatusCode;
+        private int _responseStatusCode;
+        private IRateLimitCounterHandler _rateLimitCounterHandler;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private readonly ClientRateLimitMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
+        private readonly string _url;
 
         public ClientRateLimitMiddlewareTests()
         {
-            GivenTheTestServerIsConfigured();
+            _url = "http://localhost:51879";
+            var cacheEntryOptions = new MemoryCacheOptions();
+            _rateLimitCounterHandler = new MemoryCacheRateLimitCounterHandler(new MemoryCache(cacheEntryOptions));
+            var httpContext = new DefaultHttpContext();
+            _downstreamContext = new DownstreamContext(httpContext);
+            _downstreamContext.HttpContext.Response.Body = new FakeStream();
+
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
+             _next = async (context) => {
+            };
+            _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler);
         }
 
         [Fact]
         public void should_call_middleware_and_ratelimiting()
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
-                 new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule("1s", 100, 3), 429))
+                 new ReRouteBuilder()
+                     .WithDownstreamReRoute(new DownstreamReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
+                             new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
+                         .WithUpstreamHttpMethod(new List<string> { "Get" })
+                         .Build())
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build());
 
@@ -49,8 +72,13 @@
         public void should_call_middleware_withWhitelistClient()
         {
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
-                 new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                     new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new  RateLimitRule( "1s", 100,3),429))
+                 new ReRouteBuilder()
+                     .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                         .WithEnableRateLimiting(true)
+                         .WithRateLimitOptions(
+                             new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new RateLimitRule("1s", 100, 3), 429))
+                         .WithUpstreamHttpMethod(new List<string> { "Get" })
+                         .Build())
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build());
 
@@ -60,31 +88,10 @@
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
-        {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddMemoryCache();
-            services.AddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-            services.AddSingleton(ScopedRepository.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseRateLimiting();
-            app.Run(async context =>
-            {
-                context.Response.StatusCode = 200;
-                await context.Response.WriteAsync("This is ratelimit test");
-            });
-        }
-
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
+            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 
         private void WhenICallTheMiddlewareMultipleTime(int times)
@@ -93,11 +100,12 @@
   
             for (int i = 0; i < times; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
+                _downstreamContext.DownstreamRequest = request;
 
-                var response = Client.SendAsync(request);
-                responseStatusCode = (int)response.Result.StatusCode;
+                _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+                _responseStatusCode = (int)_downstreamContext.HttpContext.Response.StatusCode;
             }
         }
 
@@ -107,22 +115,58 @@
  
             for (int i = 0; i < 10; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod("GET"), Url);
+                var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
+                _downstreamContext.DownstreamRequest = request;
+                _downstreamContext.HttpContext.Request.Headers.TryAdd("ClientId", clientId);
 
-                var response = Client.SendAsync(request);
-                responseStatusCode = (int)response.Result.StatusCode;
+                _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+                _responseStatusCode = (int)_downstreamContext.HttpContext.Response.StatusCode;            
             }
          }      
 
         private void ThenresponseStatusCodeIs429()
         {
-            responseStatusCode.ShouldBe(429);
+            _responseStatusCode.ShouldBe(429);
         }
 
         private void ThenresponseStatusCodeIs200()
         {
-            responseStatusCode.ShouldBe(200);
+            _responseStatusCode.ShouldBe(200);
         }
+    }
+
+    class FakeStream : Stream
+    {
+        public override void Flush()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            //do nothing
+        }
+
+        public override bool CanRead { get; }
+        public override bool CanSeek { get; }
+        public override bool CanWrite => true;
+        public override long Length { get; }
+        public override long Position { get; set; }
     }
 }

@@ -18,13 +18,13 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    :hidden:
    :caption: Features
 
-   features/routing
    features/configuration
+   features/routing
+   features/requestaggregation
    features/servicediscovery
    features/authentication
    features/authorisation
    features/administration
-   features/raft
    features/caching
    features/qualityofservice
    features/headerstransformation 
@@ -35,7 +35,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/middlewareinjection
    features/loadbalancer
    features/delegatinghandlers
-
+   features/raft
 
 .. toctree::
    :maxdepth: 2

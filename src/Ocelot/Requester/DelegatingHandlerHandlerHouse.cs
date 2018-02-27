@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
@@ -17,7 +18,7 @@ namespace Ocelot.Requester
             _housed = new ConcurrentDictionary<string, IDelegatingHandlerHandlerProvider>();
         }
 
-        public Response<IDelegatingHandlerHandlerProvider> Get(Request.Request request)
+        public Response<IDelegatingHandlerHandlerProvider> Get(DownstreamReRoute request)
         {
             try
             {
@@ -28,7 +29,15 @@ namespace Ocelot.Requester
                     return new OkResponse<IDelegatingHandlerHandlerProvider>(provider);
                 }
 
-                provider = _factory.Get(request);
+                //todo - unit test for this
+                var providerResponse = _factory.Get(request);
+
+                if (providerResponse.IsError)
+                {
+                    return new ErrorResponse<IDelegatingHandlerHandlerProvider>(providerResponse.Errors);
+                }
+
+                provider = providerResponse.Data;
                 AddHoused(request.ReRouteKey, provider);
                 return new OkResponse<IDelegatingHandlerHandlerProvider>(provider);
             }

@@ -14,7 +14,7 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": true
+        "UseTracing": false
       }
     },
     {
@@ -99,7 +99,7 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": true
+        "UseTracing": false
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -121,7 +121,7 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": true
+        "UseTracing": false
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,

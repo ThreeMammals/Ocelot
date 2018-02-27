@@ -39,7 +39,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -50,7 +50,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -73,7 +73,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -85,7 +85,7 @@ namespace Ocelot.AcceptanceTests
 
             var requestId = Guid.NewGuid().ToString();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
@@ -108,7 +108,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
 
             var requestId = Guid.NewGuid().ToString();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))

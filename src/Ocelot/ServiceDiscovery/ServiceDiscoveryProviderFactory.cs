@@ -14,7 +14,7 @@ namespace Ocelot.ServiceDiscovery
             _factory = factory;
         }
 
-        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
+        public  IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
         {
             if (reRoute.UseServiceDiscovery)
             {

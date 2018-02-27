@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Net.Http;
+using Ocelot.Configuration;
 
 namespace Ocelot.Requester
 {
@@ -12,16 +13,16 @@ namespace Ocelot.Requester
             _house = house;
         }
 
-        public IHttpClient Create(Request.Request request)
+        public IHttpClient Create(DownstreamReRoute request)
         {
-            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = request.AllowAutoRedirect, UseCookies = request.UseCookieContainer};
+            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = request.HttpHandlerOptions.AllowAutoRedirect, UseCookies = request.HttpHandlerOptions.UseCookieContainer};
             
             var client = new HttpClient(CreateHttpMessageHandler(httpclientHandler, request));                
             
             return new HttpClientWrapper(client);
         }
 
-        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, Request.Request request)
+        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, DownstreamReRoute request)
         {
             var provider = _house.Get(request);
 

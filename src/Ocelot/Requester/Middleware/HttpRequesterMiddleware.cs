@@ -3,42 +3,41 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Threading.Tasks;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester.Middleware
 {
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IHttpRequester _requester;
         private readonly IOcelotLogger _logger;
 
-        public HttpRequesterMiddleware(RequestDelegate next,
+        public HttpRequesterMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IHttpRequester requester, 
-            IRequestScopedDataRepository requestScopedDataRepository
-)
-            :base(requestScopedDataRepository)
+            IHttpRequester requester)
         {
             _next = next;
             _requester = requester;
             _logger = loggerFactory.CreateLogger<HttpRequesterMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
-        { 
-            var response = await _requester.GetResponse(Request);
+        public async Task Invoke(DownstreamContext context)
+        {
+            var response = await _requester.GetResponse(context);
 
             if (response.IsError)
             {
                 _logger.LogDebug("IHttpRequester returned an error, setting pipeline error");
 
-                SetPipelineError(response.Errors);
+                SetPipelineError(context, response.Errors);
                 return;
             }
 
             _logger.LogDebug("setting http response message");
 
-            SetHttpResponseMessageThisRequest(response.Data);
+            context.DownstreamResponse = response.Data;
         }
     }
 }
