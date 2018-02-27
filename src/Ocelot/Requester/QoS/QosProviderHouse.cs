@@ -17,7 +17,7 @@ namespace Ocelot.Requester.QoS
             _qoSProviders = new ConcurrentDictionary<string, IQoSProvider>();
         }
 
-        public Response<IQoSProvider> Get(ReRoute reRoute)
+        public Response<IQoSProvider> Get(DownstreamReRoute reRoute)
         {
             try
             {

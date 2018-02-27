@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File
 {
-    public class FileReRoute
+    public class FileReRoute : IReRoute
     {
         public FileReRoute()
         {
@@ -36,12 +36,13 @@ namespace Ocelot.Configuration.File
         public string ServiceName { get; set; }
         public string DownstreamScheme {get;set;}
         public FileQoSOptions QoSOptions { get; set; }
-        public string LoadBalancer {get;set;}
+        public string LoadBalancer { get;set; }
         public FileRateLimitRule RateLimitOptions { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
-        public bool UseServiceDiscovery {get;set;}
+        public bool UseServiceDiscovery { get;set; }
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
         public string UpstreamHost { get; set; }
+        public string Key { get;set; }
     }
 }

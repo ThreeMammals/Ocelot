@@ -5,6 +5,6 @@ namespace Ocelot.Requester.QoS
 {
     public interface IQoSProviderFactory
     {
-        IQoSProvider Get(ReRoute reRoute);
+        IQoSProvider Get(DownstreamReRoute reRoute);
     }
 }

@@ -27,7 +27,25 @@ namespace Ocelot.UnitTests.Authorization
         {
             this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim("UserType", "registered")
+                    new Claim("UserType", "registered"),
+
+                }))))
+                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+                {
+                    {"UserType", "registered"}
+                }))
+                .When(x => x.WhenICallTheAuthoriser())
+                .Then(x => x.ThenTheUserIsAuthorised())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_authorise_user_multiple_claims_of_same_type()
+        {
+            this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+                {
+                    new Claim("UserType", "guest"),
+                    new Claim("UserType", "registered"),
                 }))))
                 .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {

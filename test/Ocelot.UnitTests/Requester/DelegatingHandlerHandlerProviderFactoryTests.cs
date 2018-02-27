@@ -2,8 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Requester;
+using Ocelot.Requester.QoS;
+using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -14,16 +19,26 @@ namespace Ocelot.UnitTests.Requester
     {
         private readonly DelegatingHandlerHandlerProviderFactory _factory;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Ocelot.Request.Request _request;
-        private IDelegatingHandlerHandlerProvider _provider;
+        private DownstreamReRoute _request;
+        private Response<IDelegatingHandlerHandlerProvider> _provider;
         private readonly Mock<IDelegatingHandlerHandlerProvider> _allRoutesProvider;
+        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
 
         public DelegatingHandlerHandlerProviderFactoryTests()
         {
+            _qosProviderHouse = new Mock<IQosProviderHouse>();
             _allRoutesProvider = new Mock<IDelegatingHandlerHandlerProvider>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object, null);
+            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object, null, _qosProviderHouse.Object);
         }
+
+        private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
+        {
+            _qosProviderHouse
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
+                .Returns(qosProvider);
+        }
+
 
         [Fact]
         public void should_all_from_all_routes_provider_and_qos()
@@ -34,9 +49,11 @@ namespace Ocelot.UnitTests.Requester
                 () => new FakeDelegatingHandler(1)
             };
 
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
-            this.Given(x => GivenTheFollowingRequest(request))
+            this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheAllRoutesProviderReturns(handlers))
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(3))
@@ -48,9 +65,10 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_no_delegates()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), false, null, true, true, "", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
-            this.Given(x => GivenTheFollowingRequest(request))
+            this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheAllRoutesProviderReturns())
                 .When(x => WhenIGet())
                 .Then(x => ThenNoDelegatesAreInTheProvider())
@@ -60,9 +78,11 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_provider_with_qos_delegate()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
 
-            this.Given(x => GivenTheFollowingRequest(request))
+            this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheAllRoutesProviderReturns())
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(1))
@@ -70,9 +90,28 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_error()
+        {
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("").Build();
+
+            this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosProviderHouseReturns(new ErrorResponse<IQoSProvider>(It.IsAny<Error>())))
+                .And(x => GivenTheAllRoutesProviderReturns())
+                .When(x => WhenIGet())
+                .Then(x => ThenAnErrorIsReturned())
+                .BDDfy();
+        }
+
+        private void ThenAnErrorIsReturned()
+        {
+            _provider.IsError.ShouldBeTrue();
+        }
+
         private void ThenTheDelegatesAreAddedCorrectly()
         {
-            var delegates = _provider.Get();
+            var delegates = _provider.Data.Get();
             var del = delegates[0].Invoke();
             var handler = (FakeDelegatingHandler) del;
             handler.Order.ShouldBe(0);
@@ -94,7 +133,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenItIsPolly(int i)
         {
-            var delegates = _provider.Get();
+            var delegates = _provider.Data.Get();
             var del = delegates[i].Invoke();
             del.ShouldBeOfType<PollyCircuitBreakingDelegatingHandler>();
         }
@@ -102,10 +141,10 @@ namespace Ocelot.UnitTests.Requester
         private void ThenThereIsDelegatesInProvider(int count)
         {
             _provider.ShouldNotBeNull();
-            _provider.Get().Count.ShouldBe(count);
+            _provider.Data.Get().Count.ShouldBe(count);
         }
 
-        private void GivenTheFollowingRequest(Ocelot.Request.Request request)
+        private void GivenTheFollowingRequest(DownstreamReRoute request)
         {
             _request = request;
         }
@@ -118,7 +157,7 @@ namespace Ocelot.UnitTests.Requester
         private void ThenNoDelegatesAreInTheProvider()
         {
             _provider.ShouldNotBeNull();
-            _provider.Get().Count.ShouldBe(0);
+            _provider.Data.Get().Count.ShouldBe(0);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.ReRoutes[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()
@@ -83,13 +83,24 @@ namespace Ocelot.UnitTests.Configuration
                 AdministrationPath = administrationPath;
             }
 
-            public List<ReRoute> ReRoutes => new List<ReRoute>
+            public List<ReRoute> ReRoutes
             {
-                new ReRouteBuilder()
-                .WithDownstreamPathTemplate(_downstreamTemplatePath)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-            };
+                get
+                {
+                    var downstreamReRoute = new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate(_downstreamTemplatePath)
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build();
+
+                    return new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> {"Get"})
+                            .Build()
+                    };
+                }
+            }
 
             public string AdministrationPath {get;}
 

@@ -1,13 +1,15 @@
-﻿namespace Ocelot.UnitTests.RequestId
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.RequestId
 {
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Primitives;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Infrastructure.RequestData;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
@@ -19,22 +21,32 @@
     using TestStack.BDDfy;
     using Xunit;
 
-    public class ReRouteRequestIdMiddlewareTests : ServerHostedMiddlewareTest
+    public class ReRouteRequestIdMiddlewareTests
     {
         private readonly HttpRequestMessage _downstreamRequest;
         private Response<DownstreamRoute> _downstreamRoute;
         private string _value;
         private string _key;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private readonly ReRouteRequestIdMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
 
         public ReRouteRequestIdMiddlewareTests()
         {
             _downstreamRequest = new HttpRequestMessage();
-
-            ScopedRepository
-                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
-                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
-
-            GivenTheTestServerIsConfigured();
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<ReRouteRequestIdMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                context.HttpContext.Response.Headers.Add("LSRequestId", context.HttpContext.TraceIdentifier);
+            };
+            _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
+            _downstreamContext.DownstreamRequest = _downstreamRequest;
         }
 
         [Fact]
@@ -42,8 +54,11 @@
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
 
@@ -62,10 +77,13 @@
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenThereIsNoGlobalRequestId())
@@ -79,10 +97,13 @@
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             var requestId = Guid.NewGuid().ToString();
 
@@ -100,10 +121,13 @@
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                .WithDownstreamPathTemplate("any old string")
-                .WithRequestIdKey("LSRequestId")
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .Build());
 
             var requestId = Guid.NewGuid().ToString();
 
@@ -116,67 +140,57 @@
                 .BDDfy();
         }
 
+        private void WhenICallTheMiddleware()
+        {
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+        }
+
         private void GivenThereIsNoGlobalRequestId()
         {
-            ScopedRepository.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>(null));
+            _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>(null));
         }
 
         private void GivenTheRequestIdWasSetGlobally()
         {
-            ScopedRepository.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
+            _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
         }
 
         private void ThenTheRequestIdIsSaved()
         {
-            ScopedRepository.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
         }
 
         private void ThenTheRequestIdIsUpdated()
         {
-            ScopedRepository.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
-        {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(ScopedRepository.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseRequestIdMiddleware();
-
-            app.Run(x =>
-            {
-                x.Response.Headers.Add("LSRequestId", x.TraceIdentifier);
-                return Task.CompletedTask;
-            });
-        }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
+            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
 
         private void GivenTheRequestIdIsAddedToTheRequest(string key, string value)
         {
             _key = key;
             _value = value;
-            Client.DefaultRequestHeaders.TryAddWithoutValidation(_key, _value);
+            _downstreamContext.HttpContext.Request.Headers.TryAdd(_key, _value);
         }
 
         private void ThenTheTraceIdIsAnything()
         {
-            ResponseMessage.Headers.GetValues("LSRequestId").First().ShouldNotBeNullOrEmpty();
+            StringValues value;
+            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out value);
+            value.First().ShouldNotBeNullOrEmpty();
         }
 
         private void ThenTheTraceIdIs(string expected)
         {
-            ResponseMessage.Headers.GetValues("LSRequestId").First().ShouldBe(expected);
+            StringValues value;
+            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out value);
+            value.First().ShouldBe(expected);
         }
     }
 }

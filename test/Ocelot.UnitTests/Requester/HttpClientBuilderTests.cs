@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Shouldly;
@@ -18,7 +20,7 @@ namespace Ocelot.UnitTests.Requester
         private IHttpClientBuilder _builderResult;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
-        private Ocelot.Request.Request _request;
+        private DownstreamReRoute _request;
 
         public HttpClientBuilderTests()
         {
@@ -62,13 +64,16 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequest()
         {
-            _request = new Ocelot.Request.Request(null, false, null, false, false, "", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+
+            _request = reRoute;
         }
 
         private void GivenTheHouseReturns()
         {
             _house
-                .Setup(x => x.Get(It.IsAny<Ocelot.Request.Request>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                 .Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
         }
 

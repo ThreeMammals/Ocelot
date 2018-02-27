@@ -1,7 +1,11 @@
-﻿namespace Ocelot.UnitTests.DownstreamRouteFinder
+﻿using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
+
+namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
@@ -13,22 +17,36 @@
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
+    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
-    public class DownstreamRouteFinderMiddlewareTests : ServerHostedMiddlewareTest
+    public class DownstreamRouteFinderMiddlewareTests
     {
-        private readonly Mock<IDownstreamRouteFinder> _downstreamRouteFinder;
+        private readonly Mock<IDownstreamRouteFinder> _finder;
         private readonly Mock<IOcelotConfigurationProvider> _provider;
         private Response<DownstreamRoute> _downstreamRoute;
         private IOcelotConfiguration _config;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private DownstreamRouteFinderMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
+        private readonly Mock<IMultiplexer> _multiplexer;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
             _provider = new Mock<IOcelotConfigurationProvider>();
-            _downstreamRouteFinder = new Mock<IDownstreamRouteFinder>();
-
-            GivenTheTestServerIsConfigured();
+            _finder = new Mock<IDownstreamRouteFinder>();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<DownstreamRouteFinderMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                //do nothing
+            };
+            _multiplexer = new Mock<IMultiplexer>();
+            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _finder.Object, _provider.Object, _multiplexer.Object);
         }
 
         [Fact]
@@ -36,17 +54,27 @@
         {
             var config = new OcelotConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "");
 
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .Build();
+
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
                 new DownstreamRoute(
                     new List<PlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("any old string")
+                        .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .And(x => GivenTheFollowingConfig(config))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void WhenICallTheMiddleware()
+        {
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetType();
         }
 
         private void GivenTheFollowingConfig(IOcelotConfiguration config)
@@ -57,35 +85,18 @@
                 .ReturnsAsync(new OkResponse<IOcelotConfiguration>(_config));
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
-        {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_downstreamRouteFinder.Object);
-            services.AddSingleton(_provider.Object);
-            services.AddSingleton(ScopedRepository.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseDownstreamRouteFinderMiddleware();
-        }
-
         private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            _downstreamRouteFinder
+            _finder
                 .Setup(x => x.FindDownstreamRoute(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IOcelotConfiguration>(), It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
-            ScopedRepository
-                .Verify(x => x.Add("DownstreamRoute", _downstreamRoute.Data), Times.Once());
-
-            ScopedRepository
-                .Verify(x => x.Add("ServiceProviderConfiguration", _config.ServiceProviderConfiguration), Times.Once());
+            _downstreamContext.TemplatePlaceholderNameAndValues.ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
+            _downstreamContext.ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
         }
     }
 }
