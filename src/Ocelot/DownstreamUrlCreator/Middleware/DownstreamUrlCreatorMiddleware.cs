@@ -5,6 +5,7 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System;
+using System.Linq;
 using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
@@ -40,11 +41,33 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            var uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
+            UriBuilder uriBuilder;
+
+            if (context.DownstreamReRoute.DownstreamScheme == "fabric")
             {
-                Path = dsPath.Data.Value,
-                Scheme = context.DownstreamReRoute.DownstreamScheme
-            };
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set proxyUrl");
+
+                var serviceUri = context.DownstreamReRoute.DownstreamAddresses.First().Host + dsPath.Data.Value;
+
+                var proxyUrl = $"http://localhost:{19081}/{serviceUri}?cmd=instance";
+
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - proxyUrl is {proxyUrl}", proxyUrl);
+
+                var uri = new Uri(proxyUrl);
+
+                uriBuilder = new UriBuilder(uri)
+                {
+                    Scheme = "http"
+                };
+            }
+            else
+            {
+                uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
+                {
+                    Path = dsPath.Data.Value,
+                    Scheme = context.DownstreamReRoute.DownstreamScheme
+                };
+            }
 
             context.DownstreamRequest.RequestUri = uriBuilder.Uri;
 
