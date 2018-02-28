@@ -109,7 +109,7 @@ If you add the following when you register your services Ocelot will attempt to 
 .. code-block:: csharp
 
  services
-    .AddOcelot(Configuration)
+    .AddOcelot()
     .AddStoreOcelotConfigurationInConsul();
 
 You also need to add the following to your configuration.json. This is how Ocelot

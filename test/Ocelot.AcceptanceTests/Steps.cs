@@ -105,6 +105,40 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                    .AddOpenTracing(option =>
+                    {
+                        //this is the url that the butterfly collector server is running on...
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Ocelot";
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
             _webHostBuilder = new WebHostBuilder();

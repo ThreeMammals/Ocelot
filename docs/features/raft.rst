@@ -12,7 +12,7 @@ In order to enable Rafty in Ocelot you must make the following changes to your S
     public virtual void ConfigureServices(IServiceCollection services)
     {
          services
-            .AddOcelot(Configuration)
+            .AddOcelot()
             .AddAdministration("/administration", "secret")
             .AddRafty();
     }
