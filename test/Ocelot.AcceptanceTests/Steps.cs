@@ -26,6 +26,8 @@ using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
 
 namespace Ocelot.AcceptanceTests
 {

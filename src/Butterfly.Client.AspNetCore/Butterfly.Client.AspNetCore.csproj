@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>A Asp.Net Core client for Butterfly.</Description>
+    <AssemblyTitle>Butterfly.Client.AspNetCore</AssemblyTitle>
+    <AssemblyName>Butterfly.Client.AspNetCore</AssemblyName>
+    <PackageId>Butterfly.Client.AspNetCore</PackageId>
+    <PackageTags>OpenTracing;Tracing</PackageTags>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Butterfly.Client\Butterfly.Client.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="0.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" />
+  </ItemGroup>
+</Project>
