@@ -9,6 +9,8 @@ using Ocelot.Configuration.File;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -88,27 +90,34 @@ namespace Ocelot.AcceptanceTests
 
             var butterflyUrl = "http://localhost:9618";
 
-            this.Given(x => GivenServiceOneIsRunning("http://localhost:51885", "/api/values", 200, "Hello from Laura"))
-                .And(x => GivenServiceTwoIsRunning("http://localhost:51886", "/api/values", 200, "Hello from Tom"))
-                .And(x => GivenFakeButterfly(butterflyUrl, 200))
+            this.Given(x => GivenServiceOneIsRunning("http://localhost:51885", "/api/values", 200, "Hello from Laura", butterflyUrl))
+                .And(x => GivenServiceTwoIsRunning("http://localhost:51886", "/api/values", 200, "Hello from Tom", butterflyUrl))
+                //.And(x => GivenFakeButterfly(butterflyUrl, 200))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                // .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
-                // .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                // .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
                 .BDDfy();
         }
 
-        private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+        private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
             _serviceOneBuilder = new WebHostBuilder()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
+                .ConfigureServices(services => {
+                    services.AddButterfly(option =>
+                    {
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Service One";
+                    });
+                })
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
@@ -154,13 +163,20 @@ namespace Ocelot.AcceptanceTests
             _fakeButterfly.Start();
         }
 
-        private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+        private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
             _serviceOneBuilder = new WebHostBuilder()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
+                .ConfigureServices(services => {
+                    services.AddButterfly(option =>
+                    {
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Service Two";
+                    });
+                })
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
@@ -195,6 +211,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceOneBuilder?.Dispose();
             _serviceTwoBuilder?.Dispose();
+            _fakeButterfly?.Dispose();
             _steps.Dispose();
         }
     }
