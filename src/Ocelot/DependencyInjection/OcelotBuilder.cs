@@ -146,8 +146,7 @@ namespace Ocelot.DependencyInjection
 
             //these get picked out later and added to http request
             _provider = new DelegatingHandlerHandlerProvider();
-            _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);
-            _services.AddTransient<ITracingHandler, NoTracingHandler>();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);            
             _services.TryAddSingleton<IMultiplexer, Multiplexer>();
             _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         }
@@ -192,7 +191,7 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            _services.AddTransient<ITracingHandler, OcelotHttpTracingHandler>();
+            _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
             _services.AddButterfly(settings);   
             return this;
         }

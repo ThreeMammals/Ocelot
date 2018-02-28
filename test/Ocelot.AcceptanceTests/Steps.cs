@@ -133,6 +133,13 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(app =>
                 {
+                    app.Use(async (context, next) =>
+                    {
+                        var intAddress = BitConverter.ToInt32(IPAddress.Parse("127.0.0.1").GetAddressBytes(), 0);
+                        var ipAddress = new IPAddress(BitConverter.GetBytes(intAddress));
+                        context.Connection.RemoteIpAddress = ipAddress;
+                        await next.Invoke();
+                    });
                     app.UseOcelot().Wait();
                 });
 
@@ -140,6 +147,11 @@ namespace Ocelot.AcceptanceTests
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
+/*
+        public void GivenIHaveAddedXForwardedForHeader(string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Forwarded-For", value);
+        }*/
 
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
