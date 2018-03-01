@@ -1,3 +1,4 @@
+using Butterfly.Client.Tracing;
 using Microsoft.Extensions.Options;
 using Ocelot.Middleware.Multiplexer;
 
@@ -149,6 +150,11 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);            
             _services.TryAddSingleton<IMultiplexer, Multiplexer>();
             _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
+            _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
+
+            // We add this here so that we can always inject something into the factory for IoC..
+            _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
+
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -191,7 +197,8 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
+            // Earlier we add FakeServiceTracer and need to remove it here before we add butterfly
+            _services.RemoveAll<IServiceTracer>();
             _services.AddButterfly(settings);   
             return this;
         }

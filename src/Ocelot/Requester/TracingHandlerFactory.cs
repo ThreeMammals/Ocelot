@@ -1,4 +1,5 @@
 using Butterfly.Client.Tracing;
+using Butterfly.OpenTracing;
 
 namespace Ocelot.Requester
 {
@@ -14,6 +15,18 @@ namespace Ocelot.Requester
         public ITracingHandler Get()
         {
             return new OcelotHttpTracingHandler(_tracer);
+        }
+    }
+
+    public class FakeServiceTracer : IServiceTracer
+    {
+        public ITracer Tracer { get; }
+        public string ServiceName { get; }
+        public string Environment { get; }
+        public string Identity { get; }
+        public ISpan Start(ISpanBuilder spanBuilder)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

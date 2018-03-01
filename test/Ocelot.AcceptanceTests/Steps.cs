@@ -135,9 +135,6 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.Use(async (context, next) =>
                     {
-                        var intAddress = BitConverter.ToInt32(IPAddress.Parse("127.0.0.1").GetAddressBytes(), 0);
-                        var ipAddress = new IPAddress(BitConverter.GetBytes(intAddress));
-                        context.Connection.RemoteIpAddress = ipAddress;
                         await next.Invoke();
                     });
                     app.UseOcelot().Wait();

@@ -10,7 +10,6 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using Butterfly.Client.AspNetCore;
-using Microsoft.Extensions.DependencyInjection;
 using static Rafty.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
@@ -31,7 +30,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_simple_url()
+        public void should_forward_tracing_information_from_ocelot_and_downstream_services()
         {
             var configuration = new FileConfiguration
             {
@@ -46,7 +45,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51885,
+                                    Port = 51887,
                                 }
                             },
                             UpstreamPathTemplate = "/api001/values",
@@ -71,7 +70,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51886,
+                                    Port = 51888,
                                 }
                             },
                             UpstreamPathTemplate = "/api002/values",
@@ -92,9 +91,9 @@ namespace Ocelot.AcceptanceTests
 
             var butterflyUrl = "http://localhost:9618";
 
-            this.Given(x => GivenServiceOneIsRunning("http://localhost:51885", "/api/values", 200, "Hello from Laura", butterflyUrl))
-                .And(x => GivenServiceTwoIsRunning("http://localhost:51886", "/api/values", 200, "Hello from Tom", butterflyUrl))
-                .And(x => GivenFakeButterfly(butterflyUrl, 200))
+            this.Given(x => GivenServiceOneIsRunning("http://localhost:51887", "/api/values", 200, "Hello from Laura", butterflyUrl))
+                .And(x => GivenServiceTwoIsRunning("http://localhost:51888", "/api/values", 200, "Hello from Tom", butterflyUrl))
+                .And(x => GivenFakeButterfly(butterflyUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
@@ -106,7 +105,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
 
 
-            var commandOnAllStateMachines = WaitFor(5000).Until(() => _butterflyCalled == 2);
+            var commandOnAllStateMachines = WaitFor(5000).Until(() => _butterflyCalled == 4);
 
             commandOnAllStateMachines.ShouldBeTrue();
         }
@@ -119,11 +118,11 @@ namespace Ocelot.AcceptanceTests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .ConfigureServices(services => {
-                    services.AddMvc();
                     services.AddButterfly(option =>
                     {
                         option.CollectorUrl = butterflyUrl;
                         option.Service = "Service One";
+                        option.IgnoredRoutesRegexPatterns = new string[0];
                     });
                 })
                 .Configure(app =>
@@ -150,7 +149,7 @@ namespace Ocelot.AcceptanceTests
             _serviceOneBuilder.Start();
         }
 
-        private void GivenFakeButterfly(string baseUrl, int statusCode)
+        private void GivenFakeButterfly(string baseUrl)
         {
             _fakeButterfly = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -172,7 +171,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
-            _serviceOneBuilder = new WebHostBuilder()
+            _serviceTwoBuilder = new WebHostBuilder()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -182,6 +181,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         option.CollectorUrl = butterflyUrl;
                         option.Service = "Service Two";
+                        option.IgnoredRoutesRegexPatterns = new string[0];
                     });
                 })
                 .Configure(app =>
@@ -205,7 +205,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _serviceOneBuilder.Start();
+            _serviceTwoBuilder.Start();
         }
 
         internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
