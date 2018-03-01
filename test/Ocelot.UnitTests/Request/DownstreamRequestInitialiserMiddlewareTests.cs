@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Request
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Request
 {
     using System.Net.Http;
     using Microsoft.AspNetCore.Http;
@@ -10,6 +12,8 @@
     using TestStack.BDDfy;
     using Xunit;
     using Ocelot.Responses;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Shouldly;
 
     public class DownstreamRequestInitialiserMiddlewareTests
     {
@@ -19,17 +23,16 @@
 
         readonly Mock<HttpRequest> _httpRequest;
 
-        readonly Mock<RequestDelegate> _next;
+        readonly Mock<OcelotRequestDelegate> _next;
 
         readonly Mock<IRequestMapper> _requestMapper;
-
-        readonly Mock<IRequestScopedDataRepository> _repo;
 
         readonly Mock<IOcelotLoggerFactory> _loggerFactory;
 
         readonly Mock<IOcelotLogger> _logger;
 
         Response<HttpRequestMessage> _mappedRequest;
+        private DownstreamContext _downstreamContext;
 
         public DownstreamRequestInitialiserMiddlewareTests()
         {
@@ -37,8 +40,7 @@
             _httpContext = new Mock<HttpContext>();
             _httpRequest = new Mock<HttpRequest>();
             _requestMapper = new Mock<IRequestMapper>();
-            _repo = new Mock<IRequestScopedDataRepository>();
-            _next = new Mock<RequestDelegate>();
+            _next = new Mock<OcelotRequestDelegate>();
             _logger = new Mock<IOcelotLogger>();
 
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -49,8 +51,9 @@
             _middleware = new DownstreamRequestInitialiserMiddleware(
                 _next.Object, 
                 _loggerFactory.Object, 
-                _repo.Object, 
                 _requestMapper.Object);
+
+            _downstreamContext = new DownstreamContext(_httpContext.Object);
         }
 
         [Fact]
@@ -104,7 +107,7 @@
 
         private void WhenTheMiddlewareIsInvoked()
         {
-           _middleware.Invoke(_httpContext.Object).GetAwaiter().GetResult();
+           _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
@@ -114,29 +117,28 @@
 
         private void ThenTheDownstreamRequestIsStored()
         {
-            _repo.Verify(r => r.Add("DownstreamRequest", _mappedRequest.Data), Times.Once);
+            _downstreamContext.DownstreamRequest.ShouldNotBeNull();
         }
 
         private void ThenTheDownstreamRequestIsNotStored()
         {
-            _repo.Verify(r => r.Add("DownstreamRequest", It.IsAny<HttpRequestMessage>()), Times.Never);
+            _downstreamContext.DownstreamRequest.ShouldBeNull();
         }
 
         private void ThenAPipelineErrorIsStored()
         {
-            _repo.Verify(r => r.Add("OcelotMiddlewareError", true), Times.Once);
-            _repo.Verify(r => r.Add("OcelotMiddlewareErrors", _mappedRequest.Errors), Times.Once);
+            _downstreamContext.IsError.ShouldBeTrue();
+            _downstreamContext.Errors.ShouldBe(_mappedRequest.Errors);
         }
 
         private void ThenTheNextMiddlewareIsInvoked()
         {
-            _next.Verify(n => n(_httpContext.Object), Times.Once);
+            _next.Verify(n => n(_downstreamContext), Times.Once);
         }
 
         private void ThenTheNextMiddlewareIsNotInvoked()
         {
-            _next.Verify(n => n(It.IsAny<HttpContext>()), Times.Never);
+            _next.Verify(n => n(It.IsAny<DownstreamContext>()), Times.Never);
         }
-
     }
 }

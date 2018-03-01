@@ -63,7 +63,7 @@ If you want to authenticate using JWT tokens maybe from a provider like Auth0 yo
                 x.Audience = "test";
             });
 
-        services.AddOcelot(Configuration);
+        services.AddOcelot();
     }
 
 Then map the authentication provider key to a ReRoute in your configuration e.g.
@@ -111,7 +111,7 @@ In order to use IdentityServer bearer tokens register your IdentityServer servic
         services.AddAuthentication()
             .AddIdentityServerAuthentication(authenticationProviderKey, options);
 
-        services.AddOcelot(Configuration);
+        services.AddOcelot();
     }
 
 Then map the authentication provider key to a ReRoute in your configuration e.g.

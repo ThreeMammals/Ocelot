@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.Headers.Middleware
 {
     public static class HttpRequestHeadersBuilderMiddlewareExtensions
     {
-        public static IApplicationBuilder UseHttpRequestHeadersBuilderMiddleware(this IApplicationBuilder builder)
+        public static IOcelotPipelineBuilder UseHttpRequestHeadersBuilderMiddleware(this IOcelotPipelineBuilder builder)
         {
             return builder.UseMiddleware<HttpRequestHeadersBuilderMiddleware>();
         }

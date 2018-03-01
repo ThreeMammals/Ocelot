@@ -6,6 +6,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 {
     public interface ILoadBalancerHouse
     {
-        Task<Response<ILoadBalancer>> Get(ReRoute reRoute, ServiceProviderConfiguration config);
+        Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config);
     }
 }

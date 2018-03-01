@@ -21,7 +21,7 @@ All you need to do to hook into your own IdentityServer is add the following to 
             };
 
         services
-            .AddOcelot(Configuration)
+            .AddOcelot()
             .AddAdministration("/administration", options);
     }
 
@@ -51,7 +51,7 @@ The secret is the client secret that Ocelot's internal IdentityServer will use t
     public virtual void ConfigureServices(IServiceCollection services)
     {
         services
-            .AddOcelot(Configuration)
+            .AddOcelot()
             .AddAdministration("/administration", "secret");
     }
 

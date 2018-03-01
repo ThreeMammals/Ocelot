@@ -25,25 +25,24 @@ namespace Ocelot.ManualTest
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {
-
-                    s.AddAuthentication()
+                     s.AddAuthentication()
                         .AddJwtBearer("TestKey", x =>
                         {
                             x.Authority = "test";
                             x.Audience = "test";
                         });
 
-                    s.AddOcelot()
-                        .AddCacheManager(x =>
-                        {
-                            x.WithDictionaryHandle();
-                        })
-                        .AddOpenTracing(option =>
-                        {
-                            option.CollectorUrl = "http://localhost:9618";
-                            option.Service = "Ocelot.ManualTest";
-                        })
-                        .AddAdministration("/administration", "secret");
+                     s.AddOcelot()
+                         .AddCacheManager(x =>
+                         {
+                             x.WithDictionaryHandle();
+                         })
+                         .AddOpenTracing(option =>
+                         {
+                             option.CollectorUrl = "http://localhost:9618";
+                             option.Service = "Ocelot.ManualTest";
+                         })
+                         .AddAdministration("/administration", "secret");
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

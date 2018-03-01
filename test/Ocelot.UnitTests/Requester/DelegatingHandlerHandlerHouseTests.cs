@@ -1,6 +1,9 @@
 using System;
 using System.Net.Http;
 using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Errors;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Shouldly;
@@ -14,7 +17,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly DelegatingHandlerHandlerHouse _house;
         private Mock<IDelegatingHandlerHandlerProviderFactory> _factory;
         private readonly Mock<IDelegatingHandlerHandlerProvider> _provider;
-        private Ocelot.Request.Request _request;
+        private DownstreamReRoute _request;
         private Response<IDelegatingHandlerHandlerProvider> _result;
 
         public DelegatingHandlerHandlerHouseTests()
@@ -27,9 +30,10 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_create_and_store_provider()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
-            this.Given(x => GivenTheRequest(request))
+            this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderReturns())
                 .When(x => WhenIGet())
                 .Then(x => ThenTheFactoryIsCalled(1))
@@ -40,9 +44,10 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_get_provider()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
-            this.Given(x => GivenTheRequest(request))
+            this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderReturns())
                 .And(x => WhenIGet())
                 .And(x => GivenTheFactoryIsCleared())
@@ -55,13 +60,32 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error()
         {
-            var request = new Ocelot.Request.Request(new HttpRequestMessage(), true, null, true, true, "key", false);
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
 
-            this.Given(x => GivenTheRequest(request))
+            this.Given(x => GivenTheRequest(reRoute))
                 .And(x => GivenTheProviderThrows())
                 .When(x => WhenIGet())
                 .And(x => ThenAnErrorIsReturned())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_factory_errors()
+        {
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(true)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false)).WithReRouteKey("key").Build();
+
+            this.Given(x => GivenTheRequest(reRoute))
+                .And(x => GivenTheProviderReturnsError())
+                .When(x => WhenIGet())
+                .Then(x => ThenAnUnknownErrorIsReturned())
+                .BDDfy();
+        }
+
+        private void ThenAnUnknownErrorIsReturned()
+        {
+            _result.IsError.ShouldBeTrue();
         }
 
         private void ThenAnErrorIsReturned()
@@ -72,7 +96,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheProviderThrows()
         {
-            _factory.Setup(x => x.Get(It.IsAny<Ocelot.Request.Request>())).Throws<Exception>();
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Throws<Exception>();
         }
 
         private void GivenTheFactoryIsCleared()
@@ -90,14 +114,19 @@ namespace Ocelot.UnitTests.Requester
             _result = _house.Get(_request);
         }
 
-        private void GivenTheRequest(Ocelot.Request.Request request)
+        private void GivenTheRequest(DownstreamReRoute request)
         {
             _request = request;
         }
 
         private void GivenTheProviderReturns()
         {
-            _factory.Setup(x => x.Get(It.IsAny<Ocelot.Request.Request>())).Returns(_provider.Object);
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
+        }
+
+        private void GivenTheProviderReturnsError()
+        {
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new ErrorResponse<IDelegatingHandlerHandlerProvider>(It.IsAny<Error>()));
         }
 
         private void ThenTheFactoryIsCalled(int times)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -11,28 +12,26 @@ namespace Ocelot.LoadBalancer.Middleware
 {
     public class LoadBalancingMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
 
-        public LoadBalancingMiddleware(RequestDelegate next,
+        public LoadBalancingMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository requestScopedDataRepository,
             ILoadBalancerHouse loadBalancerHouse) 
-            : base(requestScopedDataRepository)
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
+            _logger = loggerFactory.CreateLogger<LoadBalancingMiddleware>();
             _loadBalancerHouse = loadBalancerHouse;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            var loadBalancer = await _loadBalancerHouse.Get(DownstreamRoute.ReRoute, ServiceProviderConfiguration);
+            var loadBalancer = await _loadBalancerHouse.Get(context.DownstreamReRoute, context.ServiceProviderConfiguration);
             if(loadBalancer.IsError)
             {
                 _logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
-                SetPipelineError(loadBalancer.Errors);
+                SetPipelineError(context, loadBalancer.Errors);
                 return;
             }
 
@@ -40,11 +39,11 @@ namespace Ocelot.LoadBalancer.Middleware
             if(hostAndPort.IsError)
             {
                 _logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
-                SetPipelineError(hostAndPort.Errors);
+                SetPipelineError(context, hostAndPort.Errors);
                 return;
             }
 
-            var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri);
+            var uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri);
 
             uriBuilder.Host = hostAndPort.Data.DownstreamHost;
 
@@ -53,7 +52,7 @@ namespace Ocelot.LoadBalancer.Middleware
                 uriBuilder.Port = hostAndPort.Data.DownstreamPort;
             }
 
-            DownstreamRequest.RequestUri = uriBuilder.Uri;
+            context.DownstreamRequest.RequestUri = uriBuilder.Uri;
 
             try
             {

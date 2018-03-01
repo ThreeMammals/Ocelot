@@ -7,22 +7,21 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.IO;
+using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.Cache.Middleware
 {
     public class OutputCacheMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IOcelotCache<CachedResponse> _outputCache;
         private readonly IRegionCreator _regionCreator;
 
-        public OutputCacheMiddleware(RequestDelegate next,
+        public OutputCacheMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository scopedDataRepository,
             IOcelotCache<CachedResponse> outputCache,
             IRegionCreator regionCreator)
-            : base(scopedDataRepository)
         {
             _next = next;
             _outputCache = outputCache;
@@ -30,26 +29,26 @@ namespace Ocelot.Cache.Middleware
             _regionCreator = regionCreator;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            if (!DownstreamRoute.ReRoute.IsCached)
+            if (!context.DownstreamReRoute.IsCached)
             {
                 await _next.Invoke(context);
                 return;
             }
 
-            var downstreamUrlKey = $"{DownstreamRequest.Method.Method}-{DownstreamRequest.RequestUri.OriginalString}";
+            var downstreamUrlKey = $"{context.DownstreamRequest.Method.Method}-{context.DownstreamRequest.RequestUri.OriginalString}";
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
 
-            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downstreamUrlKey, context.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
                 _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
 
                 var response = CreateHttpResponseMessage(cached);
-                SetHttpResponseMessageThisRequest(response);
+                SetHttpResponseMessageThisRequest(context, response);
 
                 _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
 
@@ -60,18 +59,23 @@ namespace Ocelot.Cache.Middleware
 
             await _next.Invoke(context);
 
-            if (PipelineError)
+            if (context.IsError)
             {
                 _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
 
                 return;
             }
 
-            cached = await CreateCachedResponse(HttpResponseMessage);
+            cached = await CreateCachedResponse(context.DownstreamResponse);
 
-            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
+            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
 
             _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
+        }
+
+        private void SetHttpResponseMessageThisRequest(DownstreamContext context, HttpResponseMessage response)
+        {
+            context.DownstreamResponse = response;
         }
 
         internal HttpResponseMessage CreateHttpResponseMessage(CachedResponse cached)

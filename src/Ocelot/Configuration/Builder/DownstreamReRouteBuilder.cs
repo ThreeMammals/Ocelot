@@ -1,0 +1,251 @@
+using System.Collections.Generic;
+using System.Net.Http;
+using Ocelot.Values;
+using System.Linq;
+
+namespace Ocelot.Configuration.Builder
+{
+    public class DownstreamReRouteBuilder
+    {
+        private AuthenticationOptions _authenticationOptions;
+        private string _reRouteKey;
+        private string _downstreamPathTemplate;
+        private string _upstreamTemplate;
+        private UpstreamPathTemplate _upstreamTemplatePattern;
+        private List<HttpMethod> _upstreamHttpMethod;
+        private bool _isAuthenticated;
+        private List<ClaimToThing> _claimsToHeaders;
+        private List<ClaimToThing> _claimToClaims;
+        private Dictionary<string, string> _routeClaimRequirement;
+        private bool _isAuthorised;
+        private List<ClaimToThing> _claimToQueries;
+        private string _requestIdHeaderKey;
+        private bool _isCached;
+        private CacheOptions _fileCacheOptions;
+        private string _downstreamScheme;
+        private string _loadBalancer;
+        private bool _useQos;
+        private QoSOptions _qosOptions;
+        private HttpHandlerOptions _httpHandlerOptions;
+        private bool _enableRateLimiting;
+        private RateLimitOptions _rateLimitOptions;
+        private bool _useServiceDiscovery;
+        private string _serviceName;
+        private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
+        private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
+        private readonly List<DownstreamHostAndPort> _downstreamAddresses;
+        private string _upstreamHost;
+        private string _key;
+
+        public DownstreamReRouteBuilder()
+        {
+            _downstreamAddresses = new List<DownstreamHostAndPort>();
+        }
+
+        public DownstreamReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
+        {
+            _downstreamAddresses.AddRange(downstreamAddresses);
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamHost(string upstreamAddresses)
+        {
+            _upstreamHost = upstreamAddresses;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithLoadBalancer(string loadBalancer)
+        {
+          _loadBalancer = loadBalancer;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithDownstreamScheme(string downstreamScheme)
+        {
+            _downstreamScheme = downstreamScheme;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithDownstreamPathTemplate(string input)
+        {
+            _downstreamPathTemplate = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamPathTemplate(string input)
+        {
+            _upstreamTemplate = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
+        {
+            _upstreamTemplatePattern = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamHttpMethod(List<string> input)
+        {
+            _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithIsAuthenticated(bool input)
+        {
+            _isAuthenticated = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithIsAuthorised(bool input)
+        {
+            _isAuthorised = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithRequestIdKey(string input)
+        {
+            _requestIdHeaderKey = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithClaimsToHeaders(List<ClaimToThing> input)
+        {
+            _claimsToHeaders = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithClaimsToClaims(List<ClaimToThing> input)
+        {
+            _claimToClaims = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithRouteClaimsRequirement(Dictionary<string, string> input)
+        {
+            _routeClaimRequirement = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithClaimsToQueries(List<ClaimToThing> input)
+        {
+            _claimToQueries = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithIsCached(bool input)
+        {
+            _isCached = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithCacheOptions(CacheOptions input)
+        {
+            _fileCacheOptions = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithIsQos(bool input)
+        {
+            _useQos = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithQosOptions(QoSOptions input)
+        {
+            _qosOptions = input;
+            return this;
+        }
+       
+        public DownstreamReRouteBuilder WithReRouteKey(string reRouteKey)
+        {
+            _reRouteKey = reRouteKey;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithAuthenticationOptions(AuthenticationOptions authenticationOptions)
+        {
+            _authenticationOptions = authenticationOptions;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithEnableRateLimiting(bool input)
+        {
+            _enableRateLimiting = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithRateLimitOptions(RateLimitOptions input)
+        {
+            _rateLimitOptions = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
+        {
+            _httpHandlerOptions = input;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
+        {
+            _useServiceDiscovery = useServiceDiscovery;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithServiceName(string serviceName)
+        {
+            _serviceName = serviceName;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamHeaderFindAndReplace(List<HeaderFindAndReplace> upstreamHeaderFindAndReplace)
+        {
+            _upstreamHeaderFindAndReplace = upstreamHeaderFindAndReplace;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithDownstreamHeaderFindAndReplace(List<HeaderFindAndReplace> downstreamHeaderFindAndReplace)
+        {
+            _downstreamHeaderFindAndReplace = downstreamHeaderFindAndReplace;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithKey(string key)
+        {
+            _key = key;
+            return this;
+        }
+
+
+        public DownstreamReRoute Build()
+        {
+            return new DownstreamReRoute(
+                _key,
+                new PathTemplate(_upstreamTemplate),
+                _upstreamHeaderFindAndReplace,
+                _downstreamHeaderFindAndReplace, 
+                _downstreamAddresses,
+                _serviceName, 
+                _httpHandlerOptions, 
+                _useServiceDiscovery, 
+                _enableRateLimiting, 
+                _useQos, 
+                _qosOptions,
+                _downstreamScheme, 
+                _requestIdHeaderKey, 
+                _isCached, 
+                _fileCacheOptions, 
+                _loadBalancer, 
+                _rateLimitOptions,
+                _routeClaimRequirement, 
+                _claimToQueries, 
+                _claimsToHeaders, 
+                _claimToClaims,
+                _isAuthenticated, 
+                _isAuthorised, 
+                _authenticationOptions, 
+                new PathTemplate(_downstreamPathTemplate),
+                _reRouteKey);
+        }
+    }
+}

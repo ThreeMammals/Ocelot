@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.QueryStrings
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.QueryStrings
 {
     using System.Collections.Generic;
     using System.Net.Http;
@@ -16,22 +18,30 @@
     using Xunit;
     using System.Security.Claims;
     using Microsoft.AspNetCore.Builder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Microsoft.AspNetCore.Http;
 
-    public class QueryStringBuilderMiddlewareTests : ServerHostedMiddlewareTest
+    public class QueryStringBuilderMiddlewareTests
     {
         private readonly Mock<IAddQueriesToRequest> _addQueries;
-        private readonly HttpRequestMessage _downstreamRequest;
-        private Response<DownstreamRoute> _downstreamRoute;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private QueryStringBuilderMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public QueryStringBuilderMiddlewareTests()
         {
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<QueryStringBuilderMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                //do nothing
+            };
             _addQueries = new Mock<IAddQueriesToRequest>();
-
-            _downstreamRequest = new HttpRequestMessage();
-            ScopedRepository.Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
-                .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
-
-            GivenTheTestServerIsConfigured();
+            _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 
         [Fact]
@@ -39,11 +49,14 @@
         {
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToQueries(new List<ClaimToThing>
-                    {
-                        new ClaimToThing("UserId", "Subject", "", 0)
-                    })
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithClaimsToQueries(new List<ClaimToThing>
+                        {
+                            new ClaimToThing("UserId", "Subject", "", 0)
+                        })
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
@@ -54,17 +67,9 @@
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        private void WhenICallTheMiddleware()
         {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_addQueries.Object);
-            services.AddSingleton(ScopedRepository.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseQueryStringBuilderMiddleware();
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheAddHeadersToRequestReturnsOk()
@@ -83,15 +88,13 @@
                 .Verify(x => x.SetQueriesOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<Claim>>(),
-                    _downstreamRequest), Times.Once);
+                    _downstreamContext.DownstreamRequest), Times.Once);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
+            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
         }
     }
 }

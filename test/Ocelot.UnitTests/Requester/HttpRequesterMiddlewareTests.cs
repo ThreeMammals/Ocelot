@@ -1,81 +1,73 @@
+using Ocelot.Configuration.Builder;
+using Ocelot.Middleware;
+
 namespace Ocelot.UnitTests.Requester
 {
+    using Microsoft.AspNetCore.Http;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Logging;
     using Ocelot.Requester;
     using Ocelot.Requester.Middleware;
-    using Ocelot.Requester.QoS;
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
+    using Shouldly;
 
-    public class HttpRequesterMiddlewareTests : ServerHostedMiddlewareTest
+    public class HttpRequesterMiddlewareTests
     {
         private readonly Mock<IHttpRequester> _requester;
         private OkResponse<HttpResponseMessage> _response;
-        private OkResponse<Ocelot.Request.Request> _request;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private readonly HttpRequesterMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public HttpRequesterMiddlewareTests()
         {
             _requester = new Mock<IHttpRequester>();
-
-            GivenTheTestServerIsConfigured();
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<HttpRequesterMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                //do nothing
+            };
+            _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object);
         }
 
         [Fact]
-        public void should_call_scoped_data_repository_correctly()
+        public void should_call_services_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider(), false, false, "", false)))
+            this.Given(x => x.GivenTheRequestIs())
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
-                .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedRepoIsCalledCorrectly())
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        private void WhenICallTheMiddleware()
         {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_requester.Object);
-            services.AddSingleton(ScopedRepository.Object);
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        private void GivenTheRequestIs()
         {
-            app.UseHttpRequesterMiddleware();
-        }
-
-        private void GivenTheRequestIs(Ocelot.Request.Request request)
-        {
-            _request = new OkResponse<Ocelot.Request.Request>(request);
-            ScopedRepository
-                .Setup(x => x.Get<Ocelot.Request.Request>(It.IsAny<string>()))
-                .Returns(_request);
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext.DownstreamReRoute = new DownstreamReRouteBuilder().Build();
         }
 
         private void GivenTheRequesterReturns(HttpResponseMessage response)
         {
             _response = new OkResponse<HttpResponseMessage>(response);
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Request.Request>()))
+                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>()))
                 .ReturnsAsync(_response);
-        }
-
-        private void GivenTheScopedRepoReturns()
-        {
-            ScopedRepository
-                .Setup(x => x.Add(It.IsAny<string>(), _response.Data))
-                .Returns(new OkResponse());
         }
 
         private void ThenTheScopedRepoIsCalledCorrectly()
         {
-            ScopedRepository
-                .Verify(x => x.Add("HttpResponseMessage", _response.Data), Times.Once());
+            _downstreamContext.DownstreamResponse.ShouldBe(_response.Data);
         }
     }
 }

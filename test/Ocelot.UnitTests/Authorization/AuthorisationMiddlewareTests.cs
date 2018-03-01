@@ -1,9 +1,9 @@
-﻿namespace Ocelot.UnitTests.Authorization
+﻿using Ocelot.Middleware;
+
+namespace Ocelot.UnitTests.Authorization
 {
     using System.Collections.Generic;
     using System.Security.Claims;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Authorisation;
     using Ocelot.Authorisation.Middleware;
@@ -14,55 +14,57 @@
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Configuration;
 
-    public class AuthorisationMiddlewareTests : ServerHostedMiddlewareTest
+    public class AuthorisationMiddlewareTests
     {
         private readonly Mock<IClaimsAuthoriser> _authService;
         private readonly Mock<IScopesAuthoriser> _authScopesService;
-        private OkResponse<DownstreamRoute> _downstreamRoute;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private readonly AuthorisationMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public AuthorisationMiddlewareTests()
         {
             _authService = new Mock<IClaimsAuthoriser>();
             _authScopesService = new Mock<IScopesAuthoriser>();
-
-            GivenTheTestServerIsConfigured();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                //do nothing
+            };
+            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
         }
 
         [Fact]
         public void should_call_authorisation_service()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new DownstreamRoute(new List<PlaceholderNameAndValue>(), 
-                new ReRouteBuilder()
+            this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(), 
+                new DownstreamReRouteBuilder()
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())))
+                    .Build()))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
                 .BDDfy();
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        private void WhenICallTheMiddleware()
         {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(_authService.Object);
-            services.AddSingleton(_authScopesService.Object);
-            services.AddSingleton(ScopedRepository.Object);
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)
         {
-            app.UseAuthorisationMiddleware();
-        }
-
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
-        {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+            _downstreamContext.TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;
+            _downstreamContext.DownstreamReRoute = downstreamReRoute;
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

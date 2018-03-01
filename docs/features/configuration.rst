@@ -78,6 +78,29 @@ Set it true if the request should automatically follow redirection responses fro
 - _UseCookieContainer_ is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests.
 The default value is true.
 
+Multiple environments
+^^^^^^^^^^^^^^^^^^^^^
+
+Like any other asp.net core project Ocelot supports configuration file names such as configuration.dev.json, configuration.test.json etc. In order to implement this add the following 
+to you 
+
+.. code-block:: csharp
+
+        .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config
+                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                        .AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                        .AddJsonFile("configuration.json")
+                        .AddJsonFile($"configuration.{hostingContext.HostingEnvironment.EnvironmentName}.json")
+                        .AddEnvironmentVariables();
+                })
+
+Ocelot should now use the environment specific configuration and fall back to configuration.json if there isnt one.
+
+You also need to set the corresponding environment variable which is ASPNETCORE_ENVIRONMENT. More info on this can be found in the `asp.net core docs <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
+
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -86,7 +109,7 @@ If you add the following when you register your services Ocelot will attempt to 
 .. code-block:: csharp
 
  services
-    .AddOcelot(Configuration)
+    .AddOcelot()
     .AddStoreOcelotConfigurationInConsul();
 
 You also need to add the following to your configuration.json. This is how Ocelot
