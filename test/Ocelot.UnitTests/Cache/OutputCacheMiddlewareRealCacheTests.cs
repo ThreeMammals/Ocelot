@@ -1,4 +1,6 @@
-﻿using Ocelot.Infrastructure.RequestData;
+﻿using Ocelot.Errors;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
 {
@@ -22,20 +24,37 @@ namespace Ocelot.UnitTests.Cache
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Microsoft.AspNetCore.Http;
 
-    public class OutputCacheMiddlewareRealCacheTests : ServerHostedMiddlewareTest
+    public class OutputCacheMiddlewareRealCacheTests
     {
         private IOcelotCache<CachedResponse> _cacheManager;
         private CachedResponse _response;
-        private IRequestScopedDataRepository _repo;
+        private OutputCacheMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private IRegionCreator _regionCreator;
+        private Mock<IOcelotLogger> _logger;
 
         public OutputCacheMiddlewareRealCacheTests()
         {
-            ScopedRepository
-                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
-                .Returns(new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
-
-            GivenTheTestServerIsConfigured();
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
+            _regionCreator = new RegionCreator();
+            var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
+            {
+                x.WithDictionaryHandle();
+            });
+            _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123");
+            _next = async context => {
+                //do nothing..
+            };
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _regionCreator);
         }
 
         [Fact]
@@ -54,10 +73,14 @@ namespace Ocelot.UnitTests.Cache
             this.Given(x => x.GivenResponseIsNotCached(response))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .And(x => x.GivenThereAreNoErrors())
-                .And(x => x.GivenThereIsADownstreamUrl())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheContentTypeHeaderIsCached())
                 .BDDfy();
+        }
+
+        private void WhenICallTheMiddleware()
+        {
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContentTypeHeaderIsCached()
@@ -67,65 +90,25 @@ namespace Ocelot.UnitTests.Cache
             header.First().ShouldBe("application/json");
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
-        {
-            var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
-            {
-                x.WithDictionaryHandle();
-            });
-
-            _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
-
-            services.AddSingleton<ICacheManager<CachedResponse>>(cacheManagerOutputCache);
-            services.AddSingleton<IOcelotCache<CachedResponse>>(_cacheManager);
-
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-
-            services.AddLogging();
-            services.AddSingleton(_cacheManager);
-            services.AddSingleton(ScopedRepository.Object);
-            services.AddSingleton<IRegionCreator, RegionCreator>();
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseOutputCacheMiddleware();
-        }
-
         private void GivenResponseIsNotCached(HttpResponseMessage message)
         {
-            ScopedRepository
-                .Setup(x => x.Get<HttpResponseMessage>("HttpResponseMessage"))
-                .Returns(new OkResponse<HttpResponseMessage>(message));
+            _downstreamContext.DownstreamResponse = message;
         }
 
         private void GivenTheDownstreamRouteIs()
         {
-            var reRoute = new ReRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithIsCached(true)
                 .WithCacheOptions(new CacheOptions(100, "kanken"))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
-
-            ScopedRepository
-                .Setup(x => x.Get<DownstreamRoute>(It.IsAny<string>()))
-                .Returns(new OkResponse<DownstreamRoute>(downstreamRoute));
+            _downstreamContext.DownstreamReRoute = reRoute;
         }
 
         private void GivenThereAreNoErrors()
         {
-            ScopedRepository
-                .Setup(x => x.Get<bool>("OcelotMiddlewareError"))
-                .Returns(new OkResponse<bool>(false));
-        }
-
-        private void GivenThereIsADownstreamUrl()
-        {
-            ScopedRepository
-                .Setup(x => x.Get<string>("DownstreamUrl"))
-                .Returns(new OkResponse<string>("anything"));
+            _downstreamContext.Errors = new List<Error>();
         }
     }
 }

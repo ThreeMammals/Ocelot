@@ -17,7 +17,7 @@ namespace Ocelot.Benchmarks
             Add(StatisticColumn.AllStatistics);
         }
 
-        [Setup]
+        [GlobalSetup]
         public void SetUp()
         {
             _urlPathMatcher = new RegExUrlMatcher();

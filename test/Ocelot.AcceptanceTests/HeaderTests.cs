@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51871,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -54,7 +54,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Laz"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51871", "/", 200, "Laz"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIAddAHeader("Laz", "D"))
@@ -80,7 +80,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51871,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -93,7 +93,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Location", "http://www.bbc.co.uk/"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51871", "/", 200, "Location", "http://www.bbc.co.uk/"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

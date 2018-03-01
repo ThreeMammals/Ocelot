@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,6 +26,8 @@ using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -103,6 +107,78 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                    .AddOpenTracing(option =>
+                    {
+                        //this is the url that the butterfly collector server is running on...
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Ocelot";
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        await next.Invoke();
+                    });
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+/*
+        public void GivenIHaveAddedXForwardedForHeader(string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Forwarded-For", value);
+        }*/
+
+        public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseMiddleware<T>(callback);
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
@@ -152,7 +228,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -189,7 +264,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -227,7 +301,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -256,7 +329,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     config.AddJsonFile("configuration.json");
-                    config.AddOcelotBaseUrl(_baseUrl);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -311,7 +383,7 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
-        public void GivenOcelotIsRunning(OcelotMiddlewareConfiguration ocelotMiddlewareConfig)
+        public void GivenOcelotIsRunning(OcelotPipelineConfiguration ocelotPipelineConfig)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -348,7 +420,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Configure(a =>
                 {
-                    a.UseOcelot(ocelotMiddlewareConfig).Wait();
+                    a.UseOcelot(ocelotPipelineConfig).Wait();
                 }));
 
             _ocelotClient = _ocelotServer.CreateClient();
@@ -527,7 +599,6 @@ namespace Ocelot.AcceptanceTests
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
-
         public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
         {
             var responseStatusCode = (int)_response.StatusCode;
@@ -553,6 +624,52 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheContentLengthIs(int expected)
         {
             _response.Content.Headers.ContentLength.ShouldBe(expected);
+        }
+
+        public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+        {
+            int numberOfRequests = 100;
+            var aggregateUrl = "/";
+            var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
+            var tomUrl = "/tom";
+            var tomExpected = "{Hello from Tom}";
+            var lauraUrl = "/laura";
+            var lauraExpected = "{Hello from Laura}";
+            var random = new Random();
+
+            var aggregateTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
+            }
+
+            var tomTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                tomTasks[i] = Fire(tomUrl, tomExpected, random);
+            }
+
+            var lauraTasks = new Task[numberOfRequests];
+
+            for (int i = 0; i < numberOfRequests; i++)
+            {
+                lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
+            }
+
+            Task.WaitAll(lauraTasks);
+            Task.WaitAll(tomTasks);
+            Task.WaitAll(aggregateTasks);
+        }
+
+        private async Task Fire(string url, string expectedBody, Random random)
+        {
+            var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+            await Task.Delay(random.Next(0, 2));
+            var response = await _ocelotClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+            content.ShouldBe(expectedBody);
         }
     }
 }

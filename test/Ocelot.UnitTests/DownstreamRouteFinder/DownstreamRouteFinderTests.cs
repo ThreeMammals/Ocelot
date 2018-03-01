@@ -47,13 +47,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
                         .Build(),
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
@@ -64,7 +74,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .When(x => x.WhenICallTheFinder())
                 .Then(x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .WithUpstreamHttpMethod(new List<string> { "Post" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .Build())
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
@@ -84,13 +99,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
                         .Build(),
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
@@ -101,7 +126,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .When(x => x.WhenICallTheFinder())
                 .Then(x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .WithUpstreamHttpMethod(new List<string> { "Post" })
+                                .Build())
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .Build()
@@ -121,7 +150,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -135,7 +169,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
                             new List<PlaceholderNameAndValue>(),
                             new ReRouteBuilder()
-                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                    .WithDownstreamPathTemplate("someDownstreamPath")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                    .Build())
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                                 .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                                 .Build()
@@ -157,7 +195,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -171,7 +214,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
                             new List<PlaceholderNameAndValue>(),
                             new ReRouteBuilder()
-                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                    .WithDownstreamPathTemplate("someDownstreamPath")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                    .Build())
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                                 .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                                 .Build()
@@ -193,7 +240,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -206,7 +258,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Then(
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build()
@@ -227,13 +283,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
                         .Build(),
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPathForAPost")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPathForAPost")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
@@ -246,7 +312,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Then(
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPathForAPost")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPathForAPost")
+                                .WithUpstreamHttpMethod(new List<string> { "Post" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
                             .Build()
@@ -263,7 +333,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                  .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                      {
                         new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("somPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("somPath")
+                                .WithUpstreamPathTemplate("somePath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1))
+                                .Build())
                         .WithUpstreamPathTemplate("somePath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1))
@@ -292,7 +367,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
@@ -305,7 +385,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Then(
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Post" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
                             .Build()
@@ -326,7 +410,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string>())
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string>())
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
@@ -339,7 +428,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Then(
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Post" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
                             .Build()
@@ -360,7 +453,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
@@ -388,7 +486,13 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamHost("MATCH")
+                                .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -403,7 +507,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
                         new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build()
@@ -425,7 +533,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -439,7 +552,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
                         new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build()
@@ -459,12 +576,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamHost("MATCH")
+                                .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .WithUpstreamHost("MATCH")
-
                             .Build()
                     }, string.Empty, serviceProviderConfig
                 ))
@@ -490,13 +612,24 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheConfigurationIs(new List<ReRoute>
                     {
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("THENULLPATH")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("THENULLPATH")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamHost("MATCH")
+                                .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
@@ -511,7 +644,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x => x.ThenTheFollowingIsReturned(new DownstreamRoute(
                         new List<PlaceholderNameAndValue>(),
                         new ReRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .Build()
@@ -592,7 +729,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)
         {
-            _result.Data.ReRoute.DownstreamPathTemplate.Value.ShouldBe(expected.ReRoute.DownstreamPathTemplate.Value);
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value);
             _result.Data.ReRoute.UpstreamTemplatePattern.Priority.ShouldBe(expected.ReRoute.UpstreamTemplatePattern.Priority);
 
             for (int i = 0; i < _result.Data.TemplatePlaceholderNameAndValues.Count; i++)

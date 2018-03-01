@@ -18,7 +18,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
         }
 
-        public async Task<Response<ILoadBalancer>> Get(ReRoute reRoute, ServiceProviderConfiguration config)
+        public async Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
         {
             try
             {

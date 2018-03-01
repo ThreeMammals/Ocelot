@@ -11,8 +11,10 @@ namespace Ocelot.Configuration.File
 
         public string RequestIdKey { get; set; }
 
-        public FileServiceDiscoveryProvider ServiceDiscoveryProvider {get;set;}
+        public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get;set; }
 
         public FileRateLimitOptions RateLimitOptions { get; set; }
+        
+        public string BaseUrl { get ;set; }
     }
 }

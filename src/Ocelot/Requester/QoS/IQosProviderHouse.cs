@@ -5,6 +5,6 @@ namespace Ocelot.Requester.QoS
 {
     public interface IQosProviderHouse
     {
-        Response<IQoSProvider> Get(ReRoute reRoute);
+        Response<IQoSProvider> Get(DownstreamReRoute reRoute);
     }
 }

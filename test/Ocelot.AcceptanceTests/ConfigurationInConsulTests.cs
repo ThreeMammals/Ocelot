@@ -4,13 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
@@ -275,7 +272,11 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenIWaitForTheConfigToReplicateToOcelot()
         {
-            Thread.Sleep(10000);
+            var stopWatch = Stopwatch.StartNew();
+            while (stopWatch.ElapsedMilliseconds < 10000)
+            {
+                //do nothing!
+            }
         }
 
         private void GivenTheConsulConfigurationIs(FileConfiguration config)

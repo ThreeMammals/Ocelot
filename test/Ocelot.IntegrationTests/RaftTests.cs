@@ -59,7 +59,7 @@ namespace Ocelot.IntegrationTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This tests is flakey at the moment so ignoring will be fixed long term see https://github.com/TomPallister/Ocelot/issues/245")]
         public void should_persist_command_to_five_servers()
         {
              var configuration = new FileConfiguration
@@ -118,7 +118,7 @@ namespace Ocelot.IntegrationTests
             ThenTheCommandIsReplicatedToAllStateMachines(command);
         }
 
-        [Fact]
+        [Fact(Skip = "This tests is flakey at the moment so ignoring will be fixed long term see https://github.com/TomPallister/Ocelot/issues/245")]
         public void should_persist_command_to_five_servers_when_using_administration_api()
         {
              var configuration = new FileConfiguration
