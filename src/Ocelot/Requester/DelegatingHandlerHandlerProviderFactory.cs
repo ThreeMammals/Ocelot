@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
@@ -8,17 +9,17 @@ namespace Ocelot.Requester
 {
     public class DelegatingHandlerHandlerProviderFactory : IDelegatingHandlerHandlerProviderFactory
     {
-        private readonly ITracingHandler _tracingHandler;
+        private readonly ITracingHandlerFactory _factory;
         private readonly IOcelotLoggerFactory _loggerFactory;
         private readonly IDelegatingHandlerHandlerProvider _allRoutesProvider;
         private readonly IQosProviderHouse _qosProviderHouse;
 
         public DelegatingHandlerHandlerProviderFactory(IOcelotLoggerFactory loggerFactory, 
-            IDelegatingHandlerHandlerProvider allRoutesProvider, 
-            ITracingHandler tracingHandler,
+            IDelegatingHandlerHandlerProvider allRoutesProvider,
+            ITracingHandlerFactory factory,
             IQosProviderHouse qosProviderHouse)
         {
-            _tracingHandler = tracingHandler;
+            _factory = factory;
             _loggerFactory = loggerFactory;
             _allRoutesProvider = allRoutesProvider;
             _qosProviderHouse = qosProviderHouse;
@@ -37,7 +38,7 @@ namespace Ocelot.Requester
 
             if (request.HttpHandlerOptions.UseTracing)
             {
-                provider.Add(() => (DelegatingHandler)_tracingHandler);
+                provider.Add(() => (DelegatingHandler)_factory.Get());
             }
 
             if (request.IsQos)

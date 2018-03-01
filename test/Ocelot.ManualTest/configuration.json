@@ -8,13 +8,13 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5001
+          "Port": 5007
         }
       ],
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": false
+        "UseTracing": true
       }
     },
     {

@@ -26,6 +26,8 @@ using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -104,6 +106,49 @@ namespace Ocelot.AcceptanceTests
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
+
+        internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                    .AddOpenTracing(option =>
+                    {
+                        //this is the url that the butterfly collector server is running on...
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Ocelot";
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        await next.Invoke();
+                    });
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+/*
+        public void GivenIHaveAddedXForwardedForHeader(string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Forwarded-For", value);
+        }*/
 
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {

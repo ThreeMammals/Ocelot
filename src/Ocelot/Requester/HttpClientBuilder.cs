@@ -26,8 +26,10 @@ namespace Ocelot.Requester
         {
             var provider = _house.Get(request);
 
+            var handlers = provider.Data.Get();
+
             //todo handle error
-            provider.Data.Get()
+            handlers
                 .Select(handler => handler)
                 .Reverse()
                 .ToList()

@@ -12,11 +12,6 @@ namespace Ocelot.Requester
     {
     }
 
-    public class NoTracingHandler : DelegatingHandler, ITracingHandler
-    {
-        
-    }
-
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {
         private readonly IServiceTracer _tracer;

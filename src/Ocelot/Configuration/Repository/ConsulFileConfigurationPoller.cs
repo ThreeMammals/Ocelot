@@ -11,11 +11,11 @@ namespace Ocelot.Configuration.Repository
 {
     public class ConsulFileConfigurationPoller : IDisposable
     {
-        private IOcelotLogger _logger; 
-        private IFileConfigurationRepository _repo;
-        private IFileConfigurationSetter _setter;
+        private readonly IOcelotLogger _logger; 
+        private readonly IFileConfigurationRepository _repo;
+        private readonly IFileConfigurationSetter _setter;
         private string _previousAsJson;
-        private Timer _timer;
+        private readonly Timer _timer;
         private bool _polling;
 
         public ConsulFileConfigurationPoller(IOcelotLoggerFactory factory, IFileConfigurationRepository repo, IFileConfigurationSetter setter)

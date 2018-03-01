@@ -23,13 +23,15 @@ namespace Ocelot.UnitTests.Requester
         private Response<IDelegatingHandlerHandlerProvider> _provider;
         private readonly Mock<IDelegatingHandlerHandlerProvider> _allRoutesProvider;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly Mock<ITracingHandlerFactory> _tracingFactory;
 
         public DelegatingHandlerHandlerProviderFactoryTests()
         {
+            _tracingFactory = new Mock<ITracingHandlerFactory>();
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _allRoutesProvider = new Mock<IDelegatingHandlerHandlerProvider>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object, null, _qosProviderHouse.Object);
+            _factory = new DelegatingHandlerHandlerProviderFactory(_loggerFactory.Object, _allRoutesProvider.Object, _tracingFactory.Object, _qosProviderHouse.Object);
         }
 
         private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)

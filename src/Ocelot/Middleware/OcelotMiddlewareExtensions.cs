@@ -173,23 +173,34 @@
             var ocelotConfigurationRepository =
                 (IOcelotConfigurationRepository) builder.ApplicationServices.GetService(
                     typeof(IOcelotConfigurationRepository));
+
             var ocelotConfigurationCreator =
                 (IOcelotConfigurationCreator) builder.ApplicationServices.GetService(
                     typeof(IOcelotConfigurationCreator));
 
             var fileConfigFromConsul = await consulFileConfigRepo.Get();
+
             if (fileConfigFromConsul.Data == null)
             {
                 config = await setter.Set(fileConfig.Value);
+                var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
             }
             else
             {
                 var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
+
                 if(ocelotConfig.IsError)
                 {
                     return new ErrorResponse(ocelotConfig.Errors);
                 }
+
                 config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+
+                if (config.IsError)
+                {
+                    return new ErrorResponse(config.Errors);
+                }
+
                 //todo - this starts the poller if it has been registered...please this is so bad.
                 var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
             }
