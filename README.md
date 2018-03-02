@@ -1,13 +1,12 @@
-# Ocelot
-
 [<img src="http://threemammals.com/images/ocelot_logo.png">](http://threemammals.com/ocelot)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb)
 
 [![Windows Build history](https://buildstats.info/appveyor/chart/TomPallister/ocelot-fcfpb?branch=develop&includeBuildsFromPullRequest=false)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb/history?branch=develop)
 
-
 [![Coverage Status](https://coveralls.io/repos/github/TomPallister/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/TomPallister/Ocelot?branch=develop)
+
+# Ocelot
 
 Ocelot is a .NET Api Gateway. This project is aimed at people using .NET running 
 a micro services / service orientated architecture 
