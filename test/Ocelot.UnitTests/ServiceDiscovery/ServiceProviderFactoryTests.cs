@@ -77,6 +77,24 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_service_fabric_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result;

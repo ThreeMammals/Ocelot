@@ -2,13 +2,15 @@
 {
     public class ServiceProviderConfiguration
     {
-        public ServiceProviderConfiguration(string serviceProviderHost, int serviceProviderPort)
+        public ServiceProviderConfiguration(string type, string host, int port)
         {
-            ServiceProviderHost = serviceProviderHost;
-            ServiceProviderPort = serviceProviderPort;
+            Host = host;
+            Port = port;
+            Type = type;
         }
 
-        public string ServiceProviderHost { get; private set; }
-        public int ServiceProviderPort { get; private set; }
+        public string Host { get; private set; }
+        public int Port { get; private set; }
+        public string Type { get; private set; }
     }
 }

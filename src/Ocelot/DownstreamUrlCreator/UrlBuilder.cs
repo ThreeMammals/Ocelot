@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using Ocelot.Errors;
 using Ocelot.Responses;
@@ -29,7 +30,7 @@ namespace Ocelot.DownstreamUrlCreator
             {
                 Host = downstreamHostAndPort.DownstreamHost,
                 Path = downstreamPath,
-                Scheme = downstreamScheme
+                Scheme = downstreamScheme,
             };
 
             if (downstreamHostAndPort.DownstreamPort > 0)
@@ -43,3 +44,4 @@ namespace Ocelot.DownstreamUrlCreator
         }
     }
 }
+*/
