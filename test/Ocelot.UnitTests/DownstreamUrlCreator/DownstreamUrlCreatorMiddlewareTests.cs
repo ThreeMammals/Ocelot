@@ -135,6 +135,66 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_create_service_fabric_url_with_query_string_for_stateless_service()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamScheme("http")
+                .WithServiceName("Ocelot/OcelotApp")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var downstreamRoute = new DownstreamRoute(
+                new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithDownstreamReRoute(downstreamReRoute)
+                    .Build());
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithServiceDiscoveryProviderHost("localhost")
+                .WithServiceDiscoveryProviderPort(19081)
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?Tom=test&laura=1"))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1&cmd=instance"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_service_fabric_url_with_query_string_for_stateful_service()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamScheme("http")
+                .WithServiceName("Ocelot/OcelotApp")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var downstreamRoute = new DownstreamRoute(
+                new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithDownstreamReRoute(downstreamReRoute)
+                    .Build());
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithServiceDiscoveryProviderHost("localhost")
+                .WithServiceDiscoveryProviderPort(19081)
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?PartitionKind=test&PartitionKey=1"))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1"))
+                .BDDfy();
+        }
+
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             _downstreamContext.ServiceProviderConfiguration = config;

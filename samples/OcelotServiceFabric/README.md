@@ -9,7 +9,7 @@ author: raunakpandya edited by Tom Pallister for Ocelot
 This shows a service fabric cluster with Ocelot exposed over HTTP accessing services in the cluster via the naming service. If you want to try and use Ocelot with
 Service Fabric I reccomend using this as a starting point.
 
-Ocelot does not support partitioned services (stateful & actors) at the moment. 
+If you want to use statefull / actors you must send the PartitionKind and PartitionKey to Ocelot as query string parameters.
 
 I have not tested this sample on Service Fabric hosted on Linux just a Windows dev cluster. This sample assumes a good understanding of Service Fabric.
 

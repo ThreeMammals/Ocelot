@@ -27,7 +27,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_support_service_fabric_naming_and_dns_service()
+        public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
         {
             var configuration = new FileConfiguration
             {
@@ -54,7 +54,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "cmd=instance"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces"))
@@ -63,7 +63,44 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+        [Fact]
+        public void should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/EquipmentInterfaces",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UseServiceDiscovery = true,
+                        ServiceName = "OcelotServiceApplication/OcelotApplicationService"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = 19081,
+                        Type = "ServiceFabric"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expectedQueryString)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -84,9 +121,8 @@ namespace Ocelot.AcceptanceTests
                         }
                         else
                         {
-                            if (context.Request.Query.TryGetValue("cmd", out var values))
+                            if (context.Request.QueryString.Value.Contains(expectedQueryString))
                             {
-                                values.First().ShouldBe("instance");
                                 context.Response.StatusCode = statusCode;
                                 await context.Response.WriteAsync(responseBody);
                             }
