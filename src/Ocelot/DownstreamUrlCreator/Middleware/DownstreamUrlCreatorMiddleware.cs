@@ -5,6 +5,7 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System;
+using System.Linq;
 using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
@@ -14,16 +15,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
         private readonly IOcelotLogger _logger;
-        private readonly IUrlBuilder _urlBuilder;
 
         public DownstreamUrlCreatorMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer,
-            IUrlBuilder urlBuilder)
+            IDownstreamPathPlaceholderReplacer replacer)
         {
             _next = next;
             _replacer = replacer;
-            _urlBuilder = urlBuilder;
             _logger = loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>();
         }
 
@@ -40,11 +38,32 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            var uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
+            UriBuilder uriBuilder;
+            
+            //todo - feel this is a bit crap the way we build the url dont see why we need this builder thing..maybe i blew my own brains out 
+            // when i originally wrote it..
+            if (context.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery)
             {
-                Path = dsPath.Data.Value,
-                Scheme = context.DownstreamReRoute.DownstreamScheme
-            };
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set service fabric path");
+
+                var scheme = context.DownstreamReRoute.DownstreamScheme;
+                var host = context.DownstreamRequest.RequestUri.Host;
+                var port = context.DownstreamRequest.RequestUri.Port;
+                var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
+
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - service fabric path is {proxyUrl}", serviceFabricPath);
+
+                var uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}?cmd=instance");
+                uriBuilder = new UriBuilder(uri);
+            }
+            else
+            {
+                uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
+                {
+                    Path = dsPath.Data.Value,
+                    Scheme = context.DownstreamReRoute.DownstreamScheme
+                };
+            }
 
             context.DownstreamRequest.RequestUri = uriBuilder.Uri;
 

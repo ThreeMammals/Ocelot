@@ -18,7 +18,7 @@ namespace Ocelot.ServiceDiscovery
         {
             if (reRoute.UseServiceDiscovery)
             {
-                return GetServiceDiscoveryProvider(reRoute.ServiceName, serviceConfig.ServiceProviderHost, serviceConfig.ServiceProviderPort);
+                return GetServiceDiscoveryProvider(serviceConfig, reRoute.ServiceName);
             }
 
             var services = new List<Service>();
@@ -33,9 +33,15 @@ namespace Ocelot.ServiceDiscovery
             return new ConfigurationServiceProvider(services);
         }
 
-        private IServiceDiscoveryProvider GetServiceDiscoveryProvider(string keyOfServiceInConsul, string providerHostName, int providerPort)
+        private IServiceDiscoveryProvider GetServiceDiscoveryProvider(ServiceProviderConfiguration serviceConfig, string serviceName)
         {
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(providerHostName, providerPort, keyOfServiceInConsul);
+            if (serviceConfig.Type == "ServiceFabric")
+            {
+                var config = new ServiceFabricConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
+                return new ServiceFabricServiceDiscoveryProvider(config);
+            }
+
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
             return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory);
         }
     }

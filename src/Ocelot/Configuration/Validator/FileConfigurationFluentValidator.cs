@@ -30,7 +30,7 @@ namespace Ocelot.Configuration.Validator
 
             RuleForEach(configuration => configuration.Aggregates)
                 .Must((config, aggregateReRoute) => AllReRoutesForAggregateExist(aggregateReRoute, config.ReRoutes))
-                .WithMessage((config, aggregateReRoute) => $"ReRoutes for {nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} either do not exist or do not have correct Key property");
+                .WithMessage((config, aggregateReRoute) => $"ReRoutes for {nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} either do not exist or do not have correct ServiceName property");
 
             RuleForEach(configuration => configuration.Aggregates)
                 .Must((config, aggregateReRoute) => DoesNotContainReRoutesWithSpecificRequestIdKeys(aggregateReRoute, config.ReRoutes))

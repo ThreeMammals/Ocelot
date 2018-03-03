@@ -22,6 +22,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/routing
    features/requestaggregation
    features/servicediscovery
+   features/servicefabric
    features/authentication
    features/authorisation
    features/administration
