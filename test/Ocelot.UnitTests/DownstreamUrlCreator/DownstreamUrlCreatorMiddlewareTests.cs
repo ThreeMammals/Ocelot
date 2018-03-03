@@ -76,11 +76,42 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
+        public void should_not_create_service_fabric_url()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("any old string")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithDownstreamScheme("https")
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithServiceDiscoveryProviderHost("localhost")
+                .WithServiceDiscoveryProviderPort(19081)
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>(),
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_create_service_fabric_url()
         {
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamScheme("http")
                 .WithServiceName("Ocelot/OcelotApp")
+                .WithUseServiceDiscovery(true)
                 .Build();
 
             var downstreamRoute = new DownstreamRoute(

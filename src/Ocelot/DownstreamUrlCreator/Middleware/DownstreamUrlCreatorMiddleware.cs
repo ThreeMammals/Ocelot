@@ -40,7 +40,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             UriBuilder uriBuilder;
             
-            if (context.ServiceProviderConfiguration.Type == "ServiceFabric")
+            //todo - feel this is a bit crap the way we build the url dont see why we need this builder thing..maybe i blew my own brains out 
+            // when i originally wrote it..
+            if (context.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery)
             {
                 _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set service fabric path");
 
