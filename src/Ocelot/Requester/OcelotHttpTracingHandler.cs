@@ -8,10 +8,6 @@ using Butterfly.OpenTracing;
 
 namespace Ocelot.Requester
 {
-    public interface ITracingHandler
-    {
-    }
-
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {
         private readonly IServiceTracer _tracer;
