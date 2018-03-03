@@ -588,7 +588,8 @@ namespace Ocelot.UnitTests.Configuration
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
-                        }                    }
+                        }                   
+                    }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())

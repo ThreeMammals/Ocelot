@@ -51,7 +51,7 @@ namespace Ocelot.Requester
                 if (!c.Contains(k))
                 {
                     c.Add(k, v);
-                };
+                }
             });
 
             span.Log(LogField.CreateNew().ClientSend());

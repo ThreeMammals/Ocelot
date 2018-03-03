@@ -25,7 +25,7 @@ namespace Ocelot.AcceptanceTests
         public CustomMiddlewareTests()
         {
             _counter = 0;
-            _steps = new Steps();;
+            _steps = new Steps();
             _configurationPath = "configuration.json";
         }
 
@@ -357,7 +357,7 @@ namespace Ocelot.AcceptanceTests
                         }
                         else if(context.Request.Path.Value != basePath)
                         {
-                            context.Response.StatusCode = 404;;
+                            context.Response.StatusCode = 404;
                         }
 
                         return Task.CompletedTask;
