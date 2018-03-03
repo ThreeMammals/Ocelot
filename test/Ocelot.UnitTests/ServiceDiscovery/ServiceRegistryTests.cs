@@ -131,8 +131,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             else
             {     
                 _registeredServices[serviceNameAndAddress.Name] = new List<Service>(){ serviceNameAndAddress };
-            }
-            
+            }          
         }
     }
 }

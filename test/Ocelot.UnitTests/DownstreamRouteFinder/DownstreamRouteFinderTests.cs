@@ -35,7 +35,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockMatcher.Object, _finder.Object);
         }
 
-
         [Fact]
         public void should_return_highest_priority_when_first()
         {
@@ -181,7 +180,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_not_append_slash_to_upstream_url_path()
@@ -597,7 +595,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.ThenTheUrlMatcherIsNotCalled())
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_return_route_when_host_matches_but_null_host_on_same_path_first()

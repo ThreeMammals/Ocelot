@@ -9,6 +9,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             HostAndPort = hostAndPort;
             Connections = connections;
         }
+
         public ServiceHostAndPort HostAndPort { get; private set; }
         public int Connections { get; private set; }
     }

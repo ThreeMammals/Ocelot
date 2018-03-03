@@ -588,7 +588,8 @@ namespace Ocelot.UnitTests.Configuration
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
-                        }                    }
+                        }                   
+                    }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -869,7 +870,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -981,7 +981,8 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-         [Fact]
+
+        [Fact]
         public void configuration_is_not_valid_when_host_and_port_is_empty()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
@@ -1006,7 +1007,6 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {

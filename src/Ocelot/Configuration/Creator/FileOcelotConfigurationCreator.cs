@@ -35,7 +35,6 @@ namespace Ocelot.Configuration.Creator
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
 
-
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator,

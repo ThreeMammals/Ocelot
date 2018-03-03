@@ -502,7 +502,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithUseServiceDiscovery(false)
                 .Build();
 
-
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                         {
                             ReRoutes = new List<FileReRoute>
@@ -544,7 +543,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
                 .Build();
-
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
@@ -823,8 +821,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
-                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);
-            
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);           
             }
         }
 
@@ -916,7 +913,6 @@ namespace Ocelot.UnitTests.Configuration
                 .Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(serviceProviderConfiguration);
         }
 
-        
         private void GivenTheFollowingRegionIsReturned(string region)
         {
             _regionCreator

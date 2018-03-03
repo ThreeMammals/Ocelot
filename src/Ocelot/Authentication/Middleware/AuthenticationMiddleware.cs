@@ -63,4 +63,3 @@ namespace Ocelot.Authentication.Middleware
         }
     }
 }
-

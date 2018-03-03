@@ -156,7 +156,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             new ApiResource
                             {
-								Name = apiName,
+                                Name = apiName,
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",

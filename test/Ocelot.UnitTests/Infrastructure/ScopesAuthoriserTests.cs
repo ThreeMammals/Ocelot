@@ -35,7 +35,6 @@ namespace Ocelot.UnitTests.Infrastructure
             .BDDfy();
         }
 
-
         [Fact]
         public void should_return_ok_if_null_allowed_scopes()
         {

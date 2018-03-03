@@ -17,7 +17,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         private readonly IOcelotConfigurationProvider _configProvider;
         private readonly IMultiplexer _multiplexer;
 
-
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder,
@@ -60,8 +59,8 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            //todo - put this back in
-            // _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamReRoute.DownstreamPathTemplate);
+            // todo - put this back in
+            //// _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamReRoute.DownstreamPathTemplate);
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 

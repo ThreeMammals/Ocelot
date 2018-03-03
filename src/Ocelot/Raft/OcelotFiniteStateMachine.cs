@@ -19,7 +19,7 @@ namespace Ocelot.Raft
             //todo - handle an error
             //hack it to just cast as at the moment we know this is the only command :P
             var hack = (UpdateFileConfiguration)log.CommandData;
-            _setter.Set(hack.Configuration).GetAwaiter().GetResult();;
+            _setter.Set(hack.Configuration).GetAwaiter().GetResult();
         }
     }
 }

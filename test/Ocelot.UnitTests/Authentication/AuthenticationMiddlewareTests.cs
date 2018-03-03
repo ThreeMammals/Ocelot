@@ -6,24 +6,17 @@ namespace Ocelot.UnitTests.Authentication
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Authentication.Middleware;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
     public class AuthenticationMiddlewareTests
     {
-        private OkResponse<DownstreamRoute> _downstreamRoute;
         private AuthenticationMiddleware _middleware;
         private Mock<IOcelotLoggerFactory> _factory;
         private Mock<IOcelotLogger> _logger;
@@ -49,7 +42,7 @@ namespace Ocelot.UnitTests.Authentication
                 .BDDfy();
         }
 
-        private  void WhenICallTheMiddleware()
+        private void WhenICallTheMiddleware()
         {
             _next = async (context) => {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
@@ -89,7 +82,7 @@ namespace Ocelot.UnitTests.Authentication
             {
                 string text = reader.ReadToEnd();
                 return text;
-            };
+            }
         }
     }
 }

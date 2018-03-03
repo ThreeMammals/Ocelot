@@ -195,6 +195,7 @@ namespace Ocelot.IntegrationTests
                 result.Result.ShouldBe(result.Random);
             }
         }
+
         public void Dispose()
         {
             _builder?.Dispose();
@@ -208,7 +209,6 @@ namespace Ocelot.IntegrationTests
             {
                 Result = result;
                 Random = random;
-
             }
 
             public int Result { get; private set; }

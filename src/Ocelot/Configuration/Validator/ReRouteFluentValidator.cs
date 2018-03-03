@@ -67,6 +67,7 @@ namespace Ocelot.Configuration.Validator
             {
                 return true;
             }
+
             var schemes = await _authenticationSchemeProvider.GetAllSchemesAsync();
 
             var supportedSchemes = schemes.Select(scheme => scheme.Name).ToList();

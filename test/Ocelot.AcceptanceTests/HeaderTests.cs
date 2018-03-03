@@ -186,7 +186,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)
         {
             _builder = new WebHostBuilder()

@@ -13,7 +13,6 @@ namespace Ocelot.UnitTests.Requester
     {
         private IQoSProvider _qoSProvider;
         private readonly QosProviderHouse _qosProviderHouse;
-        private Response _addResult;
         private Response<IQoSProvider> _getResult;
         private DownstreamReRoute _reRoute;
         private readonly Mock<IQoSProviderFactory> _factory;
@@ -110,7 +109,6 @@ namespace Ocelot.UnitTests.Requester
             _factory.Verify(x => x.Get(_reRoute), Times.Once);
             _getResult.Data.ShouldBe(_qoSProvider);
         }
-
 
         private void GivenThereIsAQoSProvider(DownstreamReRoute reRoute, IQoSProvider qoSProvider)
         {

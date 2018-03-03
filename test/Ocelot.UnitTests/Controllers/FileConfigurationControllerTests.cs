@@ -111,7 +111,6 @@ namespace Ocelot.UnitTests.Controllers
                 .BDDfy();
         }
 
-
         private void ThenTheNodeIsCalledCorrectly()
         {
             _node.Verify(x => x.Accept(It.IsAny<UpdateFileConfiguration>()), Times.Once);

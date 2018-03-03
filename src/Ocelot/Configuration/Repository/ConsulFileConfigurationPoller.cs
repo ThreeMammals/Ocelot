@@ -34,7 +34,6 @@ namespace Ocelot.Configuration.Repository
                 _polling = true;
                 await Poll();
                 _polling = false;
-
             }, null, 0, 1000);
         }
         

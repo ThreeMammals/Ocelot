@@ -28,7 +28,7 @@ namespace Ocelot.Raft
         {
             _identityServerConfiguration = identityServerConfiguration;
             _config = config;
-            Id  = hostAndPort;
+            Id = hostAndPort;
             _hostAndPort = hostAndPort;
             _httpClient = httpClient;
             _jsonSerializerSettings = new JsonSerializerSettings() { 
@@ -68,6 +68,7 @@ namespace Ocelot.Raft
                 {
                     SetToken();
                 }                
+
                 var json = JsonConvert.SerializeObject(appendEntries, _jsonSerializerSettings);
                 var content = new StringContent(json);
                 content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
@@ -88,12 +89,14 @@ namespace Ocelot.Raft
             }
         }
 
-        public Response<T> Request<T>(T command) where T : ICommand
+        public Response<T> Request<T>(T command)
+            where T : ICommand
         {
             if(_token == null)
             {
                 SetToken();
             }   
+
             var json = JsonConvert.SerializeObject(command, _jsonSerializerSettings);
             var content = new StringContent(json);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");

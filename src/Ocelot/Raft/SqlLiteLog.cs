@@ -24,6 +24,7 @@ namespace Ocelot.Raft
                     FileStream fs = File.Create(_path);
                     fs.Dispose();
                 }
+
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
@@ -59,6 +60,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -88,6 +90,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -113,6 +116,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -129,6 +133,7 @@ namespace Ocelot.Raft
                         TypeNameHandling = TypeNameHandling.All
                     };
                     var data = JsonConvert.SerializeObject(log, jsonSerializerSettings);
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"insert into logs (data) values ('{data}')";
                     using(var command = new SqliteCommand(sql, connection))
@@ -153,6 +158,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index};";
                     using(var command = new SqliteCommand(sql, connection))
@@ -183,6 +189,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -207,6 +214,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select id, data from logs where id >= {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -222,15 +230,13 @@ namespace Ocelot.Raft
                                 };
                                 var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
                                 logsToReturn.Add((id, log));
-
                             }
                         }
                     }
                 }
 
                 return logsToReturn;
-            }
-          
+            }        
         }
 
         public long GetTermAtIndex(int index)
@@ -241,6 +247,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -256,9 +263,11 @@ namespace Ocelot.Raft
                         }
                     }
                 }
+
                 return result;
             }
         }
+
         public void Remove(int indexOfCommand)
         {
             lock(_lock)
@@ -266,6 +275,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var deleteSql = $"delete from logs where id >= {indexOfCommand};";
                     using(var deleteCommand = new SqliteCommand(deleteSql, connection))

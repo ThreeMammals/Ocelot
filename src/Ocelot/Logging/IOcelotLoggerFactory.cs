@@ -6,6 +6,7 @@ namespace Ocelot.Logging
     {
         IOcelotLogger CreateLogger<T>();
     }
+
     /// <summary>
     /// Thin wrapper around the DotNet core logging framework, used to allow the scopedDataRepository to be injected giving access to the Ocelot RequestId
     /// </summary>

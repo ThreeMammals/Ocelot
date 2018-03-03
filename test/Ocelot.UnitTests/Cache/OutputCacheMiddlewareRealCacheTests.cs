@@ -1,5 +1,4 @@
 ﻿using Ocelot.Errors;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
@@ -11,26 +10,19 @@ namespace Ocelot.UnitTests.Cache
     using Shouldly;
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Cache;
     using Ocelot.Cache.Middleware;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Microsoft.AspNetCore.Http;
 
     public class OutputCacheMiddlewareRealCacheTests
     {
         private IOcelotCache<CachedResponse> _cacheManager;
-        private CachedResponse _response;
         private OutputCacheMiddleware _middleware;
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;

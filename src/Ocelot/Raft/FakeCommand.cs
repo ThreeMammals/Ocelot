@@ -8,8 +8,8 @@ namespace Ocelot.Raft
         public FakeCommand(string value)
         {
             this.Value = value;
-
         }
+
         public string Value { get; private set; }
     }
 }

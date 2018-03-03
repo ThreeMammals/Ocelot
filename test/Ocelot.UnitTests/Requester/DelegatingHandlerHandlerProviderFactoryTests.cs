@@ -41,7 +41,6 @@ namespace Ocelot.UnitTests.Requester
                 .Returns(qosProvider);
         }
 
-
         [Fact]
         public void should_all_from_all_routes_provider_and_qos()
         {

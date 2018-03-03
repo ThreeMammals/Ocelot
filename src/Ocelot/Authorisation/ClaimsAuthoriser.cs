@@ -47,6 +47,7 @@ namespace Ocelot.Authorisation
                         });
                 }
             }
+
             return new OkResponse<bool>(true);
         }
     }

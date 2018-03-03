@@ -123,7 +123,6 @@ namespace Ocelot.Cache.Middleware
 
             var contentHeaders = response?.Content?.Headers.ToDictionary(v => v.Key, v => v.Value);
 
-
             var cached = new CachedResponse(statusCode, headers, body, contentHeaders);
             return cached;
         }

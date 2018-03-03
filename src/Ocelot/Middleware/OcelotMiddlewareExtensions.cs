@@ -59,9 +59,11 @@
 
             var firstDelegate = pipelineBuilder.Build();
 
-            //inject first delegate into first piece of asp.net middleware..maybe not like this
-            //then because we are updating the http context in ocelot it comes out correct for
-            //rest of asp.net..
+            /*
+            inject first delegate into first piece of asp.net middleware..maybe not like this
+            then because we are updating the http context in ocelot it comes out correct for
+            rest of asp.net..
+            */
 
             builder.Use(async (context, task) =>
             {

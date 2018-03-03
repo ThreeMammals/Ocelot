@@ -33,13 +33,11 @@ namespace Ocelot.UnitTests.Configuration
                 UpstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Test", "Test, Chicken"},
-
                     {"Moop", "o, a"}
                 },
                  DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Pop", "West, East"},
-
                     {"Bop", "e, r"}
                 }
             };
@@ -85,7 +83,6 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_use_base_url_partial_placeholder()
