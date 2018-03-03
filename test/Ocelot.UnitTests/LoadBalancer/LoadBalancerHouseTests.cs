@@ -116,7 +116,6 @@ namespace Ocelot.UnitTests.LoadBalancer
             _factory.Verify(x => x.Get(_reRoute, _serviceProviderConfig), Times.Once);
         }
 
-
         private void GivenThereIsALoadBalancer(DownstreamReRoute reRoute, ILoadBalancer loadBalancer)
         {
             _reRoute = reRoute;

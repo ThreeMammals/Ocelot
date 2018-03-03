@@ -14,8 +14,7 @@ namespace Ocelot.Configuration
             DurationOfBreak = durationofBreak;
             TimeoutValue = timeoutValue;
             TimeoutStrategy = timeoutStrategy;
-        }
-         
+        }         
 
         public int ExceptionsAllowedBeforeBreaking { get; private set; }
 

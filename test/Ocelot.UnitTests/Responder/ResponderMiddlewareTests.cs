@@ -27,7 +27,6 @@ namespace Ocelot.UnitTests.Responder
         private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
 
-
         public ResponderMiddlewareTests()
         {
             _responder = new Mock<IHttpResponder>();

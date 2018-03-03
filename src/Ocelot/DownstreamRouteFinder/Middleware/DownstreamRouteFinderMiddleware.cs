@@ -17,7 +17,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         private readonly IOcelotConfigurationProvider _configProvider;
         private readonly IMultiplexer _multiplexer;
 
-
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder,

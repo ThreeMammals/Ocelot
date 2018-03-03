@@ -484,7 +484,6 @@ namespace Ocelot.IntegrationTests
                    app.UseOcelot().Wait();
                });
 
-
             _builderTwo = _webHostBuilderTwo.Build();
 
             _builderTwo.Start();

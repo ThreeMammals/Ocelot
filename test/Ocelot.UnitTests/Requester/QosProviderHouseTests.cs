@@ -111,7 +111,6 @@ namespace Ocelot.UnitTests.Requester
             _getResult.Data.ShouldBe(_qoSProvider);
         }
 
-
         private void GivenThereIsAQoSProvider(DownstreamReRoute reRoute, IQoSProvider qoSProvider)
         {
             _reRoute = reRoute;

@@ -20,12 +20,10 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
          private int _counterOne;
 
-
         public ClientRateLimitTests()
         {
             _steps = new Steps();
         }
-
 
         public void Dispose()
         {
@@ -92,7 +90,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
@@ -146,7 +143,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
                 .BDDfy();
         }
-
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
         {

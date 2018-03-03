@@ -165,7 +165,6 @@ namespace Ocelot.UnitTests.RequestId
             _repo.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
         }
 
-
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;

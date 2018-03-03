@@ -175,7 +175,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_load_configuration_out_of_consul_if_it_is_changed()
         {

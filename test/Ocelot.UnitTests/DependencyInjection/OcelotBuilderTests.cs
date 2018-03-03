@@ -70,7 +70,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_set_up_cache_manager()
         {
@@ -150,7 +149,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => WhenIAccessOcelotHttpTracingHandler())
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_set_up_without_passing_in_config()

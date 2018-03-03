@@ -17,7 +17,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _services = services;
         }
 
-
         public async Task<Response<ServiceHostAndPort>> Lease()
         {
             var services = await _services.Invoke();

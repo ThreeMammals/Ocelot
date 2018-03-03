@@ -23,7 +23,6 @@ namespace Ocelot.RateLimit
             return _core.ProcessRequest(requestIdentity, option);
         }
 
-
         public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
         {
             return _core.RetryAfterFrom(timestamp, rule);

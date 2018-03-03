@@ -869,7 +869,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -1007,7 +1006,6 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {

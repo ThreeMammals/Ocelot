@@ -229,7 +229,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_be_thread_safe()
         {

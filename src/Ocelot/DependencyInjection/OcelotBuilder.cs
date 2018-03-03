@@ -264,8 +264,7 @@ namespace Ocelot.DependencyInjection
 
             var urlFinder = new BaseUrlFinder(_configurationRoot);
             var baseSchemeUrlAndPort = urlFinder.Find();
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-            
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();            
 
             _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>

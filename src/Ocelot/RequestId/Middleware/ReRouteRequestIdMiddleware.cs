@@ -18,7 +18,6 @@ namespace Ocelot.RequestId.Middleware
         private readonly IOcelotLogger _logger;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
-
         public ReRouteRequestIdMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory, 
             IRequestScopedDataRepository requestScopedDataRepository)

@@ -35,7 +35,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
         {

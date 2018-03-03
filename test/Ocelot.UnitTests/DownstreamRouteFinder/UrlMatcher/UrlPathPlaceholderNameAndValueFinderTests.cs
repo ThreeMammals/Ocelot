@@ -30,7 +30,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                 .BDDfy();
         }
 
-
         [Fact]
         public void can_match_down_stream_url_with_nothing_then_placeholder_no_value_is_blank()
         {

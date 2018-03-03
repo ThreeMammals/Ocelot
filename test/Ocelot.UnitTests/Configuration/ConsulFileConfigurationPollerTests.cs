@@ -12,7 +12,6 @@ using Xunit;
 using Shouldly;
 using static Ocelot.UnitTests.Wait;
 
-
 namespace Ocelot.UnitTests.Configuration
 {
     public class ConsulFileConfigurationPollerTests : IDisposable

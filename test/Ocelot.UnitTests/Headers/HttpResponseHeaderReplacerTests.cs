@@ -98,7 +98,6 @@ namespace Ocelot.UnitTests.Headers
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_replace_downstream_base_url_with_ocelot_base_url_and_path()
         {

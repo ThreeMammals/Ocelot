@@ -25,7 +25,6 @@ namespace Ocelot.DownstreamUrlCreator
                 return new ErrorResponse<DownstreamUrl>(new List<Error> { new DownstreamHostNullOrEmptyError() });
             }
 
-
             var builder = new UriBuilder
             {
                 Host = downstreamHostAndPort.DownstreamHost,

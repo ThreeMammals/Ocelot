@@ -68,7 +68,6 @@ namespace Ocelot.UnitTests.Claims
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
-
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;

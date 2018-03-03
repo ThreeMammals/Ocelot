@@ -29,7 +29,6 @@ namespace Ocelot.UnitTests.Errors
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
 
-
         public ExceptionHandlerMiddlewareTests()
         {
             _provider = new Mock<IOcelotConfigurationProvider>();
@@ -173,7 +172,6 @@ namespace Ocelot.UnitTests.Errors
             _provider
                 .Setup(x => x.Get()).ReturnsAsync(response);
         }
-
 
         private void GivenAnExceptionWillNotBeThrownDownstream()
         {

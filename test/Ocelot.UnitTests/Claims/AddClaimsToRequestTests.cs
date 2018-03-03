@@ -93,7 +93,6 @@ namespace Ocelot.UnitTests.Claims
                .BDDfy();
         }
 
-
         private void GivenClaimsToThings(List<ClaimToThing> configuration)
         {
             _claimsToThings = configuration;

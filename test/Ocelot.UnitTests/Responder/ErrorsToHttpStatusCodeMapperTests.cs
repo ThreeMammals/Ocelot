@@ -45,7 +45,6 @@ namespace Ocelot.UnitTests.Responder
             ShouldMapErrorToStatusCode(OcelotErrorCode.RequestTimedOutError, HttpStatusCode.ServiceUnavailable);
         }
 
-
         [Theory]
         [InlineData(OcelotErrorCode.CannotAddDataError)]
         [InlineData(OcelotErrorCode.CannotFindDataError)]

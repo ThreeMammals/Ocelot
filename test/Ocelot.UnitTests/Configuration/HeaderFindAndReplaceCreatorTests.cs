@@ -84,7 +84,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_use_base_url_partial_placeholder()
         {

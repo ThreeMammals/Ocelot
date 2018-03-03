@@ -104,7 +104,6 @@ namespace Ocelot.AcceptanceTests
                  .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
                 .BDDfy();
 
-
             var commandOnAllStateMachines = WaitFor(5000).Until(() => _butterflyCalled == 4);
 
             commandOnAllStateMachines.ShouldBeTrue();

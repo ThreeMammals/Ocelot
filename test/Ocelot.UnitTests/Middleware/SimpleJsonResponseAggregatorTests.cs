@@ -42,7 +42,6 @@ namespace Ocelot.UnitTests.Middleware
                 .WithDownstreamReRoutes(downstreamReRoutes)
                 .Build();
 
-
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamResponse =
