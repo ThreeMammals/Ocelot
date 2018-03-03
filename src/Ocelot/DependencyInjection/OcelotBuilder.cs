@@ -98,7 +98,6 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             _services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
             _services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            _services.TryAddSingleton<IUrlBuilder, UrlBuilder>();
             _services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             _services.TryAddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             _services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();

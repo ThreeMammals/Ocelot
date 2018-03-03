@@ -30,13 +30,15 @@ namespace Ocelot.UnitTests.Configuration
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
                     Host = "127.0.0.1",
-                    Port = 1234
+                    Port = 1234,
+                    Type = "ServiceFabric"
                 }
             };
 
             var expected = new ServiceProviderConfigurationBuilder()
                 .WithServiceDiscoveryProviderHost("127.0.0.1")
                 .WithServiceDiscoveryProviderPort(1234)
+                .WithServiceDiscoveryProviderType("ServiceFabric")
                 .Build();
 
             this.Given(x => x.GivenTheFollowingReRoute(reRoute))
@@ -63,8 +65,8 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigIs(ServiceProviderConfiguration expected)
         {
-            _result.ServiceProviderHost.ShouldBe(expected.ServiceProviderHost);
-            _result.ServiceProviderPort.ShouldBe(expected.ServiceProviderPort);
+            _result.Host.ShouldBe(expected.Host);
+            _result.Port.ShouldBe(expected.Port);
         }
     }
 }

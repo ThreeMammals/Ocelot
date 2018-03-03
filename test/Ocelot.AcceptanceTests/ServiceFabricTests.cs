@@ -1,3 +1,6 @@
+using System.Linq;
+using Microsoft.Extensions.Primitives;
+
 namespace Ocelot.AcceptanceTests
 {
     using System;
@@ -12,21 +15,20 @@ namespace Ocelot.AcceptanceTests
     using TestStack.BDDfy;
     using Xunit;
 
-    public class GitHubIssuesTests : IDisposable
+    public class ServiceFabricTests : IDisposable
     {
         private IWebHost _builder;
         private readonly Steps _steps;
         private string _downstreamPath;
 
-        public GitHubIssuesTests()
+        public ServiceFabricTests()
         {
             _steps = new Steps();
         }
 
         [Fact]
-        public void should_fix_issue_238()
+        public void should_support_service_fabric_naming_and_dns_service()
         {
-        //{ "ReRoutes": [ { "DownstreamPathTemplate": "/api/values", "DownstreamScheme": "http", "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 8940 } ], "UpstreamPathTemplate": "/EquipmentInterfaces", "UpstreamHttpMethod": [ "Get" ] } ], "GlobalConfiguration": { "RequestIdKey": "OcRequestId", "AdministrationPath": "/administration" } }
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -35,32 +37,33 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 8940,
-                                }
-                            },
                             UpstreamPathTemplate = "/EquipmentInterfaces",
                             UpstreamHttpMethod = new List<string> { "Get" },
+                            UseServiceDiscovery = true,
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                         }
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "OcRequestId",
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = 19081,
+                        Type = "ServiceFabric"
+                    }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:8940", "/api/values", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
-        }private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+        }
+
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -81,8 +84,17 @@ namespace Ocelot.AcceptanceTests
                         }
                         else
                         {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
+                            if (context.Request.Query.TryGetValue("cmd", out var values))
+                            {
+                                values.First().ShouldBe("instance");
+                                context.Response.StatusCode = statusCode;
+                                await context.Response.WriteAsync(responseBody);
+                            }
+                            else
+                            {
+                                context.Response.StatusCode = statusCode;
+                                await context.Response.WriteAsync("downstream path didnt match base path");
+                            }
                         }
                     });
                 })

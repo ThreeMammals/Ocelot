@@ -328,7 +328,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ReRoutes for aggregateReRoute / either do not exist or do not have correct Key property"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ReRoutes for aggregateReRoute / either do not exist or do not have correct ServiceName property"))
                 .BDDfy();
         }
 

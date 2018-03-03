@@ -18,8 +18,8 @@ namespace Ocelot.Configuration.Repository
 
         public ConsulFileConfigurationRepository(Cache.IOcelotCache<FileConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
         {
-            var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.ServiceProviderHost) ? "localhost" : serviceProviderConfig?.ServiceProviderHost;
-            var consulPort = serviceProviderConfig?.ServiceProviderPort ?? 8500;
+            var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.Host) ? "localhost" : serviceProviderConfig?.Host;
+            var consulPort = serviceProviderConfig?.Port ?? 8500;
             var configuration = new ConsulRegistryConfiguration(consulHost, consulPort, _ocelotConfiguration);
             _cache = cache;
             _consul = new ConsulClient(c =>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using Ocelot.Errors;
 using Ocelot.Responses;
@@ -43,3 +44,4 @@ namespace Ocelot.DownstreamUrlCreator
         }
     }
 }
+*/

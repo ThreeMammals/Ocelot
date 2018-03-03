@@ -15,16 +15,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
         private readonly IOcelotLogger _logger;
-        private readonly IUrlBuilder _urlBuilder;
 
         public DownstreamUrlCreatorMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer,
-            IUrlBuilder urlBuilder)
+            IDownstreamPathPlaceholderReplacer replacer)
         {
             _next = next;
             _replacer = replacer;
-            _urlBuilder = urlBuilder;
             _logger = loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>();
         }
 
@@ -42,23 +39,20 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
 
             UriBuilder uriBuilder;
-
-            if (context.DownstreamReRoute.DownstreamScheme == "fabric")
+            
+            if (context.ServiceProviderConfiguration.Type == "ServiceFabric")
             {
-                _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set proxyUrl");
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set service fabric path");
 
-                var serviceUri = context.DownstreamReRoute.DownstreamAddresses.First().Host + dsPath.Data.Value;
+                var scheme = context.DownstreamReRoute.DownstreamScheme;
+                var host = context.DownstreamRequest.RequestUri.Host;
+                var port = context.DownstreamRequest.RequestUri.Port;
+                var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
 
-                var proxyUrl = $"http://localhost:{19081}/{serviceUri}?cmd=instance";
+                _logger.LogInformation("DownstreamUrlCreatorMiddleware - service fabric path is {proxyUrl}", serviceFabricPath);
 
-                _logger.LogInformation("DownstreamUrlCreatorMiddleware - proxyUrl is {proxyUrl}", proxyUrl);
-
-                var uri = new Uri(proxyUrl);
-
-                uriBuilder = new UriBuilder(uri)
-                {
-                    Scheme = "http"
-                };
+                var uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}?cmd=instance");
+                uriBuilder = new UriBuilder(uri);
             }
             else
             {
