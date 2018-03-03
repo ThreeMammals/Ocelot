@@ -27,11 +27,13 @@ namespace Ocelot.Raft
             _finder = finder;
             _options = options;
             _peers = new List<IPeer>();
+            
             //todo - sort out async nonsense..
             var config = _provider.Get().GetAwaiter().GetResult();
             foreach (var item in _options.Value.Peers)
             {
                 var httpClient = new HttpClient();
+                
                 //todo what if this errors?
                 var httpPeer = new HttpPeer(item.HostAndPort, httpClient, _finder, config.Data, _identityServerConfig);
                 _peers.Add(httpPeer);

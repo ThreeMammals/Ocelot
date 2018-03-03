@@ -31,6 +31,7 @@ namespace Ocelot.RateLimit.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var options = context.DownstreamReRoute.RateLimitOptions;
+            
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
@@ -66,6 +67,7 @@ namespace Ocelot.RateLimit.Middleware
                     LogBlockedRequest(context.HttpContext, identity, counter, rule, context.DownstreamReRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    
                     // break execution
                     await ReturnQuotaExceededResponse(context.HttpContext, options, retrystring);
 

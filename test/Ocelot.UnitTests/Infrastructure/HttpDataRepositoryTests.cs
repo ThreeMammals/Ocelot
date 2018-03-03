@@ -21,8 +21,10 @@ namespace Ocelot.UnitTests.Infrastructure
             _httpDataRepository = new HttpDataRepository(_httpContextAccessor);
         }
 
-        //TODO - Additional tests -> Type mistmatch aka Add string, request int
-        //TODO - Additional tests -> HttpContent null. This should never happen
+        /*
+        TODO - Additional tests -> Type mistmatch aka Add string, request int 
+        TODO - Additional tests -> HttpContent null. This should never happen
+        */
 
         [Fact]
         public void get_returns_correct_key_from_http_context()

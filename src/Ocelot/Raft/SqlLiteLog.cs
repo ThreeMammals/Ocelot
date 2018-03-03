@@ -133,6 +133,7 @@ namespace Ocelot.Raft
                         TypeNameHandling = TypeNameHandling.All
                     };
                     var data = JsonConvert.SerializeObject(log, jsonSerializerSettings);
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"insert into logs (data) values ('{data}')";
                     using(var command = new SqliteCommand(sql, connection))
@@ -157,6 +158,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index};";
                     using(var command = new SqliteCommand(sql, connection))
@@ -187,6 +189,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -211,6 +214,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select id, data from logs where id >= {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -243,6 +247,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -270,6 +275,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var deleteSql = $"delete from logs where id >= {indexOfCommand};";
                     using(var deleteCommand = new SqliteCommand(deleteSql, connection))
