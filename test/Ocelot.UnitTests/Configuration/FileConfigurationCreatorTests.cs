@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Castle.Components.DictionaryAdapter;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Cache;
@@ -79,6 +80,125 @@ namespace Ocelot.UnitTests.Configuration
                 _adminPath.Object,
                 _headerFindAndReplaceCreator.Object,
                 _downstreamAddressesCreator.Object);
+        }
+
+        [Fact]
+        public void should_set_up_aggregate_re_route()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura",
+                            UpstreamHost = "localhost"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom",
+                            UpstreamHost = "localhost",
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+
+            var expected = new List<ReRoute>();
+
+            var lauraDownstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamHost("localhost")
+                .WithKey("Laura")
+                .WithDownstreamPathTemplate("/")
+                .WithDownstreamScheme("http")
+                .WithUpstreamHttpMethod(new List<string>() {"Get"})
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("localhost", 51878)})
+                .Build();
+
+            var lauraReRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithUpstreamHost("localhost")
+                .WithUpstreamPathTemplate("/laura")
+                .WithDownstreamReRoute(lauraDownstreamReRoute)
+                .Build();
+
+            expected.Add(lauraReRoute);
+
+            var tomDownstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamHost("localhost")
+                .WithKey("Tom")
+                .WithDownstreamPathTemplate("/")
+                .WithDownstreamScheme("http")
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("localhost", 51878) })
+                .Build();
+
+            var tomReRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .WithUpstreamHost("localhost")
+                .WithUpstreamPathTemplate("/tom")
+                .WithDownstreamReRoute(tomDownstreamReRoute)
+                .Build();
+
+            expected.Add(tomReRoute);
+
+            var aggregateReReRoute = new ReRouteBuilder()
+                .WithUpstreamPathTemplate("/")
+                .WithUpstreamHost("localhost")
+                .WithDownstreamReRoute(lauraDownstreamReRoute)
+                .WithDownstreamReRoute(tomDownstreamReRoute)
+                .WithUpstreamHttpMethod(new List<string>() { "Get" })
+                .Build();
+
+            expected.Add(aggregateReReRoute);
+
+            this.Given(x => x.GivenTheConfigIs(configuration))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(new ReRouteOptionsBuilder().Build()))
+                .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
+                .And(x => GivenTheDownstreamAddresses())
+                .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+                .And(x => x.GivenTheConfigIsValid())
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
+                .Then(x => x.ThenTheReRoutesAre(expected))
+                .BDDfy();
         }
 
         [Fact]
@@ -234,6 +354,13 @@ namespace Ocelot.UnitTests.Configuration
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
 
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("127.0.0.1", 80)})
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .Build();
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                         {
                             ReRoutes = new List<FileReRoute>
@@ -261,8 +388,7 @@ namespace Ocelot.UnitTests.Configuration
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
                                 new ReRouteBuilder()
-                                    .WithDownstreamAddresses(new List<DownstreamHostAndPort>(){new DownstreamHostAndPort("127.0.0.1", 80) })
-                                    .WithDownstreamPathTemplate("/products/{productId}")
+                                    .WithDownstreamReRoute(downstreamReRoute)
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
@@ -274,6 +400,13 @@ namespace Ocelot.UnitTests.Configuration
         public void should_use_downstream_scheme()
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamScheme("https")
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -297,8 +430,7 @@ namespace Ocelot.UnitTests.Configuration
                                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                                             {
                                                 new ReRouteBuilder()
-                                                    .WithDownstreamScheme("https")
-                                                    .WithDownstreamPathTemplate("/products/{productId}")
+                                                    .WithDownstreamReRoute(downstreamReRoute)
                                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                                     .Build()
@@ -310,6 +442,14 @@ namespace Ocelot.UnitTests.Configuration
         public void should_use_service_discovery_for_downstream_service_host()
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUseServiceDiscovery(true)
+                .WithServiceName("ProductService")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -341,11 +481,9 @@ namespace Ocelot.UnitTests.Configuration
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
                                 new ReRouteBuilder()
-                                    .WithDownstreamPathTemplate("/products/{productId}")
+                                    .WithDownstreamReRoute(downstreamReRoute)
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithUseServiceDiscovery(true)
-                                    .WithServiceName("ProductService")
                                     .Build()
                             }))
                             .BDDfy();
@@ -356,7 +494,15 @@ namespace Ocelot.UnitTests.Configuration
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
-                
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUseServiceDiscovery(false)
+                .Build();
+
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
                         {
                             ReRoutes = new List<FileReRoute>
@@ -378,10 +524,9 @@ namespace Ocelot.UnitTests.Configuration
                             .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                             {
                                 new ReRouteBuilder()
-                                    .WithDownstreamPathTemplate("/products/{productId}")
+                                    .WithDownstreamReRoute(downstreamReRoute)
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithUseServiceDiscovery(false)
                                     .Build()
                             }))
                             .BDDfy();
@@ -392,7 +537,15 @@ namespace Ocelot.UnitTests.Configuration
         {
              var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
-                
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
+                .Build();
+
+
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -415,7 +568,7 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("/products/{productId}")
+                        .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
@@ -428,6 +581,13 @@ namespace Ocelot.UnitTests.Configuration
         public void should_call_request_id_creator()
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithRequestIdKey("blahhhh")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -456,10 +616,9 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
-                        .WithDownstreamPathTemplate("/products/{productId}")
+                        .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithRequestIdKey("blahhhh")
                         .Build()
                 }))
                 .And(x => x.ThenTheRequestIdKeyCreatorIsCalledCorrectly())
@@ -514,17 +673,23 @@ namespace Ocelot.UnitTests.Configuration
                     .WithAllowedScopes(new List<string>())
                     .Build();
 
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithAuthenticationOptions(authenticationOptions)
+                .WithClaimsToHeaders(new List<ClaimToThing>
+                {
+                    new ClaimToThing("CustomerId", "CustomerId", "", 0),
+                })
+                .Build();
+
             var expected = new List<ReRoute>
             {
                 new ReRouteBuilder()
-                    .WithDownstreamPathTemplate("/products/{productId}")
+                    .WithDownstreamReRoute(downstreamReRoute)
                     .WithUpstreamPathTemplate("/api/products/{productId}")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithAuthenticationOptions(authenticationOptions)
-                    .WithClaimsToHeaders(new List<ClaimToThing>
-                    {
-                        new ClaimToThing("CustomerId", "CustomerId", "", 0),
-                    })
                     .Build()
             };
 
@@ -554,13 +719,19 @@ namespace Ocelot.UnitTests.Configuration
                    .WithAllowedScopes(new List<string>())
                    .Build();
 
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithAuthenticationOptions(authenticationOptions)
+                .Build();
+
             var expected = new List<ReRoute>
             {
                 new ReRouteBuilder()
-                    .WithDownstreamPathTemplate("/products/{productId}")
+                    .WithDownstreamReRoute(downstreamReRoute)
                     .WithUpstreamPathTemplate("/api/products/{productId}")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithAuthenticationOptions(authenticationOptions)
                     .Build()
             };
 
@@ -643,14 +814,16 @@ namespace Ocelot.UnitTests.Configuration
                 var result = _config.Data.ReRoutes[i];
                 var expected = expectedReRoutes[i];
 
-                result.DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate.Value);
+                result.DownstreamReRoute.Count.ShouldBe(expected.DownstreamReRoute.Count);
+
+                result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
                 result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
                 result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
-                result.ClaimsToClaims.Count.ShouldBe(expected.ClaimsToClaims.Count);
-                result.ClaimsToHeaders.Count.ShouldBe(expected.ClaimsToHeaders.Count);
-                result.ClaimsToQueries.Count.ShouldBe(expected.ClaimsToQueries.Count);
-                result.RequestIdKey.ShouldBe(expected.RequestIdKey);
+                result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
+                result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
+                result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);
             
             }
         }
@@ -659,8 +832,8 @@ namespace Ocelot.UnitTests.Configuration
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
-                var result = _config.Data.ReRoutes[i].AuthenticationOptions;
-                var expected = expectedReRoutes[i].AuthenticationOptions;
+                var result = _config.Data.ReRoutes[i].DownstreamReRoute[0].AuthenticationOptions;
+                var expected = expectedReRoutes[i].DownstreamReRoute[0].AuthenticationOptions;
                 result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             }
         }
@@ -714,10 +887,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
 
-            _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
 
         private void ThenTheServiceProviderCreatorIsCalledCorrectly()

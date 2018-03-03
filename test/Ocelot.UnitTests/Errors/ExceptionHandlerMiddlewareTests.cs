@@ -1,10 +1,10 @@
+using Ocelot.Middleware;
+
 namespace Ocelot.UnitTests.Errors
 {
     using System;
     using System.Net;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Errors.Middleware;
     using Ocelot.Logging;
     using Shouldly;
@@ -14,18 +14,41 @@ namespace Ocelot.UnitTests.Errors
     using Ocelot.Configuration.Provider;
     using Moq;
     using Ocelot.Configuration;
-    using Rafty.Concensus;
     using Ocelot.Errors;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Infrastructure.RequestData;
 
-    public class ExceptionHandlerMiddlewareTests : ServerHostedMiddlewareTest
+    public class ExceptionHandlerMiddlewareTests
     {
         bool _shouldThrowAnException = false;
         private Mock<IOcelotConfigurationProvider> _provider;
+        private Mock<IRequestScopedDataRepository> _repo;
+        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IOcelotLogger> _logger;
+        private ExceptionHandlerMiddleware _middleware;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
+
 
         public ExceptionHandlerMiddlewareTests()
         {
             _provider = new Mock<IOcelotConfigurationProvider>();
-            GivenTheTestServerIsConfigured();
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<ExceptionHandlerMiddleware>()).Returns(_logger.Object);
+            _next = async context => {
+                await Task.CompletedTask;
+
+                if (_shouldThrowAnException)
+                {
+                    throw new Exception("BOOM");
+                }
+
+                context.HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+            };
+            _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _provider.Object, _repo.Object);
         }
         
         [Fact]
@@ -99,6 +122,17 @@ namespace Ocelot.UnitTests.Errors
                 .BDDfy();
         }
 
+        private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
+        {
+            _downstreamContext.HttpContext.Request.Headers.Add(key, value);
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+        }
+
+        private void WhenICallTheMiddleware()
+        {
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+        }
+
         private void GivenTheConfigThrows()
         {
             var ex = new Exception("outer", new  Exception("inner"));
@@ -108,7 +142,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenAnExceptionIsThrown()
         {
-            ResponseMessage.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
         }
 
         private void GivenTheConfigReturnsError()
@@ -130,7 +164,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void TheRequestIdIsSet(string key, string value)
         {
-            ScopedRepository.Verify(x => x.Add<string>(key, value), Times.Once);
+            _repo.Verify(x => x.Add<string>(key, value), Times.Once);
         }
 
         private void GivenTheConfigurationIs(IOcelotConfiguration config)
@@ -140,31 +174,6 @@ namespace Ocelot.UnitTests.Errors
                 .Setup(x => x.Get()).ReturnsAsync(response);
         }
 
-        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
-        {
-            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            services.AddLogging();
-            services.AddSingleton(ScopedRepository.Object);
-            services.AddSingleton<IOcelotConfigurationProvider>(_provider.Object);
-        }
-
-        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
-        {
-            app.UseExceptionHandlerMiddleware();
-            app.Run(DownstreamExceptionSimulator);
-        }
-
-        private async Task DownstreamExceptionSimulator(HttpContext context)
-        {
-            await Task.CompletedTask;
-
-            if (_shouldThrowAnException)
-            {
-                throw new Exception("BOOM");
-            }
-
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-        }
 
         private void GivenAnExceptionWillNotBeThrownDownstream()
         {
@@ -178,17 +187,18 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenTheResponseIsOk()
         {
-            ResponseMessage.StatusCode.ShouldBe(HttpStatusCode.OK);
+            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(200);
         }
 
         private void ThenTheResponseIsError()
         {
-            ResponseMessage.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+
+            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
         }
 
         private void TheRequestIdIsNotSet()
         {
-            ScopedRepository.Verify(x => x.Add<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _repo.Verify(x => x.Add<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }

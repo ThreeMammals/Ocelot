@@ -9,21 +9,20 @@ namespace Ocelot.Authorisation.Middleware
     using System.Threading.Tasks;
     using Errors;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Middleware;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IClaimsAuthoriser _claimsAuthoriser;
         private readonly IScopesAuthoriser _scopesAuthoriser;
         private readonly IOcelotLogger _logger;
 
-        public AuthorisationMiddleware(RequestDelegate next,
-            IRequestScopedDataRepository requestScopedDataRepository,
+        public AuthorisationMiddleware(OcelotRequestDelegate next,
             IClaimsAuthoriser claimsAuthoriser,
             IScopesAuthoriser scopesAuthoriser,
             IOcelotLoggerFactory loggerFactory)
-            : base(requestScopedDataRepository)
         {
             _next = next;
             _claimsAuthoriser = claimsAuthoriser;
@@ -31,19 +30,19 @@ namespace Ocelot.Authorisation.Middleware
             _logger = loggerFactory.CreateLogger<AuthorisationMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            if (IsAuthenticatedRoute(DownstreamRoute.ReRoute))
+            if (IsAuthenticatedRoute(context.DownstreamReRoute))
             {
                 _logger.LogDebug("route is authenticated scopes must be checked");
 
-                var authorised = _scopesAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.AuthenticationOptions.AllowedScopes);
+                var authorised = _scopesAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.AuthenticationOptions.AllowedScopes);
 
                 if (authorised.IsError)
                 {
                     _logger.LogDebug("error authorising user scopes");
 
-                    SetPipelineError(authorised.Errors);
+                    SetPipelineError(context, authorised.Errors);
                     return;
                 }
 
@@ -55,46 +54,46 @@ namespace Ocelot.Authorisation.Middleware
                 {
                     _logger.LogDebug("user scopes is not authorised setting pipeline error");
 
-                    SetPipelineError(new List<Error>
+                    SetPipelineError(context, new List<Error>
                     {
                         new UnauthorisedError(
-                            $"{context.User.Identity.Name} unable to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
+                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}")
                     });
                 }
             }
 
-            if (IsAuthorisedRoute(DownstreamRoute.ReRoute))
+            if (IsAuthorisedRoute(context.DownstreamReRoute))
             {
                 _logger.LogDebug("route is authorised");
 
-                var authorised = _claimsAuthoriser.Authorise(context.User, DownstreamRoute.ReRoute.RouteClaimsRequirement);
+                var authorised = _claimsAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.RouteClaimsRequirement);
 
                 if (authorised.IsError)
                 {
-                    _logger.LogDebug($"Error whilst authorising {context.User.Identity.Name} for {context.User.Identity.Name}. Setting pipeline error");
+                    _logger.LogDebug($"Error whilst authorising {context.HttpContext.User.Identity.Name} for {context.HttpContext.User.Identity.Name}. Setting pipeline error");
 
-                    SetPipelineError(authorised.Errors);
+                    SetPipelineError(context, authorised.Errors);
                     return;
                 }
 
                 if (IsAuthorised(authorised))
                 {
-                    _logger.LogDebug($"{context.User.Identity.Name} has succesfully been authorised for {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}. Calling next middleware");
+                    _logger.LogDebug($"{context.HttpContext.User.Identity.Name} has succesfully been authorised for {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Calling next middleware");
                     await _next.Invoke(context);
                 }
                 else
                 {
-                    _logger.LogDebug($"{context.User.Identity.Name} is not authorised to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
+                    _logger.LogDebug($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
 
-                    SetPipelineError(new List<Error>
+                    SetPipelineError(context, new List<Error>
                     {
-                        new UnauthorisedError($"{context.User.Identity.Name} is not authorised to access {DownstreamRoute.ReRoute.UpstreamPathTemplate.Value}")
+                        new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}")
                     });
                 }
             }
             else
             {
-                _logger.LogDebug($"{DownstreamRoute.ReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
+                _logger.LogDebug($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
                 await _next.Invoke(context);
             }
         }
@@ -104,12 +103,12 @@ namespace Ocelot.Authorisation.Middleware
             return authorised.Data;
         }
 
-        private static bool IsAuthenticatedRoute(ReRoute reRoute)
+        private static bool IsAuthenticatedRoute(DownstreamReRoute reRoute)
         {
             return reRoute.IsAuthenticated;
         }
 
-        private static bool IsAuthorisedRoute(ReRoute reRoute)
+        private static bool IsAuthorisedRoute(DownstreamReRoute reRoute)
         {
             return reRoute.IsAuthorised;
         }

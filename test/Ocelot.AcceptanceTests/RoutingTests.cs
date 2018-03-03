@@ -298,7 +298,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/",
@@ -315,7 +315,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
@@ -326,7 +326,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51874", "/api/v1/vacancy/1", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))

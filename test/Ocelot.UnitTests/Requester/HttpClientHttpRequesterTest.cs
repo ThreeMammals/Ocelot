@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using Moq;
 using Ocelot.Logging;
 using Ocelot.Requester;
-using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Middleware;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
@@ -21,7 +22,7 @@ namespace Ocelot.UnitTests.Requester
         private Mock<IDelegatingHandlerHandlerProvider> _provider;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
-        private Ocelot.Request.Request _request;
+        private DownstreamContext _request;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
 
@@ -30,7 +31,7 @@ namespace Ocelot.UnitTests.Requester
             _provider = new Mock<IDelegatingHandlerHandlerProvider>();
             _provider.Setup(x => x.Get()).Returns(new List<Func<DelegatingHandler>>());
             _house = new Mock<IDelegatingHandlerHandlerHouse>();
-            _house.Setup(x => x.Get(It.IsAny<Ocelot.Request.Request>())).Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
+            _house.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _loggerFactory
@@ -43,7 +44,16 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
-            this.Given(x=>x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() {  RequestUri = new Uri("http://www.bbc.co.uk") }, false, new NoQoSProvider(), false, false, "", false)))
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+
+            var context = new DownstreamContext(new DefaultHttpContext())
+            {
+                DownstreamReRoute = reRoute,
+                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") },
+            };
+
+            this.Given(x=>x.GivenTheRequestIs(context))
                 .When(x=>x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledCorrectly())
                 .BDDfy();
@@ -52,13 +62,22 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }, false, new NoQoSProvider(), false, false, "", false)))
+            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+
+            var context = new DownstreamContext(new DefaultHttpContext())
+            {
+                DownstreamReRoute = reRoute,
+                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") },
+            };
+
+            this.Given(x => x.GivenTheRequestIs(context))
                 .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledError())
                 .BDDfy();
         }
 
-        private void GivenTheRequestIs(Ocelot.Request.Request request)
+        private void GivenTheRequestIs(DownstreamContext request)
         {
             _request = request;            
         }

@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -23,7 +24,7 @@ namespace Ocelot.Requester
             _house = house;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
+        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext request)
         {
             var builder = new HttpClientBuilder(_house);
 
@@ -33,7 +34,7 @@ namespace Ocelot.Requester
 
             try
             {
-                var response = await httpClient.SendAsync(request.HttpRequestMessage);
+                var response = await httpClient.SendAsync(request.DownstreamRequest);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (TimeoutRejectedException exception)
@@ -57,26 +58,21 @@ namespace Ocelot.Requester
 
         }
 
-        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, Request.Request request)
+        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, DownstreamContext request)
         {
             var httpClient = _cacheHandlers.Get(cacheKey);
 
             if (httpClient == null)
             {
-                httpClient = builder.Create(request);
+                httpClient = builder.Create(request.DownstreamReRoute);
             }
 
             return httpClient;
         }
 
-        private string GetCacheKey(Request.Request request)
+        private string GetCacheKey(DownstreamContext request)
         {
-            var baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
-
-            if (request.IsQos)
-            {
-                baseUrl = $"{baseUrl}{request.QosProvider.CircuitBreaker.CircuitBreakerPolicy.PolicyKey}";
-            }
+            var baseUrl = $"{request.DownstreamRequest.RequestUri.Scheme}://{request.DownstreamRequest.RequestUri.Authority}";
            
             return baseUrl;
         }

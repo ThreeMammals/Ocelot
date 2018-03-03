@@ -12,7 +12,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _serviceProviderFactory = serviceProviderFactory;
         }
 
-        public async Task<ILoadBalancer> Get(ReRoute reRoute, ServiceProviderConfiguration config)
+        public async Task<ILoadBalancer> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
         {            
             var serviceProvider = _serviceProviderFactory.Get(config, reRoute);
 

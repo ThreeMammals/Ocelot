@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -20,16 +19,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-</ItemGroup>
-
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CacheManager.Serialization.Json" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
@@ -52,6 +48,6 @@
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="Consul" Version="0.7.2.3" />
     <PackageReference Include="xunit" Version="2.3.1" />
+     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /> 
   </ItemGroup>
-
 </Project>
