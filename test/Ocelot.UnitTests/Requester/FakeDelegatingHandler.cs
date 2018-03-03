@@ -9,13 +9,13 @@ namespace Ocelot.UnitTests.Requester
     {
         public FakeDelegatingHandler()
         {
-
         }
 
         public FakeDelegatingHandler(int order)
         {
             Order = order;
         }
+
         public int Order {get;private set;}
         public DateTime TimeCalled {get;private set;}
 

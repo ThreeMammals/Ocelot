@@ -24,6 +24,7 @@ namespace Ocelot.Raft
                     FileStream fs = File.Create(_path);
                     fs.Dispose();
                 }
+
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
@@ -59,6 +60,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -88,6 +90,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -113,6 +116,7 @@ namespace Ocelot.Raft
                             }
                         }
                     }
+
                     return result;
                 }
             }
@@ -222,15 +226,13 @@ namespace Ocelot.Raft
                                 };
                                 var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
                                 logsToReturn.Add((id, log));
-
                             }
                         }
                     }
                 }
 
                 return logsToReturn;
-            }
-          
+            }        
         }
 
         public long GetTermAtIndex(int index)
@@ -256,9 +258,11 @@ namespace Ocelot.Raft
                         }
                     }
                 }
+
                 return result;
             }
         }
+
         public void Remove(int indexOfCommand)
         {
             lock(_lock)

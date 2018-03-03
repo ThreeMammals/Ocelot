@@ -823,8 +823,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
-                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);
-            
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);           
             }
         }
 

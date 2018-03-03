@@ -129,7 +129,6 @@ namespace Ocelot.UnitTests.Claims
 
         private void ThenTheResultIsError()
         {
-
             _result.IsError.ShouldBe(true);
         }
 

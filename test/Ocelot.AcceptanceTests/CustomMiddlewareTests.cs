@@ -352,7 +352,6 @@ namespace Ocelot.AcceptanceTests
                     app.UsePathBase(basePath);
                     app.Run(context =>
                     {
-
                         if(string.IsNullOrEmpty(basePath))
                         {
                             context.Response.StatusCode = statusCode;

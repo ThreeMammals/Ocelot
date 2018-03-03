@@ -38,6 +38,7 @@ namespace Ocelot.RateLimit.Middleware
                 await _next.Invoke(context);
                 return;
             }
+
             // compute identity from request
             var identity = SetIdentity(context.HttpContext, options);
 
@@ -70,8 +71,8 @@ namespace Ocelot.RateLimit.Middleware
 
                     return;
                 }
-
             }
+
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
@@ -103,6 +104,7 @@ namespace Ocelot.RateLimit.Middleware
             {
                 return true;
             }
+
             return false;
         }
 
@@ -134,8 +136,5 @@ namespace Ocelot.RateLimit.Middleware
 
             return Task.CompletedTask;
         }
-
     }
-
 }
-

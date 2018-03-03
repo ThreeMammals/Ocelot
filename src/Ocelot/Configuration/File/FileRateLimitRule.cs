@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.File
 {
-
     public class FileRateLimitRule
     {
         public FileRateLimitRule()
@@ -38,6 +37,7 @@ namespace Ocelot.Configuration.File
             {
                 return string.Empty;
             }
+
             var sb = new StringBuilder();
             sb.Append(
                 $"{nameof(Period)}:{Period},{nameof(PeriodTimespan)}:{PeriodTimespan:F},{nameof(Limit)}:{Limit},{nameof(ClientWhitelist)}:[");

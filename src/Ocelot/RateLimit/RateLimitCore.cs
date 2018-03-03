@@ -62,6 +62,7 @@ namespace Ocelot.RateLimit
                 var expirationTime = ConvertToTimeSpan(rule.Period);
                 _counterHandler.Set(counterId, counter, expirationTime);
             }
+
             return counter;
         }
 
@@ -92,7 +93,6 @@ namespace Ocelot.RateLimit
                     rule.Period,
                     rule.Limit.ToString(),
                     (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
-
             }
 
             return headers;
@@ -141,7 +141,6 @@ namespace Ocelot.RateLimit
                 default:
                     throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}");
             }
-        }
-
+        }  
     }
 }

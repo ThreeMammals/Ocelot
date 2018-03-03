@@ -50,7 +50,6 @@ namespace Ocelot.Responder
                 httpContext.Response.StatusCode = (int)response.StatusCode;
 
                 return Task.CompletedTask;
-
             }, context);
 
             using (Stream stream = new MemoryStream(content))

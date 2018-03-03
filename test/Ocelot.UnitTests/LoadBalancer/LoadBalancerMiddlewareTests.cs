@@ -188,7 +188,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _downstreamContext.IsError.ShouldBeTrue();
             _downstreamContext.Errors.ShouldBe(_getHostAndPortError.Errors);
-
         }
 
         private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)

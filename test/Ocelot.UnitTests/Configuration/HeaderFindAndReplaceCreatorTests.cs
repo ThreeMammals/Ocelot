@@ -33,13 +33,11 @@ namespace Ocelot.UnitTests.Configuration
                 UpstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Test", "Test, Chicken"},
-
                     {"Moop", "o, a"}
                 },
                  DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Pop", "West, East"},
-
                     {"Bop", "e, r"}
                 }
             };

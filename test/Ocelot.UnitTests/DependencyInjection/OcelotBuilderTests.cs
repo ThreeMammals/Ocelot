@@ -38,6 +38,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             _services.AddSingleton<IConfiguration>(_configRoot);
             _maxRetries = 100;
         }
+
         private Exception _ex;
 
         [Fact]
@@ -102,9 +103,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         [Fact]
         public void should_set_up_administration_with_identity_server_options()
         {
-            Action<IdentityServerAuthenticationOptions> options = o => {
-               
-            };
+            Action<IdentityServerAuthenticationOptions> options = o => {};
 
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpAdministration(options))

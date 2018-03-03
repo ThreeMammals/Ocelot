@@ -8,6 +8,7 @@ namespace Ocelot.Cache
         {
             Value = value;
         }
+
         public List<string> Value {get;private set;}
     }
 }

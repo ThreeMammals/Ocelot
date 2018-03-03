@@ -124,7 +124,6 @@ namespace Ocelot.IntegrationTests
                     {
                         Host = "127.0.0.1",
                     }
-
                 },
                 ReRoutes = new List<FileReRoute>()
                 {

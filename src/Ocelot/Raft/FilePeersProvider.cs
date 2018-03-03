@@ -37,6 +37,7 @@ namespace Ocelot.Raft
                 _peers.Add(httpPeer);
             }
         }
+
         public List<IPeer> Get()
         {
             return _peers;

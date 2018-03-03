@@ -135,7 +135,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void GivenTheConfigThrows()
         {
-            var ex = new Exception("outer", new  Exception("inner"));
+            var ex = new Exception("outer", new Exception("inner"));
              _provider
                 .Setup(x => x.Get()).ThrowsAsync(ex);
         }
@@ -192,7 +192,6 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenTheResponseIsError()
         {
-
             _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
         }
 

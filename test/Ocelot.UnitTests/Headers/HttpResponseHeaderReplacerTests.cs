@@ -22,6 +22,7 @@ namespace Ocelot.UnitTests.Headers
         {
             _replacer = new HttpResponseHeaderReplacer();
         }
+
         [Fact]
         public void should_replace_headers()
         {

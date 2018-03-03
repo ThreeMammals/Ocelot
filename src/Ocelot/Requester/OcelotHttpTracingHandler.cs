@@ -35,7 +35,7 @@ namespace Ocelot.Requester
             {
                 request.Headers.Remove(prefix_spanId);
                 request.Headers.TryAddWithoutValidation(prefix_spanId, span.SpanContext.SpanId);
-            };
+            }
 
             span.Tags.Client().Component("HttpClient")
                 .HttpMethod(request.Method.Method)

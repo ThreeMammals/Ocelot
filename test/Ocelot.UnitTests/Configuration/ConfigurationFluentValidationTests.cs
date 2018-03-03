@@ -981,7 +981,8 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-         [Fact]
+
+        [Fact]
         public void configuration_is_not_valid_when_host_and_port_is_empty()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration

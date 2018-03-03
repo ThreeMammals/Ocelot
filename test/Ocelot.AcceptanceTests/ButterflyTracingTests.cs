@@ -52,7 +52,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing  = true
+                                UseTracing = true
                             },
                             QoSOptions = new FileQoSOptions
                             {
@@ -77,7 +77,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing  = true
+                                UseTracing = true
                             },
                             QoSOptions = new FileQoSOptions
                             {

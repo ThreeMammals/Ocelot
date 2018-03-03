@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Ocelot.RateLimit
 {
-
     public class ClientRateLimitProcessor
     {
         private readonly IRateLimitCounterHandler _counterHandler;
@@ -39,7 +38,5 @@ namespace Ocelot.RateLimit
         {
             return _core.ConvertToTimeSpan(timeSpan);
         }
-
     }
-
 }

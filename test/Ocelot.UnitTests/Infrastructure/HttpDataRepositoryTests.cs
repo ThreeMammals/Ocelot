@@ -27,7 +27,6 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void get_returns_correct_key_from_http_context()
         {
-
             this.Given(x => x.GivenAHttpContextContaining("key", "string"))
                 .When(x => x.GetIsCalledWithKey<string>("key"))
                 .Then(x => x.ThenTheResultIsAnOkResponse<string>("string"))
@@ -83,6 +82,5 @@ namespace Ocelot.UnitTests.Infrastructure
             _result.ShouldBeOfType<OkResponse<T>>();
             ((OkResponse<T>)_result).Data.ShouldBe(resultValue);
         }
-
     }
 }

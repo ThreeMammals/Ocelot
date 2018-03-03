@@ -36,7 +36,6 @@ namespace Ocelot.UnitTests.Request
 
         public DownstreamRequestInitialiserMiddlewareTests()
         {
-
             _httpContext = new Mock<HttpContext>();
             _httpRequest = new Mock<HttpRequest>();
             _requestMapper = new Mock<IRequestMapper>();

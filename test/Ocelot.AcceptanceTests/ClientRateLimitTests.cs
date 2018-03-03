@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
                              
-                            RateLimitOptions =    new FileRateLimitRule()
+                            RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>(),
@@ -75,7 +75,6 @@ namespace Ocelot.AcceptanceTests
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
                          HttpStatusCode = 428
-
                     },
                      RequestIdKey ="oceclientrequest"
                 }
@@ -117,7 +116,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
 
-                            RateLimitOptions =    new FileRateLimitRule()
+                            RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>() { "ocelotclient1"},
@@ -172,7 +171,5 @@ namespace Ocelot.AcceptanceTests
 
             _builder.Start();
         }
-
-  
     }
 }

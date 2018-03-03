@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_template_pattern_that_matches_anything_to_end_of_string()
         {
-            var fileReRoute =  new FileReRoute
+            var fileReRoute = new FileReRoute
             {
                 UpstreamPathTemplate = "/api/products/{productId}",
                 ReRouteIsCaseSensitive = true

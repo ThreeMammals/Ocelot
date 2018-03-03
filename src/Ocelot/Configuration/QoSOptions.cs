@@ -24,6 +24,5 @@ namespace Ocelot.Configuration
         public int TimeoutValue { get; private set; }
 
         public TimeoutStrategy TimeoutStrategy { get; private set; }
-
     }
 }

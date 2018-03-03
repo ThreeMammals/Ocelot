@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.Authentication
                 .BDDfy();
         }
 
-        private  void WhenICallTheMiddleware()
+        private void WhenICallTheMiddleware()
         {
             _next = async (context) => {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
@@ -89,7 +89,7 @@ namespace Ocelot.UnitTests.Authentication
             {
                 string text = reader.ReadToEnd();
                 return text;
-            };
+            }
         }
     }
 }

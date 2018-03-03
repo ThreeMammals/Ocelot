@@ -55,7 +55,6 @@ namespace Ocelot.Requester
             {
                 _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(24));
             }
-
         }
 
         private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, DownstreamContext request)
