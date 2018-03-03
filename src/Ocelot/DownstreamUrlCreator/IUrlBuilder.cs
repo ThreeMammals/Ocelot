@@ -1,4 +1,5 @@
-﻿using Ocelot.Responses;
+﻿/*
+using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator
@@ -8,3 +9,4 @@ namespace Ocelot.DownstreamUrlCreator
         Response<DownstreamUrl> Build(string downstreamPath, string downstreamScheme, ServiceHostAndPort downstreamHostAndPort);
     }
 }
+*/
