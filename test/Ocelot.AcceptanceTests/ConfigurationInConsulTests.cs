@@ -306,8 +306,7 @@ namespace Ocelot.AcceptanceTests
                                         var kvp = new FakeConsulGetResponse(base64);
 
                                         await context.Response.WriteJsonAsync(new FakeConsulGetResponse[] { kvp });
-                                    }
-
+                                    }                               
                                     else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/OcelotConfiguration")
                                     {
                                         try
