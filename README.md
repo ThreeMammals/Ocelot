@@ -39,6 +39,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Routing
 * Request Aggregation
 * Service Discovery with Consul
+* Servic Fabric
 * Authentication
 * Authorisation
 * Rate Limiting
