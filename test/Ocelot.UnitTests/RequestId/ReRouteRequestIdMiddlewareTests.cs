@@ -4,7 +4,6 @@ namespace Ocelot.UnitTests.RequestId
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Infrastructure.RequestData;
     using System;
     using System.Collections.Generic;
@@ -24,7 +23,6 @@ namespace Ocelot.UnitTests.RequestId
     public class ReRouteRequestIdMiddlewareTests
     {
         private readonly HttpRequestMessage _downstreamRequest;
-        private Response<DownstreamRoute> _downstreamRoute;
         private string _value;
         private string _key;
         private Mock<IOcelotLoggerFactory> _loggerFactory;

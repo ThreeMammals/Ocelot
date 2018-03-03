@@ -13,7 +13,6 @@ namespace Ocelot.UnitTests.Requester
     {
         private IQoSProvider _qoSProvider;
         private readonly QosProviderHouse _qosProviderHouse;
-        private Response _addResult;
         private Response<IQoSProvider> _getResult;
         private DownstreamReRoute _reRoute;
         private readonly Mock<IQoSProviderFactory> _factory;

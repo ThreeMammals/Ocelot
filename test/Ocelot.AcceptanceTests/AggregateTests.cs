@@ -15,7 +15,6 @@ namespace Ocelot.AcceptanceTests
     public class AggregateTests : IDisposable
     {
         private IWebHost _serviceOneBuilder;
-        private IWebHost _serviceTwoBuilder;
         private readonly Steps _steps;
         private string _downstreamPathOne;
         private string _downstreamPathTwo;
@@ -364,7 +363,6 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _serviceOneBuilder?.Dispose();
-            _serviceTwoBuilder?.Dispose();
             _steps.Dispose();
         }
     }

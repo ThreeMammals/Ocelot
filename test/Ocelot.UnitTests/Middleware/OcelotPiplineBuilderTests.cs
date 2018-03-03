@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Middleware
 {
-    using System;
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
@@ -17,9 +16,7 @@
     public class OcelotPiplineBuilderTests
     {
         private readonly IServiceCollection _services;
-        private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
-        private IOcelotBuilder _ocelotBuilder;
         private DownstreamContext _downstreamContext;
         private int _counter;
 

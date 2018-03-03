@@ -83,7 +83,7 @@ namespace Ocelot.UnitTests.Configuration
                     _setter.Verify(x => x.Set(fileConfig), Times.Once);
                     return true;
                 }
-                catch(Exception ex)
+                catch(Exception)
                 {
                     return false;
                 }

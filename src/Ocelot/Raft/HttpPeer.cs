@@ -89,7 +89,8 @@ namespace Ocelot.Raft
             }
         }
 
-        public Response<T> Request<T>(T command) where T : ICommand
+        public Response<T> Request<T>(T command)
+            where T : ICommand
         {
             if(_token == null)
             {

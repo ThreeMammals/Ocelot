@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,15 +17,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
-using Butterfly.Client.AspNetCore;
-using Butterfly.Client.Tracing;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -42,11 +36,9 @@ namespace Ocelot.AcceptanceTests
         public string RequestIdKey = "OcRequestId";
         private readonly Random _random;
         private IWebHostBuilder _webHostBuilder;
-        private readonly string _baseUrl;
 
         public Steps()
         {
-            _baseUrl = "http://localhost:5000";
             _random = new Random();
         }
 

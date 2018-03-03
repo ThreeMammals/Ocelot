@@ -17,7 +17,6 @@ namespace Ocelot.UnitTests.Requester
         private readonly HttpClientBuilder _builder;
         private readonly Mock<IDelegatingHandlerHandlerHouse> _house;
         private readonly Mock<IDelegatingHandlerHandlerProvider> _provider;
-        private IHttpClientBuilder _builderResult;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
         private DownstreamReRoute _request;
