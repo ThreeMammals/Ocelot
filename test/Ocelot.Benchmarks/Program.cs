@@ -8,7 +8,6 @@ namespace Ocelot.Benchmarks
         {
             var switcher = new BenchmarkSwitcher(new[] {
                    typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
-
                });
 
             switcher.Run(args);

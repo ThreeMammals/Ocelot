@@ -124,7 +124,6 @@ namespace Ocelot.IntegrationTests
                     {
                         Host = "127.0.0.1",
                     }
-
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
@@ -484,7 +483,6 @@ namespace Ocelot.IntegrationTests
                {
                    app.UseOcelot().Wait();
                });
-
 
             _builderTwo = _webHostBuilderTwo.Build();
 

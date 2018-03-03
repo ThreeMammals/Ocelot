@@ -67,7 +67,6 @@ namespace Ocelot.Configuration.Creator
             return false;
         }
 
-
         private bool IsPlaceHolder(string upstreamTemplate, int i)
         {
             return upstreamTemplate[i] == '{';

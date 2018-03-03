@@ -79,6 +79,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.Count.ShouldBeGreaterThan(0);
         }
+
         private void GivenTheFollowingDictionary(Dictionary<string,string> claimsToThings)
         {
             _claimsToThings = claimsToThings;

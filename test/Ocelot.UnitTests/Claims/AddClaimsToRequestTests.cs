@@ -93,7 +93,6 @@ namespace Ocelot.UnitTests.Claims
                .BDDfy();
         }
 
-
         private void GivenClaimsToThings(List<ClaimToThing> configuration)
         {
             _claimsToThings = configuration;
@@ -129,7 +128,6 @@ namespace Ocelot.UnitTests.Claims
 
         private void ThenTheResultIsError()
         {
-
             _result.IsError.ShouldBe(true);
         }
 

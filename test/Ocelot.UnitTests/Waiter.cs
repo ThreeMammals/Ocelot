@@ -3,14 +3,6 @@ using System.Diagnostics;
 
 namespace Ocelot.UnitTests
 {
-    public class Wait
-    {
-        public static Waiter WaitFor(int milliSeconds)
-        {
-            return new Waiter(milliSeconds);
-        }
-    }
-
     public class Waiter
     {
         private readonly int _milliSeconds;

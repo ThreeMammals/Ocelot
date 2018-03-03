@@ -130,7 +130,6 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheResultIsError()
         {
-
             _result.IsError.ShouldBe(true);
         }
 

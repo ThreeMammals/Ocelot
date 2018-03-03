@@ -58,7 +58,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
         {

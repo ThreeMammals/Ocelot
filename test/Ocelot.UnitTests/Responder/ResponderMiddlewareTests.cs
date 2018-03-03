@@ -4,7 +4,6 @@ using Ocelot.Middleware;
 namespace Ocelot.UnitTests.Responder
 {
     using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using System.Net.Http;
     using Moq;
     using Ocelot.DownstreamRouteFinder.Finder;
@@ -12,7 +11,6 @@ namespace Ocelot.UnitTests.Responder
     using Ocelot.Logging;
     using Ocelot.Responder;
     using Ocelot.Responder.Middleware;
-    using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -20,13 +18,11 @@ namespace Ocelot.UnitTests.Responder
     {
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IErrorsToHttpStatusCodeMapper> _codeMapper;
-        private OkResponse<HttpResponseMessage> _response;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ResponderMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
-
 
         public ResponderMiddlewareTests()
         {

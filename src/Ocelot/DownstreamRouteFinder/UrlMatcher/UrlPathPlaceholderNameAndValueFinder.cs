@@ -50,6 +50,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                     counterForTemplate = endOfPlaceholder;
                 }
+
                 counterForPath++;
             }
 
@@ -90,6 +91,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
             return variableName;
         }
+
         private int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
         {                        
             var closingPlaceHolderPositionOnTemplate = urlTemplate.IndexOf(delimiter, counterForTemplate);

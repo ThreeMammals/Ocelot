@@ -29,7 +29,6 @@ namespace Ocelot.UnitTests.Errors
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
 
-
         public ExceptionHandlerMiddlewareTests()
         {
             _provider = new Mock<IOcelotConfigurationProvider>();
@@ -135,7 +134,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void GivenTheConfigThrows()
         {
-            var ex = new Exception("outer", new  Exception("inner"));
+            var ex = new Exception("outer", new Exception("inner"));
              _provider
                 .Setup(x => x.Get()).ThrowsAsync(ex);
         }
@@ -174,7 +173,6 @@ namespace Ocelot.UnitTests.Errors
                 .Setup(x => x.Get()).ReturnsAsync(response);
         }
 
-
         private void GivenAnExceptionWillNotBeThrownDownstream()
         {
             _shouldThrowAnException = false;
@@ -192,7 +190,6 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenTheResponseIsError()
         {
-
             _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
         }
 

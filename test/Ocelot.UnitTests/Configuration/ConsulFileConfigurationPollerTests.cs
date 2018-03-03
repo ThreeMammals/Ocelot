@@ -12,7 +12,6 @@ using Xunit;
 using Shouldly;
 using static Ocelot.UnitTests.Wait;
 
-
 namespace Ocelot.UnitTests.Configuration
 {
     public class ConsulFileConfigurationPollerTests : IDisposable
@@ -34,6 +33,7 @@ namespace Ocelot.UnitTests.Configuration
             _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
             _poller = new ConsulFileConfigurationPoller(_factory.Object, _repo.Object, _setter.Object);
         }
+
         public void Dispose()
         {
             _poller.Dispose();
@@ -49,7 +49,6 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_call_setter_when_gets_new_config()
         {
-
             var newConfig = new FileConfiguration {
                 ReRoutes = new List<FileReRoute>
                 {   
@@ -84,7 +83,7 @@ namespace Ocelot.UnitTests.Configuration
                     _setter.Verify(x => x.Set(fileConfig), Times.Once);
                     return true;
                 }
-                catch(Exception ex)
+                catch(Exception)
                 {
                     return false;
                 }

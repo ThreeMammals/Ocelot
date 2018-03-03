@@ -15,12 +15,10 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ClaimsBuilderMiddlewareTests
     {
         private readonly Mock<IAddClaimsToRequest> _addHeaders;
-        private Response<DownstreamRoute> _downstreamRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ClaimsBuilderMiddleware _middleware;
@@ -67,7 +65,6 @@ namespace Ocelot.UnitTests.Claims
         {
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
-
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {

@@ -48,7 +48,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_return_error_if_unable_to_set_file_configuration()
         {

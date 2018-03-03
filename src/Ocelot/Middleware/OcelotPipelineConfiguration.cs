@@ -37,7 +37,6 @@
         /// <summary>
         /// This allows the user to implement there own query string manipulation logic
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
-        
+        public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }        
     }
 }

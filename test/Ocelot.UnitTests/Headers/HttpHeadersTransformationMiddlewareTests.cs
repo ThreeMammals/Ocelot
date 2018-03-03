@@ -80,7 +80,6 @@ namespace Ocelot.UnitTests.Headers
 
             _downstreamContext.TemplatePlaceholderNameAndValues = dR.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = dR.ReRoute.DownstreamReRoute[0];
-
         }
 
         private void ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly()

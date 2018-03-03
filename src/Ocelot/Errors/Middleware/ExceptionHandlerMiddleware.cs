@@ -100,6 +100,7 @@ namespace Ocelot.Errors.Middleware
                 message =
                     $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
             }
+
             return $"{message} RequestId: {context.HttpContext.TraceIdentifier}";
         }
     }

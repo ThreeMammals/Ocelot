@@ -34,6 +34,4 @@ namespace Ocelot.Configuration.File
         /// </summary>
         public int HttpStatusCode { get;  set; } = 429;
     }
-
-    
 }
