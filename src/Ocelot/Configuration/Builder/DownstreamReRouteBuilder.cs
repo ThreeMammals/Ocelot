@@ -215,7 +215,6 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(

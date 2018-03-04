@@ -125,7 +125,7 @@ namespace Ocelot.DependencyInjection
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
-            _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();		
+            _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             _services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             _services.AddMemoryCache();
             _services.TryAddSingleton<OcelotDiagnosticListener>();
@@ -153,7 +153,6 @@ namespace Ocelot.DependencyInjection
 
             // We add this here so that we can always inject something into the factory for IoC..
             _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
-
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -264,8 +263,7 @@ namespace Ocelot.DependencyInjection
 
             var urlFinder = new BaseUrlFinder(_configurationRoot);
             var baseSchemeUrlAndPort = urlFinder.Find();
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-            
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();            
 
             _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>

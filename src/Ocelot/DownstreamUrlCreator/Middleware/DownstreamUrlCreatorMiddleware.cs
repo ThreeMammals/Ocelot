@@ -7,6 +7,8 @@ using Ocelot.Middleware;
 using System;
 using System.Linq;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -40,21 +42,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             UriBuilder uriBuilder;
             
-            //todo - feel this is a bit crap the way we build the url dont see why we need this builder thing..maybe i blew my own brains out 
-            // when i originally wrote it..
-            if (context.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery)
+            if (ServiceFabricRequest(context))
             {
-                _logger.LogInformation("DownstreamUrlCreatorMiddleware - going to try set service fabric path");
-
-                var scheme = context.DownstreamReRoute.DownstreamScheme;
-                var host = context.DownstreamRequest.RequestUri.Host;
-                var port = context.DownstreamRequest.RequestUri.Port;
-                var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
-
-                _logger.LogInformation("DownstreamUrlCreatorMiddleware - service fabric path is {proxyUrl}", serviceFabricPath);
-
-                var uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}?cmd=instance");
-                uriBuilder = new UriBuilder(uri);
+                uriBuilder = CreateServiceFabricUri(context, dsPath);
             }
             else
             {
@@ -70,6 +60,39 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", context.DownstreamRequest.RequestUri);
 
             await _next.Invoke(context);
+        }
+
+        private UriBuilder CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
+        {
+            var query = context.DownstreamRequest.RequestUri.Query;
+            var scheme = context.DownstreamReRoute.DownstreamScheme;
+            var host = context.DownstreamRequest.RequestUri.Host;
+            var port = context.DownstreamRequest.RequestUri.Port;
+            var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
+
+            Uri uri;
+
+            if (RequestForStatefullService(query))
+            {
+                uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}{query}");
+            }
+            else
+            {
+                var split = string.IsNullOrEmpty(query) ? "?" : "&";
+                uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}{query}{split}cmd=instance");
+            }
+
+            return new UriBuilder(uri);
+        }
+
+        private static bool ServiceFabricRequest(DownstreamContext context)
+        {
+            return context.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery;
+        }
+
+        private static bool RequestForStatefullService(string query)
+        {
+            return query.Contains("PartitionKind") && query.Contains("PartitionKey");
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing  = true
+                                UseTracing = true
                             },
                             QoSOptions = new FileQoSOptions
                             {
@@ -77,7 +77,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing  = true
+                                UseTracing = true
                             },
                             QoSOptions = new FileQoSOptions
                             {
@@ -103,7 +103,6 @@ namespace Ocelot.AcceptanceTests
                  .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                  .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
                 .BDDfy();
-
 
             var commandOnAllStateMachines = WaitFor(5000).Until(() => _butterflyCalled == 4);
 

@@ -1,19 +1,14 @@
-
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Hosting;
 using Ocelot.Configuration.File;
 using Shouldly;
-using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
     public class CannotStartOcelotTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
-        private string _downstreamPath;
 
         public CannotStartOcelotTests()
         {
@@ -51,7 +46,6 @@ namespace Ocelot.AcceptanceTests
         
         public void Dispose()
         {
-            _builder?.Dispose();
             _steps.Dispose();
         }
     }

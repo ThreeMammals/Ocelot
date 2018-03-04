@@ -110,7 +110,6 @@ namespace Ocelot.UnitTests.Cache
         private void GivenThereAreNoErrors()
         {
             _downstreamContext.Errors = new List<Error>();
-
         }
 
         private void ThenTheCacheGetIsCalledCorrectly()

@@ -45,6 +45,7 @@ namespace Ocelot.IntegrationTests
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
         }
+
         public void Dispose()
         {
             foreach (var builder in _builders)
@@ -194,7 +195,6 @@ namespace Ocelot.IntegrationTests
             var stopwatch = Stopwatch.StartNew();
             while(stopwatch.ElapsedMilliseconds < 10000)
             {
-
             }
         }
 
@@ -204,10 +204,9 @@ namespace Ocelot.IntegrationTests
             var stopwatch = Stopwatch.StartNew();
             while(stopwatch.ElapsedMilliseconds < 2000)
             {
-
             }
             
-             bool CommandCalledOnAllStateMachines()
+            bool CommandCalledOnAllStateMachines()
             {
                 try
                 {
@@ -225,6 +224,7 @@ namespace Ocelot.IntegrationTests
                                 index.ShouldBe(1);
                             }
                         }
+
                         _httpClientForAssertions.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
                         var result = _httpClientForAssertions.GetAsync($"{peer.HostAndPort}/administration/configuration").Result;
                         var json = result.Content.ReadAsStringAsync().Result;
@@ -248,6 +248,7 @@ namespace Ocelot.IntegrationTests
                             response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.Configuration.ReRoutes[i].UpstreamPathTemplate);
                             response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.Configuration.ReRoutes[i].UpstreamHttpMethod);
                         }
+
                         passed++;
                     }
 
@@ -384,7 +385,6 @@ namespace Ocelot.IntegrationTests
             var stopwatch = Stopwatch.StartNew();
             while(stopwatch.ElapsedMilliseconds < 20000)
             {
-
             }
         }
     }

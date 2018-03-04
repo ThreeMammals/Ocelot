@@ -9,8 +9,8 @@ namespace Ocelot.Configuration
             IsCached = isCached;
             IsQos = isQos;
             EnableRateLimiting = isEnableRateLimiting;
-
         }
+
         public bool IsAuthenticated { get; private set; }
         public bool IsAuthorised { get; private set; }
         public bool IsCached { get; private set; }

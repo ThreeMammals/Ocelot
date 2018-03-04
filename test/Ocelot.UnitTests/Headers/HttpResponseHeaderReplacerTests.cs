@@ -22,6 +22,7 @@ namespace Ocelot.UnitTests.Headers
         {
             _replacer = new HttpResponseHeaderReplacer();
         }
+
         [Fact]
         public void should_replace_headers()
         {
@@ -96,7 +97,6 @@ namespace Ocelot.UnitTests.Headers
                 .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com:123/"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_replace_downstream_base_url_with_ocelot_base_url_and_path()

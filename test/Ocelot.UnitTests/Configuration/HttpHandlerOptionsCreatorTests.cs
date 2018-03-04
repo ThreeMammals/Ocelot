@@ -7,7 +7,6 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-
     public class HttpHandlerOptionsCreatorTests
     {
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;

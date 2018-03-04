@@ -4,15 +4,10 @@ namespace Ocelot.UnitTests.LoadBalancer
 {
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Provider;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Errors;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.LoadBalancer.Middleware;
@@ -28,7 +23,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
         private ServiceHostAndPort _hostAndPort;
-        private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
         private ErrorResponse<ServiceHostAndPort> _getHostAndPortError;
         private HttpRequestMessage _downstreamRequest;
@@ -188,7 +182,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _downstreamContext.IsError.ShouldBeTrue();
             _downstreamContext.Errors.ShouldBe(_getHostAndPortError.Errors);
-
         }
 
         private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)

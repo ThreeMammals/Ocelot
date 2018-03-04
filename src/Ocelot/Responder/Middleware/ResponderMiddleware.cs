@@ -29,7 +29,6 @@ namespace Ocelot.Responder.Middleware
             _responder = responder;
             _codeMapper = codeMapper;
             _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
-
         }
 
         public async Task Invoke(DownstreamContext context)

@@ -543,7 +543,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_return_response_200_with_complex_url_that_starts_with_placeholder()
         {
@@ -577,7 +576,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_not_add_trailing_slash_to_downstream_url()
@@ -833,7 +831,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_fix_145()

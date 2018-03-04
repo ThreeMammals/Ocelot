@@ -34,6 +34,7 @@ namespace Ocelot.RateLimit
             {
                 return JsonConvert.DeserializeObject<RateLimitCounter>(stored);
             }
+
             return null;
         }
 

@@ -38,6 +38,7 @@ namespace Ocelot.RateLimit
                     {
                         // increment request count
                         var totalRequests = entry.Value.TotalRequests + 1;
+                        
                         // deep copy
                         counter = new RateLimitCounter(entry.Value.Timestamp, totalRequests);
                     }
@@ -62,6 +63,7 @@ namespace Ocelot.RateLimit
                 var expirationTime = ConvertToTimeSpan(rule.Period);
                 _counterHandler.Set(counterId, counter, expirationTime);
             }
+
             return counter;
         }
 
@@ -69,6 +71,7 @@ namespace Ocelot.RateLimit
         {
             var counterId = ComputeCounterKey(requestIdentity, option);
             var rule = option.RateLimitRule;
+            
             // stores: id (string) - timestamp (datetime) - total_requests (long)
             _counterHandler.Set(counterId, counter, expirationTime);
         }
@@ -92,7 +95,6 @@ namespace Ocelot.RateLimit
                     rule.Period,
                     rule.Limit.ToString(),
                     (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
-
             }
 
             return headers;
@@ -141,7 +143,6 @@ namespace Ocelot.RateLimit
                 default:
                     throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}");
             }
-        }
-
+        }  
     }
 }

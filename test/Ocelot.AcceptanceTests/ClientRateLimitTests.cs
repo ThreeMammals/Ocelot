@@ -20,12 +20,10 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
          private int _counterOne;
 
-
         public ClientRateLimitTests()
         {
             _steps = new Steps();
         }
-
 
         public void Dispose()
         {
@@ -56,7 +54,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
                              
-                            RateLimitOptions =    new FileRateLimitRule()
+                            RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>(),
@@ -75,7 +73,6 @@ namespace Ocelot.AcceptanceTests
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
                          HttpStatusCode = 428
-
                     },
                      RequestIdKey ="oceclientrequest"
                 }
@@ -92,7 +89,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_call_middleware_withWhitelistClient()
@@ -117,7 +113,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
 
-                            RateLimitOptions =    new FileRateLimitRule()
+                            RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>() { "ocelotclient1"},
@@ -148,7 +144,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
         {
             _builder = new WebHostBuilder()
@@ -172,7 +167,5 @@ namespace Ocelot.AcceptanceTests
 
             _builder.Start();
         }
-
-  
     }
 }

@@ -9,7 +9,6 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Repository
 {
-
     public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         private readonly ConsulClient _consul;

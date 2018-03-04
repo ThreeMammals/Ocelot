@@ -70,8 +70,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         class FakeHandler : DelegatingHandler
-        {
-  
+        {  
             public DateTime TimeCalled { get; private set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -111,6 +110,5 @@ namespace Ocelot.AcceptanceTests
 
             _builder.Start();
         }
-
     }
 }

@@ -15,7 +15,6 @@ using Ocelot.DependencyInjection;
 using Ocelot.Requester;
 using Ocelot.UnitTests.Requester;
 using Shouldly;
-using System;
 using IdentityServer4.AccessTokenValidation;
 using TestStack.BDDfy;
 using Xunit;
@@ -38,6 +37,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             _services.AddSingleton<IConfiguration>(_configRoot);
             _maxRetries = 100;
         }
+
         private Exception _ex;
 
         [Fact]
@@ -68,7 +68,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Then(x => ThenAnOcelotBuilderIsReturned())
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_set_up_cache_manager()
@@ -102,9 +101,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         [Fact]
         public void should_set_up_administration_with_identity_server_options()
         {
-            Action<IdentityServerAuthenticationOptions> options = o => {
-               
-            };
+            Action<IdentityServerAuthenticationOptions> options = o => {};
 
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpAdministration(options))
@@ -151,7 +148,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => WhenIAccessOcelotHttpTracingHandler())
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_set_up_without_passing_in_config()

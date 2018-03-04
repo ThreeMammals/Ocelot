@@ -33,3 +33,11 @@ The example below is taken from the samples folder so please check it if this do
             }
         }
     }
+
+If you are using stateless / guest exe services ocelot will be able to proxy through the naming service without anything else. However
+if you are using statefull / actor services you must send the PartitionKind and PartitionKey query string values with the client
+request e.g.
+
+GET http://ocelot.com/EquipmentInterfaces?PartitionKind=xxx&PartitionKey=xxx
+
+There is no way for Ocelot to work these out for you. 

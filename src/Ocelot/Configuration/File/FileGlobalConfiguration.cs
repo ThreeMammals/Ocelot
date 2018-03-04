@@ -1,5 +1,4 @@
-﻿
-namespace Ocelot.Configuration.File
+﻿namespace Ocelot.Configuration.File
 {
     public class FileGlobalConfiguration
     {
