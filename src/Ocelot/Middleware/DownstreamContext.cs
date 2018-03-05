@@ -22,8 +22,6 @@ namespace Ocelot.Middleware
         public HttpRequestMessage DownstreamRequest { get; set; }
         public HttpResponseMessage DownstreamResponse { get; set; }
         public List<Error> Errors { get;set; }
-        //public string RequestId {get;set;}
-        //public string PreviousRequestId {get;set;}
         public bool IsError => Errors.Count > 0;
     }
 }

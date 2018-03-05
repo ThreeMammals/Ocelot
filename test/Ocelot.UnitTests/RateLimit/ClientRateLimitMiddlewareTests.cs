@@ -19,7 +19,6 @@ namespace Ocelot.UnitTests.RateLimit
     using Microsoft.Extensions.Caching.Memory;
     using System.IO;
 
-
     public class ClientRateLimitMiddlewareTests
     {
         private int _responseStatusCode;

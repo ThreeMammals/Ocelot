@@ -177,7 +177,7 @@ namespace Ocelot.AcceptanceTests
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
                                AuthenticationProviderKey = "Test",
-                               AllowedScopes =  new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+                               AllowedScopes = new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
                            },
                        }
                    }
@@ -218,7 +218,7 @@ namespace Ocelot.AcceptanceTests
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
                                AuthenticationProviderKey = "Test",
-                               AllowedScopes =  new List<string>{ "api", "openid", "offline_access" },
+                               AllowedScopes = new List<string>{ "api", "openid", "offline_access" },
                            },
                        }
                    }
@@ -356,7 +356,6 @@ namespace Ocelot.AcceptanceTests
                                     "CustomerId", "LocationId", "UserType", "UserId"
                                 }
                             },
-
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -437,7 +436,6 @@ namespace Ocelot.AcceptanceTests
                                     "CustomerId", "LocationId", "UserType", "UserId", "Role"
                                 }
                             },
-
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -450,7 +448,6 @@ namespace Ocelot.AcceptanceTests
                                 AccessTokenType = tokenType,
                                 Enabled = true,
                                 RequireClientSecret = false,
-
                             }
                         })
                         .AddTestUsers(users);

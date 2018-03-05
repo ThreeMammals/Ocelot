@@ -17,9 +17,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private DownstreamReRoute _reRoute;
         private ILoadBalancer _loadBalancer;
         private readonly LoadBalancerHouse _loadBalancerHouse;
-        private Response _addResult;
         private Response<ILoadBalancer> _getResult;
-        private string _key;
         private readonly Mock<ILoadBalancerFactory> _factory;
         private ServiceProviderConfiguration _serviceProviderConfig;
 
@@ -115,7 +113,6 @@ namespace Ocelot.UnitTests.LoadBalancer
             _getResult.Data.ShouldBe(_loadBalancer);
             _factory.Verify(x => x.Get(_reRoute, _serviceProviderConfig), Times.Once);
         }
-
 
         private void GivenThereIsALoadBalancer(DownstreamReRoute reRoute, ILoadBalancer loadBalancer)
         {

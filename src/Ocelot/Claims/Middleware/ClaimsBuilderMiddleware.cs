@@ -39,6 +39,7 @@ namespace Ocelot.Claims.Middleware
                     return;
                 }
             }
+
             await _next.Invoke(context);
         }
     }

@@ -36,7 +36,6 @@ namespace Ocelot.Configuration.Builder
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
         private string _upstreamHost;
         private string _key;
-
         public DownstreamReRouteBuilder()
         {
             _downstreamAddresses = new List<DownstreamHostAndPort>();
@@ -215,7 +214,6 @@ namespace Ocelot.Configuration.Builder
             _key = key;
             return this;
         }
-
 
         public DownstreamReRoute Build()
         {

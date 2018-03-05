@@ -175,7 +175,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_load_configuration_out_of_consul_if_it_is_changed()
         {
@@ -307,8 +306,7 @@ namespace Ocelot.AcceptanceTests
                                         var kvp = new FakeConsulGetResponse(base64);
 
                                         await context.Response.WriteJsonAsync(new FakeConsulGetResponse[] { kvp });
-                                    }
-
+                                    }                               
                                     else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/OcelotConfiguration")
                                     {
                                         try

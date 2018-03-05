@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.Setter
         private readonly IOcelotConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
 
-        public  FileConfigurationSetter(IOcelotConfigurationRepository configRepo, 
+        public FileConfigurationSetter(IOcelotConfigurationRepository configRepo, 
             IOcelotConfigurationCreator configCreator, IFileConfigurationRepository repo)
         {
             _configRepo = configRepo;

@@ -41,6 +41,7 @@ namespace Ocelot.Requester
             {
                 connectionQueue.TryDequeue(out client);
             }
+
             return client;
         }
 

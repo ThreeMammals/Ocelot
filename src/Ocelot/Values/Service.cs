@@ -16,6 +16,7 @@ namespace Ocelot.Values
             Version = version;
             Tags = tags;
         }
+
         public string Id { get; private set; }
 
         public string Name { get; private set; }

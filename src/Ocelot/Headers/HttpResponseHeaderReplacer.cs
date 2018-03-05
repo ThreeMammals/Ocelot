@@ -26,6 +26,7 @@ namespace Ocelot.Headers
                 return $"{downstreamUrl}/";
             });
         }
+
         public Response Replace(HttpResponseMessage response, List<HeaderFindAndReplace> fAndRs, HttpRequestMessage httpRequestMessage)
         {
             foreach (var f in fAndRs)

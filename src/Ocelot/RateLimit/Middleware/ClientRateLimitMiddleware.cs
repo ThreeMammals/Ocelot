@@ -31,6 +31,7 @@ namespace Ocelot.RateLimit.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var options = context.DownstreamReRoute.RateLimitOptions;
+            
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
@@ -38,6 +39,7 @@ namespace Ocelot.RateLimit.Middleware
                 await _next.Invoke(context);
                 return;
             }
+
             // compute identity from request
             var identity = SetIdentity(context.HttpContext, options);
 
@@ -65,13 +67,14 @@ namespace Ocelot.RateLimit.Middleware
                     LogBlockedRequest(context.HttpContext, identity, counter, rule, context.DownstreamReRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    
                     // break execution
                     await ReturnQuotaExceededResponse(context.HttpContext, options, retrystring);
 
                     return;
                 }
-
             }
+
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
@@ -103,6 +106,7 @@ namespace Ocelot.RateLimit.Middleware
             {
                 return true;
             }
+
             return false;
         }
 
@@ -134,8 +138,5 @@ namespace Ocelot.RateLimit.Middleware
 
             return Task.CompletedTask;
         }
-
     }
-
 }
-

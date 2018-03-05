@@ -36,3 +36,7 @@ Multiple Instances
 With Consul
 ^^^^^^^^^^^
 .. image:: ../images/OcelotMultipleInstancesConsul.jpg
+
+With Service Fabric
+^^^^^^^^^^^^^^^^^^^
+.. image:: ../images/OcelotServiceFabric.jpg

@@ -38,8 +38,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-      
-
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
             _fileConfiguration = fileConfiguration;

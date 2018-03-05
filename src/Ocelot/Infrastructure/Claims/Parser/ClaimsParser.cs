@@ -37,7 +37,6 @@
             return new OkResponse<string>(value);
         }
 
-
         public Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType)
         {
             List<string> values = new List<string>();
@@ -46,7 +45,6 @@
 
             return new OkResponse<List<string>>(values);
         }
-
 
         private Response<string> GetValue(IEnumerable<Claim> claims, string key)
         {

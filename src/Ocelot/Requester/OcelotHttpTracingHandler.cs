@@ -8,10 +8,6 @@ using Butterfly.OpenTracing;
 
 namespace Ocelot.Requester
 {
-    public interface ITracingHandler
-    {
-    }
-
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {
         private readonly IServiceTracer _tracer;
@@ -35,7 +31,7 @@ namespace Ocelot.Requester
             {
                 request.Headers.Remove(prefix_spanId);
                 request.Headers.TryAddWithoutValidation(prefix_spanId, span.SpanContext.SpanId);
-            };
+            }
 
             span.Tags.Client().Component("HttpClient")
                 .HttpMethod(request.Method.Method)
@@ -51,7 +47,7 @@ namespace Ocelot.Requester
                 if (!c.Contains(k))
                 {
                     c.Add(k, v);
-                };
+                }
             });
 
             span.Log(LogField.CreateNew().ClientSend());

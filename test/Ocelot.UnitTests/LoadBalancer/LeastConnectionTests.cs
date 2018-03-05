@@ -91,7 +91,6 @@ namespace Ocelot.UnitTests.LoadBalancer
             hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.2");
             _leastConnection.Release(hostAndPortOne.Data);
             _leastConnection.Release(hostAndPortTwo.Data);
-
         }
 
         private async Task LeaseDelayAndRelease()

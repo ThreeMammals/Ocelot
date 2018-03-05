@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void  GivenTheConfigurationIs(FileConfiguration fileConfiguration)
+        private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 

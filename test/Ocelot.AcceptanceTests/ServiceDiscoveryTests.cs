@@ -359,8 +359,7 @@ namespace Ocelot.AcceptanceTests
                         catch (System.Exception exception)
                         {
                             await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                   
+                        }                  
                     });
                 })
                 .Build();
