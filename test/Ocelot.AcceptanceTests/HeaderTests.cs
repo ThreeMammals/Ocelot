@@ -18,7 +18,6 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _builder;
         private readonly Steps _steps;
-        private string _downstreamPath;
 
         public HeaderTests()
         {
@@ -235,11 +234,6 @@ namespace Ocelot.AcceptanceTests
                 .Build();
 
             _builder.Start();
-        }
-
-        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
-        {
-            _downstreamPath.ShouldBe(expectedDownstreamPath);
         }
 
         public void Dispose()
