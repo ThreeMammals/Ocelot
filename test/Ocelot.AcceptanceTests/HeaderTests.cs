@@ -221,13 +221,15 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(async context =>
+                    app.Run(context => 
                     {   
                         context.Response.OnStarting(() => {
                             context.Response.Headers.Add(headerKey, headerValue);
                             context.Response.StatusCode = statusCode;
                             return Task.CompletedTask;
                         });
+
+                        return Task.CompletedTask;
                     });
                 })
                 .Build();

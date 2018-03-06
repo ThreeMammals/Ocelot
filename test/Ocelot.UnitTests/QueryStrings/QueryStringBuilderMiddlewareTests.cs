@@ -4,7 +4,6 @@ namespace Ocelot.UnitTests.QueryStrings
 {
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
@@ -17,9 +16,8 @@ namespace Ocelot.UnitTests.QueryStrings
     using TestStack.BDDfy;
     using Xunit;
     using System.Security.Claims;
-    using Microsoft.AspNetCore.Builder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Microsoft.AspNetCore.Http;
+    using System.Threading.Tasks;
 
     public class QueryStringBuilderMiddlewareTests
     {
@@ -36,9 +34,7 @@ namespace Ocelot.UnitTests.QueryStrings
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<QueryStringBuilderMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
             _downstreamContext.DownstreamRequest = new HttpRequestMessage();
             _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
