@@ -41,7 +41,18 @@ namespace Ocelot.UnitTests.DependencyInjection
         private Exception _ex;
 
         [Fact]
-        public void should_add_delegating_handlers()
+        public void should_add_delegating_handlers_with_di()
+        {
+
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddDelegate<FakeDelegatingHandler>())
+                .And(x => AddDelegate<FakeDelegatingHandlerTwo>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_delegating_handlers_with_func()
         {
             var fakeOne = new FakeDelegatingHandler(0);
             var fakeTwo = new FakeDelegatingHandler(1);
@@ -157,13 +168,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-        private void ThenTheCorrectAdminPathIsRegitered()
-        {
-            _serviceProvider = _services.BuildServiceProvider();
-            var path = _serviceProvider.GetService<IAdministrationPath>();
-            path.Path.ShouldBe("/administration");
-        }
-
         private void ThenTheProviderIsRegisteredAndReturnsHandlers()
         {
             _serviceProvider = _services.BuildServiceProvider();
@@ -173,6 +177,26 @@ namespace Ocelot.UnitTests.DependencyInjection
             handler.Order.ShouldBe(0);
             handler = (FakeDelegatingHandler)handlers[1].Invoke();
             handler.Order.ShouldBe(1);
+        }
+
+        private void AddDelegate(DelegatingHandler handler)
+        {
+            _ocelotBuilder.AddDelegatingHandler(() => handler);
+        }
+
+        private void ThenTheCorrectAdminPathIsRegitered()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var path = _serviceProvider.GetService<IAdministrationPath>();
+            path.Path.ShouldBe("/administration");
+        }
+
+        private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
+            handlers[0].ShouldBeOfType<TOne>();
+            handlers[1].ShouldBeOfType<TWo>();
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
@@ -213,9 +237,9 @@ namespace Ocelot.UnitTests.DependencyInjection
             }       
         }
 
-        private void AddDelegate(DelegatingHandler handler)
+        private void AddDelegate<T>() where T : DelegatingHandler
         {
-            _ocelotBuilder.AddDelegatingHandler(() => handler);
+            _ocelotBuilder.AddDelegatingHandler<T>();
         }
 
         private void ThenAnOcelotBuilderIsReturned()

@@ -193,6 +193,13 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
+        public IOcelotBuilder AddDelegatingHandler<THandler>() 
+            where THandler : DelegatingHandler 
+        {
+            _services.AddSingleton<DelegatingHandler, THandler>();
+            return this;
+        }
+
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
             // Earlier we add FakeServiceTracer and need to remove it here before we add butterfly

@@ -22,6 +22,7 @@ using Ocelot.Middleware;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -175,7 +176,7 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
-        public void GivenOcelotIsRunningWithHandlers(DelegatingHandler handlerOne, DelegatingHandler handlerTwo)
+        public void GivenOcelotIsRunningWithFuncHandlers(DelegatingHandler handlerOne, DelegatingHandler handlerTwo)
         {
             _webHostBuilder = new WebHostBuilder();
 
@@ -195,6 +196,71 @@ namespace Ocelot.AcceptanceTests
                     s.AddOcelot()
                         .AddDelegatingHandler(() => handlerOne)
                         .AddDelegatingHandler(() => handlerTwo);
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithHandlersRegisteredInDi<TOne, TWo>() 
+            where TOne : DelegatingHandler
+            where TWo : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddOcelot()
+                        .AddDelegatingHandler<TOne>()
+                        .AddDelegatingHandler<TWo>();
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
+            where TOne : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddSingleton<FakeDependency>(dependency);
+                    s.AddOcelot()
+                        .AddDelegatingHandler<TOne>();
                 })
                 .Configure(a =>
                 {

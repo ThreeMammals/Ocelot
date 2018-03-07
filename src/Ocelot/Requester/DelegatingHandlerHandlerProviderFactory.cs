@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
@@ -13,12 +14,15 @@ namespace Ocelot.Requester
         private readonly IOcelotLoggerFactory _loggerFactory;
         private readonly IDelegatingHandlerHandlerProvider _allRoutesProvider;
         private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly IServiceProvider _serviceProvider;
 
         public DelegatingHandlerHandlerProviderFactory(IOcelotLoggerFactory loggerFactory, 
             IDelegatingHandlerHandlerProvider allRoutesProvider,
             ITracingHandlerFactory factory,
-            IQosProviderHouse qosProviderHouse)
+            IQosProviderHouse qosProviderHouse,
+            IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _factory = factory;
             _loggerFactory = loggerFactory;
             _allRoutesProvider = allRoutesProvider;
@@ -27,11 +31,18 @@ namespace Ocelot.Requester
 
         public Response<IDelegatingHandlerHandlerProvider> Get(DownstreamReRoute request)
         {
-            var handlersAppliedToAll = _allRoutesProvider.Get();
+            var handlersAppliedToAllInDi = _serviceProvider.GetServices<DelegatingHandler>();
 
             var provider = new DelegatingHandlerHandlerProvider();
 
-            foreach (var handler in handlersAppliedToAll)
+            foreach (var handler in handlersAppliedToAllInDi)
+            {
+                provider.Add(() => handler);
+            }
+
+            var handlersAppliedToAllFunc = _allRoutesProvider.Get();
+
+            foreach (var handler in handlersAppliedToAllFunc)
             {
                 provider.Add(handler);
             }
