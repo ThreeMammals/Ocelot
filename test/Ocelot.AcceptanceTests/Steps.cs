@@ -22,6 +22,8 @@ using Ocelot.Middleware;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+using System.IO.Compression;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -580,6 +582,22 @@ namespace Ocelot.AcceptanceTests
         public void GivenThePostHasContent(string postcontent)
         {
             _postContent = new StringContent(postcontent);
+        }
+
+        public void GivenThePostHasGzipContent(object input)
+        {
+            string json = JsonConvert.SerializeObject(input);
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+            MemoryStream ms = new MemoryStream();
+            using (GZipStream gzip = new GZipStream(ms, CompressionMode.Compress, true))
+            {
+                gzip.Write(jsonBytes, 0, jsonBytes.Length);
+            }
+            ms.Position = 0;
+            StreamContent content = new StreamContent(ms);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            content.Headers.ContentEncoding.Add("gzip");
+            _postContent = content;
         }
 
         public void ThenTheResponseBodyShouldBe(string expectedBody)
