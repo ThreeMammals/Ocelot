@@ -11,11 +11,12 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Headers;
 using System.Net.Http;
 using Ocelot.Authorisation.Middleware;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
+    using System.Threading.Tasks;
+
     public class HttpHeadersTransformationMiddlewareTests
     {
         private Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
@@ -34,9 +35,7 @@ namespace Ocelot.UnitTests.Headers
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new HttpHeadersTransformationMiddleware(_next, _loggerFactory.Object, _preReplacer.Object, _postReplacer.Object);
         }
 

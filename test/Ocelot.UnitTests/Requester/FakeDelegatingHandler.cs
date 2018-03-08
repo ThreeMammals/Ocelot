@@ -17,12 +17,13 @@ namespace Ocelot.UnitTests.Requester
         }
 
         public int Order {get;private set;}
+
         public DateTime TimeCalled {get;private set;}
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             TimeCalled = DateTime.Now;
-            return new HttpResponseMessage();
+            return Task.FromResult(new HttpResponseMessage());
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Ocelot.UnitTests.Authentication
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Authentication.Middleware;
@@ -44,10 +45,11 @@ namespace Ocelot.UnitTests.Authentication
 
         private void WhenICallTheMiddleware()
         {
-            _next = async (context) => {
+            _next = (context) => {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
-                MemoryStream stream = new MemoryStream(byteArray);
+                var stream = new MemoryStream(byteArray);
                 context.HttpContext.Response.Body = stream;
+                return Task.CompletedTask;
             };
             _middleware = new AuthenticationMiddleware(_next, _factory.Object);
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
@@ -55,10 +57,11 @@ namespace Ocelot.UnitTests.Authentication
 
         private void GivenTheTestServerPipelineIsConfigured()
         {
-            _next = async (context) => {
+            _next = (context) => {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
-                MemoryStream stream = new MemoryStream(byteArray);
+                var stream = new MemoryStream(byteArray);
                 context.HttpContext.Response.Body = stream;
+                return Task.CompletedTask;
             };
         }
 

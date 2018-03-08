@@ -7,19 +7,16 @@ namespace Ocelot.UnitTests.Cache
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Cache;
     using Ocelot.Cache.Middleware;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -42,10 +39,7 @@ namespace Ocelot.UnitTests.Cache
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
-
+            _next = context => Task.CompletedTask;
             _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123");
         }
 

@@ -10,6 +10,7 @@ namespace Ocelot.UnitTests.Cache
     using Shouldly;
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Moq;
     using Ocelot.Cache;
     using Ocelot.Cache.Middleware;
@@ -43,9 +44,7 @@ namespace Ocelot.UnitTests.Cache
             _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123");
-            _next = async context => {
-                //do nothing..
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _regionCreator);
         }
 
