@@ -57,7 +57,6 @@ namespace Ocelot.DependencyInjection
     {
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configurationRoot;
-        private readonly IDelegatingHandlerHandlerProvider _provider;
 
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
@@ -120,8 +119,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRequestMapper, RequestMapper>();
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
-            _services.TryAddSingleton<IDelegatingHandlerHandlerProviderFactory, DelegatingHandlerHandlerProviderFactory>();
-            _services.TryAddSingleton<IDelegatingHandlerHandlerHouse, DelegatingHandlerHandlerHouse>();
+            _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -144,9 +142,6 @@ namespace Ocelot.DependencyInjection
             _services.AddWebEncoders();
             _services.AddSingleton<IAdministrationPath>(new NullAdministrationPath());
 
-            //these get picked out later and added to http request
-            _provider = new DelegatingHandlerHandlerProvider();
-            _services.TryAddSingleton<IDelegatingHandlerHandlerProvider>(_provider);            
             _services.TryAddSingleton<IMultiplexer, Multiplexer>();
             _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
@@ -185,12 +180,6 @@ namespace Ocelot.DependencyInjection
             var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
             _services.Replace(descriptor);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
-        }
-
-        public IOcelotBuilder AddDelegatingHandler(Func<DelegatingHandler> delegatingHandler)
-        {
-            _provider.Add(delegatingHandler);
-            return this;
         }
 
         public IOcelotBuilder AddDelegatingHandler<THandler>() 

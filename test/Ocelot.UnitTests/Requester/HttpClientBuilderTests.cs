@@ -15,25 +15,22 @@ namespace Ocelot.UnitTests.Requester
     public class HttpClientBuilderTests
     {
         private readonly HttpClientBuilder _builder;
-        private readonly Mock<IDelegatingHandlerHandlerHouse> _house;
-        private readonly Mock<IDelegatingHandlerHandlerProvider> _provider;
+        private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
         private DownstreamReRoute _request;
 
         public HttpClientBuilderTests()
         {
-            _provider = new Mock<IDelegatingHandlerHandlerProvider>();
-            _house = new Mock<IDelegatingHandlerHandlerHouse>();
-            _builder = new HttpClientBuilder(_house.Object);
+            _factory = new Mock<IDelegatingHandlerHandlerFactory>();
+            _builder = new HttpClientBuilder(_factory.Object);
         }
 
         [Fact]
         public void should_build_http_client()
         {
-            this.Given(x => GivenTheProviderReturns())
+            this.Given(x => GivenTheFactoryReturns())
                 .And(x => GivenARequest())
-                .And(x => GivenTheHouseReturns())
                 .When(x => WhenIBuild())
                 .Then(x => ThenTheHttpClientShouldNotBeNull())
                 .BDDfy();
@@ -51,9 +48,8 @@ namespace Ocelot.UnitTests.Requester
                 () => fakeTwo
             };
 
-            this.Given(x => GivenTheProviderReturns(handlers))
+            this.Given(x => GivenTheFactoryReturns(handlers))
                 .And(x => GivenARequest())
-                .And(x => GivenTheHouseReturns())
                 .And(x => WhenIBuild())
                 .When(x => WhenICallTheClient())
                 .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
@@ -67,13 +63,6 @@ namespace Ocelot.UnitTests.Requester
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
 
             _request = reRoute;
-        }
-
-        private void GivenTheHouseReturns()
-        {
-            _house
-                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
-                .Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
         }
 
         private void ThenSomethingIsReturned()
@@ -91,18 +80,20 @@ namespace Ocelot.UnitTests.Requester
             fakeOne.TimeCalled.ShouldBeGreaterThan(fakeTwo.TimeCalled);
         }
 
-        private void GivenTheProviderReturns()
+        private void GivenTheFactoryReturns()
         {
-            _provider
-                .Setup(x => x.Get())
-                .Returns(new List<Func<DelegatingHandler>>(){ () => new FakeDelegatingHandler()});
+            var handlers = new List<Func<DelegatingHandler>>(){ () => new FakeDelegatingHandler()};
+
+            _factory
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
+                .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
-        private void GivenTheProviderReturns(List<Func<DelegatingHandler>> handlers)
+        private void GivenTheFactoryReturns(List<Func<DelegatingHandler>> handlers)
         {
-            _provider
-                .Setup(x => x.Get())
-                .Returns(handlers);
+             _factory
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
+                .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
         private void WhenIBuild()

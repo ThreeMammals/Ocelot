@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
@@ -8,16 +9,14 @@ using Ocelot.Responses;
 
 namespace Ocelot.Requester
 {
-    public class DelegatingHandlerHandlerProviderFactory : IDelegatingHandlerHandlerProviderFactory
+    public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {
         private readonly ITracingHandlerFactory _factory;
         private readonly IOcelotLoggerFactory _loggerFactory;
-        private readonly IDelegatingHandlerHandlerProvider _allRoutesProvider;
         private readonly IQosProviderHouse _qosProviderHouse;
         private readonly IServiceProvider _serviceProvider;
 
-        public DelegatingHandlerHandlerProviderFactory(IOcelotLoggerFactory loggerFactory, 
-            IDelegatingHandlerHandlerProvider allRoutesProvider,
+        public DelegatingHandlerHandlerFactory(IOcelotLoggerFactory loggerFactory, 
             ITracingHandlerFactory factory,
             IQosProviderHouse qosProviderHouse,
             IServiceProvider serviceProvider)
@@ -25,31 +24,23 @@ namespace Ocelot.Requester
             _serviceProvider = serviceProvider;
             _factory = factory;
             _loggerFactory = loggerFactory;
-            _allRoutesProvider = allRoutesProvider;
             _qosProviderHouse = qosProviderHouse;
         }
 
-        public Response<IDelegatingHandlerHandlerProvider> Get(DownstreamReRoute request)
+        public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute request)
         {
-            var handlersAppliedToAllInDi = _serviceProvider.GetServices<DelegatingHandler>();
+            var handlersAppliedToAll = _serviceProvider.GetServices<DelegatingHandler>();
 
-            var provider = new DelegatingHandlerHandlerProvider();
+            var handlers = new List<Func<DelegatingHandler>>();
 
-            foreach (var handler in handlersAppliedToAllInDi)
+            foreach (var handler in handlersAppliedToAll)
             {
-                provider.Add(() => handler);
-            }
-
-            var handlersAppliedToAllFunc = _allRoutesProvider.Get();
-
-            foreach (var handler in handlersAppliedToAllFunc)
-            {
-                provider.Add(handler);
+                handlers.Add(() => handler);
             }
 
             if (request.HttpHandlerOptions.UseTracing)
             {
-                provider.Add(() => (DelegatingHandler)_factory.Get());
+                handlers.Add(() => (DelegatingHandler)_factory.Get());
             }
 
             if (request.IsQos)
@@ -58,13 +49,13 @@ namespace Ocelot.Requester
 
                 if (qosProvider.IsError)
                 {
-                    return new ErrorResponse<IDelegatingHandlerHandlerProvider>(qosProvider.Errors);
+                    return new ErrorResponse<List<Func<DelegatingHandler>>>(qosProvider.Errors);
                 }
 
-                provider.Add(() => new PollyCircuitBreakingDelegatingHandler(qosProvider.Data, _loggerFactory));
+                handlers.Add(() => new PollyCircuitBreakingDelegatingHandler(qosProvider.Data, _loggerFactory));
             }
 
-            return new OkResponse<IDelegatingHandlerHandlerProvider>(provider);
+            return new OkResponse<List<Func<DelegatingHandler>>>(handlers);
         }
     }
 }

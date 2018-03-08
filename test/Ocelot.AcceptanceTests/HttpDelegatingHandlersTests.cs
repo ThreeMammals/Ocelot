@@ -26,43 +26,6 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        [Fact]
-        public void should_call_func_handlers()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 6187,
-                            }
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
-            };
-
-            var handlerOne = new FakeHandler();
-            var handlerTwo = new FakeHandlerTwo();
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:6187", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithFuncHandlers(handlerOne, handlerTwo))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => ThenTheHandlersAreCalledCorrectly())
-                .BDDfy();
-        }
 
         [Fact]
         public void should_call_di_handlers()

@@ -13,20 +13,20 @@ namespace Ocelot.Requester
     {
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
-        private readonly IDelegatingHandlerHandlerHouse _house;
+        private readonly IDelegatingHandlerHandlerFactory _factory;
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, 
             IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerHouse house)
+            IDelegatingHandlerHandlerFactory house)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
-            _house = house;
+            _factory = house;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext request)
         {
-            var builder = new HttpClientBuilder(_house);
+            var builder = new HttpClientBuilder(_factory);
 
             var cacheKey = GetCacheKey(request);
             

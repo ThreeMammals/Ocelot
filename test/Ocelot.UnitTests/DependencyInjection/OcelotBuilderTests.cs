@@ -52,19 +52,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_add_delegating_handlers_with_func()
-        {
-            var fakeOne = new FakeDelegatingHandler(0);
-            var fakeTwo = new FakeDelegatingHandler(1);
-
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddDelegate(fakeOne))
-                .And(x => AddDelegate(fakeTwo))
-                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_set_up_services()
         {
             this.When(x => WhenISetUpOcelotServices())
@@ -166,22 +153,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             this.When(x => WhenISetUpOcelotServicesWithoutConfig())
                 .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
-        }
-
-        private void ThenTheProviderIsRegisteredAndReturnsHandlers()
-        {
-            _serviceProvider = _services.BuildServiceProvider();
-            var provider = _serviceProvider.GetService<IDelegatingHandlerHandlerProvider>();
-            var handlers = provider.Get();
-            var handler = (FakeDelegatingHandler)handlers[0].Invoke();
-            handler.Order.ShouldBe(0);
-            handler = (FakeDelegatingHandler)handlers[1].Invoke();
-            handler.Order.ShouldBe(1);
-        }
-
-        private void AddDelegate(DelegatingHandler handler)
-        {
-            _ocelotBuilder.AddDelegatingHandler(() => handler);
         }
 
         private void ThenTheCorrectAdminPathIsRegitered()
