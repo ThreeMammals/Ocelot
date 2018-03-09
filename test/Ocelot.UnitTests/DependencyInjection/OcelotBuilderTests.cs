@@ -41,15 +41,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         private Exception _ex;
 
         [Fact]
-        public void should_add_delegating_handlers()
+        public void should_add_delegating_handlers_with_di()
         {
-            var fakeOne = new FakeDelegatingHandler(0);
-            var fakeTwo = new FakeDelegatingHandler(1);
 
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddDelegate(fakeOne))
-                .And(x => AddDelegate(fakeTwo))
-                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers())
+                .When(x => AddDelegate<FakeDelegatingHandler>())
+                .And(x => AddDelegate<FakeDelegatingHandlerTwo>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .BDDfy();
         }
 
@@ -164,15 +162,12 @@ namespace Ocelot.UnitTests.DependencyInjection
             path.Path.ShouldBe("/administration");
         }
 
-        private void ThenTheProviderIsRegisteredAndReturnsHandlers()
+        private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
         {
             _serviceProvider = _services.BuildServiceProvider();
-            var provider = _serviceProvider.GetService<IDelegatingHandlerHandlerProvider>();
-            var handlers = provider.Get();
-            var handler = (FakeDelegatingHandler)handlers[0].Invoke();
-            handler.Order.ShouldBe(0);
-            handler = (FakeDelegatingHandler)handlers[1].Invoke();
-            handler.Order.ShouldBe(1);
+            var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
+            handlers[0].ShouldBeOfType<TOne>();
+            handlers[1].ShouldBeOfType<TWo>();
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
@@ -213,9 +208,9 @@ namespace Ocelot.UnitTests.DependencyInjection
             }       
         }
 
-        private void AddDelegate(DelegatingHandler handler)
+        private void AddDelegate<T>() where T : DelegatingHandler
         {
-            _ocelotBuilder.AddDelegatingHandler(() => handler);
+            _ocelotBuilder.AddDelegatingHandler<T>();
         }
 
         private void ThenAnOcelotBuilderIsReturned()

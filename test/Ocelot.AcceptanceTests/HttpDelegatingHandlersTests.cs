@@ -26,8 +26,9 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
+
         [Fact]
-        public void should_call_handlers()
+        public void should_call_di_handlers()
         {
             var configuration = new FileConfiguration
             {
@@ -42,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 61879,
+                                Port = 7187,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -51,27 +52,98 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            var handlerOne = new FakeHandler();
-            var handlerTwo = new FakeHandler();
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:61879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:7187", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithHandlers(handlerOne, handlerTwo))
+                .And(x => _steps.GivenOcelotIsRunningWithHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => ThenTheHandlersAreCalledCorrectly(handlerOne, handlerTwo))
+                .And(x => ThenTheHandlersAreCalledCorrectly())
                 .BDDfy();
         }
 
-        private void ThenTheHandlersAreCalledCorrectly(FakeHandler one, FakeHandler two)
+
+        [Fact]
+        public void should_call_di_handlers_with_dependency()
         {
-            one.TimeCalled.ShouldBeLessThan(two.TimeCalled);
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 7188,
+                            }
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    }
+                }
+            };
+
+            var dependency = new FakeDependency();
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:7188", "/", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => ThenTheDependencyIsCalled(dependency))
+                .BDDfy();
         }
 
+        private void ThenTheDependencyIsCalled(FakeDependency dependency)
+        {
+            dependency.Called.ShouldBeTrue();
+        }
+
+        private void ThenTheHandlersAreCalledCorrectly()
+        {
+            FakeHandler.TimeCalled.ShouldBeLessThan(FakeHandlerTwo.TimeCalled);
+        }
+
+        public class FakeDependency
+        {            
+            public bool Called;
+        }
+
+        class FakeHandlerWithDependency : DelegatingHandler
+        {
+            private FakeDependency _dependency;
+
+            public FakeHandlerWithDependency(FakeDependency dependency)
+            {
+                _dependency = dependency;
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                _dependency.Called = true;
+                return await base.SendAsync(request, cancellationToken);
+            }
+        }
+        
         class FakeHandler : DelegatingHandler
         {  
-            public DateTime TimeCalled { get; private set; }
+            public static DateTime TimeCalled { get; private set; }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                TimeCalled = DateTime.Now;
+                return await base.SendAsync(request, cancellationToken);
+            }
+        }
+        class FakeHandlerTwo : DelegatingHandler
+        {  
+            public static DateTime TimeCalled { get; private set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {

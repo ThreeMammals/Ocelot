@@ -6,11 +6,11 @@ namespace Ocelot.Requester
 {
     public class HttpClientBuilder : IHttpClientBuilder
     {
-        private readonly IDelegatingHandlerHandlerHouse _house;
+        private readonly IDelegatingHandlerHandlerFactory _factory;
 
-        public HttpClientBuilder(IDelegatingHandlerHandlerHouse house)
+        public HttpClientBuilder(IDelegatingHandlerHandlerFactory house)
         {
-            _house = house;
+            _factory = house;
         }
 
         public IHttpClient Create(DownstreamReRoute request)
@@ -24,11 +24,9 @@ namespace Ocelot.Requester
 
         private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, DownstreamReRoute request)
         {
-            var provider = _house.Get(request);
-
-            var handlers = provider.Data.Get();
-
             //todo handle error
+            var handlers = _factory.Get(request).Data;
+
             handlers
                 .Select(handler => handler)
                 .Reverse()

@@ -22,9 +22,13 @@ using Ocelot.Middleware;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using Ocelot.AcceptanceTests.Caching;
+<<<<<<< HEAD
+using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+||||||| merged common ancestors
+=======
 using System.IO.Compression;
 using System.Text;
-using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+>>>>>>> develop
 
 namespace Ocelot.AcceptanceTests
 {
