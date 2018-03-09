@@ -25,6 +25,7 @@ using Ocelot.AcceptanceTests.Caching;
 using System.IO.Compression;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+using Ocelot.Requester;
 
 namespace Ocelot.AcceptanceTests
 {

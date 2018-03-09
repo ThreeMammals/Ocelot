@@ -19,6 +19,8 @@ namespace Ocelot.DependencyInjection
 
         IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configOptions);
 
-        IOcelotBuilder AddDelegatingHandler<T>() where T : DelegatingHandler;
+        IOcelotBuilder AddDelegatingHandler<T>(bool global = true) where T : DelegatingHandler;
+        
+        IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = true) where T : DelegatingHandler;
     }
 }

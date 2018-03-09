@@ -32,6 +32,23 @@ namespace Ocelot.UnitTests.Requester
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
         }
+        
+        // [Fact]
+        // public void should_return_not_global()
+        // {
+        //     var reRoute = new DownstreamReRouteBuilder()
+        //         .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false))
+        //         .WithReRouteKey("")
+        //         .Build();
+
+        //     this.Given(x => GivenTheFollowingRequest(reRoute))
+        //         .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
+        //         .And(x => GivenTheServiceProviderReturns<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+        //         .When(x => WhenIGet())
+        //         .Then(x => ThenThereIsDelegatesInProvider(3))
+        //         .And(x => ThenTheDelegatesAreAddedCorrectly())
+        //         .BDDfy(); 
+        // }
 
         [Fact]
         public void should_all_from_all_routes_provider_and_qos()
@@ -96,10 +113,37 @@ namespace Ocelot.UnitTests.Requester
             where TTwo : DelegatingHandler
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddSingleton<DelegatingHandler, TOne>();
-            services.AddSingleton<DelegatingHandler, TTwo>();
+            services.AddTransient<TOne>();
+            services.AddTransient<GlobalDelegatingHandler>(s => {
+                var service = s.GetService<TOne>();
+                return new GlobalDelegatingHandler(service);
+            });
+            services.AddTransient<TTwo>();
+            services.AddTransient<GlobalDelegatingHandler>(s => {
+                var service = s.GetService<TTwo>();
+                return new GlobalDelegatingHandler(service);
+            });
             _serviceProvider = services.BuildServiceProvider();
         }
+
+        // private void GivenTheServiceProviderReturnsNotGlobal<TOne, TTwo>() 
+        //     where TOne : DelegatingHandler
+        //     where TTwo : DelegatingHandler
+        // {
+        //     IServiceCollection services = new ServiceCollection();
+        //     services.AddTransient<TOne>();
+        //     services.AddTransient<GlobalDelegatingHandler>(s => {
+        //         var service = s.GetService<TOne>();
+        //         return new GlobalDelegatingHandler(service);
+        //     });
+        //     services.AddTransient<TTwo>();
+        //     services.AddTransient<GlobalDelegatingHandler>(s => {
+        //         var service = s.GetService<TTwo>();
+        //         return new GlobalDelegatingHandler(service);
+        //     });
+                
+        //     _serviceProvider = services.BuildServiceProvider();
+        // }
 
          private void GivenTheServiceProviderReturnsNothing()
         {

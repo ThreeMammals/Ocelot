@@ -29,13 +29,13 @@ namespace Ocelot.Requester
 
         public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute request)
         {
-            var handlersAppliedToAll = _serviceProvider.GetServices<DelegatingHandler>();
+            var handlersAppliedToAll = _serviceProvider.GetServices<GlobalDelegatingHandler>();
 
             var handlers = new List<Func<DelegatingHandler>>();
 
             foreach (var handler in handlersAppliedToAll)
             {
-                handlers.Add(() => handler);
+                handlers.Add(() => handler.DelegatingHandler);
             }
 
             if (request.HttpHandlerOptions.UseTracing)

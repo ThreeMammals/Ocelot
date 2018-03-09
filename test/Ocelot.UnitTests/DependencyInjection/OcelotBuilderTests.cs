@@ -41,9 +41,18 @@ namespace Ocelot.UnitTests.DependencyInjection
         private Exception _ex;
 
         [Fact]
-        public void should_add_delegating_handlers_with_di()
+        public void should_add_delegating_handlers_transient()
         {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTransientDelegate<FakeDelegatingHandler>())
+                .And(x => AddTransientDelegate<FakeDelegatingHandlerTwo>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .BDDfy();
+        }
 
+        [Fact]
+        public void should_add_delegating_handlers_singleton()
+        {
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => AddDelegate<FakeDelegatingHandler>())
                 .And(x => AddDelegate<FakeDelegatingHandlerTwo>())
@@ -118,16 +127,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-        private void WhenISetUpAdministration()
-        {
-            _ocelotBuilder.AddAdministration("/administration", "secret");
-        }
-
-        private void WhenISetUpAdministration(Action<IdentityServerAuthenticationOptions> options)
-        {
-            _ocelotBuilder.AddAdministration("/administration", options);
-        }
-
         [Fact]
         public void should_use_logger_factory()
         {
@@ -155,6 +154,21 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        private void WhenISetUpAdministration()
+        {
+            _ocelotBuilder.AddAdministration("/administration", "secret");
+        }
+
+        private void WhenISetUpAdministration(Action<IdentityServerAuthenticationOptions> options)
+        {
+            _ocelotBuilder.AddAdministration("/administration", options);
+        }
+
+        private void AddTransientDelegate<T>() where T : DelegatingHandler
+        {
+            _ocelotBuilder.AddTransientDelegatingHandler<T>();
+        }
+
         private void ThenTheCorrectAdminPathIsRegitered()
         {
             _serviceProvider = _services.BuildServiceProvider();
@@ -165,9 +179,9 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
         {
             _serviceProvider = _services.BuildServiceProvider();
-            var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
-            handlers[0].ShouldBeOfType<TOne>();
-            handlers[1].ShouldBeOfType<TWo>();
+            var handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
+            handlers[0].DelegatingHandler.ShouldBeOfType<TOne>();
+            handlers[1].DelegatingHandler.ShouldBeOfType<TWo>();
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
