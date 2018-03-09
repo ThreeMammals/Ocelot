@@ -12,19 +12,19 @@ namespace Ocelot.Configuration.Repository
 
         private IOcelotConfiguration _ocelotConfiguration;
 
-        public async Task<Response<IOcelotConfiguration>> Get()
+        public Task<Response<IOcelotConfiguration>> Get()
         {
-            return new OkResponse<IOcelotConfiguration>(_ocelotConfiguration);
+            return Task.FromResult<Response<IOcelotConfiguration>>(new OkResponse<IOcelotConfiguration>(_ocelotConfiguration));
         }
 
-        public async Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration)
+        public Task<Response> AddOrReplace(IOcelotConfiguration ocelotConfiguration)
         {
             lock (LockObject)
             {
                 _ocelotConfiguration = ocelotConfiguration;
             }
 
-            return new OkResponse();
+            return Task.FromResult<Response>(new OkResponse());
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Ocelot.Configuration.Repository
             _configFilePath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
         }
 
-        public async Task<Response<FileConfiguration>> Get()
+        public Task<Response<FileConfiguration>> Get()
         {
             string jsonConfiguration;
 
@@ -29,10 +29,10 @@ namespace Ocelot.Configuration.Repository
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
 
-            return new OkResponse<FileConfiguration>(fileConfiguration);
+            return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
-        public async Task<Response> Set(FileConfiguration fileConfiguration)
+        public Task<Response> Set(FileConfiguration fileConfiguration)
         {
             string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
@@ -45,8 +45,8 @@ namespace Ocelot.Configuration.Repository
 
                 System.IO.File.WriteAllText(_configFilePath, jsonConfiguration);
             }
-            
-            return new OkResponse();
+
+            return Task.FromResult<Response>(new OkResponse());
         }
     }
 }
