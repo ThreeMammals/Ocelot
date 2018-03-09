@@ -4,18 +4,17 @@ namespace Ocelot.UnitTests.Authorization
 {
     using System.Collections.Generic;
     using System.Security.Claims;
+    using System.Threading.Tasks;
     using Moq;
     using Ocelot.Authorisation;
     using Ocelot.Authorisation.Middleware;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Configuration;
 
     public class AuthorisationMiddlewareTests
@@ -36,9 +35,7 @@ namespace Ocelot.UnitTests.Authorization
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
         }
 

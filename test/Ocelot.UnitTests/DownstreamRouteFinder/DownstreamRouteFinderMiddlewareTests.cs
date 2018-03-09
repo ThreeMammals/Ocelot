@@ -4,9 +4,8 @@ using Ocelot.Middleware.Multiplexer;
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System.Collections.Generic;
-    using Microsoft.AspNetCore.Builder;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
@@ -42,9 +41,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamRouteFinderMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _multiplexer = new Mock<IMultiplexer>();
             _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _finder.Object, _provider.Object, _multiplexer.Object);
         }

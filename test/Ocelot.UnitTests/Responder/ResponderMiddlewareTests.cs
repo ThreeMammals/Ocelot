@@ -5,6 +5,7 @@ namespace Ocelot.UnitTests.Responder
 {
     using Microsoft.AspNetCore.Http;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Moq;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.Errors;
@@ -32,9 +33,7 @@ namespace Ocelot.UnitTests.Responder
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ResponderMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new ResponderMiddleware(_next, _responder.Object, _loggerFactory.Object, _codeMapper.Object);
         }
 

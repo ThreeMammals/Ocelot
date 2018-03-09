@@ -15,9 +15,9 @@ namespace Ocelot.UnitTests.RateLimit
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Microsoft.Extensions.Caching.Memory;
     using System.IO;
+    using System.Threading.Tasks;
 
     public class ClientRateLimitMiddlewareTests
     {
@@ -42,8 +42,7 @@ namespace Ocelot.UnitTests.RateLimit
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
-             _next = async (context) => {
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler);
         }
 

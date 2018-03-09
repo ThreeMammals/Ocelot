@@ -6,23 +6,19 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
+    using System.Threading.Tasks;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator;
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using Ocelot.Values;
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Microsoft.AspNetCore.Http;
 
     public class DownstreamUrlCreatorMiddlewareTests
@@ -43,9 +39,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
             _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
         }
 
         [Fact]
