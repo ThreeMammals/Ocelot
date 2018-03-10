@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.Authentication.Middleware

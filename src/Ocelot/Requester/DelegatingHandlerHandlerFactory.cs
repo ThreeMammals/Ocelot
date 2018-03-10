@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
@@ -29,13 +30,36 @@ namespace Ocelot.Requester
 
         public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute request)
         {
-            var handlersAppliedToAll = _serviceProvider.GetServices<DelegatingHandler>();
+            var globalDelegatingHandlers = _serviceProvider
+                .GetServices<GlobalDelegatingHandler>()
+                .ToList();
+
+            var reRouteSpecificHandlers = _serviceProvider
+                .GetServices<DelegatingHandler>()
+                .ToList();
 
             var handlers = new List<Func<DelegatingHandler>>();
 
-            foreach (var handler in handlersAppliedToAll)
+            foreach (var handler in globalDelegatingHandlers)
             {
-                handlers.Add(() => handler);
+                if (GlobalIsInHandlersConfig(request, handler))
+                {
+                    reRouteSpecificHandlers.Add(handler.DelegatingHandler);
+                }
+                else
+                {
+                    handlers.Add(() => handler.DelegatingHandler);
+                }
+            }
+
+            if (request.DelegatingHandlers.Any())
+            {
+                var sorted = SortByConfigOrder(request, reRouteSpecificHandlers);
+
+                foreach (var handler in sorted)
+                {
+                    handlers.Add(() => handler);
+                }
             }
 
             if (request.HttpHandlerOptions.UseTracing)
@@ -56,6 +80,23 @@ namespace Ocelot.Requester
             }
 
             return new OkResponse<List<Func<DelegatingHandler>>>(handlers);
+        }
+
+        private List<DelegatingHandler> SortByConfigOrder(DownstreamReRoute request, List<DelegatingHandler> reRouteSpecificHandlers)
+        {
+            return reRouteSpecificHandlers
+                .Where(x => request.DelegatingHandlers.Contains(x.GetType().Name))
+                .OrderBy(d =>
+                {
+                    var type = d.GetType().Name;
+                    var pos = request.DelegatingHandlers.IndexOf(type);
+                    return pos;
+                }).ToList();
+        }
+
+        private bool GlobalIsInHandlersConfig(DownstreamReRoute request, GlobalDelegatingHandler handler)
+        {
+            return request.DelegatingHandlers.Contains(handler.DelegatingHandler.GetType().Name);
         }
     }
 }

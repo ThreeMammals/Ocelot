@@ -25,6 +25,7 @@ using Ocelot.AcceptanceTests.Caching;
 using System.IO.Compression;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+using Ocelot.Requester;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -175,7 +176,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithHandlersRegisteredInDi<TOne, TWo>() 
+        public void GivenOcelotIsRunningWithSpecficHandlersRegisteredInDi<TOne, TWo>()
             where TOne : DelegatingHandler
             where TWo : DelegatingHandler
         {
@@ -195,8 +196,8 @@ namespace Ocelot.AcceptanceTests
                 {
                     s.AddSingleton(_webHostBuilder);
                     s.AddOcelot()
-                        .AddDelegatingHandler<TOne>()
-                        .AddDelegatingHandler<TWo>();
+                        .AddSingletonDelegatingHandler<TOne>()
+                        .AddSingletonDelegatingHandler<TWo>();
                 })
                 .Configure(a =>
                 {
@@ -208,7 +209,40 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>() 
+            where TOne : DelegatingHandler
+            where TWo : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddOcelot()
+                        .AddSingletonDelegatingHandler<TOne>(true)
+                        .AddSingletonDelegatingHandler<TWo>(true);
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -228,7 +262,7 @@ namespace Ocelot.AcceptanceTests
                     s.AddSingleton(_webHostBuilder);
                     s.AddSingleton<FakeDependency>(dependency);
                     s.AddOcelot()
-                        .AddDelegatingHandler<TOne>();
+                        .AddSingletonDelegatingHandler<TOne>(true);
                 })
                 .Configure(a =>
                 {
@@ -618,15 +652,16 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThePostHasGzipContent(object input)
         {
-            string json = JsonConvert.SerializeObject(input);
-            byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
-            MemoryStream ms = new MemoryStream();
-            using (GZipStream gzip = new GZipStream(ms, CompressionMode.Compress, true))
+            var json = JsonConvert.SerializeObject(input);
+            var jsonBytes = Encoding.UTF8.GetBytes(json);
+            var ms = new MemoryStream();
+            using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))
             {
                 gzip.Write(jsonBytes, 0, jsonBytes.Length);
             }
+
             ms.Position = 0;
-            StreamContent content = new StreamContent(ms);
+            var content = new StreamContent(ms);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             content.Headers.ContentEncoding.Add("gzip");
             _postContent = content;

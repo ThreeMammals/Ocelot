@@ -36,9 +36,12 @@ namespace Ocelot.Configuration.Builder
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
         private string _upstreamHost;
         private string _key;
+        private List<string> _delegatingHandlers;
+
         public DownstreamReRouteBuilder()
         {
             _downstreamAddresses = new List<DownstreamHostAndPort>();
+            _delegatingHandlers = new List<string>();
         }
 
         public DownstreamReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -215,6 +218,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithDelegatingHandlers(List<string> delegatingHandlers)
+        {
+            _delegatingHandlers = delegatingHandlers;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
@@ -243,7 +252,8 @@ namespace Ocelot.Configuration.Builder
                 _isAuthorised, 
                 _authenticationOptions, 
                 new PathTemplate(_downstreamPathTemplate),
-                _reRouteKey);
+                _reRouteKey,
+                _delegatingHandlers);
         }
     }
 }
