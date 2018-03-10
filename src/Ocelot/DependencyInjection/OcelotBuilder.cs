@@ -182,7 +182,7 @@ namespace Ocelot.DependencyInjection
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
-        public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = true) 
+        public IOcelotBuilder AddSingletonDelegatingHandler<THandler>(bool global = false) 
             where THandler : DelegatingHandler
         {
             if(global)
@@ -201,7 +201,7 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-        public IOcelotBuilder AddTransientDelegatingHandler<THandler>(bool global = true) 
+        public IOcelotBuilder AddTransientDelegatingHandler<THandler>(bool global = false) 
             where THandler : DelegatingHandler 
         {
             if(global)
@@ -216,6 +216,7 @@ namespace Ocelot.DependencyInjection
             {
                 _services.AddTransient<DelegatingHandler, THandler>();
             }
+
             return this;
         }
 

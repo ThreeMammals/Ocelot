@@ -107,6 +107,7 @@ namespace Ocelot.AcceptanceTests
 
             _builder.Start();
         }
+
         public void Dispose()
         {
             _builder?.Dispose();

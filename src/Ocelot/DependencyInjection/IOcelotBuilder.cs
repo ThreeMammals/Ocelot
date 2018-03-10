@@ -3,7 +3,6 @@ using CacheManager.Core;
 using System;
 using System.Net.Http;
 using IdentityServer4.AccessTokenValidation;
-using Ocelot.Requester;
 
 namespace Ocelot.DependencyInjection
 {
@@ -19,8 +18,10 @@ namespace Ocelot.DependencyInjection
 
         IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configOptions);
 
-        IOcelotBuilder AddDelegatingHandler<T>(bool global = true) where T : DelegatingHandler;
+        IOcelotBuilder AddSingletonDelegatingHandler<T>(bool global = false)
+            where T : DelegatingHandler;
         
-        IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = true) where T : DelegatingHandler;
+        IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = false)
+            where T : DelegatingHandler;
     }
 }
