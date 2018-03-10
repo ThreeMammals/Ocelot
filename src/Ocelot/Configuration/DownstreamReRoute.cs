@@ -31,8 +31,10 @@ namespace Ocelot.Configuration
             bool isAuthorised, 
             AuthenticationOptions authenticationOptions, 
             PathTemplate downstreamPathTemplate, 
-            string reRouteKey)
+            string reRouteKey,
+            List<string> delegatingHandlers)
         {
+            DelegatingHandlers = delegatingHandlers;
             Key = key;
             UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
@@ -87,5 +89,6 @@ namespace Ocelot.Configuration
         public AuthenticationOptions AuthenticationOptions { get; private set; }
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public string ReRouteKey { get; private set; }
+        public List<string> DelegatingHandlers {get;private set;}
     }
 }
