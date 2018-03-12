@@ -34,9 +34,9 @@ namespace Ocelot.Authorisation
 
             var userScopes = values.Data;
 
-            List<string> matchesScopes = routeAllowedScopes.Intersect(userScopes).ToList();
+            var matchesScopes = routeAllowedScopes.Intersect(userScopes).ToList();
 
-            if (matchesScopes == null || matchesScopes.Count == 0)
+            if (matchesScopes.Count == 0)
             {
                 return new ErrorResponse<bool>(new List<Error>
                 {

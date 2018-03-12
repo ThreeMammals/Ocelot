@@ -9,6 +9,7 @@ namespace Ocelot.UnitTests.RequestId
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
@@ -40,8 +41,10 @@ namespace Ocelot.UnitTests.RequestId
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ReRouteRequestIdMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
+            _next = context =>
+            {
                 context.HttpContext.Response.Headers.Add("LSRequestId", context.HttpContext.TraceIdentifier);
+                return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
             _downstreamContext.DownstreamRequest = _downstreamRequest;

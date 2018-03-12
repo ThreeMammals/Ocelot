@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.Values;
 
@@ -14,16 +13,16 @@ namespace Ocelot.ServiceDiscovery
             _configuration = configuration;
         }
 
-        public async Task<List<Service>> Get()
+        public Task<List<Service>> Get()
         {
-            return new List<Service>
+            return Task.FromResult(new List<Service>
             {
                 new Service(_configuration.ServiceName, 
                     new ServiceHostAndPort(_configuration.HostName, _configuration.Port), 
                     "doesnt matter with service fabric", 
                     "doesnt matter with service fabric", 
                     new List<string>())
-            };
+            });
         }
     }
 }

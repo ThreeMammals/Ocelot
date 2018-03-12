@@ -19,12 +19,13 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly LoadBalancerHouse _loadBalancerHouse;
         private Response<ILoadBalancer> _getResult;
         private readonly Mock<ILoadBalancerFactory> _factory;
-        private ServiceProviderConfiguration _serviceProviderConfig;
+        private readonly ServiceProviderConfiguration _serviceProviderConfig;
 
         public LoadBalancerHouseTests()
         {
             _factory = new Mock<ILoadBalancerFactory>();
             _loadBalancerHouse = new LoadBalancerHouse(_factory.Object);
+            _serviceProviderConfig = new ServiceProviderConfiguration("myType","myHost",123);
         }
 
         [Fact]

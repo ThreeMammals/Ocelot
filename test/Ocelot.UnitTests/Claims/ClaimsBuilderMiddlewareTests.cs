@@ -3,6 +3,7 @@
 namespace Ocelot.UnitTests.Claims
 {
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Claims;
@@ -32,9 +33,7 @@ namespace Ocelot.UnitTests.Claims
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsBuilderMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new ClaimsBuilderMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
         }
 

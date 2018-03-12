@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -18,7 +17,6 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _builder;
         private readonly Steps _steps;
-        private string _downstreamPath;
 
         public HeaderTests()
         {
@@ -221,23 +219,20 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(async context =>
+                    app.Run(context => 
                     {   
                         context.Response.OnStarting(() => {
                             context.Response.Headers.Add(headerKey, headerValue);
                             context.Response.StatusCode = statusCode;
                             return Task.CompletedTask;
                         });
+
+                        return Task.CompletedTask;
                     });
                 })
                 .Build();
 
             _builder.Start();
-        }
-
-        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
-        {
-            _downstreamPath.ShouldBe(expectedDownstreamPath);
         }
 
         public void Dispose()

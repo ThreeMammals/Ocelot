@@ -13,23 +13,23 @@ namespace Ocelot.Requester
     {
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
-        private readonly IDelegatingHandlerHandlerHouse _house;
+        private readonly IDelegatingHandlerHandlerFactory _factory;
 
-        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory, 
+        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
             IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerHouse house)
+            IDelegatingHandlerHandlerFactory house)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
-            _house = house;
+            _factory = house;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext request)
         {
-            var builder = new HttpClientBuilder(_house);
+            var builder = new HttpClientBuilder(_factory);
 
             var cacheKey = GetCacheKey(request);
-            
+
             var httpClient = GetHttpClient(cacheKey, builder, request);
 
             try
@@ -72,8 +72,23 @@ namespace Ocelot.Requester
         private string GetCacheKey(DownstreamContext request)
         {
             var baseUrl = $"{request.DownstreamRequest.RequestUri.Scheme}://{request.DownstreamRequest.RequestUri.Authority}";
-           
+
             return baseUrl;
         }
+    }
+
+    public class ReRouteDelegatingHandler<T> where T : DelegatingHandler
+    {
+        public T DelegatingHandler { get; private set; }
+    }
+
+    public class GlobalDelegatingHandler
+    {
+        public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
+        {
+            DelegatingHandler = delegatingHandler;
+        }
+
+        public DelegatingHandler DelegatingHandler { get; private set; }
     }
 }
