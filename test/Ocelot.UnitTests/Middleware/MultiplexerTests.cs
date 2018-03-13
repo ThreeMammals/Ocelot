@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.Middleware
         {
             _aggregator = new Mock<IResponseAggregator>();
             _context = new DownstreamContext(new DefaultHttpContext());
-            _pipeline = async context => { _count++; }; 
+            _pipeline = context => Task.FromResult(_count++); 
             _multiplexer = new Multiplexer(_aggregator.Object);
         }
 

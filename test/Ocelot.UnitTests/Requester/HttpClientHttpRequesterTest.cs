@@ -18,8 +18,7 @@ namespace Ocelot.UnitTests.Requester
     public class HttpClientHttpRequesterTest
     {
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IDelegatingHandlerHandlerHouse> _house;
-        private Mock<IDelegatingHandlerHandlerProvider> _provider;
+        private Mock<IDelegatingHandlerHandlerFactory> _house;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
         private DownstreamContext _request;
@@ -28,10 +27,8 @@ namespace Ocelot.UnitTests.Requester
 
         public HttpClientHttpRequesterTest()
         {
-            _provider = new Mock<IDelegatingHandlerHandlerProvider>();
-            _provider.Setup(x => x.Get()).Returns(new List<Func<DelegatingHandler>>());
-            _house = new Mock<IDelegatingHandlerHandlerHouse>();
-            _house.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<IDelegatingHandlerHandlerProvider>(_provider.Object));
+            _house = new Mock<IDelegatingHandlerHandlerFactory>();
+            _house.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _loggerFactory

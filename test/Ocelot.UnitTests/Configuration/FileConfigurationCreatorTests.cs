@@ -402,11 +402,14 @@ namespace Ocelot.UnitTests.Configuration
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
 
+            var handlers = new List<string> {"Polly", "Tracer"};
+
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamScheme("https")
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithDelegatingHandlers(handlers)
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -419,6 +422,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     UpstreamPathTemplate = "/api/products/{productId}",
                                                     DownstreamPathTemplate = "/products/{productId}",
                                                     UpstreamHttpMethod = new List<string> { "Get" },
+                                                    DelegatingHandlers = handlers
                                                 }
                                             },
                                         }))
@@ -821,7 +825,8 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
-                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);           
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);   
+                result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);           
             }
         }
 

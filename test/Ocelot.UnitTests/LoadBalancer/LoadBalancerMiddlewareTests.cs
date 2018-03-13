@@ -4,6 +4,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 {
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
@@ -43,9 +44,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<LoadBalancingMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _downstreamContext.DownstreamRequest = _downstreamRequest;
         }
 

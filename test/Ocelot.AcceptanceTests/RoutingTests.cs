@@ -872,6 +872,56 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_use_priority()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/goods/{url}",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/goods/{url}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 53879,
+                                }
+                            },
+                            Priority = 0
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/goods/delete",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/goods/delete",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 52879,
+                                }
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:52879/", "/goods/delete", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/goods/delete"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()

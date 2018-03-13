@@ -19,6 +19,8 @@ namespace Ocelot.Configuration.File
             HttpHandlerOptions = new FileHttpHandlerOptions();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             DownstreamHostAndPorts = new List<FileHostAndPort>();
+            DelegatingHandlers = new List<string>();
+            Priority = 1;
         }
 
         public string DownstreamPathTemplate { get; set; }
@@ -44,5 +46,7 @@ namespace Ocelot.Configuration.File
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
         public string UpstreamHost { get; set; }
         public string Key { get;set; }
+        public List<string> DelegatingHandlers {get;set;}
+        public int Priority { get;set; }
     }
 }

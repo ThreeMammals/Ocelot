@@ -13,6 +13,7 @@ namespace Ocelot.UnitTests.Requester
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;
+    using System.Threading.Tasks;
 
     public class HttpRequesterMiddlewareTests
     {
@@ -30,9 +31,7 @@ namespace Ocelot.UnitTests.Requester
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequesterMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object);
         }
 

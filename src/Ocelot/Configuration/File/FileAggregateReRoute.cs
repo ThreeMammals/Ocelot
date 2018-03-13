@@ -14,5 +14,7 @@ namespace Ocelot.Configuration.File
         { 
             get { return new List<string> {"Get"}; }
         }
+
+        public int Priority {get;set;} = 1;
     }
 }

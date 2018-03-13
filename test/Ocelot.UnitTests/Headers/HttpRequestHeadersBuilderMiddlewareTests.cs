@@ -4,14 +4,12 @@ namespace Ocelot.UnitTests.Headers
 {
     using System.Collections.Generic;
     using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Headers;
     using Ocelot.Headers.Middleware;
@@ -37,9 +35,7 @@ namespace Ocelot.UnitTests.Headers
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequestHeadersBuilderMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
-                //do nothing
-            };
+            _next = context => Task.CompletedTask;
             _middleware = new HttpRequestHeadersBuilderMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
             _downstreamContext.DownstreamRequest = new HttpRequestMessage();
         }

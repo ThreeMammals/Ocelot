@@ -42,7 +42,7 @@ namespace Ocelot.Configuration.Creator
 
             if (upstreamTemplate == "/")
             {
-                return new UpstreamPathTemplate(RegExForwardSlashOnly, 1);
+                return new UpstreamPathTemplate(RegExForwardSlashOnly, reRoute.Priority);
             }
 
             if(upstreamTemplate.EndsWith("/"))
@@ -54,7 +54,7 @@ namespace Ocelot.Configuration.Creator
                 ? $"^{upstreamTemplate}{RegExMatchEndString}" 
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
-            return new UpstreamPathTemplate(route, 1);
+            return new UpstreamPathTemplate(route, reRoute.Priority);
         }
 
         private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
