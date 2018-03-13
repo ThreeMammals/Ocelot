@@ -140,3 +140,41 @@ If you do not set UpstreamHost on a ReRoue then any host header can match it. Th
 preservers existing functionality at the time of building the feature. This means that if you have two ReRoutes that are the same apart from the UpstreamHost where one is null and the other set. Ocelot will favour the one that has been set. 
 
 This feature was requested as part of `Issue 216 <https://github.com/TomPallister/Ocelot/pull/216>`_ .
+
+Priority
+^^^^^^^^
+
+In `Issue 270 <https://github.com/TomPallister/Ocelot/pull/270>`_ I finally decided to expose the ReRoute priority in 
+configuration.json. This means you can decide in what order you want your ReRoutes to match the Upstream HttpRequest.
+
+In order to get this working add the following to a ReRoute in configuration.json, 0 is just an example value here but will explain below.
+
+.. code-block:: json
+
+    {
+        "Priority": 0
+    }
+
+0 is the lowest priority, Ocelot will always use 0 for /{catchAll} ReRoutes and this is still hardcoded. After that you are free
+to set any priority you wish.
+
+e.g. you could have
+
+.. code-block:: json
+
+    {
+        "UpstreamPathTemplate": "/goods/{catchAll}"
+        "Priority": 0
+    }
+
+and 
+
+.. code-block:: json
+
+    {
+        "UpstreamPathTemplate": "/goods/delete"
+        "Priority": 1
+    }
+
+In the example above if you make a request into Ocelot on /goods/delete Ocelot will match /goods/delete ReRoute. Previously it would have
+matched /goods/{catchAll} (because this is the first ReRoute in the list!).
