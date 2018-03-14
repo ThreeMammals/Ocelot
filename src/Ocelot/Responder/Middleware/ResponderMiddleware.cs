@@ -39,6 +39,12 @@ namespace Ocelot.Responder.Middleware
             {
                 var errors = context.Errors;
                 _logger.LogError($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
+
+                foreach(var error in errors)
+                {
+                    _logger.LogError(error.Message);
+                }
+                
                 SetErrorResponse(context.HttpContext, errors);
             }
             else

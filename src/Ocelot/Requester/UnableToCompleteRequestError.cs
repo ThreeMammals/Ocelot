@@ -6,7 +6,7 @@ namespace Ocelot.Requester
     public class UnableToCompleteRequestError : Error
     {
         public UnableToCompleteRequestError(Exception exception) 
-            : base($"Error making http request, exception: {exception.Message}", OcelotErrorCode.UnableToCompleteRequestError)
+            : base($"Error making http request, exception: {exception}", OcelotErrorCode.UnableToCompleteRequestError)
         {
         }
     }

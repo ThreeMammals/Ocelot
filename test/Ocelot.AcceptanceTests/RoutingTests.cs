@@ -922,6 +922,55 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_fix_issue_271()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/v1/{everything}",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/api/v1/{everything}",
+                            UpstreamHttpMethod = new List<string> { "Get", "Put", "Post" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 54879,
+                                }
+                            },
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/connect/token",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/connect/token",
+                            UpstreamHttpMethod = new List<string> { "Post" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 5001,
+                                }
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:54879/", "/api/v1/modules/Test", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/modules/Test"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
