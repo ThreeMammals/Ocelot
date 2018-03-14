@@ -47,11 +47,6 @@ namespace Ocelot.AcceptanceTests
                         CancellationToken.None);
                     await Task.Delay(1000);
                 }
-                /*while (true)
-                {
-                   
-                    //count++;
-                }*/
 
                 await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             });
@@ -81,7 +76,6 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartFakeOcelot()
         {
-//start fake ocelot
             _ocelotBuilder = new WebHostBuilder();
             _ocelotBuilder.ConfigureServices(s =>
             {
@@ -231,8 +225,8 @@ namespace Ocelot.AcceptanceTests
 
                     if (wsToUpstreamClient.State != WebSocketState.Open)
                     {
-                        await wsToDownstreamService.CloseAsync(WebSocketCloseStatus.Empty, "",
-                            CancellationToken.None);
+                        await wsToDownstreamService
+                        .CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None);
                         break;
                     }
                 }
@@ -265,9 +259,16 @@ namespace Ocelot.AcceptanceTests
 
                             var sendSegment = new ArraySegment<byte>(buffer, 0, result.Count);
 
-                            //send to upstream client
-                            await wsToUpstreamClient.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
+                            try
+                            {
+                                //send to upstream client
+                                await wsToUpstreamClient.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
                                 CancellationToken.None);
+                            }
+                            catch(Exception e)
+                            {
+                                Console.WriteLine(e);                                
+                            }
                         }
                     }
                 }
@@ -279,22 +280,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             await Task.WhenAll(receiveFromDownstreamAndSendToUpstream, receiveFromUpstreamSendToDownstream);
-            //wsToDownstreamService.Dispose();
         }
-
-
- /*       private async Task Proxy(HttpContext context, WebSocket wsToUpstreamClient)
-        {
-            var buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await wsToUpstreamClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
-            {
-                await wsToUpstreamClient.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
-
-                result = await wsToUpstreamClient.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-            await wsToUpstreamClient.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-        }*/
 
         private async Task Echo(HttpContext context, WebSocket webSocket)
         {
@@ -302,12 +288,13 @@ namespace Ocelot.AcceptanceTests
             {
                 var buffer = new byte[1024 * 4];
                 WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                while (!result.CloseStatus.HasValue)
+                while (!result.CloseStatus.HasValue && result.MessageType != WebSocketMessageType.Close)
                 {
                     await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 }
+
                 await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             catch (Exception e)
@@ -320,6 +307,7 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _ocelotHost?.Dispose();
+            _downstreamHost?.Dispose();
         }
     }
 }
