@@ -39,8 +39,7 @@ namespace Ocelot.Requester
             }
             catch (TimeoutRejectedException exception)
             {
-                return
-                    new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
             }
             catch (BrokenCircuitException exception)
             {
