@@ -163,7 +163,6 @@
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_not_add_content_headers()
         {
