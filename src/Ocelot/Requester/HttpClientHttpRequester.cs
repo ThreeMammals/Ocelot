@@ -75,7 +75,8 @@ namespace Ocelot.Requester
         }
     }
 
-    public class ReRouteDelegatingHandler<T> where T : DelegatingHandler
+    public class ReRouteDelegatingHandler<T>
+        where T : DelegatingHandler
     {
         public T DelegatingHandler { get; private set; }
     }
