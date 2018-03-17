@@ -10,5 +10,3 @@ script:
   - dotnet restore
   - dotnet build
   - dotnet test ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-  - dotnet test ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  - dotnet test ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj

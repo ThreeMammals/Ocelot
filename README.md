@@ -2,6 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?branch=develop&svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb) Windows
 [![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/develop.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/develop) Linux
+[![Build Status](https://travis-ci.org/ThreeMammals/Ocelot.svg?branch=develop)](https://travis-ci.org/ThreeMammals/Ocelot) OSX
 
 [![Windows Build history](https://buildstats.info/appveyor/chart/TomPallister/ocelot-fcfpb?branch=develop&includeBuildsFromPullRequest=false)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb/history?branch=develop)
 
