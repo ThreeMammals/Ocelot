@@ -6,7 +6,6 @@
 #tool "nuget:?package=ReportGenerator"
 #tool coveralls.net
 #addin Cake.Coveralls
-#addin nuget:?package=System.Runtime.InteropServices.RuntimeInformation&version=4.3.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -207,7 +206,7 @@ Task("RunAcceptanceTests")
 				return;
 			}
 		}
-		
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
