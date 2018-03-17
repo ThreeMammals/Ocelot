@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
@@ -15,15 +16,19 @@ namespace Ocelot.Requester
         private string _cacheKey;
         private HttpClient _httpClient;
         private IHttpClient _client;
+        private HttpClientHandler _httpclientHandler;
+        private readonly IHttpClientHandlerCache _clientHandlerCache;
 
         public HttpClientBuilder(
             IDelegatingHandlerHandlerFactory factory, 
             IHttpClientCache cacheHandlers, 
-            IOcelotLogger logger)
+            IOcelotLogger logger, 
+            IHttpClientHandlerCache clientHandlerCache)
         {
             _factory = factory;
             _cacheHandlers = cacheHandlers;
             _logger = logger;
+            _clientHandlerCache = clientHandlerCache;
         }
 
         public IHttpClient Create(DownstreamContext request)
@@ -34,14 +39,32 @@ namespace Ocelot.Requester
 
             if (httpClient != null)
             {
+                if (request.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer)
+                {
+                    var handler = _clientHandlerCache.Get(_cacheKey);
+
+                    foreach (Cookie co in handler.CookieContainer.GetCookies(new Uri(_cacheKey)))
+                    {
+                        co.Expires = DateTime.Now.Subtract(TimeSpan.FromDays(1));
+                    }
+                }
+
                 return httpClient;
             }
 
-            var httpclientHandler = new HttpClientHandler { AllowAutoRedirect = request.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect, UseCookies = request.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer};
+            _httpclientHandler = new HttpClientHandler
+            {
+                AllowAutoRedirect = request.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = request.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                CookieContainer = new CookieContainer()
+            };
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(httpclientHandler, request.DownstreamReRoute));
+            _clientHandlerCache.Set(_cacheKey, _httpclientHandler, TimeSpan.FromHours(24));
+
+            _httpClient = new HttpClient(CreateHttpMessageHandler(_httpclientHandler, request.DownstreamReRoute));
 
             _client = new HttpClientWrapper(_httpClient);
+
             return _client;
         }
 

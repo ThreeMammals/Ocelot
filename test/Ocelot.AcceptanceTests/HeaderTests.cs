@@ -226,7 +226,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
-
         
         [Fact]
         public void request_should_have_own_cookies_no_cookie_container()
