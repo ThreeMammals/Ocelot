@@ -189,6 +189,24 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
+		if(TravisCI.IsRunningOnTravisCI)
+		{
+			Information(
+				@"Job:
+				JobId: {0}
+				JobNumber: {1}
+				OSName: {2}",
+				BuildSystem.TravisCI.Environment.Job.JobId,
+				BuildSystem.TravisCI.Environment.Job.JobNumber,
+				BuildSystem.TravisCI.Environment.Job.OSName
+			);
+
+			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
+			{
+				return;
+			}
+		}
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -205,6 +223,24 @@ Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
+		if(TravisCI.IsRunningOnTravisCI)
+		{
+			Information(
+				@"Job:
+				JobId: {0}
+				JobNumber: {1}
+				OSName: {2}",
+				BuildSystem.TravisCI.Environment.Job.JobId,
+				BuildSystem.TravisCI.Environment.Job.JobNumber,
+				BuildSystem.TravisCI.Environment.Job.OSName
+			);
+
+			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
+			{
+				return;
+			}
+		}
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
