@@ -149,6 +149,7 @@ namespace Ocelot.DependencyInjection
             // We add this here so that we can always inject something into the factory for IoC..
             _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
             _services.TryAddSingleton<IConsulPollerConfiguration, InMemoryConsulPollerConfiguration>();
+            _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)

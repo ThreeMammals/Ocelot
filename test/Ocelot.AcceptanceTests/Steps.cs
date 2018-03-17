@@ -318,6 +318,12 @@ namespace Ocelot.AcceptanceTests
             header.First().ShouldBe(value);
         }
 
+        public void ThenTheTraceHeaderIsSet(string key)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldNotBeNullOrEmpty();
+        }
+
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
         {
             _webHostBuilder = new WebHostBuilder();

@@ -107,9 +107,36 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        
+        [Fact]
+        public void should_add_trace_id_header()
+        {
+            var reRoute = new FileReRoute
+            {
+                 DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Trace-Id", "{TraceId}"},
+                }
+            };
+
+            var expected = new AddHeader("Trace-Id", "{TraceId}");
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheBaseUrlIs("http://ocelot.com/"))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingAddHeaderIsReturned(expected))
+                .BDDfy();
+        }
+
         private void GivenTheBaseUrlIs(string baseUrl)
         {
             _finder.Setup(x => x.Find()).Returns(baseUrl);
+        }
+
+        private void ThenTheFollowingAddHeaderIsReturned(AddHeader addHeader)
+        {
+            _result.AddHeadersToDownstream[0].Key.ShouldBe(addHeader.Key);
+            _result.AddHeadersToDownstream[0].Value.ShouldBe(addHeader.Value);
         }
 
         private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)

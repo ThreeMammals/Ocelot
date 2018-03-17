@@ -4,6 +4,8 @@
     using System.Net.Http;
 
     using Ocelot.Configuration;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Responses;
 
     public interface IAddHeadersToRequest

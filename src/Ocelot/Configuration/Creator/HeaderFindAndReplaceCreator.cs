@@ -28,14 +28,22 @@ namespace Ocelot.Configuration.Creator
             }
 
             var downstream = new List<HeaderFindAndReplace>();
+            var addHeadersToDownstream = new List<AddHeader>();
 
             foreach(var input in fileReRoute.DownstreamHeaderTransform)
             {
-                var hAndr = Map(input);
-                downstream.Add(hAndr);
+                if(input.Value.Contains(","))
+                {
+                    var hAndr = Map(input);
+                    downstream.Add(hAndr);
+                }
+                else
+                {
+                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
+                }
             }
             
-            return new HeaderTransformations(upstream, downstream);
+            return new HeaderTransformations(upstream, downstream, addHeadersToDownstream);
         }
 
         private HeaderFindAndReplace Map(KeyValuePair<string,string> input)

@@ -109,6 +109,60 @@ namespace Ocelot.AcceptanceTests
             commandOnAllStateMachines.ShouldBeTrue();
         }
 
+        [Fact]
+        public void should_return_tracing_header()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/values",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51387,
+                                }
+                            },
+                            UpstreamPathTemplate = "/api001/values",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            HttpHandlerOptions = new FileHttpHandlerOptions
+                            {
+                                UseTracing = true
+                            },
+                            QoSOptions = new FileQoSOptions
+                            {
+                                ExceptionsAllowedBeforeBreaking = 3,
+                                DurationOfBreak = 10,
+                                TimeoutValue = 5000
+                            },
+                            DownstreamHeaderTransform = new Dictionary<string, string>()
+                            {
+                                {"Trace-Id", "{TraceId}"},
+                                {"Tom", "Laura"}
+                            }
+                        }
+                    }
+            };
+
+            var butterflyUrl = "http://localhost:9618";
+
+            this.Given(x => GivenServiceOneIsRunning("http://localhost:51387", "/api/values", 200, "Hello from Laura", butterflyUrl))
+                .And(x => GivenFakeButterfly(butterflyUrl))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
+                .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
+                .BDDfy();
+        }
+
         private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
             _serviceOneBuilder = new WebHostBuilder()

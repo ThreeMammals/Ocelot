@@ -34,10 +34,10 @@ namespace Ocelot.UnitTests.Configuration
             _fileConfig = new FileConfiguration();
             _config = new Mock<IConsulPollerConfiguration>();
             _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
-            _config.Setup(x => x.Delay).Returns(10);
+            _config.Setup(x => x.Delay).Returns(100);
             _poller = new ConsulFileConfigurationPoller(_factory.Object, _repo.Object, _setter.Object, _config.Object);
         }
-
+        
         public void Dispose()
         {
             _poller.Dispose();
