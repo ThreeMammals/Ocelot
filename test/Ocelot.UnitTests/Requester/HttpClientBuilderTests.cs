@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Shouldly;
@@ -18,12 +21,16 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
-        private DownstreamReRoute _request;
+        private DownstreamContext _context;
+        private readonly Mock<IHttpClientCache> _cacheHandlers;
+        private Mock<IOcelotLogger> _logger;
 
         public HttpClientBuilderTests()
         {
+            _cacheHandlers = new Mock<IHttpClientCache>();
+            _logger = new Mock<IOcelotLogger>();
             _factory = new Mock<IDelegatingHandlerHandlerFactory>();
-            _builder = new HttpClientBuilder(_factory.Object);
+            _builder = new HttpClientBuilder(_factory.Object, _cacheHandlers.Object, _logger.Object);
         }
 
         [Fact]
@@ -59,10 +66,19 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequest()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .Build();
 
-            _request = reRoute;
+            var context = new DownstreamContext(new DefaultHttpContext())
+            {
+                DownstreamReRoute = reRoute,
+                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") },
+            };
+
+            _context = context;
         }
 
         private void ThenSomethingIsReturned()
@@ -98,7 +114,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIBuild()
         {
-            _httpClient = _builder.Create(_request);
+            _httpClient = _builder.Create(_context);
         }
 
         private void ThenTheHttpClientShouldNotBeNull()
