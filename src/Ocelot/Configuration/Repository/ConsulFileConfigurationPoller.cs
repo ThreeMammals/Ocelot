@@ -17,10 +17,16 @@ namespace Ocelot.Configuration.Repository
         private string _previousAsJson;
         private readonly Timer _timer;
         private bool _polling;
+        private readonly IConsulPollerConfiguration _config;
 
-        public ConsulFileConfigurationPoller(IOcelotLoggerFactory factory, IFileConfigurationRepository repo, IFileConfigurationSetter setter)
+        public ConsulFileConfigurationPoller(
+            IOcelotLoggerFactory factory, 
+            IFileConfigurationRepository repo, 
+            IFileConfigurationSetter setter, 
+            IConsulPollerConfiguration config)
         {
             _setter = setter;
+            _config = config;
             _logger = factory.CreateLogger<ConsulFileConfigurationPoller>();
             _repo = repo;
             _previousAsJson = "";
@@ -30,11 +36,11 @@ namespace Ocelot.Configuration.Repository
                 {
                     return;
                 }
-
+                
                 _polling = true;
                 await Poll();
                 _polling = false;
-            }, null, 0, 1000);
+            }, null, 0, _config.Delay);
         }
         
         private async Task Poll()
