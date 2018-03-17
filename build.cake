@@ -201,7 +201,7 @@ Task("RunAcceptanceTests")
 				BuildSystem.TravisCI.Environment.Job.OSName
 			);
 
-			if(TravisCI.Environment.Job.TravisCI.ToLower() == "osx")
+			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
 			{
 				return;
 			}
@@ -235,7 +235,7 @@ Task("RunIntegrationTests")
 				BuildSystem.TravisCI.Environment.Job.OSName
 			);
 
-			if(TravisCI.Environment.Job.TravisCI.ToLower() == "osx")
+			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
 			{
 				return;
 			}
