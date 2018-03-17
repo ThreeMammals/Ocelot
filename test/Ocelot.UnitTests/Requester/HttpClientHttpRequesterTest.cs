@@ -35,7 +35,10 @@ namespace Ocelot.UnitTests.Requester
                 .Setup(x => x.CreateLogger<HttpClientHttpRequester>())
                 .Returns(_logger.Object);
             _cacheHandlers = new Mock<IHttpClientCache>();
-            _httpClientRequester = new HttpClientHttpRequester(_loggerFactory.Object, _cacheHandlers.Object, _house.Object);            
+            _httpClientRequester = new HttpClientHttpRequester(
+                _loggerFactory.Object, 
+                _cacheHandlers.Object, 
+                _house.Object);            
         }
 
         [Fact]

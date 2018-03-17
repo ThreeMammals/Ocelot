@@ -73,10 +73,17 @@ Follow Redirects / Use CookieContainer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
-- _AllowAutoRedirect_ is a value that indicates whether the request should follow redirection responses.
-Set it true if the request should automatically follow redirection responses from the Downstream resource; otherwise false. The default value is true.
-- _UseCookieContainer_ is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests.
-The default value is true.
+
+1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically 
+follow redirection responses from the Downstream resource; otherwise false. The default value is false.
+2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer 
+property to store server cookies and uses these cookies when sending requests. The default value is false. Please note
+that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests
+to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user
+noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients
+that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight
+requests. This would also mean that subsequent requests dont use the cookies from the previous response! All in all not a great situation. I would avoid setting 
+UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
 
 Multiple environments
 ^^^^^^^^^^^^^^^^^^^^^
