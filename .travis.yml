@@ -1,6 +1,6 @@
 language: csharp
 os:
-  #- osx
+  - osx
   - linux
 
 # Ubuntu 14.04
