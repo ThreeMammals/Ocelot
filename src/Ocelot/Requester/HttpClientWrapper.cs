@@ -6,7 +6,7 @@ namespace Ocelot.Requester
     /// <summary>
     /// This class was made to make unit testing easier when HttpClient is used.
     /// </summary>
-    internal class HttpClientWrapper : IHttpClient
+    public class HttpClientWrapper : IHttpClient
     {
         public HttpClient Client { get; }
 
