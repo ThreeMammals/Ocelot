@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: microsoft/dotnet:2.0.6-sdk-2.1.101-jessie
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      - CAKE_VERSION: 0.25.0
+    steps:
+      - checkout
+      - run: ./build.sh
