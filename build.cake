@@ -190,42 +190,38 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
 		{
-			return;
+			var settings = new DotNetCoreTestSettings
+			{
+				Configuration = compileConfig,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+			};
+
+			EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
+			DotNetCoreTest(acceptanceTestAssemblies, settings);
 		}
-
-		var settings = new DotNetCoreTestSettings
-		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-
-		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-		DotNetCoreTest(acceptanceTestAssemblies, settings);
 	});
 
 Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
 		{
-			return;
+			var settings = new DotNetCoreTestSettings
+			{
+				Configuration = compileConfig,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+			};
+
+			EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+			DotNetCoreTest(integrationTestAssemblies, settings);
 		}
-
-		var settings = new DotNetCoreTestSettings
-		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-
-		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-		DotNetCoreTest(integrationTestAssemblies, settings);
 	});
 
 Task("RunTests")
