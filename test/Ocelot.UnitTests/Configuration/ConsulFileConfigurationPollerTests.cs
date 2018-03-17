@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading;
 using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
-using static Ocelot.UnitTests.Wait;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration
 {
@@ -21,6 +22,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IFileConfigurationRepository> _repo;
         private Mock<IFileConfigurationSetter> _setter;
         private FileConfiguration _fileConfig;
+        private Mock<IConsulPollerConfiguration> _config;
 
         public ConsulFileConfigurationPollerTests()
         {
@@ -30,8 +32,10 @@ namespace Ocelot.UnitTests.Configuration
             _repo = new Mock<IFileConfigurationRepository>();
             _setter = new Mock<IFileConfigurationSetter>();
             _fileConfig = new FileConfiguration();
+            _config = new Mock<IConsulPollerConfiguration>();
             _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
-            _poller = new ConsulFileConfigurationPoller(_factory.Object, _repo.Object, _setter.Object);
+            _config.Setup(x => x.Delay).Returns(10);
+            _poller = new ConsulFileConfigurationPoller(_factory.Object, _repo.Object, _setter.Object, _config.Object);
         }
 
         public void Dispose()
@@ -42,7 +46,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_start()
         {
-           this.Given(x => ThenTheSetterIsCalled(_fileConfig))
+           this.Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
                 .BDDfy();
         }
 
@@ -65,22 +69,82 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenTheConfigIsChangedInConsul(newConfig))
-                .Then(x => ThenTheSetterIsCalled(newConfig))
+            this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 0))
+                .Then(x => ThenTheSetterIsCalled(newConfig, 1))
                 .BDDfy();
         }
 
-        private void WhenTheConfigIsChangedInConsul(FileConfiguration newConfig)
+        [Fact]
+        public void should_not_poll_if_already_polling()
         {
-            _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
+            var newConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "test"
+                            }
+                        },
+                    }
+                }
+            };
+
+            this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 10))
+                .Then(x => ThenTheSetterIsCalled(newConfig, 1))
+                .BDDfy();
         }
 
-        private void ThenTheSetterIsCalled(FileConfiguration fileConfig)
+        [Fact]
+        public void should_do_nothing_if_call_to_consul_fails()
+        {
+            var newConfig = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "test"
+                            }
+                        },
+                    }
+                }
+            };
+
+            this.Given(x => WhenConsulErrors())
+                .Then(x => ThenTheSetterIsCalled(newConfig, 0))
+                .BDDfy();
+        }
+
+        private void WhenConsulErrors()
+        {
+            _repo
+                .Setup(x => x.Get())
+                .ReturnsAsync(new ErrorResponse<FileConfiguration>(new AnyError()));
+        }
+
+        private void WhenTheConfigIsChangedInConsul(FileConfiguration newConfig, int delay)
+        {
+            _repo
+                .Setup(x => x.Get())
+                .Callback(() => Thread.Sleep(delay))
+                .ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
+        }
+
+        private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
         {
             var result = WaitFor(2000).Until(() => {
                 try
                 {
-                    _setter.Verify(x => x.Set(fileConfig), Times.Once);
+                    _setter.Verify(x => x.Set(fileConfig), Times.Exactly(times));
                     return true;
                 }
                 catch(Exception)
