@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -10,7 +9,7 @@ using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
-using static Ocelot.UnitTests.Wait;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration
 {
