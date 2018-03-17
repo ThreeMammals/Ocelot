@@ -6,6 +6,7 @@
 #tool "nuget:?package=ReportGenerator"
 #tool coveralls.net
 #addin Cake.Coveralls
+#addin nuget:?package=System.Runtime.InteropServices.RuntimeInformation&version=4.3.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -189,6 +190,11 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
+		if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		{
+			return;
+		}
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -205,6 +211,11 @@ Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
+		if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		{
+			return;
+		}
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
