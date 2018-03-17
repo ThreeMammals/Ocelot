@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51872,
+                                Port = 51892,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51872", "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51892", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
                 .Given(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
