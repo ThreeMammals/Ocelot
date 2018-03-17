@@ -1,12 +1,31 @@
 language: csharp
-os: osx
+os:
+  #- osx
+  - linux
+
+# Ubuntu 14.04
+sudo: required
+dist: trusty
+
+# OS X 10.12
+osx_image: xcode9.2
+
+mono:
+  - 4.4.2
+
 dotnet: 2.1.4
-mono: none
-env:
-  global:
-    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+before_install:
+  - git fetch --unshallow # Travis always does a shallow clone, but GitVersion needs the full history including branches and tags
+  - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+  - git fetch origin
+
 script:
-  - dotnet restore
-  - dotnet build
-  - dotnet test ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  - ./build.sh
+
+cache:
+  directories:
+    - .packages
+    - tools/Addins
+    - tools/gitreleasemanager
+    - tools/GitVersion.CommandLine
