@@ -11,3 +11,7 @@ jobs:
       - checkout
       - run: dotnet restore
       - run: dotnet build
+      - run: dotnet test ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      - run: dotnet test ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      - run: dotnet test ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+
