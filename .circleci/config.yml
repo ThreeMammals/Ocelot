@@ -8,4 +8,4 @@ jobs:
       - CAKE_VERSION: 0.25.0
     steps:
       - checkout
-      - run: ./build.sh
+      - run: ./build-linux.sh
