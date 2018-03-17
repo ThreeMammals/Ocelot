@@ -190,38 +190,68 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		if(TravisCI.IsRunningOnTravisCI)
 		{
-			var settings = new DotNetCoreTestSettings
-			{
-				Configuration = compileConfig,
-				ArgumentCustomization = args => args
-					.Append("--no-restore")
-					.Append("--no-build")
-			};
+			Information(
+				@"Job:
+				JobId: {0}
+				JobNumber: {1}
+				OSName: {2}",
+				BuildSystem.TravisCI.Environment.Job.JobId,
+				BuildSystem.TravisCI.Environment.Job.JobNumber,
+				BuildSystem.TravisCI.Environment.Job.OSName
+			);
 
-			EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-			DotNetCoreTest(acceptanceTestAssemblies, settings);
+			if(TravisCI.Environment.Job.TravisCI.ToLower() == "osx")
+			{
+				return;
+			}
 		}
+		
+		var settings = new DotNetCoreTestSettings
+		{
+			Configuration = compileConfig,
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
+		};
+
+		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
+		DotNetCoreTest(acceptanceTestAssemblies, settings);
 	});
 
 Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+		if(TravisCI.IsRunningOnTravisCI)
 		{
-			var settings = new DotNetCoreTestSettings
-			{
-				Configuration = compileConfig,
-				ArgumentCustomization = args => args
-					.Append("--no-restore")
-					.Append("--no-build")
-			};
+			Information(
+				@"Job:
+				JobId: {0}
+				JobNumber: {1}
+				OSName: {2}",
+				BuildSystem.TravisCI.Environment.Job.JobId,
+				BuildSystem.TravisCI.Environment.Job.JobNumber,
+				BuildSystem.TravisCI.Environment.Job.OSName
+			);
 
-			EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-			DotNetCoreTest(integrationTestAssemblies, settings);
+			if(TravisCI.Environment.Job.TravisCI.ToLower() == "osx")
+			{
+				return;
+			}
 		}
+
+		var settings = new DotNetCoreTestSettings
+		{
+			Configuration = compileConfig,
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
+		};
+
+		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+		DotNetCoreTest(integrationTestAssemblies, settings);
 	});
 
 Task("RunTests")
