@@ -1,0 +1,7 @@
+language: csharp
+os: osx
+mono:
+  - latest
+dotnet: 2.1.4
+script:
+ - ./build.sh
