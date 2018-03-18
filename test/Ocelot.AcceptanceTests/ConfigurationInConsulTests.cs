@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -261,21 +263,27 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => GivenTheConsulConfigurationIs(secondConsulConfig))
-                .And(x => GivenIWaitForTheConfigToReplicateToOcelot())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
+                .Then(x => ThenTheConfigIsUpdatedInOcelot())
                 .BDDfy();
         }
 
-        private void GivenIWaitForTheConfigToReplicateToOcelot()
+        private void ThenTheConfigIsUpdatedInOcelot()
         {
-            var stopWatch = Stopwatch.StartNew();
-            while (stopWatch.ElapsedMilliseconds < 10000)
-            {
-                //do nothing!
-            }
+            var result = WaitFor(20000).Until(() => {
+                try
+                {
+                    _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
+                    _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+                    _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
+            result.ShouldBeTrue();
         }
 
         private void GivenTheConsulConfigurationIs(FileConfiguration config)

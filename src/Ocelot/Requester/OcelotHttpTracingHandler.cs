@@ -5,26 +5,37 @@ using System.Threading;
 using System.Threading.Tasks;
 using Butterfly.Client.Tracing;
 using Butterfly.OpenTracing;
+using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Requester
 {
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {
         private readonly IServiceTracer _tracer;
+        private readonly IRequestScopedDataRepository _repo;
         private const string prefix_spanId = "ot-spanId";
 
-        public OcelotHttpTracingHandler(IServiceTracer tracer, HttpMessageHandler httpMessageHandler = null)
+        public OcelotHttpTracingHandler(
+            IServiceTracer tracer, 
+            IRequestScopedDataRepository repo,
+            HttpMessageHandler httpMessageHandler = null)
         {
+            _repo = repo;
             _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
             InnerHandler = httpMessageHandler ?? new HttpClientHandler();
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, 
+            CancellationToken cancellationToken)
         {
             return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken));
         }
 
-        protected virtual async Task<HttpResponseMessage> TracingSendAsync(ISpan span, HttpRequestMessage request, CancellationToken cancellationToken)
+        protected virtual async Task<HttpResponseMessage> TracingSendAsync(
+            ISpan span, 
+            HttpRequestMessage request, 
+            CancellationToken cancellationToken)
         {
             IEnumerable<string> traceIdVals = null;
             if (request.Headers.TryGetValues(prefix_spanId, out traceIdVals))
@@ -33,6 +44,8 @@ namespace Ocelot.Requester
                 request.Headers.TryAddWithoutValidation(prefix_spanId, span.SpanContext.SpanId);
             }
 
+            _repo.Add("TraceId", span.SpanContext.TraceId);
+            
             span.Tags.Client().Component("HttpClient")
                 .HttpMethod(request.Method.Method)
                 .HttpUrl(request.RequestUri.OriginalString)

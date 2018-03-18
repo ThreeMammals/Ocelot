@@ -274,6 +274,11 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        internal void GivenIAddCookieToMyRequest(string cookie)
+        {
+            _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+        }
+
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
@@ -311,6 +316,12 @@ namespace Ocelot.AcceptanceTests
         {
             var header = _response.Headers.GetValues(key);
             header.First().ShouldBe(value);
+        }
+
+        public void ThenTheTraceHeaderIsSet(string key)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldNotBeNullOrEmpty();
         }
 
         public void GivenOcelotIsRunningUsingJsonSerializedCache()

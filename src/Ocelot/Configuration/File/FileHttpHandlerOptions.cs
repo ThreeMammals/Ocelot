@@ -4,8 +4,8 @@
     {
         public FileHttpHandlerOptions()
         {
-            AllowAutoRedirect = true;
-            UseCookieContainer = true;
+            AllowAutoRedirect = false;
+            UseCookieContainer = false;
         }
 
         public bool AllowAutoRedirect { get; set; }

@@ -1,4 +1,4 @@
-namespace Ocelot.UnitTests
+namespace Ocelot.Infrastructure
 {
     public class Wait
     {
