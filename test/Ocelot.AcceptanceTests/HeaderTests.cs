@@ -16,6 +16,8 @@ namespace Ocelot.AcceptanceTests
     public class HeaderTests : IDisposable
     {
         private IWebHost _builder;
+        private string _cookieValue;
+        private int _count;
         private readonly Steps _steps;
 
         public HeaderTests()
@@ -182,6 +184,125 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
                 .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void request_should_reuse_cookies_with_cookie_container()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/sso/{everything}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 6774,
+                            }
+                        },
+                        UpstreamPathTemplate = "/sso/{everything}",
+                        UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            UseCookieContainer = true
+                        }
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:6774", "/sso/test", 200))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseHeaderIs("Set-Cookie", "test=0; path=/"))
+                .And(x => _steps.GivenIAddCookieToMyRequest("test=1; path=/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void request_should_have_own_cookies_no_cookie_container()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/sso/{everything}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 6775,
+                            }
+                        },
+                        UpstreamPathTemplate = "/sso/{everything}",
+                        UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            UseCookieContainer = false
+                        }
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:6775", "/sso/test", 200))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseHeaderIs("Set-Cookie", "test=0; path=/"))
+                .And(x => _steps.GivenIAddCookieToMyRequest("test=1; path=/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+        
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(async context =>
+                    {   
+                        if(_count == 0)
+                        {
+                            context.Response.Cookies.Append("test", "0");
+                            _count++;
+                            context.Response.StatusCode = statusCode;
+                            return;
+                        } 
+
+                        if(context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
+                        {
+                            if(cookieValue == "0" || headerValue == "test=1; path=/")
+                            {
+                                context.Response.StatusCode = statusCode;
+                                return;
+                            }
+                        }
+
+                        context.Response.StatusCode = 500;
+                    });
+                })
+                .Build();
+
+            _builder.Start();
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)

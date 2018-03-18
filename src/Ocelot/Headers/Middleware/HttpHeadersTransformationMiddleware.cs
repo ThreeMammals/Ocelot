@@ -13,12 +13,15 @@ namespace Ocelot.Headers.Middleware
         private readonly IOcelotLogger _logger;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;
         private readonly IHttpResponseHeaderReplacer _postReplacer;
+        private readonly IAddHeadersToResponse _addHeaders;
 
         public HttpHeadersTransformationMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpContextRequestHeaderReplacer preReplacer,
-            IHttpResponseHeaderReplacer postReplacer) 
+            IHttpResponseHeaderReplacer postReplacer,
+            IAddHeadersToResponse addHeaders) 
         {
+            _addHeaders = addHeaders;
             _next = next;
             _postReplacer = postReplacer;
             _preReplacer = preReplacer;
@@ -37,6 +40,8 @@ namespace Ocelot.Headers.Middleware
             var postFAndRs = context.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
             _postReplacer.Replace(context.DownstreamResponse, postFAndRs, context.DownstreamRequest);
+
+            _addHeaders.Add(context.DownstreamReRoute.AddHeadersToDownstream, context.DownstreamResponse);
         }
     }
 }

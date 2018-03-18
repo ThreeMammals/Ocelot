@@ -223,12 +223,14 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ocelotBuilder.AddAdministration("/administration", options);
         }
 
-        private void AddTransientGlobalDelegatingHandler<T>() where T : DelegatingHandler
+        private void AddTransientGlobalDelegatingHandler<T>()
+            where T : DelegatingHandler
         {
             _ocelotBuilder.AddTransientDelegatingHandler<T>(true);
         }
 
-        private void AddSpecificTransientDelegatingHandler<T>() where T : DelegatingHandler
+        private void AddSpecificTransientDelegatingHandler<T>()
+            where T : DelegatingHandler
         {
             _ocelotBuilder.AddTransientDelegatingHandler<T>();
         }
@@ -298,12 +300,14 @@ namespace Ocelot.UnitTests.DependencyInjection
             }       
         }
 
-        private void AddGlobalDelegatingHandler<T>() where T : DelegatingHandler
+        private void AddGlobalDelegatingHandler<T>()
+            where T : DelegatingHandler
         {
             _ocelotBuilder.AddSingletonDelegatingHandler<T>(true);
         }
 
-        private void AddSpecificDelegatingHandler<T>() where T : DelegatingHandler
+        private void AddSpecificDelegatingHandler<T>()
+            where T : DelegatingHandler
         {
             _ocelotBuilder.AddSingletonDelegatingHandler<T>();
         }

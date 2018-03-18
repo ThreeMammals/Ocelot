@@ -31,7 +31,7 @@ namespace Ocelot.AcceptanceTests
         public void should_use_service_discovery_and_load_balance_request()
         {
             var downstreamServiceOneUrl = "http://localhost:50881";
-            var downstreamServiceTwoUrl = "http://localhost:50882";
+            var downstreamServiceTwoUrl = "http://localhost:50892";
 
             var configuration = new FileConfiguration
             {
@@ -54,7 +54,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 50882
+                                    Port = 50892
                                 }
                             }
                         }

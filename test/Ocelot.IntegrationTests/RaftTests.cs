@@ -342,7 +342,9 @@ namespace Ocelot.IntegrationTests
                             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                         config.AddJsonFile("configuration.json");
                         config.AddJsonFile("peers.json", optional: true, reloadOnChange: true);
+                        #pragma warning disable CS0618
                         config.AddOcelotBaseUrl(url);
+                        #pragma warning restore CS0618
                         config.AddEnvironmentVariables();
                     })
                     .ConfigureServices(x =>

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Ocelot.Values;
 using System.Linq;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -37,11 +38,13 @@ namespace Ocelot.Configuration.Builder
         private string _upstreamHost;
         private string _key;
         private List<string> _delegatingHandlers;
+        private List<AddHeader> _addHeadersToDownstream;
 
         public DownstreamReRouteBuilder()
         {
             _downstreamAddresses = new List<DownstreamHostAndPort>();
             _delegatingHandlers = new List<string>();
+            _addHeadersToDownstream = new List<AddHeader>();
         }
 
         public DownstreamReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -224,6 +227,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithAddHeadersToDownstream(List<AddHeader> addHeadersToDownstream)
+        {
+            _addHeadersToDownstream = addHeadersToDownstream;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
@@ -253,7 +262,8 @@ namespace Ocelot.Configuration.Builder
                 _authenticationOptions, 
                 new PathTemplate(_downstreamPathTemplate),
                 _reRouteKey,
-                _delegatingHandlers);
+                _delegatingHandlers,
+                _addHeadersToDownstream);
         }
     }
 }

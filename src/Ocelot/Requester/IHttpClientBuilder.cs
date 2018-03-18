@@ -1,14 +1,10 @@
-﻿using System.Net.Http;
-using Ocelot.Configuration;
+﻿using Ocelot.Middleware;
 
 namespace Ocelot.Requester
 {
     public interface IHttpClientBuilder
     {
-        /// <summary>
-        /// Creates the <see cref="HttpClient"/>
-        /// </summary>
-        /// <param name="request"></param>
-        IHttpClient Create(DownstreamReRoute request);
+        IHttpClient Create(DownstreamContext request);
+        void Save();
     }
 }

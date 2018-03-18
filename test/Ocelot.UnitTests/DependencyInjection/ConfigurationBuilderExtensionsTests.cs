@@ -22,9 +22,10 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void GivenTheBaseUrl(string baseUrl)
         {
+            #pragma warning disable CS0618
             var builder = new ConfigurationBuilder()
                 .AddOcelotBaseUrl(baseUrl);
-
+            #pragma warning restore CS0618
             _configuration = builder.Build();
         }
 

@@ -24,28 +24,24 @@ namespace Ocelot.Requester
             _factory = house;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext request)
+        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context)
         {
-            var builder = new HttpClientBuilder(_factory);
+            var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
 
-            var cacheKey = GetCacheKey(request);
-
-            var httpClient = GetHttpClient(cacheKey, builder, request);
+            var httpClient = builder.Create(context);
 
             try
             {
-                var response = await httpClient.SendAsync(request.DownstreamRequest);
+                var response = await httpClient.SendAsync(context.DownstreamRequest);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (TimeoutRejectedException exception)
             {
-                return
-                    new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
             }
             catch (BrokenCircuitException exception)
             {
-                return
-                    new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
+                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
             }
             catch (Exception exception)
             {
@@ -53,42 +49,8 @@ namespace Ocelot.Requester
             }
             finally
             {
-                _cacheHandlers.Set(cacheKey, httpClient, TimeSpan.FromHours(24));
+                builder.Save();
             }
         }
-
-        private IHttpClient GetHttpClient(string cacheKey, IHttpClientBuilder builder, DownstreamContext request)
-        {
-            var httpClient = _cacheHandlers.Get(cacheKey);
-
-            if (httpClient == null)
-            {
-                httpClient = builder.Create(request.DownstreamReRoute);
-            }
-
-            return httpClient;
-        }
-
-        private string GetCacheKey(DownstreamContext request)
-        {
-            var baseUrl = $"{request.DownstreamRequest.RequestUri.Scheme}://{request.DownstreamRequest.RequestUri.Authority}";
-
-            return baseUrl;
-        }
-    }
-
-    public class ReRouteDelegatingHandler<T> where T : DelegatingHandler
-    {
-        public T DelegatingHandler { get; private set; }
-    }
-
-    public class GlobalDelegatingHandler
-    {
-        public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
-        {
-            DelegatingHandler = delegatingHandler;
-        }
-
-        public DelegatingHandler DelegatingHandler { get; private set; }
     }
 }
