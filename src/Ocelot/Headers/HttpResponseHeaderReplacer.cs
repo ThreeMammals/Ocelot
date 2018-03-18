@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Responses;
 
@@ -10,24 +11,14 @@ namespace Ocelot.Headers
 {
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
-        private Dictionary<string, Func<HttpRequestMessage, string>> _placeholders;
+        private IPlaceholders _placeholders;
 
-        public HttpResponseHeaderReplacer()
+        public HttpResponseHeaderReplacer(IPlaceholders placeholders)
         {
-            _placeholders = new Dictionary<string, Func<HttpRequestMessage, string>>();
-            _placeholders.Add("{DownstreamBaseUrl}", x => {
-                var downstreamUrl = $"{x.RequestUri.Scheme}://{x.RequestUri.Host}";
-
-                if(x.RequestUri.Port != 80 && x.RequestUri.Port != 443)
-                {
-                    downstreamUrl = $"{downstreamUrl}:{x.RequestUri.Port}";
-                }
-
-                return $"{downstreamUrl}/";
-            });
+            _placeholders = placeholders;
         }
 
-        public Response Replace(HttpResponseMessage response, List<HeaderFindAndReplace> fAndRs, HttpRequestMessage httpRequestMessage)
+        public Response Replace(HttpResponseMessage response, List<HeaderFindAndReplace> fAndRs, HttpRequestMessage request)
         {
             foreach (var f in fAndRs)
             {
@@ -35,11 +26,13 @@ namespace Ocelot.Headers
                 if(response.Headers.TryGetValues(f.Key, out var values))
                 {
                     //check to see if it is a placeholder in the find...
-                    if(_placeholders.TryGetValue(f.Find, out var replacePlaceholder))
+                    var placeholderValue = _placeholders.Get(f.Find, request);
+
+                    if(!placeholderValue.IsError)
                     {
                         //if it is we need to get the value of the placeholder
-                        var find = replacePlaceholder(httpRequestMessage);
-                        var replaced = values.ToList()[f.Index].Replace(find, f.Replace.LastCharAsForwardSlash());
+                        //var find = replacePlaceholder(httpRequestMessage);
+                        var replaced = values.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());
                         response.Headers.Remove(f.Key);
                         response.Headers.Add(f.Key, replaced);
                     }
