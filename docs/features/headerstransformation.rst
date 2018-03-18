@@ -3,8 +3,32 @@ Headers Transformation
 
 Ocelot allows the user to transform headers pre and post downstream request. At the moment Ocelot only supports find and replace. This feature was requested `GitHub #190 <https://github.com/TomPallister/Ocelot/issues/190>`_ and I decided that it was going to be useful in various ways.
 
-Syntax
-^^^^^^
+Add to Response
+^^^^^^^^^^^^^^^
+
+This feature was requested in `GitHub #280 <https://github.com/TomPallister/Ocelot/issues/280>`_. I have only implemented
+for responses but could add for requests in the future.
+
+If you want to add a header to your downstream response please add the following to a ReRoute in configuration.json..
+
+.. code-block:: json
+
+    "DownstreamHeaderTransform": {
+        "Uncle": "Bob"
+    },
+
+In the example above a header with the key Uncle and value Bob would be returned by Ocelot when requesting the specific ReRoute.
+
+If you want to return the Butterfly APM trace id then do something like the following..
+
+.. code-block:: json
+
+    "DownstreamHeaderTransform": {
+        "AnyKey": "{TraceId}"
+    },
+
+Find and Replace
+^^^^^^^^^^^^^^^^
 
 In order to transform a header first we specify the header key and then the type of transform we want e.g.
 
@@ -43,6 +67,7 @@ Ocelot allows placeholders that can be used in header transformation.
 
 {BaseUrl} - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
 {DownstreamBaseUrl} - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for DownstreamHeaderTransform at the moment.
+{TraceId} - This will use the Butterfly APM Trace Id. This only works for DownstreamHeaderTransform at the moment.
 
 Handling 302 Redirects
 ^^^^^^^^^^^^^^^^^^^^^^

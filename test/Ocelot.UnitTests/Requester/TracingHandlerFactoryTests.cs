@@ -1,5 +1,6 @@
 using Butterfly.Client.Tracing;
 using Moq;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Requester;
 using Shouldly;
 using Xunit;
@@ -10,11 +11,13 @@ namespace Ocelot.UnitTests.Requester
     {
         private TracingHandlerFactory _factory;
         private Mock<IServiceTracer> _tracer;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public TracingHandlerFactoryTests()
         {
             _tracer = new Mock<IServiceTracer>();
-            _factory = new TracingHandlerFactory(_tracer.Object);
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _factory = new TracingHandlerFactory(_tracer.Object, _repo.Object);
         }
 
         [Fact]

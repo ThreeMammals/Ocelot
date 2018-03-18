@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Ocelot.Configuration.Creator;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration
@@ -32,8 +33,10 @@ namespace Ocelot.Configuration
             AuthenticationOptions authenticationOptions, 
             PathTemplate downstreamPathTemplate, 
             string reRouteKey,
-            List<string> delegatingHandlers)
+            List<string> delegatingHandlers,
+            List<AddHeader> addHeadersToDownstream)
         {
+            AddHeadersToDownstream = addHeadersToDownstream;
             DelegatingHandlers = delegatingHandlers;
             Key = key;
             UpstreamPathTemplate = upstreamPathTemplate;
@@ -90,5 +93,6 @@ namespace Ocelot.Configuration
         public PathTemplate DownstreamPathTemplate { get; private set; }
         public string ReRouteKey { get; private set; }
         public List<string> DelegatingHandlers {get;private set;}
+        public List<AddHeader> AddHeadersToDownstream {get;private set;}
     }
 }

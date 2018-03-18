@@ -4,6 +4,7 @@ using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Net.Http;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Headers
 {

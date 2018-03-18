@@ -52,6 +52,7 @@ namespace Ocelot.DependencyInjection
     using System.Linq;
     using System.Net.Http;
     using Butterfly.Client.AspNetCore;
+    using Ocelot.Infrastructure;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -149,6 +150,8 @@ namespace Ocelot.DependencyInjection
             // We add this here so that we can always inject something into the factory for IoC..
             _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
             _services.TryAddSingleton<IConsulPollerConfiguration, InMemoryConsulPollerConfiguration>();
+            _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
+            _services.TryAddSingleton<IPlaceholders, Placeholders>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)

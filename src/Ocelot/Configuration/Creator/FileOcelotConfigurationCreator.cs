@@ -213,6 +213,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
+                .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
                 .Build();
 
             return reRoute;

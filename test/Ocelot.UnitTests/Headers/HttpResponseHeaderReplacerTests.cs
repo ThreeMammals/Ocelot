@@ -7,20 +7,30 @@ using Ocelot.Configuration;
 using System.Collections.Generic;
 using Ocelot.Responses;
 using System.Linq;
+using Moq;
+using Ocelot.Infrastructure;
+using Ocelot.Middleware;
+using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.UnitTests.Headers
 {
     public class HttpResponseHeaderReplacerTests
     {
         private HttpResponseMessage _response;
+        private Placeholders _placeholders;
         private HttpResponseHeaderReplacer _replacer;
         private List<HeaderFindAndReplace> _headerFindAndReplaces;
         private Response _result;
         private HttpRequestMessage _request;
+        private Mock<IBaseUrlFinder> _finder;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public HttpResponseHeaderReplacerTests()
         {
-            _replacer = new HttpResponseHeaderReplacer();
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _finder = new Mock<IBaseUrlFinder>();
+            _placeholders = new Placeholders(_finder.Object, _repo.Object);
+            _replacer = new HttpResponseHeaderReplacer(_placeholders);
         }
 
         [Fact]
