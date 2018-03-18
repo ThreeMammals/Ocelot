@@ -70,7 +70,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51888,
+                                    Port = 51388,
                                 }
                             },
                             UpstreamPathTemplate = "/api002/values",
@@ -92,7 +92,7 @@ namespace Ocelot.AcceptanceTests
             var butterflyUrl = "http://localhost:9618";
 
             this.Given(x => GivenServiceOneIsRunning("http://localhost:51887", "/api/values", 200, "Hello from Laura", butterflyUrl))
-                .And(x => GivenServiceTwoIsRunning("http://localhost:51888", "/api/values", 200, "Hello from Tom", butterflyUrl))
+                .And(x => GivenServiceTwoIsRunning("http://localhost:51388", "/api/values", 200, "Hello from Tom", butterflyUrl))
                 .And(x => GivenFakeButterfly(butterflyUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
