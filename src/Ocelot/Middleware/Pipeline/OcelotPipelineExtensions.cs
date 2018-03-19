@@ -15,6 +15,7 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
+using Ocelot.Websockets;
 
 namespace Ocelot.Middleware.Pipeline
 {
@@ -26,6 +27,8 @@ namespace Ocelot.Middleware.Pipeline
             // This is registered to catch any global exceptions that are not handled
             // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
+
+            builder.UseWebSocketsProxyMiddleware();
 
             // Allow the user to respond with absolutely anything they want.
             builder.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);
