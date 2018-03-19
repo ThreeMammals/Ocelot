@@ -11,5 +11,6 @@ namespace Ocelot.Middleware.Pipeline
         IServiceProvider ApplicationServices { get; }
         OcelotPipelineBuilder Use(Func<OcelotRequestDelegate, OcelotRequestDelegate> middleware);
         OcelotRequestDelegate Build();
+        IOcelotPipelineBuilder New();
     }
 }

@@ -22,14 +22,7 @@ namespace Ocelot.Websockets
 
         public async Task Invoke(DownstreamContext context)
         {
-            if (context.HttpContext.WebSockets.IsWebSocketRequest)
-            {
-                await Proxy(context.HttpContext, "ws://localhost:5001/ws");
-            }
-            else
-            {
-                await _next(context);
-            }
+            await Proxy(context.HttpContext, "ws://localhost:5001/ws");
         }
 
         private async Task Proxy(HttpContext context, string serverEndpoint)

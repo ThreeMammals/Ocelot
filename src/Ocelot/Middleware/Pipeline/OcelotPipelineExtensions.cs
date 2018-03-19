@@ -28,7 +28,15 @@ namespace Ocelot.Middleware.Pipeline
             // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
 
-            builder.UseWebSocketsProxyMiddleware();
+            builder.MapWhen(context => {
+                        return context.HttpContext.WebSockets.IsWebSocketRequest;
+                }, 
+                    app => {
+                        // app.UseDownstreamRouteFinderMiddleware();
+                        // app.UseLoadBalancingMiddleware();
+                        // app.UseDownstreamUrlCreatorMiddleware();
+                        app.UseWebSocketsProxyMiddleware();
+                });
 
             // Allow the user to respond with absolutely anything they want.
             builder.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);
