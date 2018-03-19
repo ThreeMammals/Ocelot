@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Shouldly;
@@ -20,22 +21,24 @@ namespace Ocelot.AcceptanceTests
 {
     public class WebSocketTests : IDisposable
     {
-        private WebHostBuilder _ocelotBuilder;
-        private IWebHost _ocelotHost;
         private IWebHost _downstreamHost;
         private List<string> _recieved;
+        private Steps _steps;
 
         public WebSocketTests()
         {
+            _steps = new Steps();
             _recieved = new List<string>();
         }
 
         [Fact]
         public async Task should_proxy_websocket_input_to_downstream_service()
         {
-            await StartFakeOcelot();
+            _steps.GivenThereIsAConfiguration(new FileConfiguration());
 
-            await StartFakeDownstreamService();
+            await _steps.StartFakeOcelotWithWebSockets();
+
+            await StartFakeDownstreamService("http://localhost:5001", "/ws");
 
             await StartClient();
 
@@ -86,47 +89,11 @@ namespace Ocelot.AcceptanceTests
 
             await Task.WhenAll(sending, receiving);
         }
-
-        private async Task StartFakeOcelot()
-        {
-            _ocelotBuilder = new WebHostBuilder();
-            _ocelotBuilder.ConfigureServices(s =>
-            {
-                s.AddSingleton(_ocelotBuilder);
-                s.AddOcelot();
-            });
-            _ocelotBuilder.UseKestrel()
-                .UseUrls("http://localhost:5000")
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("configuration.json");
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                })
-                .Configure(app =>
-                {
-                    app.UseWebSockets();
-                    app.UseOcelot().Wait();
-                })
-                .UseIISIntegration();
-            _ocelotHost = _ocelotBuilder.Build();
-            await _ocelotHost.StartAsync();
-        }
-
-        private async Task StartFakeDownstreamService()
+        private async Task StartFakeDownstreamService(string url, string path)
         {
             _downstreamHost = new WebHostBuilder()
                 .ConfigureServices(s => { }).UseKestrel()
-                .UseUrls("http://localhost:5001")
+                .UseUrls(url)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
@@ -146,7 +113,7 @@ namespace Ocelot.AcceptanceTests
                     app.UseWebSockets();
                     app.Use(async (context, next) =>
                     {
-                        if (context.Request.Path == "/ws")
+                        if (context.Request.Path == path)
                         {
                             if (context.WebSockets.IsWebSocketRequest)
                             {
@@ -186,12 +153,11 @@ namespace Ocelot.AcceptanceTests
             {
                 Console.WriteLine(e);
             }
-
         }
 
         public void Dispose()
         {
-            _ocelotHost?.Dispose();
+            _steps.Dispose();
             _downstreamHost?.Dispose();
         }
     }

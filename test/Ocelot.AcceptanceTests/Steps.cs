@@ -40,10 +40,47 @@ namespace Ocelot.AcceptanceTests
         public string RequestIdKey = "OcRequestId";
         private readonly Random _random;
         private IWebHostBuilder _webHostBuilder;
+        private WebHostBuilder _ocelotBuilder;
+        private IWebHost _ocelotHost;
 
         public Steps()
         {
             _random = new Random();
+        }
+
+        public async Task StartFakeOcelotWithWebSockets()
+        {
+            _ocelotBuilder = new WebHostBuilder();
+            _ocelotBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_ocelotBuilder);
+                s.AddOcelot();
+            });
+            _ocelotBuilder.UseKestrel()
+                .UseUrls("http://localhost:5000")
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    logging.AddConsole();
+                })
+                .Configure(app =>
+                {
+                    app.UseWebSockets();
+                    app.UseOcelot().Wait();
+                })
+                .UseIISIntegration();
+            _ocelotHost = _ocelotBuilder.Build();
+            await _ocelotHost.StartAsync();
         }
 
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
@@ -698,6 +735,7 @@ namespace Ocelot.AcceptanceTests
         {
             _ocelotClient?.Dispose();
             _ocelotServer?.Dispose();
+            _ocelotHost?.Dispose();
         }
 
         public void ThenTheRequestIdIsReturned()
