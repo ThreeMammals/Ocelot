@@ -32,9 +32,10 @@ namespace Ocelot.Middleware.Pipeline
                         return context.HttpContext.WebSockets.IsWebSocketRequest;
                 }, 
                     app => {
-                        // app.UseDownstreamRouteFinderMiddleware();
-                        // app.UseLoadBalancingMiddleware();
-                        // app.UseDownstreamUrlCreatorMiddleware();
+                        app.UseDownstreamRouteFinderMiddleware();
+                        app.UseDownstreamRequestInitialiser();
+                        app.UseLoadBalancingMiddleware();
+                        app.UseDownstreamUrlCreatorMiddleware();
                         app.UseWebSocketsProxyMiddleware();
                 });
 

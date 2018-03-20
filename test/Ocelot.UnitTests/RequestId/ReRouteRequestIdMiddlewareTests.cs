@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.RequestId
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Request.Middleware;
 
     public class ReRouteRequestIdMiddlewareTests
     {
@@ -47,7 +48,7 @@ namespace Ocelot.UnitTests.RequestId
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
-            _downstreamContext.DownstreamRequest = _downstreamRequest;
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
         }
 
         [Fact]

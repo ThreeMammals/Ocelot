@@ -57,7 +57,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             context.DownstreamRequest.RequestUri = uriBuilder.Uri;
 
-            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", context.DownstreamRequest.RequestUri);
+            _logger.LogDebug("downstream url is {context.DownstreamRequest.RequestUri}", context.DownstreamRequest.RequestUri);
 
             await _next.Invoke(context);
         }

@@ -14,6 +14,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Shouldly;
@@ -170,7 +171,7 @@ namespace Ocelot.UnitTests.Requester
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = downstream,
-                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://localhost:5003") },
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:5003") }),
             };
 
             _context = context;

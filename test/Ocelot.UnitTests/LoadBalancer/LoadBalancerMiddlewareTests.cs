@@ -13,6 +13,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Logging;
+    using Ocelot.Request.Middleware;
     using Ocelot.Responses;
     using Ocelot.Values;
     using Shouldly;
@@ -45,7 +46,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<LoadBalancingMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _downstreamContext.DownstreamRequest = _downstreamRequest;
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
         }
 
         [Fact]

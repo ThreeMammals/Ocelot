@@ -11,6 +11,7 @@ using Moq;
 using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
@@ -21,7 +22,7 @@ namespace Ocelot.UnitTests.Headers
         private HttpResponseHeaderReplacer _replacer;
         private List<HeaderFindAndReplace> _headerFindAndReplaces;
         private Response _result;
-        private HttpRequestMessage _request;
+        private DownstreamRequest _request;
         private Mock<IBaseUrlFinder> _finder;
         private Mock<IRequestScopedDataRepository> _repo;
 
@@ -198,7 +199,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheRequestIs(HttpRequestMessage request)
         {
-            _request = request;
+            _request = new DownstreamRequest(request);
         }
 
         private void ThenTheHeadersAreNotReplaced()

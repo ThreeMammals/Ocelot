@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -34,22 +35,51 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public async Task should_proxy_websocket_input_to_downstream_service()
         {
-            _steps.GivenThereIsAConfiguration(new FileConfiguration());
+            var downstreamPort = 5001;
+            var downstreamHost = "localhost";
+
+            var config = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        UpstreamPathTemplate = "/",
+                        DownstreamPathTemplate = "/ws",
+                        DownstreamScheme = "ws",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = downstreamHost,
+                                Port = downstreamPort
+                            }
+                        }
+                        //ServiceName = "test",
+                        //LoadBalancer = "test",
+                        //UseServiceDiscovery = true,
+                        //UpstreamHost = "test.com"
+                        //Priority = 0
+                    }
+                }
+            };
+
+            _steps.GivenThereIsAConfiguration(config);
 
             await _steps.StartFakeOcelotWithWebSockets();
 
-            await StartFakeDownstreamService("http://localhost:5001", "/ws");
+            await StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws");
 
-            await StartClient();
+            await StartClient("ws://localhost:5000/");
 
             _recieved.Count.ShouldBe(10);
         }
 
-        private async Task StartClient()
+        private async Task StartClient(string url)
         {
             var client = new ClientWebSocket();
             
-            await client.ConnectAsync(new Uri("ws://localhost:5000/ws"), CancellationToken.None);
+            await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
             var sending = Task.Run(async () =>
             {

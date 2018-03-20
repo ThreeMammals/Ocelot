@@ -7,6 +7,7 @@ using Ocelot.Responses;
 using System.Security.Claims;
 using System.Net.Http;
 using System;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.QueryStrings
 {
@@ -19,7 +20,7 @@ namespace Ocelot.QueryStrings
             _claimsParser = claimsParser;
         }
 
-        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, HttpRequestMessage downstreamRequest)
+        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
         {
             var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.RequestUri.Query);
 

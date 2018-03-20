@@ -12,6 +12,7 @@ using Ocelot.Middleware;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Requester
 {
@@ -50,7 +51,7 @@ namespace Ocelot.UnitTests.Requester
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = reRoute,
-                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") },
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }),
             };
 
             this.Given(x=>x.GivenTheRequestIs(context))
@@ -68,7 +69,7 @@ namespace Ocelot.UnitTests.Requester
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = reRoute,
-                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") },
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
             };
 
             this.Given(x => x.GivenTheRequestIs(context))

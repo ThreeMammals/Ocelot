@@ -32,7 +32,7 @@ namespace Ocelot.Requester
 
             try
             {
-                var response = await httpClient.SendAsync(context.DownstreamRequest);
+                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (TimeoutRejectedException exception)

@@ -12,24 +12,27 @@ using TestStack.BDDfy;
 using Xunit;
 using System.Net.Http;
 using System;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
     public class AddQueriesToRequestTests
     {
         private readonly AddQueriesToRequest _addQueriesToRequest;
-        private readonly HttpRequestMessage _downstreamRequest;
+        private DownstreamRequest _downstreamRequest;
         private readonly Mock<IClaimsParser> _parser;
         private List<ClaimToThing> _configuration;
         private List<Claim> _claims;
         private Response _result;
         private Response<string> _claimValue;
+        private HttpRequestMessage _request;
 
         public AddQueriesToRequestTests()
         {
+            _request = new HttpRequestMessage(HttpMethod.Post, "http://my.url/abc?q=123");
             _parser = new Mock<IClaimsParser>();
             _addQueriesToRequest = new AddQueriesToRequest(_parser.Object);
-            _downstreamRequest = new HttpRequestMessage(HttpMethod.Post, "http://my.url/abc?q=123");
+            _downstreamRequest = new DownstreamRequest(_request);
         }
 
         [Fact]
@@ -115,7 +118,9 @@ namespace Ocelot.UnitTests.QueryStrings
             var newUri = Microsoft.AspNetCore.WebUtilities.QueryHelpers
                 .AddQueryString(_downstreamRequest.RequestUri.OriginalString, key, value);
 
-            _downstreamRequest.RequestUri = new Uri(newUri);
+            _request.RequestUri = new Uri(newUri);
+            //todo - might not need to instanciate
+            _downstreamRequest = new DownstreamRequest(_request);
         }
 
         private void GivenTheClaimParserReturns(Response<string> claimValue)

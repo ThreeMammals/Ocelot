@@ -78,7 +78,7 @@ namespace Ocelot.Requester
 
         private string GetCacheKey(DownstreamContext request)
         {
-            var baseUrl = $"{request.DownstreamRequest.RequestUri.Scheme}://{request.DownstreamRequest.RequestUri.Authority}{request.DownstreamRequest.RequestUri.AbsolutePath}";
+            var baseUrl = $"{request.DownstreamRequest.Scheme}://{request.DownstreamRequest.Authority}{request.DownstreamRequest.AbsolutePath}";
 
             return baseUrl;
         }
