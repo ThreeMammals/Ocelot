@@ -94,7 +94,7 @@ namespace Ocelot.Middleware.Pipeline
         private static Func<T, DownstreamContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
         {
             var middleware = typeof(T);
-            var httpContextArg = Expression.Parameter(typeof(HttpContext), "httpContext");
+            var httpContextArg = Expression.Parameter(typeof(DownstreamContext), "downstreamContext");
             var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
             var instanceArg = Expression.Parameter(middleware, "middleware");
 
@@ -111,8 +111,7 @@ namespace Ocelot.Middleware.Pipeline
                 var parameterTypeExpression = new Expression[]
                 {
                     providerArg,
-                    Expression.Constant(parameterType, typeof(Type)),
-                    Expression.Constant(methodinfo.DeclaringType, typeof(Type))
+                    Expression.Constant(parameterType, typeof(Type))
                 };
 
                 var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);
