@@ -7,6 +7,8 @@ using Ocelot.Responses;
 using System.Security.Claims;
 using System.Net.Http;
 using System;
+using Microsoft.Extensions.Primitives;
+using System.Text;
 
 namespace Ocelot.QueryStrings
 {
@@ -45,6 +47,7 @@ namespace Ocelot.QueryStrings
             }
 
             var uriBuilder = new UriBuilder(downstreamRequest.RequestUri);
+
             uriBuilder.Query = ConvertDictionaryToQueryString(queryDictionary);
 
             downstreamRequest.RequestUri = uriBuilder.Uri;
@@ -52,16 +55,43 @@ namespace Ocelot.QueryStrings
             return new OkResponse();
         }
 
-        private Dictionary<string, string> ConvertQueryStringToDictionary(string queryString)
+        private Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
         {
-            return Microsoft.AspNetCore.WebUtilities.QueryHelpers
-                .ParseQuery(queryString)
-                .ToDictionary(q => q.Key, q => q.Value.FirstOrDefault() ?? string.Empty);
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
+                .ParseQuery(queryString);
+
+            return query;
         }
 
-        private string ConvertDictionaryToQueryString(Dictionary<string, string> queryDictionary)
+        private string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
         {
-            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDictionary);
+            var builder = new StringBuilder();
+
+            builder.Append("?");
+            
+            int outerCount = 0;
+
+            foreach (var query in queryDictionary)
+            {
+                for (int innerCount = 0; innerCount < query.Value.Count; innerCount++)
+                {
+                    builder.Append($"{query.Key}={query.Value[innerCount]}");
+
+                    if(innerCount < (query.Value.Count - 1))
+                    {
+                        builder.Append("&");
+                    }
+                }
+
+                if(outerCount < (queryDictionary.Count - 1))
+                {
+                    builder.Append("&");
+                }
+
+                outerCount++;
+            }
+
+            return builder.ToString();
         }
     }
 }
