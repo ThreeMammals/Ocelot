@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.QueryStrings
     public class AddQueriesToRequestTests
     {
         private readonly AddQueriesToRequest _addQueriesToRequest;
-        private readonly HttpRequestMessage _downstreamRequest;
+        private HttpRequestMessage _downstreamRequest;
         private readonly Mock<IClaimsParser> _parser;
         private List<ClaimToThing> _configuration;
         private List<Claim> _claims;
@@ -51,6 +51,34 @@ namespace Ocelot.UnitTests.QueryStrings
                 .Then(x => x.ThenTheResultIsSuccess())
                 .And(x => x.ThenTheQueryIsAdded())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_new_queries_to_downstream_request_and_preserve_other_queries()
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("test", "data")
+            };
+
+            this.Given(
+                x => x.GivenAClaimToThing(new List<ClaimToThing>
+                {
+                    new ClaimToThing("query-key", "", "", 0)
+                }))
+                .Given(x => x.GivenClaims(claims))
+                .And(x => GivenTheDownstreamRequestHasQueryString("?test=1&test=2"))
+                .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
+                .When(x => x.WhenIAddQueriesToTheRequest())
+                .Then(x => x.ThenTheResultIsSuccess())
+                .And(x => x.ThenTheQueryIsAdded())
+                .And(x => TheTheQueryStringIs("?test=1&test=2&query-key=value"))
+                .BDDfy();
+        }
+
+        private void TheTheQueryStringIs(string expected)
+        {
+            _downstreamRequest.RequestUri.Query.ShouldBe(expected);
         }
 
         [Fact]
@@ -108,6 +136,11 @@ namespace Ocelot.UnitTests.QueryStrings
         private void GivenClaims(List<Claim> claims)
         {
             _claims = claims;
+        }
+
+        private void GivenTheDownstreamRequestHasQueryString(string queryString)
+        {
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Post, $"http://my.url/abc{queryString}");
         }
 
         private void GivenTheDownstreamRequestHasQueryString(string key, string value)
