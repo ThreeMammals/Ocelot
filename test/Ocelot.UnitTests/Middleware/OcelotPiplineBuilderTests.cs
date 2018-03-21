@@ -1,4 +1,7 @@
-﻿namespace Ocelot.UnitTests.Middleware
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Ocelot.UnitTests.Middleware
 {
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Hosting;
@@ -79,6 +82,32 @@
         {
             _counter.ShouldBe(1);
             _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(404);
+        }
+
+        [Fact]
+        public void Middleware_Multi_Parameters_Invoke()
+        {
+            var provider = _services.BuildServiceProvider();
+            IOcelotPipelineBuilder builder = new OcelotPipelineBuilder(provider);
+            builder = builder.UseMiddleware<MultiParametersInvokeMiddleware>();
+            var del = builder.Build();
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            del.Invoke(_downstreamContext);
+        }
+
+        private class MultiParametersInvokeMiddleware : OcelotMiddleware
+        {
+            private readonly OcelotRequestDelegate _next;
+
+            public MultiParametersInvokeMiddleware(OcelotRequestDelegate next)
+            {
+                _next = next;
+            }
+
+            public Task Invoke(DownstreamContext context, IServiceProvider serviceProvider)
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }
