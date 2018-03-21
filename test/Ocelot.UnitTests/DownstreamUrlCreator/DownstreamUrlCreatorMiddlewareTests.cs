@@ -226,7 +226,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            _downstreamContext.DownstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

@@ -57,6 +57,34 @@ namespace Ocelot.UnitTests.QueryStrings
         }
 
         [Fact]
+        public void should_add_new_queries_to_downstream_request_and_preserve_other_queries()
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("test", "data")
+            };
+
+            this.Given(
+                x => x.GivenAClaimToThing(new List<ClaimToThing>
+                {
+                    new ClaimToThing("query-key", "", "", 0)
+                }))
+                .Given(x => x.GivenClaims(claims))
+                .And(x => GivenTheDownstreamRequestHasQueryString("?test=1&test=2"))
+                .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
+                .When(x => x.WhenIAddQueriesToTheRequest())
+                .Then(x => x.ThenTheResultIsSuccess())
+                .And(x => x.ThenTheQueryIsAdded())
+                .And(x => TheTheQueryStringIs("?test=1&test=2&query-key=value"))
+                .BDDfy();
+        }
+
+        private void TheTheQueryStringIs(string expected)
+        {
+            _downstreamRequest.UriBuilder.Query.ShouldBe(expected);
+        }
+
+        [Fact]
         public void should_replace_existing_queries_on_downstream_request()
         {
             var claims = new List<Claim>
@@ -98,7 +126,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void ThenTheQueryIsAdded()
         {
-            var queries = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_downstreamRequest.RequestUri.OriginalString);
+            var queries = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString);
             var query = queries.First(x => x.Key == "query-key");
             query.Value.First().ShouldBe(_claimValue.Data);
         }
@@ -113,10 +141,16 @@ namespace Ocelot.UnitTests.QueryStrings
             _claims = claims;
         }
 
+        private void GivenTheDownstreamRequestHasQueryString(string queryString)
+        {
+            _request = new HttpRequestMessage(HttpMethod.Post, $"http://my.url/abc{queryString}");
+            _downstreamRequest = new DownstreamRequest(_request);
+        }
+
         private void GivenTheDownstreamRequestHasQueryString(string key, string value)
         {
             var newUri = Microsoft.AspNetCore.WebUtilities.QueryHelpers
-                .AddQueryString(_downstreamRequest.RequestUri.OriginalString, key, value);
+                .AddQueryString(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString, key, value);
 
             _request.RequestUri = new Uri(newUri);
             //todo - might not need to instanciate

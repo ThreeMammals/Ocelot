@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_key_does_not_exist_for_http_request_message()
         {
-            var request = new DownstreamRequest(new HttpRequestMessage());
+            var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://west.com"));
             var result = _placeholders.Get("{Test}", request);
             result.IsError.ShouldBeTrue();
             result.Errors[0].Message.ShouldBe("Unable to find placeholder called {Test}");

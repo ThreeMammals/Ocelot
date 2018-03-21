@@ -48,26 +48,26 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
             else
             {
-                uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
+                uriBuilder = new UriBuilder(context.DownstreamRequest.ToHttpRequestMessage().RequestUri)
                 {
                     Path = dsPath.Data.Value,
                     Scheme = context.DownstreamReRoute.DownstreamScheme
                 };
             }
 
-            context.DownstreamRequest.RequestUri = uriBuilder.Uri;
+            context.DownstreamRequest.UriBuilder = uriBuilder;
 
-            _logger.LogDebug("downstream url is {context.DownstreamRequest.RequestUri}", context.DownstreamRequest.RequestUri);
+            _logger.LogDebug("downstream url is {context.DownstreamRequest.RequestUri}", context.DownstreamRequest.UriBuilder);
 
             await _next.Invoke(context);
         }
 
         private UriBuilder CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
         {
-            var query = context.DownstreamRequest.RequestUri.Query;
+            var query = context.DownstreamRequest.UriBuilder.Query;
             var scheme = context.DownstreamReRoute.DownstreamScheme;
-            var host = context.DownstreamRequest.RequestUri.Host;
-            var port = context.DownstreamRequest.RequestUri.Port;
+            var host = context.DownstreamRequest.UriBuilder.Host;
+            var port = context.DownstreamRequest.UriBuilder.Port;
             var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
 
             Uri uri;

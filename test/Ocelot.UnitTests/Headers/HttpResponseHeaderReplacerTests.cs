@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();
@@ -92,7 +92,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();
@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/test/product";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();
@@ -136,7 +136,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/test/product";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();
@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com:123/test/product";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();
@@ -180,7 +180,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com:123/test/product";
 
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             request.RequestUri = new System.Uri(downstreamUrl);
 
             var response = new HttpResponseMessage();

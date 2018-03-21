@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
-            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "");
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com/");
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
@@ -123,6 +123,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheDownStreamUrlIs(string downstreamUrl)
         {
             _downstreamRequest.RequestUri = new System.Uri(downstreamUrl);
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
         }
 
         private void GivenTheLoadBalancerReturnsAnError()
@@ -186,7 +187,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            _downstreamContext.DownstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

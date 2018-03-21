@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Headers
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequestHeadersBuilderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _middleware = new HttpRequestHeadersBuilderMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage());
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         [Fact]

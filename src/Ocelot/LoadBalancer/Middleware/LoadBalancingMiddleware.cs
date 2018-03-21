@@ -43,7 +43,7 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            var uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri);
+            var uriBuilder = new UriBuilder(context.DownstreamRequest.ToHttpRequestMessage().RequestUri);
 
             uriBuilder.Host = hostAndPort.Data.DownstreamHost;
 
@@ -52,7 +52,7 @@ namespace Ocelot.LoadBalancer.Middleware
                 uriBuilder.Port = hostAndPort.Data.DownstreamPort;
             }
 
-            context.DownstreamRequest.RequestUri = uriBuilder.Uri;
+            context.DownstreamRequest.UriBuilder = uriBuilder;
 
             try
             {

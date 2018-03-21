@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.RequestId
 
         public ReRouteRequestIdMiddlewareTests()
         {
-            _downstreamRequest = new HttpRequestMessage();
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             _repo = new Mock<IRequestScopedDataRepository>();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();

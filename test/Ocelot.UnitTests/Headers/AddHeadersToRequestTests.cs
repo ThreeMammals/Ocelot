@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Headers
         {
             _parser = new Mock<IClaimsParser>();
             _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
-            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage());
+            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         [Fact]

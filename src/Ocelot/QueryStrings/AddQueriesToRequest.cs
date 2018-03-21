@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Net.Http;
 using System;
 using Ocelot.Request.Middleware;
+using Microsoft.Extensions.Primitives;
+using System.Text;
 
 namespace Ocelot.QueryStrings
 {
@@ -22,7 +24,7 @@ namespace Ocelot.QueryStrings
 
         public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
         {
-            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.RequestUri.Query);
+            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.UriBuilder.Query);
 
             foreach (var config in claimsToThings)
             {
@@ -45,24 +47,52 @@ namespace Ocelot.QueryStrings
                 }
             }
 
-            var uriBuilder = new UriBuilder(downstreamRequest.RequestUri);
+            var uriBuilder = new UriBuilder(downstreamRequest.ToHttpRequestMessage().RequestUri);
+
             uriBuilder.Query = ConvertDictionaryToQueryString(queryDictionary);
 
-            downstreamRequest.RequestUri = uriBuilder.Uri;
+            downstreamRequest.UriBuilder = uriBuilder;
 
             return new OkResponse();
         }
 
-        private Dictionary<string, string> ConvertQueryStringToDictionary(string queryString)
+        private Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
         {
-            return Microsoft.AspNetCore.WebUtilities.QueryHelpers
-                .ParseQuery(queryString)
-                .ToDictionary(q => q.Key, q => q.Value.FirstOrDefault() ?? string.Empty);
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
+                .ParseQuery(queryString);
+
+            return query;
         }
 
-        private string ConvertDictionaryToQueryString(Dictionary<string, string> queryDictionary)
+        private string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
         {
-            return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDictionary);
+            var builder = new StringBuilder();
+
+            builder.Append("?");
+            
+            int outerCount = 0;
+
+            foreach (var query in queryDictionary)
+            {
+                for (int innerCount = 0; innerCount < query.Value.Count; innerCount++)
+                {
+                    builder.Append($"{query.Key}={query.Value[innerCount]}");
+
+                    if(innerCount < (query.Value.Count - 1))
+                    {
+                        builder.Append("&");
+                    }
+                }
+
+                if(outerCount < (queryDictionary.Count - 1))
+                {
+                    builder.Append("&");
+                }
+
+                outerCount++;
+            }
+
+            return builder.ToString();
         }
     }
 }

@@ -8,8 +8,10 @@ namespace Ocelot.Request.Middleware
     {
         public DownstreamRequest(HttpRequestMessage request)
         {
+            UriBuilder = new UriBuilder(request.RequestUri);
             _request = request;
         }
+
         private HttpRequestMessage _request;
         public string Method => _request.Method.Method;
         public string OriginalString => _request.RequestUri.OriginalString;
@@ -20,10 +22,13 @@ namespace Ocelot.Request.Middleware
         public string Authority => _request.RequestUri.Authority;
         public string AbsolutePath => _request.RequestUri.AbsolutePath;
 
-        public Uri RequestUri => _request.RequestUri;
+        //todo - can this not be get set
+        public UriBuilder UriBuilder {get;set;}
 
+        //todo - this gets called too much
         public HttpRequestMessage ToHttpRequestMessage()
         {
+            _request.RequestUri = UriBuilder.Uri;
             return _request;
         }
     }

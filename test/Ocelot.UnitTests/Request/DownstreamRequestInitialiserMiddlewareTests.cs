@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.Request
 
         private void GivenTheMapperWillReturnAMappedRequest()
         {
-            _mappedRequest = new OkResponse<HttpRequestMessage>(new HttpRequestMessage());
+            _mappedRequest = new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "http://www.bbc.co.uk"));
 
             _requestMapper
                 .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))

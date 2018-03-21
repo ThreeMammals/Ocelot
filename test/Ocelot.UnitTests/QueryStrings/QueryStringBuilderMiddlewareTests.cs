@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.QueryStrings
             _loggerFactory.Setup(x => x.CreateLogger<QueryStringBuilderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage());
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
             _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 

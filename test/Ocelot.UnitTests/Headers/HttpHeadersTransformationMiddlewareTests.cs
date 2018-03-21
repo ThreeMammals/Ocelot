@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheDownstreamRequestIs()
         {
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage());
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         private void GivenTheHttpResponseMessageIs()
