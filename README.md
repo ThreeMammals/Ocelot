@@ -41,6 +41,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Request Aggregation
 * Service Discovery with Consul
 * Service Fabric
+* WebSockets
 * Authentication
 * Authorisation
 * Rate Limiting
