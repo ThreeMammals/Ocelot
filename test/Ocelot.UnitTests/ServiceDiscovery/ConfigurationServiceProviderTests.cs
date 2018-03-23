@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;

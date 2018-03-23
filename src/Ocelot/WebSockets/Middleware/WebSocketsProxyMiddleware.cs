@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Websockets
+namespace Ocelot.WebSockets.Middleware
 {
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {

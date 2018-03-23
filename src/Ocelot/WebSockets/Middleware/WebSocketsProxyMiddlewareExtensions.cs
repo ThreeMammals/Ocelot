@@ -1,6 +1,6 @@
 using Ocelot.Middleware.Pipeline;
 
-namespace Ocelot.Websockets
+namespace Ocelot.WebSockets.Middleware
 {
     public static class WebSocketsProxyMiddlewareExtensions
     {
