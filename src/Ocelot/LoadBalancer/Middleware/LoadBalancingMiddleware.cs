@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.QueryStrings.Middleware;
 
 namespace Ocelot.LoadBalancer.Middleware
 {

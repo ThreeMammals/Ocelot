@@ -41,32 +41,23 @@ namespace Ocelot.Websockets
 
                 while (wsToUpstreamClient.State == WebSocketState.Open || wsToUpstreamClient.State == WebSocketState.CloseSent)
                 {
-                    try
+                    var result = await wsToUpstreamClient.ReceiveAsync(receiveSegment, CancellationToken.None);
+
+                    var sendSegment = new ArraySegment<byte>(buffer, 0, result.Count);
+
+                    if(result.MessageType == WebSocketMessageType.Close)
                     {
-                        var result = await wsToUpstreamClient.ReceiveAsync(receiveSegment, CancellationToken.None);
+                        await wsToUpstreamClient.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "",
+                        CancellationToken.None);
 
-                        var sendSegment = new ArraySegment<byte>(buffer, 0, result.Count);
-
-                        if(result.MessageType == WebSocketMessageType.Close)
-                        {
-                            await wsToUpstreamClient.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "",
-                            CancellationToken.None);
-
-                            await wsToDownstreamService.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "",
-                            CancellationToken.None);
+                        await wsToDownstreamService.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "",
+                        CancellationToken.None);
                             
-                            break;
-                        }
-
-                        await wsToDownstreamService.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
-                            CancellationToken.None);
+                        break;
                     }
 
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                        return;
-                    }
+                    await wsToDownstreamService.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
+                        CancellationToken.None);
 
                     if (wsToUpstreamClient.State != WebSocketState.Open)
                     {
@@ -79,39 +70,31 @@ namespace Ocelot.Websockets
 
             var receiveFromDownstreamAndSendToUpstream = Task.Run(async () =>
             {
-                try
-                {
-                    var buffer = new byte[1024 * 4];
+                var buffer = new byte[1024 * 4];
 
-                    while (wsToDownstreamService.State == WebSocketState.Open || wsToDownstreamService.State == WebSocketState.CloseSent)
+                while (wsToDownstreamService.State == WebSocketState.Open || wsToDownstreamService.State == WebSocketState.CloseSent)
+                {
+                    if (wsToUpstreamClient.State != WebSocketState.Open)
                     {
-                        if (wsToUpstreamClient.State != WebSocketState.Open)
+                        break;
+                    }
+                    else
+                    {
+                        var receiveSegment = new ArraySegment<byte>(buffer);
+                        var result = await wsToDownstreamService.ReceiveAsync(receiveSegment, CancellationToken.None);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
                         {
                             break;
                         }
-                        else
-                        {
-                            var receiveSegment = new ArraySegment<byte>(buffer);
-                            var result = await wsToDownstreamService.ReceiveAsync(receiveSegment, CancellationToken.None);
 
-                            if (result.MessageType == WebSocketMessageType.Close)
-                            {
-                                break;
-                            }
+                        var sendSegment = new ArraySegment<byte>(buffer, 0, result.Count);
 
-                            var sendSegment = new ArraySegment<byte>(buffer, 0, result.Count);
-
-                            //send to upstream client
-                            await wsToUpstreamClient.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
-                                CancellationToken.None);
-                        }
+                        //send to upstream client
+                        await wsToUpstreamClient.SendAsync(sendSegment, result.MessageType, result.EndOfMessage,
+                            CancellationToken.None);
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-
             });
 
             await Task.WhenAll(receiveFromDownstreamAndSendToUpstream, receiveFromUpstreamSendToDownstream);

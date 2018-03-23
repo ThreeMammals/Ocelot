@@ -1,23 +1,22 @@
 namespace Ocelot.Headers
 {
-    using System;
     using System.Collections.Generic;
     using System.Net.Http;
     using Ocelot.Configuration.Creator;
     using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
 
     public class AddHeadersToResponse : IAddHeadersToResponse
     {
-        private IPlaceholders _placeholders;
-        private IOcelotLogger _logger;
+        private readonly IPlaceholders _placeholders;
+        private readonly IOcelotLogger _logger;
 
         public AddHeadersToResponse(IPlaceholders placeholders, IOcelotLoggerFactory factory)
         {
             _logger = factory.CreateLogger<AddHeadersToResponse>();
             _placeholders = placeholders;
         }
+
         public void Add(List<AddHeader> addHeaders, HttpResponseMessage response)
         {
             foreach(var add in addHeaders)
