@@ -5,6 +5,7 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using System.Collections.Generic;
+using Ocelot.ServiceDiscovery.Providers;
 using TestStack.BDDfy;
 using Xunit;
 

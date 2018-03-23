@@ -18,6 +18,7 @@ namespace Ocelot.UnitTests.QueryStrings
     using System.Security.Claims;
     using Microsoft.AspNetCore.Http;
     using System.Threading.Tasks;
+    using Ocelot.Request.Middleware;
 
     public class QueryStringBuilderMiddlewareTests
     {
@@ -36,7 +37,7 @@ namespace Ocelot.UnitTests.QueryStrings
             _loggerFactory.Setup(x => x.CreateLogger<QueryStringBuilderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
             _middleware = new QueryStringBuilderMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 
@@ -74,7 +75,7 @@ namespace Ocelot.UnitTests.QueryStrings
                 .Setup(x => x.SetQueriesOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<Claim>>(),
-                    It.IsAny<HttpRequestMessage>()))
+                    It.IsAny<DownstreamRequest>()))
                 .Returns(new OkResponse());
         }
 

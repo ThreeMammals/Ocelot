@@ -4,5 +4,4 @@
     {
         int Delay { get; }
     }
-
-    }
+}

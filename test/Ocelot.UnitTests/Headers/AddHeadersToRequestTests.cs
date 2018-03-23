@@ -11,6 +11,7 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using System.Net.Http;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
@@ -18,7 +19,7 @@ namespace Ocelot.UnitTests.Headers
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private readonly Mock<IClaimsParser> _parser;
-        private readonly HttpRequestMessage _downstreamRequest;
+        private readonly DownstreamRequest _downstreamRequest;
         private List<Claim> _claims;
         private List<ClaimToThing> _configuration;
         private Response _result;
@@ -28,7 +29,7 @@ namespace Ocelot.UnitTests.Headers
         {
             _parser = new Mock<IClaimsParser>();
             _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
-            _downstreamRequest = new HttpRequestMessage();
+            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         [Fact]

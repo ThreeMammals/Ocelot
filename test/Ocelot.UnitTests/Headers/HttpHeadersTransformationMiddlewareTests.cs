@@ -16,6 +16,7 @@ using Ocelot.Middleware;
 namespace Ocelot.UnitTests.Headers
 {
     using System.Threading.Tasks;
+    using Ocelot.Request.Middleware;
 
     public class HttpHeadersTransformationMiddlewareTests
     {
@@ -68,7 +69,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheDownstreamRequestIs()
         {
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         private void GivenTheHttpResponseMessageIs()
@@ -97,7 +98,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
         {
-            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<HttpRequestMessage>()), Times.Once);
+            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<DownstreamRequest>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()

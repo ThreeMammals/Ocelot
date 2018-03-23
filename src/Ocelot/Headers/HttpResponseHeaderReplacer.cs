@@ -5,6 +5,7 @@ using System.Net.Http;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.Headers
@@ -18,7 +19,7 @@ namespace Ocelot.Headers
             _placeholders = placeholders;
         }
 
-        public Response Replace(HttpResponseMessage response, List<HeaderFindAndReplace> fAndRs, HttpRequestMessage request)
+        public Response Replace(HttpResponseMessage response, List<HeaderFindAndReplace> fAndRs, DownstreamRequest request)
         {
             foreach (var f in fAndRs)
             {

@@ -18,6 +18,7 @@ namespace Ocelot.UnitTests.RateLimit
     using Microsoft.Extensions.Caching.Memory;
     using System.IO;
     using System.Threading.Tasks;
+    using Ocelot.Request.Middleware;
 
     public class ClientRateLimitMiddlewareTests
     {
@@ -100,7 +101,7 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
-                _downstreamContext.DownstreamRequest = request;
+                _downstreamContext.DownstreamRequest = new DownstreamRequest(request);
 
                 _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
                 _responseStatusCode = (int)_downstreamContext.HttpContext.Response.StatusCode;
@@ -115,7 +116,7 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
-                _downstreamContext.DownstreamRequest = request;
+                _downstreamContext.DownstreamRequest = new DownstreamRequest(request);
                 _downstreamContext.HttpContext.Request.Headers.TryAdd("ClientId", clientId);
 
                 _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();

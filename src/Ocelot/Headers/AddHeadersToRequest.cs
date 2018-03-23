@@ -5,6 +5,7 @@ using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Net.Http;
 using Ocelot.Configuration.Creator;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.Headers
 {
@@ -17,7 +18,7 @@ namespace Ocelot.Headers
             _claimsParser = claimsParser;
         }
 
-        public Response SetHeadersOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<System.Security.Claims.Claim> claims, HttpRequestMessage downstreamRequest)
+        public Response SetHeadersOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<System.Security.Claims.Claim> claims, DownstreamRequest downstreamRequest)
         {
             foreach (var config in claimsToThings)
             {

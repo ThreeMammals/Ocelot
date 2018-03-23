@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.Infrastructure
 {
     public class Placeholders : IPlaceholders
     {
-        private Dictionary<string, Func<Response<string>>> _placeholders;
-        private Dictionary<string, Func<HttpRequestMessage, string>> _requestPlaceholders;
+        private readonly Dictionary<string, Func<Response<string>>> _placeholders;
+        private readonly Dictionary<string, Func<DownstreamRequest, string>> _requestPlaceholders;
         private readonly IBaseUrlFinder _finder;
         private readonly IRequestScopedDataRepository _repo;
 
@@ -30,13 +31,13 @@ namespace Ocelot.Infrastructure
                 return new OkResponse<string>(traceId.Data);
             });
 
-            _requestPlaceholders = new Dictionary<string, Func<HttpRequestMessage, string>>();
+            _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>();
             _requestPlaceholders.Add("{DownstreamBaseUrl}", x => {
-                var downstreamUrl = $"{x.RequestUri.Scheme}://{x.RequestUri.Host}";
+                var downstreamUrl = $"{x.Scheme}://{x.Host}";
 
-                if(x.RequestUri.Port != 80 && x.RequestUri.Port != 443)
+                if(x.Port != 80 && x.Port != 443)
                 {
-                    downstreamUrl = $"{downstreamUrl}:{x.RequestUri.Port}";
+                    downstreamUrl = $"{downstreamUrl}:{x.Port}";
                 }
 
                 return $"{downstreamUrl}/";
@@ -57,7 +58,7 @@ namespace Ocelot.Infrastructure
             return new ErrorResponse<string>(new CouldNotFindPlaceholderError(key));
         }
 
-        public Response<string> Get(string key, HttpRequestMessage request)
+        public Response<string> Get(string key, DownstreamRequest request)
         {
             if(_requestPlaceholders.ContainsKey(key))
             {

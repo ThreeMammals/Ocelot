@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Configuration;
 
 namespace Ocelot.Configuration.Repository
 {

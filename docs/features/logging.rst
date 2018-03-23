@@ -12,3 +12,9 @@ Finally if logging is set to trace level Ocelot will log starting, finishing and
 The reason for not just using bog standard framework logging is that I could not 
 work out how to override the request id that get's logged when setting IncludeScopes 
 to true for logging settings. Nicely onto the next feature.
+
+Warning
+^^^^^^^
+
+If you are logging to Console you will get terrible performance. I have had so many issues about performance issues with Ocelot
+and it is always logging level Debug, logging to Console :) Make sure you are logging to something proper in production :)

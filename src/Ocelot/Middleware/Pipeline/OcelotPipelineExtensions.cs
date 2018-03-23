@@ -15,17 +15,29 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
+using Ocelot.WebSockets.Middleware;
 
 namespace Ocelot.Middleware.Pipeline
 {
     public static class OcelotPipelineExtensions
     {
         public static OcelotRequestDelegate BuildOcelotPipeline(this IOcelotPipelineBuilder builder,
-            OcelotPipelineConfiguration pipelineConfiguration = null)
+            OcelotPipelineConfiguration pipelineConfiguration)
         {
             // This is registered to catch any global exceptions that are not handled
             // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
+
+            // If the request is for websockets upgrade we fork into a different pipeline
+            builder.MapWhen(context => context.HttpContext.WebSockets.IsWebSocketRequest,
+                app =>
+                {
+                    app.UseDownstreamRouteFinderMiddleware();
+                    app.UseDownstreamRequestInitialiser();
+                    app.UseLoadBalancingMiddleware();
+                    app.UseDownstreamUrlCreatorMiddleware();
+                    app.UseWebSocketsProxyMiddleware();
+                });
 
             // Allow the user to respond with absolutely anything they want.
             builder.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);

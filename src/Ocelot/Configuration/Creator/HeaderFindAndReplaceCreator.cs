@@ -10,12 +10,12 @@ namespace Ocelot.Configuration.Creator
 {
     public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
     {
-        private IPlaceholders _placeholders;
-        private IOcelotLogger _logger;
+        private readonly IPlaceholders _placeholders;
+        private readonly IOcelotLogger _logger;
 
         public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory)
         {
-            _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();;
+            _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
             _placeholders = placeholders;
         }
 

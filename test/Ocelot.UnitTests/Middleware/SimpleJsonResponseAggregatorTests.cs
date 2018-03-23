@@ -9,6 +9,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Errors;
 using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
+using Ocelot.Request.Middleware;
 using Ocelot.UnitTests.Responder;
 using Shouldly;
 using TestStack.BDDfy;
@@ -48,7 +49,7 @@ namespace Ocelot.UnitTests.Middleware
                     new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Bill says hi") },
                 DownstreamReRoute = billDownstreamReRoute,
                 Errors = new List<Error> { new AnyError() },
-                DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("http://www.bbc.co.uk")),
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, new Uri("http://www.bbc.co.uk"))),
             };
 
             var downstreamContexts = new List<DownstreamContext> { billDownstreamContext };

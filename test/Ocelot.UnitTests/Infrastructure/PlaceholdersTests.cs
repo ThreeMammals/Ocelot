@@ -4,6 +4,7 @@ using Moq;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Shouldly;
 using Xunit;
@@ -43,8 +44,9 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_downstream_base_url_when_port_is_not_80_or_443()
         {
-            var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("http://www.bbc.co.uk");
+            var httpRequest = new HttpRequestMessage();
+            httpRequest.RequestUri = new Uri("http://www.bbc.co.uk");
+            var request = new DownstreamRequest(httpRequest);
             var result = _placeholders.Get("{DownstreamBaseUrl}", request);
             result.Data.ShouldBe("http://www.bbc.co.uk/");
         }
@@ -53,8 +55,9 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_downstream_base_url_when_port_is_80_or_443()
         {
-              var request = new HttpRequestMessage();
-            request.RequestUri = new Uri("http://www.bbc.co.uk:123");
+            var httpRequest = new HttpRequestMessage();
+            httpRequest.RequestUri = new Uri("http://www.bbc.co.uk:123");
+            var request = new DownstreamRequest(httpRequest);
             var result = _placeholders.Get("{DownstreamBaseUrl}", request);
             result.Data.ShouldBe("http://www.bbc.co.uk:123/");
         }
@@ -62,7 +65,8 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_key_does_not_exist_for_http_request_message()
         {
-            var result = _placeholders.Get("{Test}", new System.Net.Http.HttpRequestMessage());
+            var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://west.com"));
+            var result = _placeholders.Get("{Test}", request);
             result.IsError.ShouldBeTrue();
             result.Errors[0].Message.ShouldBe("Unable to find placeholder called {Test}");
         }

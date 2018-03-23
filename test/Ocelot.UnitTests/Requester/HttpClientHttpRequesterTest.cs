@@ -12,13 +12,16 @@ using Ocelot.Middleware;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
+using Ocelot.Request.Middleware;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Ocelot.UnitTests.Requester
 {
     public class HttpClientHttpRequesterTest
     {
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IDelegatingHandlerHandlerFactory> _house;
+        private Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
         private DownstreamContext _request;
@@ -27,8 +30,8 @@ namespace Ocelot.UnitTests.Requester
 
         public HttpClientHttpRequesterTest()
         {
-            _house = new Mock<IDelegatingHandlerHandlerFactory>();
-            _house.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
+            _factory = new Mock<IDelegatingHandlerHandlerFactory>();
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _loggerFactory
@@ -38,7 +41,7 @@ namespace Ocelot.UnitTests.Requester
             _httpClientRequester = new HttpClientHttpRequester(
                 _loggerFactory.Object, 
                 _cacheHandlers.Object, 
-                _house.Object);            
+                _factory.Object);            
         }
 
         [Fact]
@@ -50,10 +53,11 @@ namespace Ocelot.UnitTests.Requester
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = reRoute,
-                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") },
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }),
             };
 
             this.Given(x=>x.GivenTheRequestIs(context))
+                .And(x => GivenTheHouseReturnsOkHandler())
                 .When(x=>x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledCorrectly())
                 .BDDfy();
@@ -68,7 +72,7 @@ namespace Ocelot.UnitTests.Requester
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = reRoute,
-                DownstreamRequest = new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") },
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
             };
 
             this.Given(x => x.GivenTheRequestIs(context))
@@ -95,6 +99,24 @@ namespace Ocelot.UnitTests.Requester
         private void ThenTheResponseIsCalledError()
         {
             _response.IsError.ShouldBeTrue();
+        }
+
+        private void GivenTheHouseReturnsOkHandler()
+        {
+            var handlers = new List<Func<DelegatingHandler>>
+            {
+                () => new OkDelegatingHandler()
+            };
+
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+        }
+
+        class OkDelegatingHandler : DelegatingHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return Task.FromResult(new HttpResponseMessage());
+            }
         }
     }  
 }
