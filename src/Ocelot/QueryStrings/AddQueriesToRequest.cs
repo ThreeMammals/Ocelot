@@ -24,7 +24,7 @@ namespace Ocelot.QueryStrings
 
         public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
         {
-            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.UriBuilder.Query);
+            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.Query);
 
             foreach (var config in claimsToThings)
             {
@@ -47,11 +47,7 @@ namespace Ocelot.QueryStrings
                 }
             }
 
-            var uriBuilder = new UriBuilder(downstreamRequest.ToHttpRequestMessage().RequestUri);
-
-            uriBuilder.Query = ConvertDictionaryToQueryString(queryDictionary);
-
-            downstreamRequest.UriBuilder = uriBuilder;
+            downstreamRequest.Query = ConvertDictionaryToQueryString(queryDictionary);
 
             return new OkResponse();
         }

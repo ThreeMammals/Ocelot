@@ -6,30 +6,64 @@ namespace Ocelot.Request.Middleware
 
     public class DownstreamRequest
     {
+        private readonly HttpRequestMessage _request;
+
         public DownstreamRequest(HttpRequestMessage request)
         {
-            UriBuilder = new UriBuilder(request.RequestUri);
             _request = request;
+            Method = _request.Method.Method;
+            OriginalString = _request.RequestUri.OriginalString;
+            Scheme = _request.RequestUri.Scheme;
+            Host = _request.RequestUri.Host;
+            Port = _request.RequestUri.Port;
+            Headers = _request.Headers;
+            AbsolutePath = _request.RequestUri.AbsolutePath;
+            Query = _request.RequestUri.Query;
         }
 
-        private HttpRequestMessage _request;
-        public string Method => _request.Method.Method;
-        public string OriginalString => _request.RequestUri.OriginalString;
-        public string Scheme => _request.RequestUri.Scheme;
-        public string Host => _request.RequestUri.Host;
-        public int Port => _request.RequestUri.Port;
-        public HttpRequestHeaders Headers => _request.Headers;
-        public string Authority => _request.RequestUri.Authority;
-        public string AbsolutePath => _request.RequestUri.AbsolutePath;
+        public HttpRequestHeaders Headers { get; }
 
-        //todo - can this not be get set
-        public UriBuilder UriBuilder {get;set;}
+        public string Method { get; }
 
-        //todo - this gets called too much
+        public string OriginalString { get; }
+
+        public string Scheme { get; set; }
+
+        public string Host { get; set; }
+
+        public int Port { get; set; }
+
+        public string AbsolutePath { get; set; }
+
+        public string Query { get; set; }
+
         public HttpRequestMessage ToHttpRequestMessage()
         {
-            _request.RequestUri = UriBuilder.Uri;
+            var uriBuilder = new UriBuilder
+            {
+                Port = Port,
+                Host = Host,
+                Path = AbsolutePath,
+                Query = Query,
+                Scheme = Scheme
+            };
+
+            _request.RequestUri = uriBuilder.Uri;
             return _request;
+        }
+
+        public string ToUri()
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Port = Port,
+                Host = Host,
+                Path = AbsolutePath,
+                Query = Query,
+                Scheme = Scheme
+            };
+
+            return uriBuilder.Uri.AbsoluteUri;
         }
     }
 }

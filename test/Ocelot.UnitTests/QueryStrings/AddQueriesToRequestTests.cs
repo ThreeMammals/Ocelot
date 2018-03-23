@@ -81,7 +81,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void TheTheQueryStringIs(string expected)
         {
-            _downstreamRequest.UriBuilder.Query.ShouldBe(expected);
+            _downstreamRequest.Query.ShouldBe(expected);
         }
 
         [Fact]

@@ -39,16 +39,12 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            var uriBuilder = new UriBuilder(context.DownstreamRequest.ToHttpRequestMessage().RequestUri);
-
-            uriBuilder.Host = hostAndPort.Data.DownstreamHost;
+            context.DownstreamRequest.Host = hostAndPort.Data.DownstreamHost;
 
             if (hostAndPort.Data.DownstreamPort > 0)
             {
-                uriBuilder.Port = hostAndPort.Data.DownstreamPort;
+                context.DownstreamRequest.Port = hostAndPort.Data.DownstreamPort;
             }
-
-            context.DownstreamRequest.UriBuilder = uriBuilder;
 
             try
             {
