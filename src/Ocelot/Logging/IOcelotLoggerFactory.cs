@@ -13,10 +13,15 @@ namespace Ocelot.Logging
     public interface IOcelotLogger
     {
         void LogTrace(string message, params object[] args);
+
         void LogDebug(string message, params object[] args);
+
         void LogInformation(string message, params object[] args);
+
+        void LogWarning(string message, params object[] args);
+
         void LogError(string message, Exception exception);
-        void LogError(string message, params object[] args);
+
         void LogCritical(string message, Exception exception);
 
         /// <summary>

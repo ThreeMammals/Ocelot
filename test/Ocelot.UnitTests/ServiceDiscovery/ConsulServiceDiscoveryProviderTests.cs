@@ -142,12 +142,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidAddress()
         {
             _logger.Verify(
-                x => x.LogError(
+                x => x.LogWarning(
                     "Unable to use service Address: http://localhost and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
                 Times.Once);
 
             _logger.Verify(
-                x => x.LogError(
+                x => x.LogWarning(
                     "Unable to use service Address: http://localhost and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
                 Times.Once);
         }
@@ -155,12 +155,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidPorts()
         {
             _logger.Verify(
-                x => x.LogError(
+                x => x.LogWarning(
                     "Unable to use service Address: localhost and Port: -1 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
                 Times.Once);
 
             _logger.Verify(
-                x => x.LogError(
+                x => x.LogWarning(
                     "Unable to use service Address: localhost and Port: 0 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
                 Times.Once);
         }

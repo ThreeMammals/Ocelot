@@ -30,13 +30,13 @@
         {
             if (IsAuthenticatedRoute(context.DownstreamReRoute))
             {
-                _logger.LogDebug("route is authenticated scopes must be checked");
+                _logger.LogInformation("route is authenticated scopes must be checked");
 
                 var authorised = _scopesAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.AuthenticationOptions.AllowedScopes);
 
                 if (authorised.IsError)
                 {
-                    _logger.LogDebug("error authorising user scopes");
+                    _logger.LogWarning("error authorising user scopes");
 
                     SetPipelineError(context, authorised.Errors);
                     return;
@@ -44,11 +44,11 @@
 
                 if (IsAuthorised(authorised))
                 {
-                    _logger.LogDebug("user scopes is authorised calling next authorisation checks");
+                    _logger.LogInformation("user scopes is authorised calling next authorisation checks");
                 }
                 else
                 {
-                    _logger.LogDebug("user scopes is not authorised setting pipeline error");
+                    _logger.LogWarning("user scopes is not authorised setting pipeline error");
 
                     SetPipelineError(context, new List<Error>
                     {
@@ -60,13 +60,13 @@
 
             if (IsAuthorisedRoute(context.DownstreamReRoute))
             {
-                _logger.LogDebug("route is authorised");
+                _logger.LogInformation("route is authorised");
 
                 var authorised = _claimsAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.RouteClaimsRequirement);
 
                 if (authorised.IsError)
                 {
-                    _logger.LogDebug($"Error whilst authorising {context.HttpContext.User.Identity.Name} for {context.HttpContext.User.Identity.Name}. Setting pipeline error");
+                    _logger.LogWarning("Error whilst authorising {Name}. Setting pipeline error", context.HttpContext.User.Identity.Name);
 
                     SetPipelineError(context, authorised.Errors);
                     return;
@@ -74,12 +74,12 @@
 
                 if (IsAuthorised(authorised))
                 {
-                    _logger.LogDebug($"{context.HttpContext.User.Identity.Name} has succesfully been authorised for {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Calling next middleware");
+                    _logger.LogInformation("{Name} has succesfully been authorised for {Value}. Calling next middleware", context.HttpContext.User.Identity.Name, context.DownstreamReRoute.UpstreamPathTemplate.Value);
                     await _next.Invoke(context);
                 }
                 else
                 {
-                    _logger.LogDebug($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
+                    _logger.LogWarning("{Name} is not authorised to access {Value}. Setting pipeline error", context.HttpContext.User.Identity.Name, context.DownstreamReRoute.UpstreamPathTemplate.Value);
 
                     SetPipelineError(context, new List<Error>
                     {
@@ -89,7 +89,7 @@
             }
             else
             {
-                _logger.LogDebug($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
+                _logger.LogInformation("{Value} route does not require user to be authorised", context.DownstreamReRoute.DownstreamPathTemplate.Value);
                 await _next.Invoke(context);
             }
         }

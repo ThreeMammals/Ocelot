@@ -32,7 +32,7 @@ namespace Ocelot.Configuration.Creator
                 }
                 else
                 {
-                    _logger.LogError($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
+                    _logger.LogWarning($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
                 }
             }
 
@@ -50,7 +50,7 @@ namespace Ocelot.Configuration.Creator
                     }
                     else
                     {
-                        _logger.LogError($"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
+                        _logger.LogWarning($"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
                     }
                 }
                 else

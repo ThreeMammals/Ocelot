@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheLoggerIsCalledCorrectly(string message)
         {
-            _logger.Verify(x => x.LogError(message), Times.Once);
+            _logger.Verify(x => x.LogWarning(message), Times.Once);
         }
 
         [Fact]

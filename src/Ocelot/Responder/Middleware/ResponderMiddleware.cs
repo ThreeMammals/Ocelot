@@ -38,11 +38,11 @@ namespace Ocelot.Responder.Middleware
             if (context.IsError)
             {
                 var errors = context.Errors;
-                _logger.LogError($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
+                _logger.LogWarning($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
 
                 foreach(var error in errors)
                 {
-                    _logger.LogError(error.Message);
+                    _logger.LogWarning(error.Message);
                 }
                 
                 SetErrorResponse(context.HttpContext, errors);

@@ -40,7 +40,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             if (configuration.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                _logger.LogWarning($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 SetPipelineError(context, configuration.Errors);
                 return;
             }
@@ -53,7 +53,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             if (downstreamRoute.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
+                _logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;

@@ -40,18 +40,18 @@ namespace Ocelot.Logging
             _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
         }
 
+        public void LogWarning(string message, params object[] args)
+        {
+            var requestId = GetOcelotRequestId();
+            var previousRequestId = GetOcelotPreviousRequestId();
+            _logger.LogWarning("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+        }
+
         public void LogError(string message, Exception exception)
         {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
             _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, exception: {exception}", requestId, previousRequestId, message, exception);
-        }
-
-        public void LogError(string message, params object[] args)
-        {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
         }
 
         public void LogCritical(string message, Exception exception)
