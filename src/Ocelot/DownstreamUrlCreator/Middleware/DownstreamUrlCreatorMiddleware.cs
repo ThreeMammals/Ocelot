@@ -40,49 +40,36 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            UriBuilder uriBuilder;
-            
+            context.DownstreamRequest.Scheme = context.DownstreamReRoute.DownstreamScheme;
+
             if (ServiceFabricRequest(context))
             {
-                uriBuilder = CreateServiceFabricUri(context, dsPath);
+                var pathAndQuery = CreateServiceFabricUri(context, dsPath);
+                context.DownstreamRequest.AbsolutePath = pathAndQuery.path;
+                context.DownstreamRequest.Query = pathAndQuery.query;
             }
             else
             {
-                uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri)
-                {
-                    Path = dsPath.Data.Value,
-                    Scheme = context.DownstreamReRoute.DownstreamScheme
-                };
+                context.DownstreamRequest.AbsolutePath = dsPath.Data.Value;
             }
 
-            context.DownstreamRequest.RequestUri = uriBuilder.Uri;
-
-            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", context.DownstreamRequest.RequestUri);
+            _logger.LogDebug("downstream url is {context.DownstreamRequest}", context.DownstreamRequest);
 
             await _next.Invoke(context);
         }
 
-        private UriBuilder CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
+        private (string path, string query) CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
         {
-            var query = context.DownstreamRequest.RequestUri.Query;
-            var scheme = context.DownstreamReRoute.DownstreamScheme;
-            var host = context.DownstreamRequest.RequestUri.Host;
-            var port = context.DownstreamRequest.RequestUri.Port;
+            var query = context.DownstreamRequest.Query;           
             var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
-
-            Uri uri;
 
             if (RequestForStatefullService(query))
             {
-                uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}{query}");
-            }
-            else
-            {
-                var split = string.IsNullOrEmpty(query) ? "?" : "&";
-                uri = new Uri($"{scheme}://{host}:{port}{serviceFabricPath}{query}{split}cmd=instance");
+                return (serviceFabricPath, query);
             }
 
-            return new UriBuilder(uri);
+            var split = string.IsNullOrEmpty(query) ? "?" : "&";
+            return (serviceFabricPath, $"{query}{split}cmd=instance");
         }
 
         private static bool ServiceFabricRequest(DownstreamContext context)

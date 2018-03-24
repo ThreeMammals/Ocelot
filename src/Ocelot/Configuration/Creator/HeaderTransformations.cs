@@ -14,21 +14,10 @@ namespace Ocelot.Configuration.Creator
             Downstream = downstream;
         }
 
-        public List<HeaderFindAndReplace> Upstream { get; private set; }
+        public List<HeaderFindAndReplace> Upstream { get; }
 
-        public List<HeaderFindAndReplace> Downstream { get; private set; }
-        public List<AddHeader> AddHeadersToDownstream {get;private set;}
-    }
+        public List<HeaderFindAndReplace> Downstream { get; }
 
-    public class AddHeader
-    {
-        public AddHeader(string key, string value)
-        {
-            this.Key = key;
-            this.Value = value;
-
-        }
-        public string Key { get; private set; }
-        public string Value { get; private set; }
+        public List<AddHeader> AddHeadersToDownstream { get; }
     }
 }

@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.RequestId.Middleware
 {
@@ -82,7 +83,7 @@ namespace Ocelot.RequestId.Middleware
             return headers.TryGetValues(requestId.RequestIdKey, out value);
         }
 
-        private void AddRequestIdHeader(RequestId requestId, HttpRequestMessage httpRequestMessage)
+        private void AddRequestIdHeader(RequestId requestId, DownstreamRequest httpRequestMessage)
         {
             httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
         }

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Ocelot.Configuration;
 using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery

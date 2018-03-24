@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.Headers
     using Ocelot.Headers;
     using Ocelot.Headers.Middleware;
     using Ocelot.Logging;
+    using Ocelot.Request.Middleware;
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;
@@ -37,7 +38,7 @@ namespace Ocelot.UnitTests.Headers
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequestHeadersBuilderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _middleware = new HttpRequestHeadersBuilderMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         [Fact]
@@ -81,7 +82,7 @@ namespace Ocelot.UnitTests.Headers
                 .Setup(x => x.SetHeadersOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<System.Security.Claims.Claim>>(),
-                    It.IsAny<HttpRequestMessage>()))
+                    It.IsAny<DownstreamRequest>()))
                 .Returns(new OkResponse());
         }
 

@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     using Xunit;
     using Shouldly;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Request.Middleware;
 
     public class DownstreamUrlCreatorMiddlewareTests
     {
@@ -30,6 +31,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private DownstreamUrlCreatorMiddleware _middleware;
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
+        private HttpRequestMessage _request;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -38,7 +40,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
+            _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_request);
             _next = context => Task.CompletedTask;
         }
 
@@ -208,7 +211,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void GivenTheDownstreamRequestUriIs(string uri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri = new Uri(uri);
+            _request.RequestUri = new Uri(uri);
+            //todo - not sure if needed
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_request);
         }
 
         private void GivenTheUrlReplacerWillReturn(string path)
@@ -221,7 +226,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            _downstreamContext.DownstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

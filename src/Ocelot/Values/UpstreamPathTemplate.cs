@@ -8,7 +8,8 @@ namespace Ocelot.Values
             Priority = priority;
         }
 
-        public string Template {get;}
-        public int Priority {get;}
+        public string Template { get; }
+
+        public int Priority { get; }
     }
 }

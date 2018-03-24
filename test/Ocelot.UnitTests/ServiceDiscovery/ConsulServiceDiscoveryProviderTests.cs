@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using Xunit;
 using TestStack.BDDfy;

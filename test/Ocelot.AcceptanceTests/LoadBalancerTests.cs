@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +26,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_use_service_discovery_and_load_balance_request()
+        public void should_load_balance_request()
         {
             var downstreamServiceOneUrl = "http://localhost:50881";
             var downstreamServiceTwoUrl = "http://localhost:50892";
@@ -74,18 +72,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void ThenOnlyOneServiceHasBeenCalled()
-        {
-            _counterOne.ShouldBe(10);
-            _counterTwo.ShouldBe(0);
-        }
-
-         private void GivenIResetCounters()
-        {
-            _counterOne = 0;
-            _counterTwo = 0;
-        }
-
         private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
         {
             _counterOne.ShouldBeInRange(bottom, top);
@@ -121,7 +107,7 @@ namespace Ocelot.AcceptanceTests
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync(response);
                         }
-                        catch (System.Exception exception)
+                        catch (Exception exception)
                         {
                             await context.Response.WriteAsync(exception.StackTrace);
                         }

@@ -5,6 +5,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

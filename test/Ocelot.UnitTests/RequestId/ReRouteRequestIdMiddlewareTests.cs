@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.RequestId
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Request.Middleware;
 
     public class ReRouteRequestIdMiddlewareTests
     {
@@ -35,7 +36,7 @@ namespace Ocelot.UnitTests.RequestId
 
         public ReRouteRequestIdMiddlewareTests()
         {
-            _downstreamRequest = new HttpRequestMessage();
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             _repo = new Mock<IRequestScopedDataRepository>();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -47,7 +48,7 @@ namespace Ocelot.UnitTests.RequestId
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
-            _downstreamContext.DownstreamRequest = _downstreamRequest;
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
         }
 
         [Fact]

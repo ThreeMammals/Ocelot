@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.QueryStrings.Middleware;
 
 namespace Ocelot.LoadBalancer.Middleware
 {
@@ -43,16 +39,12 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            var uriBuilder = new UriBuilder(context.DownstreamRequest.RequestUri);
-
-            uriBuilder.Host = hostAndPort.Data.DownstreamHost;
+            context.DownstreamRequest.Host = hostAndPort.Data.DownstreamHost;
 
             if (hostAndPort.Data.DownstreamPort > 0)
             {
-                uriBuilder.Port = hostAndPort.Data.DownstreamPort;
+                context.DownstreamRequest.Port = hostAndPort.Data.DownstreamPort;
             }
-
-            context.DownstreamRequest.RequestUri = uriBuilder.Uri;
 
             try
             {

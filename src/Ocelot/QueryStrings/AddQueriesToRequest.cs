@@ -7,6 +7,7 @@ using Ocelot.Responses;
 using System.Security.Claims;
 using System.Net.Http;
 using System;
+using Ocelot.Request.Middleware;
 using Microsoft.Extensions.Primitives;
 using System.Text;
 
@@ -21,9 +22,9 @@ namespace Ocelot.QueryStrings
             _claimsParser = claimsParser;
         }
 
-        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, HttpRequestMessage downstreamRequest)
+        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
         {
-            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.RequestUri.Query);
+            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.Query);
 
             foreach (var config in claimsToThings)
             {
@@ -46,11 +47,7 @@ namespace Ocelot.QueryStrings
                 }
             }
 
-            var uriBuilder = new UriBuilder(downstreamRequest.RequestUri);
-
-            uriBuilder.Query = ConvertDictionaryToQueryString(queryDictionary);
-
-            downstreamRequest.RequestUri = uriBuilder.Uri;
+            downstreamRequest.Query = ConvertDictionaryToQueryString(queryDictionary);
 
             return new OkResponse();
         }

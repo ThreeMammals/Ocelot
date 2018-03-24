@@ -37,7 +37,7 @@ namespace Ocelot.Cache.Middleware
                 return;
             }
 
-            var downstreamUrlKey = $"{context.DownstreamRequest.Method.Method}-{context.DownstreamRequest.RequestUri.OriginalString}";
+            var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
 
             _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
 

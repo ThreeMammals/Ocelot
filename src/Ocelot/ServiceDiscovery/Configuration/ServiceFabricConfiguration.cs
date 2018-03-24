@@ -1,4 +1,4 @@
-﻿namespace Ocelot.ServiceDiscovery
+﻿namespace Ocelot.ServiceDiscovery.Configuration
 {
     public class ServiceFabricConfiguration
     {
@@ -9,8 +9,10 @@
             ServiceName = serviceName;
         }
 
-        public string ServiceName { get; private set; }
-        public string HostName { get; private set; }
-        public int Port { get; private set; }
+        public string ServiceName { get; }
+
+        public string HostName { get; }
+
+        public int Port { get; }
     }
 }

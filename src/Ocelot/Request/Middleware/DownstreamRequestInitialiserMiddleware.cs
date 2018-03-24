@@ -1,5 +1,6 @@
 namespace Ocelot.Request.Middleware
 {
+    using System.Net.Http;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
@@ -31,7 +32,7 @@ namespace Ocelot.Request.Middleware
                 return;
             }
 
-            context.DownstreamRequest = downstreamRequest.Data;
+            context.DownstreamRequest = new DownstreamRequest(downstreamRequest.Data);
 
             await _next.Invoke(context);
         }

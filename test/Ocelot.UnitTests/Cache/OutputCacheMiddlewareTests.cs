@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.Cache
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123");
+            _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
         }
 
         [Fact]

@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Middleware.Pipeline
 {
+    using Predicate = Func<DownstreamContext, bool>;
+
     public static class OcelotPipelineBuilderExtensions
     {
         internal const string InvokeMethodName = "Invoke";
@@ -89,6 +91,35 @@ namespace Ocelot.Middleware.Pipeline
                     return factory(instance, context, serviceProvider);
                 };
             });
+        }
+
+        public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Predicate predicate, Action<IOcelotPipelineBuilder> configuration)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var branchBuilder = app.New();
+            configuration(branchBuilder);
+            var branch = branchBuilder.Build();
+
+            var options = new MapWhenOptions
+            {
+                Predicate = predicate,
+                Branch = branch,
+            };
+            return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
         }
 
         private static Func<T, DownstreamContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
