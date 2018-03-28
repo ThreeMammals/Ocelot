@@ -3,6 +3,7 @@
 // Removed code and changed RequestDelete to OcelotRequestDelete, HttpContext to DownstreamContext, removed some exception handling messages
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -75,7 +76,28 @@ namespace Ocelot.Middleware.Pipeline
                 var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, ctorArgs);
                 if (parameters.Length == 1)
                 {
-                    return (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var ocelotDelegate = (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var diagnosticThing = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
+                    var middlewareName = ocelotDelegate.Target.GetType().Name;
+
+                    OcelotRequestDelegate wrappedDelegate = context => {
+                        try
+                        {
+                            diagnosticThing.Write("Ocelot.MiddlewareStarted", new { name = middlewareName, context = context });
+                            return ocelotDelegate(context);
+                        }
+                        catch(Exception ex)
+                        {
+                            diagnosticThing.Write("Ocelot.MiddlewareException", new { name = middlewareName, ex = ex, httpContext = context });
+                            throw ex;
+                        }
+                        finally
+                        {
+                            diagnosticThing.Write("Ocelot.MiddlewareFinished", new { name = middlewareName, context = context });
+                        }
+                    };
+
+                    return wrappedDelegate;
                 }
 
                 var factory = Compile<object>(methodinfo, parameters);

@@ -99,7 +99,7 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": false
+        "UseTracing": true
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
