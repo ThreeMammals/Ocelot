@@ -4,15 +4,21 @@ using Microsoft.Extensions.DiagnosticAdapter;
 using Butterfly.Client.AspNetCore;
 using Butterfly.OpenTracing;
 using Ocelot.Middleware;
+using Butterfly.Client.Tracing;
+using System.Linq;
+using System.Collections.Generic;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Logging
 {
     public class OcelotDiagnosticListener
     {
+        private IServiceTracer _tracer;
         private IOcelotLogger _logger;
 
-        public OcelotDiagnosticListener(IOcelotLoggerFactory factory)
+        public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceTracer tracer)
         {
+            _tracer = tracer;
             _logger = factory.CreateLogger<OcelotDiagnosticListener>();
         }
 
@@ -60,6 +66,17 @@ namespace Ocelot.Logging
         private void Event(HttpContext httpContext, string @event)
         {
             var span = httpContext.GetSpan();
+            if(span == null)
+            {
+                var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
+                if (_tracer.Tracer.TryExtract(out var spanContext, httpContext.Request.Headers, (c, k) => c[k].GetValue(),
+                    c => c.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.GetValue())).GetEnumerator()))
+                {
+                    spanBuilder.AsChildOf(spanContext);
+                };
+                span = _tracer.Start(spanBuilder);        
+                httpContext.SetSpan(span);   
+            }
             span?.Log(LogField.CreateNew().Event(@event));
         }
     }
