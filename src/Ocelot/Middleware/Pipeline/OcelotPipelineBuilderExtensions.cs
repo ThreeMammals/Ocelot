@@ -83,17 +83,28 @@ namespace Ocelot.Middleware.Pipeline
                     OcelotRequestDelegate wrappedDelegate = context => {
                         try
                         {
-                            diagnosticThing.Write("Ocelot.MiddlewareStarted", new { name = middlewareName, context = context });
+                            if(diagnosticThing != null)
+                            {
+                                diagnosticThing.Write("Ocelot.MiddlewareStarted", new { name = middlewareName, context = context });
+                            }
+
                             return ocelotDelegate(context);
                         }
                         catch(Exception ex)
                         {
-                            diagnosticThing.Write("Ocelot.MiddlewareException", new { name = middlewareName, ex = ex, httpContext = context });
+                            if(diagnosticThing != null)
+                            {
+                                diagnosticThing.Write("Ocelot.MiddlewareException", new { name = middlewareName, ex = ex, httpContext = context });
+                            }
+
                             throw ex;
                         }
                         finally
                         {
-                            diagnosticThing.Write("Ocelot.MiddlewareFinished", new { name = middlewareName, context = context });
+                            if(diagnosticThing != null)
+                            {
+                                diagnosticThing.Write("Ocelot.MiddlewareFinished", new { name = middlewareName, context = context });
+                            }
                         }
                     };
 

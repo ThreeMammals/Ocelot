@@ -8,6 +8,7 @@ using Butterfly.Client.Tracing;
 using System.Linq;
 using System.Collections.Generic;
 using Ocelot.Infrastructure.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Ocelot.Logging
 {
@@ -65,6 +66,11 @@ namespace Ocelot.Logging
 
         private void Event(HttpContext httpContext, string @event)
         {
+            if(!_logger.IsEnabled(LogLevel.Trace))
+            {
+                return;
+            }
+            
             var span = httpContext.GetSpan();
             if(span == null)
             {
