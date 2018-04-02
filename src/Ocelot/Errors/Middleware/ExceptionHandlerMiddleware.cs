@@ -22,7 +22,6 @@ namespace Ocelot.Errors.Middleware
         private readonly IOcelotLogger _logger;
         private readonly IOcelotConfigurationProvider _provider;
         private readonly IRequestScopedDataRepository _repo;
-        private readonly DiagnosticListener _listener;
 
         public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory, 
