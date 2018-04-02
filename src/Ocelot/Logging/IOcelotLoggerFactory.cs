@@ -19,7 +19,6 @@ namespace Ocelot.Logging
         void LogError(string message, Exception exception);
         void LogError(string message, params object[] args);
         void LogCritical(string message, Exception exception);
-        bool IsEnabled(LogLevel level);
 
         /// <summary>
         /// The name of the type the logger has been built for.

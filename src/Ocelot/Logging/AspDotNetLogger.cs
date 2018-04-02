@@ -84,10 +84,5 @@ namespace Ocelot.Logging
 
             return requestId.Data;
         }
-
-        public bool IsEnabled(LogLevel level)
-        {
-            return _logger.IsEnabled(level);
-        }
     }
 }

@@ -77,38 +77,27 @@ namespace Ocelot.Middleware.Pipeline
                 if (parameters.Length == 1)
                 {
                     var ocelotDelegate = (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
-                    var diagnosticThing = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
+                    var diagnosticListener = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
                     var middlewareName = ocelotDelegate.Target.GetType().Name;
 
-                    OcelotRequestDelegate wrappedDelegate = context => {
+                    OcelotRequestDelegate wrapped = context => {
                         try
                         {
-                            if(diagnosticThing != null)
-                            {
-                                diagnosticThing.Write("Ocelot.MiddlewareStarted", new { name = middlewareName, context = context });
-                            }
-
+                            Write(diagnosticListener, "Ocelot.MiddlewareStarted", middlewareName, context);
                             return ocelotDelegate(context);
                         }
                         catch(Exception ex)
                         {
-                            if(diagnosticThing != null)
-                            {
-                                diagnosticThing.Write("Ocelot.MiddlewareException", new { name = middlewareName, ex = ex, httpContext = context });
-                            }
-
+                            Write(diagnosticListener, "Ocelot.MiddlewareException", middlewareName, context);
                             throw ex;
                         }
                         finally
                         {
-                            if(diagnosticThing != null)
-                            {
-                                diagnosticThing.Write("Ocelot.MiddlewareFinished", new { name = middlewareName, context = context });
-                            }
+                            Write(diagnosticListener, "Ocelot.MiddlewareFinished", middlewareName, context);
                         }
                     };
 
-                    return wrappedDelegate;
+                    return wrapped;
                 }
 
                 var factory = Compile<object>(methodinfo, parameters);
@@ -124,6 +113,14 @@ namespace Ocelot.Middleware.Pipeline
                     return factory(instance, context, serviceProvider);
                 };
             });
+        }
+
+        private static void Write(DiagnosticListener diagnosticListener, string message, string middlewareName, DownstreamContext context)
+        {
+            if(diagnosticListener != null)
+            {
+                diagnosticListener.Write(message, new { name = middlewareName, context = context });
+            }
         }
 
         public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Predicate predicate, Action<IOcelotPipelineBuilder> configuration)
