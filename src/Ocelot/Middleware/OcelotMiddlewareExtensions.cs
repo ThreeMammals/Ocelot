@@ -65,6 +65,8 @@
             rest of asp.net..
             */
 
+            builder.Properties["analysis.NextMiddlewareName"] = "TransitionToOcelotMiddleware";
+
             builder.Use(async (context, task) =>
             {
                 var downstreamContext = new DownstreamContext(context);

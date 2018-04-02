@@ -3,6 +3,7 @@
 // Removed code and changed RequestDelete to OcelotRequestDelete, HttpContext to DownstreamContext, removed some exception handling messages
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -75,7 +76,28 @@ namespace Ocelot.Middleware.Pipeline
                 var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, ctorArgs);
                 if (parameters.Length == 1)
                 {
-                    return (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var ocelotDelegate = (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var diagnosticListener = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
+                    var middlewareName = ocelotDelegate.Target.GetType().Name;
+
+                    OcelotRequestDelegate wrapped = context => {
+                        try
+                        {
+                            Write(diagnosticListener, "Ocelot.MiddlewareStarted", middlewareName, context);
+                            return ocelotDelegate(context);
+                        }
+                        catch(Exception ex)
+                        {
+                            Write(diagnosticListener, "Ocelot.MiddlewareException", middlewareName, context);
+                            throw ex;
+                        }
+                        finally
+                        {
+                            Write(diagnosticListener, "Ocelot.MiddlewareFinished", middlewareName, context);
+                        }
+                    };
+
+                    return wrapped;
                 }
 
                 var factory = Compile<object>(methodinfo, parameters);
@@ -91,6 +113,14 @@ namespace Ocelot.Middleware.Pipeline
                     return factory(instance, context, serviceProvider);
                 };
             });
+        }
+
+        private static void Write(DiagnosticListener diagnosticListener, string message, string middlewareName, DownstreamContext context)
+        {
+            if(diagnosticListener != null)
+            {
+                diagnosticListener.Write(message, new { name = middlewareName, context = context });
+            }
         }
 
         public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Predicate predicate, Action<IOcelotPipelineBuilder> configuration)
