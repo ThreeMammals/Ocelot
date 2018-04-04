@@ -24,8 +24,18 @@ namespace Ocelot.Logging
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            var test = string.Format("requestId: {{requestId}}, previousRequestId: {{previousRequestId}}, message: {0}", message);
-            _logger.LogTrace(test, requestId, previousRequestId, args);
+            var second = "requestId: {requestId}, previousRequestId: {previousRequestId}";
+            var a = new List<object>();
+            a.AddRange(args);
+            //a.Add(requestId);
+            //a.Add(previousRequestId);
+            var test = new FormattedLogValues("", a);
+            var count = test.Count;
+            var zero = test[0];
+            var one = test[1];
+            var two = test[2];
+            var lol = test.ToString();
+            _logger.LogTrace(message, a);
         }
 
         public void LogDebug(string message, params object[] args)

@@ -29,9 +29,9 @@ namespace Ocelot.UnitTests.Logging
             var tom = "tom";
             var laura = "laura";
             
-            _logger.LogTrace("a message from {{tom}} to {{laura}}", tom, laura);
+            _logger.LogTrace("a message from {tom} to {laura}", tom, laura);
 
-            ThenATraceIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura");
+            ThenATraceIsLogged("a message from tom to laura");
         }
 
         private void ThenATraceIsLogged(string expected)
