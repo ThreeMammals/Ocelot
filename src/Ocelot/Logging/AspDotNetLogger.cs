@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 using Ocelot.Infrastructure.RequestData;
@@ -23,14 +24,15 @@ namespace Ocelot.Logging
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogTrace("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            var test = string.Format("requestId: {{requestId}}, previousRequestId: {{previousRequestId}}, message: {0}", message);
+            _logger.LogTrace(test, requestId, previousRequestId, args);
         }
 
         public void LogDebug(string message, params object[] args)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, ", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
         }
 
         public void LogInformation(string message, params object[] args)

@@ -51,7 +51,7 @@ namespace Ocelot.Authentication.Middleware
             }
             else
             {
-                _logger.LogTrace($"No authentication needed for {context.HttpContext.Request.Path}");
+                _logger.LogInformation($"No authentication needed for {context.HttpContext.Request.Path}");
 
                 await _next.Invoke(context);
             }
