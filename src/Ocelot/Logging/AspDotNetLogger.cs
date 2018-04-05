@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 using Ocelot.Infrastructure.RequestData;
@@ -24,17 +25,15 @@ namespace Ocelot.Logging
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            var second = "requestId: {requestId}, previousRequestId: {previousRequestId}";
+            var second = " requestId: {requestId}, previousRequestId: {previousRequestId}";
             var a = new List<object>();
             a.AddRange(args);
-            //a.Add(requestId);
-            //a.Add(previousRequestId);
-            var test = new FormattedLogValues("", a);
-            var count = test.Count;
-            var zero = test[0];
-            var one = test[1];
-            var two = test[2];
+            a.Add(requestId);
+            a.Add(previousRequestId);
+            var test = new FormattedLogValues("{a}{c}{d}", new FormattedLogValues("{1},{2}", args), requestId, previousRequestId);
+
             var lol = test.ToString();
+
             _logger.LogTrace(message, a);
         }
 
