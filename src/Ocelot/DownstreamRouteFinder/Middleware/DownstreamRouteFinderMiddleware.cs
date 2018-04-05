@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using System.Linq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.Finder;
@@ -57,10 +58,10 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;
-            }
-
-            // todo - put this back in
-            //// _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamReRoute.DownstreamPathTemplate);
+            }            
+            
+            var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
+            _logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 
