@@ -20,25 +20,72 @@ namespace Ocelot.UnitTests.Logging
         {
             _coreLogger = new Mock<ILogger<object>>();
             _repo = new Mock<IRequestScopedDataRepository>();
-            _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object, "AType");
+            _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object);
         }
 
         [Fact]
         public void should_log_trace()
         {
-            var tom = "tom";
-            var laura = "laura";
+            var a = "tom";
+            var b = "laura";
             
-            _logger.LogTrace("a message from {tom} to {laura}", tom, laura);
+            _logger.LogTrace($"a message from {a} to {b}");
 
-            ThenATraceIsLogged("a message from tom to laura");
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Trace);
         }
 
-        private void ThenATraceIsLogged(string expected)
+        [Fact]
+        public void should_log_info()
+        {
+            var a = "tom";
+            var b = "laura";
+            
+            _logger.LogInformation($"a message from {a} to {b}");
+
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Information);
+        }
+
+
+        [Fact]
+        public void should_log_warning()
+        {
+            var a = "tom";
+            var b = "laura";
+            
+            _logger.LogWarning($"a message from {a} to {b}");
+
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Warning);
+        }
+
+        [Fact]
+        public void should_log_error()
+        {
+            var a = "tom";
+            var b = "laura";
+            var ex = new Exception("oh no");
+            
+            _logger.LogError($"a message from {a} to {b}", ex);
+
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Error);
+        }
+
+        [Fact]
+        public void should_log_critical()
+        {
+            var a = "tom";
+            var b = "laura";
+            var ex = new Exception("oh no");
+            
+            _logger.LogCritical($"a message from {a} to {b}", ex);
+
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Critical);
+        }
+
+        private void ThenLevelIsLogged(string expected, LogLevel expectedLogLevel)
         {
             _coreLogger.Verify(
                 x => x.Log(
-                    LogLevel.Trace,
+                    expectedLogLevel,
                     It.IsAny<EventId>(),
                     It.Is<object>(o => o.ToString() == expected), 
                     It.IsAny<Exception>(),

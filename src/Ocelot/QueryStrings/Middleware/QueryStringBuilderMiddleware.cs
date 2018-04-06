@@ -27,7 +27,7 @@ namespace Ocelot.QueryStrings.Middleware
         {
             if (context.DownstreamReRoute.ClaimsToQueries.Any())
             {
-                _logger.LogInformation("{Value} has instructions to convert claims to queries", context.DownstreamReRoute.DownstreamPathTemplate.Value);
+                _logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
                 var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(context.DownstreamReRoute.ClaimsToQueries, context.HttpContext.User.Claims, context.DownstreamRequest);
 

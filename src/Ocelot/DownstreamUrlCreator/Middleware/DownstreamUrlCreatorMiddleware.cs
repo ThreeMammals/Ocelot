@@ -53,7 +53,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 context.DownstreamRequest.AbsolutePath = dsPath.Data.Value;
             }
 
-            _logger.LogDebug("downstream url is {context.DownstreamRequest}", context.DownstreamRequest);
+            _logger.LogDebug($"Downstream url is {context.DownstreamRequest}");
 
             await _next.Invoke(context);
         }

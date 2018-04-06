@@ -35,7 +35,7 @@ namespace Ocelot.RateLimit.Middleware
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                _logger.LogInformation("EndpointRateLimiting is not enabled for {Value}", context.DownstreamReRoute.DownstreamPathTemplate.Value);
+                _logger.LogInformation($"EndpointRateLimiting is not enabled for {context.DownstreamReRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(context);
                 return;
             }
@@ -46,7 +46,7 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                _logger.LogInformation("{Value} is white listed from rate limiting", context.DownstreamReRoute.DownstreamPathTemplate.Value);
+                _logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(context);
                 return;
             }
@@ -113,9 +113,7 @@ namespace Ocelot.RateLimit.Middleware
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamReRoute downstreamReRoute)
         {
             _logger.LogInformation(
-                "Request {HttpVerb}:{Path} from ClientId {ClientId} has been blocked, quota {Limit}/{Period} exceeded by {TotalRequests}. Blocked by rule { Value }, TraceIdentifier {TraceIdentifier}.",
-                identity.HttpVerb, identity.Path, identity.ClientId, rule.Limit, rule.Period, counter.TotalRequests,
-                downstreamReRoute.UpstreamPathTemplate.Value, httpContext.TraceIdentifier);
+                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.Value }, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
         
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)

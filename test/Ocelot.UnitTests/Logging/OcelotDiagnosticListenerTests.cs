@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.Logging
         private IServiceTracer _tracer;
         private DownstreamContext _downstreamContext;
         private string _name;
+        private Exception _exception;
 
         public OcelotDiagnosticListenerTests()
         {
@@ -33,45 +34,98 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_trace_ocelot_middleware_started()
         {
-            GivenAMiddlewareName();
-            GivenAContext();
-            WhenOcelotMiddlewareStartedCalled();
-            ThenTheOcelotStartedTraceIs();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .When(_ => WhenOcelotMiddlewareStartedCalled())
+                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareStarted: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .BDDfy();
         }
 
         [Fact]
         public void should_trace_ocelot_middleware_finished()
         {
-            throw new System.NotImplementedException();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .When(_ => WhenOcelotMiddlewareFinishedCalled())
+                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .BDDfy();
         }
 
         [Fact]
         public void should_trace_ocelot_middleware_exception()
         {
-            throw new System.NotImplementedException();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .And(_ => GivenAException(new Exception("oh no")))
+                .When(_ => WhenOcelotMiddlewareExceptionCalled())
+                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareException: {_name}; {_exception.Message};"))
+                .BDDfy();
         }
 
-        [Fact]
+       [Fact]
         public void should_trace_middleware_started()
         {
-            throw new System.NotImplementedException();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .When(_ => WhenMiddlewareStartedCalled())
+                .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .BDDfy();
         }
 
         [Fact]
         public void should_trace_middleware_finished()
         {
-            throw new System.NotImplementedException();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .When(_ => WhenMiddlewareFinishedCalled())
+                .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Response.StatusCode}"))
+                .BDDfy();
         }
 
         [Fact]
         public void should_trace_middleware_exception()
         {
-            throw new System.NotImplementedException();
+            this.Given(_ => GivenAMiddlewareName())
+                .And(_ => GivenAContext())
+                .And(_ => GivenAException(new Exception("oh no")))
+                .When(_ => WhenMiddlewareExceptionCalled())
+                .Then(_ => ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};"))
+                .BDDfy();
+        }
+
+        private void GivenAException(Exception exception)
+        {
+            _exception = exception;
         }
 
         private void WhenOcelotMiddlewareStartedCalled()
         {
             _listener.OcelotMiddlewareStarted(_downstreamContext, _name);
+        }
+
+        private void WhenOcelotMiddlewareFinishedCalled()
+        {
+            _listener.OcelotMiddlewareFinished(_downstreamContext, _name);
+        }
+
+         private void WhenOcelotMiddlewareExceptionCalled()
+        {
+            _listener.OcelotMiddlewareException(_exception, _downstreamContext, _name);
+        }
+
+        private void WhenMiddlewareStartedCalled()
+        {
+            _listener.OnMiddlewareStarting(_downstreamContext.HttpContext, _name);
+        }
+
+        private void WhenMiddlewareFinishedCalled()
+        {
+            _listener.OnMiddlewareFinished(_downstreamContext.HttpContext, _name);
+        }
+
+         private void WhenMiddlewareExceptionCalled()
+        {
+            _listener.OnMiddlewareException(_exception, _name);
         }
 
         private void GivenAContext()
@@ -84,10 +138,10 @@ namespace Ocelot.UnitTests.Logging
             _name = "name";
         }
 
-        private void ThenTheOcelotStartedTraceIs()
+        private void ThenTheLogIs(string expected)
         {
             _logger.Verify(
-                x => x.LogTrace("Ocelot.MiddlewareStarted: {name}; {Path}", _name, _downstreamContext.HttpContext.Request.Path));
+                x => x.LogTrace(expected));
         }
     }
 }

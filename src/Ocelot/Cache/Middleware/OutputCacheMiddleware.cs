@@ -39,29 +39,29 @@ namespace Ocelot.Cache.Middleware
 
             var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
 
-            _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
+            _logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
             var cached = _outputCache.Get(downstreamUrlKey, context.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
-                _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
+                _logger.LogDebug($"cache entry exists for {downstreamUrlKey}");
 
                 var response = CreateHttpResponseMessage(cached);
                 SetHttpResponseMessageThisRequest(context, response);
 
-                _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
+                _logger.LogDebug($"finished returned cached response for {downstreamUrlKey}");
 
                 return;
             }
 
-            _logger.LogDebug("no resonse cached for {downstreamUrlKey}", downstreamUrlKey);
+            _logger.LogDebug($"no resonse cached for {downstreamUrlKey}");
 
             await _next.Invoke(context);
 
             if (context.IsError)
             {
-                _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
+                _logger.LogDebug($"there was a pipeline error for {downstreamUrlKey}");
 
                 return;
             }
@@ -70,7 +70,7 @@ namespace Ocelot.Cache.Middleware
 
             _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
 
-            _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
+            _logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
         private void SetHttpResponseMessageThisRequest(DownstreamContext context, HttpResponseMessage response)

@@ -47,7 +47,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
 
-            _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
+            _logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
             var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
 

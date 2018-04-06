@@ -43,7 +43,7 @@ namespace Ocelot.Raft
 
                 var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, _jsonSerialiserSettings);
 
-                _logger.LogDebug("{_baseSchemeUrlAndPort}/appendentries called, my state is {FullName}", _baseSchemeUrlAndPort, _node.State.GetType().FullName);
+                _logger.LogDebug($"{_baseSchemeUrlAndPort}/appendentries called, my state is {_node.State.GetType().FullName}");
 
                 var appendEntriesResponse = _node.Handle(appendEntries);
 
@@ -60,7 +60,7 @@ namespace Ocelot.Raft
 
                 var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, _jsonSerialiserSettings);
 
-                _logger.LogDebug("{_baseSchemeUrlAndPort}/requestvote called, my state is {FullName}", _baseSchemeUrlAndPort, _node.State.GetType().FullName);
+                _logger.LogDebug($"{_baseSchemeUrlAndPort}/requestvote called, my state is {_node.State.GetType().FullName}");
 
                 var requestVoteResponse = _node.Handle(requestVote);
 
@@ -79,7 +79,7 @@ namespace Ocelot.Raft
 
                     var command = JsonConvert.DeserializeObject<ICommand>(json, _jsonSerialiserSettings);
 
-                    _logger.LogDebug("{_baseSchemeUrlAndPort}/command called, my state is {FullName}", _baseSchemeUrlAndPort, _node.State.GetType().FullName);
+                    _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
 
                     var commandResponse = _node.Accept(command);
 

@@ -12,50 +12,38 @@ namespace Ocelot.Logging
         private readonly ILogger _logger;
         private readonly IRequestScopedDataRepository _scopedDataRepository;
 
-        public string Name { get; }
-
-        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository, string typeName)
+        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
         {
-            Name = typeName;
             _logger = logger;
             _scopedDataRepository = scopedDataRepository;
         }
 
-        public void LogTrace(string message, params object[] args)
+        public void LogTrace(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            var second = " requestId: {requestId}, previousRequestId: {previousRequestId}";
-            var a = new List<object>();
-            a.AddRange(args);
-            a.Add(requestId);
-            a.Add(previousRequestId);
-            var test = new FormattedLogValues("{a}{c}{d}", new FormattedLogValues("{1},{2}", args), requestId, previousRequestId);
-
-            var lol = test.ToString();
-
-            _logger.LogTrace(message, a);
+            _logger.LogTrace("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
-        public void LogDebug(string message, params object[] args)
+        public void LogDebug(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, ", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
-        public void LogInformation(string message, params object[] args)
+        public void LogInformation(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
-        public void LogWarning(string message, params object[] args)
+        public void LogWarning(string message)
         {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogWarning("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogWarning("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
         public void LogError(string message, Exception exception)
@@ -69,7 +57,7 @@ namespace Ocelot.Logging
         {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
+            _logger.LogCritical("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, exception: {exception}", requestId, previousRequestId, message, exception);
         }
 
         private string GetOcelotRequestId()

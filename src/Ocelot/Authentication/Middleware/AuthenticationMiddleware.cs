@@ -25,7 +25,7 @@ namespace Ocelot.Authentication.Middleware
         {
             if (IsAuthenticatedRoute(context.DownstreamReRoute))
             {
-                _logger.LogInformation("{context.HttpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated", context.HttpContext.Request.Path, MiddlewareName);
+                _logger.LogInformation($"{context.HttpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
                 
                 var result = await context.HttpContext.AuthenticateAsync(context.DownstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
                 
@@ -33,7 +33,7 @@ namespace Ocelot.Authentication.Middleware
 
                 if (context.HttpContext.User.Identity.IsAuthenticated)
                 {
-                    _logger.LogInformation("Client has been authenticated for {context.HttpContext.Request.Path}", context.HttpContext.Request.Path);
+                    _logger.LogInformation($"Client has been authenticated for {context.HttpContext.Request.Path}");
                     await _next.Invoke(context);
                 }
                 else
@@ -44,7 +44,7 @@ namespace Ocelot.Authentication.Middleware
                             $"Request for authenticated route {context.HttpContext.Request.Path} by {context.HttpContext.User.Identity.Name} was unauthenticated")
                     };
 
-                    _logger.LogWarning("Client has NOT been authenticated for {context.HttpContext.Request.Path} and pipeline error set. {error}", context.HttpContext.Request.Path, error.ToErrorString());
+                    _logger.LogWarning($"Client has NOT been authenticated for {context.HttpContext.Request.Path} and pipeline error set. {error.ToErrorString()}");
                     
                     SetPipelineError(context, error);
                 }

@@ -27,42 +27,47 @@ namespace Ocelot.Logging
         [DiagnosticName("Ocelot.MiddlewareException")]
         public virtual void OcelotMiddlewareException(Exception exception, DownstreamContext context, string name)
         {
-            _logger.LogTrace("Ocelot.MiddlewareException: {name}; {Message};", name, exception.Message);
+            _logger.LogTrace($"Ocelot.MiddlewareException: {name}; {exception.Message};");
             Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
         }
 
         [DiagnosticName("Ocelot.MiddlewareStarted")]
         public virtual void OcelotMiddlewareStarted(DownstreamContext context, string name)
         {
-            _logger.LogTrace("Ocelot.MiddlewareStarted: {name}; {Path}", name, context.HttpContext.Request.Path);
+            _logger.LogTrace($"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
             Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
         }
 
         [DiagnosticName("Ocelot.MiddlewareFinished")]
         public virtual void OcelotMiddlewareFinished(DownstreamContext context, string name)
         {
-            _logger.LogTrace("OcelotMiddlewareFinished: {name}; {Path}", name, context.HttpContext.Request.Path);
+            _logger.LogTrace($"Ocelot.MiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
             Event(context.HttpContext, $"OcelotMiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]
         public virtual void OnMiddlewareStarting(HttpContext httpContext, string name)
         {
-            //_logger.LogTrace("MiddlewareStarting: {name}; {Path}", name, httpContext.Request.Path);
+            _logger.LogTrace($"MiddlewareStarting: {name}; {httpContext.Request.Path}");
             Event(httpContext, $"MiddlewareStarting: {name}; {httpContext.Request.Path}");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException")]
         public virtual void OnMiddlewareException(Exception exception, string name)
         {
-            //_logger.LogTrace("MiddlewareException: {name}; {Message}", name, exception.Message);
+            _logger.LogTrace($"MiddlewareException: {name}; {exception.Message};");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished")]
         public virtual void OnMiddlewareFinished(HttpContext httpContext, string name)
         {
-            //_logger.LogTrace("MiddlewareFinished: {name}; {StatusCode}", name, httpContext.Response.StatusCode);
+            _logger.LogTrace($"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
             Event(httpContext, $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
+        }
+
+        public void OcelotMiddlewareException(object exception, DownstreamContext downstreamContext, string name)
+        {
+            throw new NotImplementedException();
         }
 
         private void Event(HttpContext httpContext, string @event)
