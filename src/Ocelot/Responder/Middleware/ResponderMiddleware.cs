@@ -17,18 +17,17 @@ namespace Ocelot.Responder.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
-        private readonly IOcelotLogger _logger;
 
         public ResponderMiddleware(OcelotRequestDelegate next, 
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IErrorsToHttpStatusCodeMapper codeMapper
            )
+            :base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
-            _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -38,18 +37,13 @@ namespace Ocelot.Responder.Middleware
             if (context.IsError)
             {
                 var errors = context.Errors;
-                _logger.LogWarning($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
-
-                foreach(var error in errors)
-                {
-                    _logger.LogWarning(error.Message);
-                }
+                Logger.LogWarning($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
                 
                 SetErrorResponse(context.HttpContext, errors);
             }
             else
             {
-                _logger.LogDebug("no pipeline errors, setting and returning completed response");
+                Logger.LogDebug("no pipeline errors, setting and returning completed response");
                 await _responder.SetResponseOnHttpContext(context.HttpContext, context.DownstreamResponse);
             }
         }

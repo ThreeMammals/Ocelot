@@ -9,15 +9,14 @@ namespace Ocelot.LoadBalancer.Middleware
     public class LoadBalancingMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
 
         public LoadBalancingMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             ILoadBalancerHouse loadBalancerHouse) 
+                :base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<LoadBalancingMiddleware>();
             _loadBalancerHouse = loadBalancerHouse;
         }
 
@@ -26,7 +25,7 @@ namespace Ocelot.LoadBalancer.Middleware
             var loadBalancer = await _loadBalancerHouse.Get(context.DownstreamReRoute, context.ServiceProviderConfiguration);
             if(loadBalancer.IsError)
             {
-                _logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
+                Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
                 SetPipelineError(context, loadBalancer.Errors);
                 return;
             }
@@ -34,7 +33,7 @@ namespace Ocelot.LoadBalancer.Middleware
             var hostAndPort = await loadBalancer.Data.Lease();
             if(hostAndPort.IsError)
             {
-                _logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
+                Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
                 SetPipelineError(context, hostAndPort.Errors);
                 return;
             }
@@ -52,7 +51,7 @@ namespace Ocelot.LoadBalancer.Middleware
             }
             catch (Exception)
             {
-                _logger.LogDebug("Exception calling next middleware, exception will be thrown to global handler");
+                Logger.LogDebug("Exception calling next middleware, exception will be thrown to global handler");
                 throw;
             }
             finally

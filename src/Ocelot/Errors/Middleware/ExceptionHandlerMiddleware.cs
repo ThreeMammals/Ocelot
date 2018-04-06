@@ -18,7 +18,6 @@ namespace Ocelot.Errors.Middleware
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IOcelotConfigurationProvider _provider;
         private readonly IRequestScopedDataRepository _repo;
 
@@ -26,11 +25,11 @@ namespace Ocelot.Errors.Middleware
             IOcelotLoggerFactory loggerFactory, 
             IOcelotConfigurationProvider provider, 
             IRequestScopedDataRepository repo)
+                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
             _provider = provider;
             _repo = repo;
             _next = next;
-            _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -39,22 +38,22 @@ namespace Ocelot.Errors.Middleware
             {               
                 await TrySetGlobalRequestId(context);
 
-                _logger.LogDebug("ocelot pipeline started");
+                Logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(context);
             }
             catch (Exception e)
             {
-                _logger.LogDebug("error calling middleware");
+                Logger.LogDebug("error calling middleware");
 
                 var message = CreateMessage(context, e);
 
-                _logger.LogError(message, e);
+                Logger.LogError(message, e);
                 
                 SetInternalServerErrorOnResponse(context);
             }
 
-            _logger.LogDebug("ocelot pipeline finished");
+            Logger.LogDebug("ocelot pipeline finished");
         }
 
         private async Task TrySetGlobalRequestId(DownstreamContext context)

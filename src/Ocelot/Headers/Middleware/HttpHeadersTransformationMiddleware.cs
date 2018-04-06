@@ -10,7 +10,6 @@ namespace Ocelot.Headers.Middleware
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;
         private readonly IHttpResponseHeaderReplacer _postReplacer;
         private readonly IAddHeadersToResponse _addHeaders;
@@ -20,12 +19,12 @@ namespace Ocelot.Headers.Middleware
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeaders) 
+                :base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeaders = addHeaders;
             _next = next;
             _postReplacer = postReplacer;
             _preReplacer = preReplacer;
-            _logger = loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)

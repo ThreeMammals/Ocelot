@@ -11,13 +11,12 @@ namespace Ocelot.WebSockets.Middleware
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
         private OcelotRequestDelegate _next;
-        private IOcelotLogger _logger;
 
         public WebSocketsProxyMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory)
+                :base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<WebSocketsProxyMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)

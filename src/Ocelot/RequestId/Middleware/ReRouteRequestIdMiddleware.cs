@@ -16,16 +16,15 @@ namespace Ocelot.RequestId.Middleware
     public class ReRouteRequestIdMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public ReRouteRequestIdMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory, 
             IRequestScopedDataRepository requestScopedDataRepository)
+                : base(loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>())
         {
             _next = next;
             _requestScopedDataRepository = requestScopedDataRepository;
-            _logger = loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
