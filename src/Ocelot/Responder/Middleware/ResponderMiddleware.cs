@@ -6,6 +6,7 @@ using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -36,10 +37,9 @@ namespace Ocelot.Responder.Middleware
 
             if (context.IsError)
             {
-                var errors = context.Errors;
-                Logger.LogWarning($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
+                Logger.LogWarning($"{context.Errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{context.HttpContext.Request.Path}, request method: {context.HttpContext.Request.Method}");
                 
-                SetErrorResponse(context.HttpContext, errors);
+                SetErrorResponse(context.HttpContext, context.Errors);
             }
             else
             {

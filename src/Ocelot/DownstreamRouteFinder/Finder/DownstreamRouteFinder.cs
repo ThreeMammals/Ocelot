@@ -46,7 +46,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             return new ErrorResponse<DownstreamRoute>(new List<Error>
             {
-                new UnableToFindDownstreamRouteError()
+                new UnableToFindDownstreamRouteError(path, httpMethod)
             });
         }
 
