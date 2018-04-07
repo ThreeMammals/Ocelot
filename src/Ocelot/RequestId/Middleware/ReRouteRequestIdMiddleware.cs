@@ -32,29 +32,24 @@ namespace Ocelot.RequestId.Middleware
 
         private void SetOcelotRequestId(DownstreamContext context)
         {
-            // if get request ID is set on upstream request then retrieve it
             var key = context.DownstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
 
             if (context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
                 context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
 
-                //check if we have previous id in scoped repo
                 var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
                 if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data) && previousRequestId.Data != context.HttpContext.TraceIdentifier)
                 {
-                    //we have a previous request id lets store it and update request id
                     _requestScopedDataRepository.Add("PreviousRequestId", previousRequestId.Data);
                     _requestScopedDataRepository.Update("RequestId", context.HttpContext.TraceIdentifier);
                 }
                 else
                 {
-                    //else just add request id
                     _requestScopedDataRepository.Add("RequestId", context.HttpContext.TraceIdentifier);
                 }
             }
 
-            // set request ID on downstream request, if required
             var requestId = new RequestId(context.DownstreamReRoute.RequestIdKey, context.HttpContext.TraceIdentifier);
 
             if (ShouldAddRequestId(requestId, context.DownstreamRequest.Headers))
