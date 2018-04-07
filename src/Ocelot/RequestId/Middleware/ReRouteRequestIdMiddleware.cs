@@ -46,17 +46,17 @@ namespace Ocelot.RequestId.Middleware
 
                 //todo fix looking in both places
                 //check if we have previous id in scoped repo
-                var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
+                var previousRequestId = _requestScopedDataRepository.Get<string>("GlobalRequestId");
                 if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data))
                 {
                     //we have a previous request id lets store it and update request id
                     _requestScopedDataRepository.Add<string>("PreviousRequestId", previousRequestId.Data);
-                    _requestScopedDataRepository.Update<string>("RequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Update<string>("GlobalRequestId", context.HttpContext.TraceIdentifier);
                 }
                 else
                 {
                     //else just add request id
-                    _requestScopedDataRepository.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Add<string>("GlobalRequestId", context.HttpContext.TraceIdentifier);
                 }
             }
 

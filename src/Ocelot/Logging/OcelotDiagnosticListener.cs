@@ -8,15 +8,14 @@ using Butterfly.Client.Tracing;
 using System.Linq;
 using System.Collections.Generic;
 using Ocelot.Infrastructure.Extensions;
-using Microsoft.Extensions.Logging;
 using Ocelot.Requester;
 
 namespace Ocelot.Logging
 {
     public class OcelotDiagnosticListener
     {
-        private IServiceTracer _tracer;
-        private IOcelotLogger _logger;
+        private readonly IServiceTracer _tracer;
+        private readonly IOcelotLogger _logger;
 
         public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceTracer tracer)
         {
@@ -65,17 +64,12 @@ namespace Ocelot.Logging
             Event(httpContext, $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
         }
 
-        public void OcelotMiddlewareException(object exception, DownstreamContext downstreamContext, string name)
-        {
-            throw new NotImplementedException();
-        }
-
         private void Event(HttpContext httpContext, string @event)
         {  
-            // Hack - if the user isnt using tracing the code gets here and will blow up on 
+            // todo - if the user isnt using tracing the code gets here and will blow up on 
             // _tracer.Tracer.TryExtract. We already use the fake tracer for another scenario
-            // so sticking it here as well..I guess we need a factory for this but no idea
-            // how to hook that into the diagnostic framework at the moment.
+            // so sticking it here as well..I guess we need a factory for this but cba to do it at
+            // the moment
             if(_tracer.GetType() == typeof(FakeServiceTracer))
             {
                 return;

@@ -58,27 +58,24 @@ namespace Ocelot.Errors.Middleware
 
         private async Task TrySetGlobalRequestId(DownstreamContext context)
         {
-                //try and get the global request id and set it for logs...
-                //should this basically be immutable per request...i guess it should!
-                //first thing is get config
-                 var configuration = await _provider.Get(); 
+            //try and get the global request id and set it for logs...
+            //should this basically be immutable per request...i guess it should!
+            //first thing is get config
+            var configuration = await _provider.Get(); 
             
-                //if error throw to catch below..
-                if(configuration.IsError)
-                {
-                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
-                }
+            if(configuration.IsError)
+            {
+                throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+            }
 
-                //else set the request id?
-                var key = configuration.Data.RequestId;
+            var key = configuration.Data.GlobalRequestId;
 
-                StringValues upstreamRequestIds;
-                if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out upstreamRequestIds))
-                {
-                    //todo fix looking in both places
-                    context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
-                    _repo.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
-                }
+            if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
+            {
+                //todo fix looking in both places
+                context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
+                _repo.Add("GlobalRequestId", context.HttpContext.TraceIdentifier);
+            }
         }
 
         private void SetInternalServerErrorOnResponse(DownstreamContext context)
@@ -100,7 +97,7 @@ namespace Ocelot.Errors.Middleware
                     $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
             }
 
-            return $"{message} RequestId: {context.HttpContext.TraceIdentifier}";
+            return $"{message} GlobalRequestId: {context.HttpContext.TraceIdentifier}";
         }
     }
 }

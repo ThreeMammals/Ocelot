@@ -149,22 +149,22 @@ namespace Ocelot.UnitTests.RequestId
 
         private void GivenThereIsNoGlobalRequestId()
         {
-            _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>(null));
+            _repo.Setup(x => x.Get<string>("GlobalRequestId")).Returns(new OkResponse<string>(null));
         }
 
         private void GivenTheRequestIdWasSetGlobally()
         {
-            _repo.Setup(x => x.Get<string>("RequestId")).Returns(new OkResponse<string>("alreadyset"));
+            _repo.Setup(x => x.Get<string>("GlobalRequestId")).Returns(new OkResponse<string>("alreadyset"));
         }
 
         private void ThenTheRequestIdIsSaved()
         {
-            _repo.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Add<string>("GlobalRequestId", _value), Times.Once);
         }
 
         private void ThenTheRequestIdIsUpdated()
         {
-            _repo.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Update<string>("GlobalRequestId", _value), Times.Once);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

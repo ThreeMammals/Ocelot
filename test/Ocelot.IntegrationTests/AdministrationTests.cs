@@ -119,7 +119,7 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "RequestId",
+                    RequestIdKey = "GlobalRequestId",
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "127.0.0.1",

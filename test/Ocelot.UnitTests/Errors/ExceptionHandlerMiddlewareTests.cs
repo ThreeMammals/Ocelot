@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Errors
                 .And(_ => GivenTheConfigurationIs(config))
                 .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
                 .Then(_ => ThenTheResponseIsOk())
-                .And(_ => TheRequestIdIsSet("RequestId", "1234"))
+                .And(_ => TheRequestIdIsSet("GlobalRequestId", "1234"))
                 .BDDfy();
         }
 

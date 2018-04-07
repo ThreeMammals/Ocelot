@@ -9,12 +9,12 @@ namespace Ocelot.Configuration
             ReRoutes = reRoutes;
             AdministrationPath = administrationPath;
             ServiceProviderConfiguration = serviceProviderConfiguration;
-            RequestId = requestId;
+            GlobalRequestId = requestId;
         }
 
         public List<ReRoute> ReRoutes { get; }
         public string AdministrationPath {get;}
         public ServiceProviderConfiguration ServiceProviderConfiguration {get;}
-        public string RequestId {get;}
+        public string GlobalRequestId {get;}
     }
 }
