@@ -7,6 +7,6 @@ namespace Ocelot.Configuration
         List<ReRoute> ReRoutes { get; }
         string AdministrationPath {get;}
         ServiceProviderConfiguration ServiceProviderConfiguration {get;}
-        string GlobalRequestId {get;}
+        string RequestId {get;}
     }
 }

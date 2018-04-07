@@ -1,14 +1,11 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.RequestId.Middleware
@@ -37,26 +34,23 @@ namespace Ocelot.RequestId.Middleware
         {
             // if get request ID is set on upstream request then retrieve it
             var key = context.DownstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
-            
-            StringValues upstreamRequestIds;
-            if (context.HttpContext.Request.Headers.TryGetValue(key, out upstreamRequestIds))
+
+            if (context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
-                //set the traceidentifier
                 context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
 
-                //todo fix looking in both places
                 //check if we have previous id in scoped repo
-                var previousRequestId = _requestScopedDataRepository.Get<string>("GlobalRequestId");
-                if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data))
+                var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
+                if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data) && previousRequestId.Data != context.HttpContext.TraceIdentifier)
                 {
                     //we have a previous request id lets store it and update request id
-                    _requestScopedDataRepository.Add<string>("PreviousRequestId", previousRequestId.Data);
-                    _requestScopedDataRepository.Update<string>("GlobalRequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Add("PreviousRequestId", previousRequestId.Data);
+                    _requestScopedDataRepository.Update("RequestId", context.HttpContext.TraceIdentifier);
                 }
                 else
                 {
                     //else just add request id
-                    _requestScopedDataRepository.Add<string>("GlobalRequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Add("RequestId", context.HttpContext.TraceIdentifier);
                 }
             }
 

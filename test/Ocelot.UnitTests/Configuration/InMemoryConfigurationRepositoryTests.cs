@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.Configuration
 
             public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
 
-            public string GlobalRequestId {get;}
+            public string RequestId {get;}
         }
     }
 }

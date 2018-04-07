@@ -59,7 +59,7 @@ namespace Ocelot.Logging
 
         private string GetOcelotRequestId()
         {
-            var requestId = _scopedDataRepository.Get<string>("GlobalRequestId");
+            var requestId = _scopedDataRepository.Get<string>("RequestId");
 
             if (requestId == null || requestId.IsError)
             {

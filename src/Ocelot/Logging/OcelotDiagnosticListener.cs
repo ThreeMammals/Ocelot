@@ -76,6 +76,7 @@ namespace Ocelot.Logging
             }
 
             var span = httpContext.GetSpan();
+
             if(span == null)
             {
                 var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
@@ -83,10 +84,12 @@ namespace Ocelot.Logging
                     c => c.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.GetValue())).GetEnumerator()))
                 {
                     spanBuilder.AsChildOf(spanContext);
-                };
+                }
+
                 span = _tracer.Start(spanBuilder);        
                 httpContext.SetSpan(span);   
             }
+
             span?.Log(LogField.CreateNew().Event(@event));
         }
     }

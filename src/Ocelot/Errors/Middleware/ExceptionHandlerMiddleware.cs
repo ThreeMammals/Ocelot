@@ -68,14 +68,14 @@ namespace Ocelot.Errors.Middleware
                 throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
             }
 
-            var key = configuration.Data.GlobalRequestId;
+            var key = configuration.Data.RequestId;
 
             if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
-                //todo fix looking in both places
                 context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
-                _repo.Add("GlobalRequestId", context.HttpContext.TraceIdentifier);
             }
+
+            _repo.Add("RequestId", context.HttpContext.TraceIdentifier);
         }
 
         private void SetInternalServerErrorOnResponse(DownstreamContext context)
@@ -97,7 +97,7 @@ namespace Ocelot.Errors.Middleware
                     $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
             }
 
-            return $"{message} GlobalRequestId: {context.HttpContext.TraceIdentifier}";
+            return $"{message} RequestId: {context.HttpContext.TraceIdentifier}";
         }
     }
 }
