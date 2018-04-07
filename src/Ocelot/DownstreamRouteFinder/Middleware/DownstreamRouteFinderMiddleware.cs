@@ -60,7 +60,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             }            
             
             var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
-            _logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
+            Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 
