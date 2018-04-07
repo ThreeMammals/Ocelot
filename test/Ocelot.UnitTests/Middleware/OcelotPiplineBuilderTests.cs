@@ -10,6 +10,7 @@ namespace Ocelot.UnitTests.Middleware
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.DependencyInjection;
+    using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Pipeline;
     using Shouldly;
@@ -100,6 +101,7 @@ namespace Ocelot.UnitTests.Middleware
             private readonly OcelotRequestDelegate _next;
 
             public MultiParametersInvokeMiddleware(OcelotRequestDelegate next)
+                :base(new FakeLogger())
             {
                 _next = next;
             }
@@ -108,6 +110,33 @@ namespace Ocelot.UnitTests.Middleware
             {
                 return Task.CompletedTask;
             }
+        }
+    }
+
+    class FakeLogger : IOcelotLogger
+    {
+        public void LogCritical(string message, Exception exception)
+        {
+        }
+
+        public void LogDebug(string message)
+        {
+        }
+
+        public void LogError(string message, Exception exception)
+        {
+        }
+
+        public void LogInformation(string message)
+        {
+        }
+
+        public void LogTrace(string message)
+        {
+        }
+
+        public void LogWarning(string message)
+        {
         }
     }
 }
