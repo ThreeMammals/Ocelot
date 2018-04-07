@@ -88,7 +88,7 @@ namespace Ocelot.Middleware.Pipeline
                         }
                         catch(Exception ex)
                         {
-                            Write(diagnosticListener, "Ocelot.MiddlewareException", middlewareName, context);
+                            WriteException(diagnosticListener, ex, "Ocelot.MiddlewareException", middlewareName, context);
                             throw ex;
                         }
                         finally
@@ -120,6 +120,14 @@ namespace Ocelot.Middleware.Pipeline
             if(diagnosticListener != null)
             {
                 diagnosticListener.Write(message, new { name = middlewareName, context = context });
+            }
+        }
+
+        private static void WriteException(DiagnosticListener diagnosticListener, Exception exception, string message, string middlewareName, DownstreamContext context)
+        {
+            if(diagnosticListener != null)
+            {
+                diagnosticListener.Write(message, new { name = middlewareName, context = context, exception = exception });
             }
         }
 

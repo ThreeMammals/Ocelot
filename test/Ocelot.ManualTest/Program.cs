@@ -37,11 +37,11 @@ namespace Ocelot.ManualTest
                          {
                              x.WithDictionaryHandle();
                          })
-                         .AddOpenTracing(option =>
+                       /*  .AddOpenTracing(option =>
                          {
                              option.CollectorUrl = "http://localhost:9618";
                              option.Service = "Ocelot.ManualTest";
-                         })
+                         })*/
                          .AddAdministration("/administration", "secret");
                 })
                 .ConfigureLogging((hostingContext, logging) =>

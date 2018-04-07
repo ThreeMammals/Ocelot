@@ -1,5 +1,3 @@
-using Ocelot.Middleware;
-
 namespace Ocelot.UnitTests.Errors
 {
     using System;
@@ -15,18 +13,18 @@ namespace Ocelot.UnitTests.Errors
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Errors;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Middleware;
 
     public class ExceptionHandlerMiddlewareTests
     {
-        bool _shouldThrowAnException = false;
-        private Mock<IOcelotConfigurationProvider> _provider;
-        private Mock<IRequestScopedDataRepository> _repo;
+        bool _shouldThrowAnException;
+        private readonly Mock<IOcelotConfigurationProvider> _provider;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
-        private ExceptionHandlerMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
+        private readonly ExceptionHandlerMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
 
         public ExceptionHandlerMiddlewareTests()
@@ -59,7 +57,7 @@ namespace Ocelot.UnitTests.Errors
                 .And(_ => GivenTheConfigurationIs(config))
                 .When(_ => WhenICallTheMiddleware())
                 .Then(_ => ThenTheResponseIsOk())
-                .And(_ => TheRequestIdIsNotSet())
+                .And(_ => TheAspDotnetRequestIdIsSet())
                 .BDDfy();
         }
 
@@ -89,7 +87,7 @@ namespace Ocelot.UnitTests.Errors
         }
 
         [Fact]
-        public void ShouldNotSetRequestId()
+        public void ShouldSetAspDotNetRequestId()
         {
             var config = new OcelotConfiguration(null, null, null, null);
 
@@ -97,7 +95,7 @@ namespace Ocelot.UnitTests.Errors
                 .And(_ => GivenTheConfigurationIs(config))
                 .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
                 .Then(_ => ThenTheResponseIsOk())
-                .And(_ => TheRequestIdIsNotSet())
+                .And(_ => TheAspDotnetRequestIdIsSet())
                 .BDDfy();
         }
 
@@ -146,29 +144,19 @@ namespace Ocelot.UnitTests.Errors
 
         private void GivenTheConfigReturnsError()
         {
-            var config = new OcelotConfiguration(null, null, null, null);
-
-            var response = new Ocelot.Responses.ErrorResponse<IOcelotConfiguration>(new FakeError());
+            var response = new Responses.ErrorResponse<IOcelotConfiguration>(new FakeError());
             _provider
                 .Setup(x => x.Get()).ReturnsAsync(response);
         }
 
-        public class FakeError : Error
-        {
-            public FakeError() 
-                : base("meh", OcelotErrorCode.CannotAddDataError)
-            {
-            }
-        }
-
         private void TheRequestIdIsSet(string key, string value)
         {
-            _repo.Verify(x => x.Add<string>(key, value), Times.Once);
+            _repo.Verify(x => x.Add(key, value), Times.Once);
         }
 
         private void GivenTheConfigurationIs(IOcelotConfiguration config)
         {
-            var response = new Ocelot.Responses.OkResponse<IOcelotConfiguration>(config);
+            var response = new Responses.OkResponse<IOcelotConfiguration>(config);
             _provider
                 .Setup(x => x.Get()).ReturnsAsync(response);
         }
@@ -193,9 +181,17 @@ namespace Ocelot.UnitTests.Errors
             _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
         }
 
-        private void TheRequestIdIsNotSet()
+        private void TheAspDotnetRequestIdIsSet()
         {
-            _repo.Verify(x => x.Add<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _repo.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        class FakeError : Error
+        {
+            internal FakeError()
+                : base("meh", OcelotErrorCode.CannotAddDataError)
+            {
+            }
         }
     }
 }

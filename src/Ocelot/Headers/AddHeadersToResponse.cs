@@ -27,7 +27,7 @@ namespace Ocelot.Headers
                     
                     if(value.IsError)
                     {
-                        _logger.LogError($"Unable to add header to response {add.Key}: {add.Value}");
+                        _logger.LogWarning($"Unable to add header to response {add.Key}: {add.Value}");
                         continue;
                     }
 

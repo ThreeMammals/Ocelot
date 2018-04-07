@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace Ocelot.Requester
     {
         private readonly IServiceTracer _tracer;
         private readonly IRequestScopedDataRepository _repo;
-        private const string prefix_spanId = "ot-spanId";
+        private const string PrefixSpanId = "ot-spanId";
 
         public OcelotHttpTracingHandler(
             IServiceTracer tracer, 
@@ -37,11 +36,10 @@ namespace Ocelot.Requester
             HttpRequestMessage request, 
             CancellationToken cancellationToken)
         {
-            IEnumerable<string> traceIdVals = null;
-            if (request.Headers.TryGetValues(prefix_spanId, out traceIdVals))
+            if (request.Headers.Contains(PrefixSpanId))
             {
-                request.Headers.Remove(prefix_spanId);
-                request.Headers.TryAddWithoutValidation(prefix_spanId, span.SpanContext.SpanId);
+                request.Headers.Remove(PrefixSpanId);
+                request.Headers.TryAddWithoutValidation(PrefixSpanId, span.SpanContext.SpanId);
             }
 
             _repo.Add("TraceId", span.SpanContext.TraceId);

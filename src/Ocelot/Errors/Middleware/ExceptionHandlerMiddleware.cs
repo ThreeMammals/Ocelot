@@ -18,7 +18,6 @@ namespace Ocelot.Errors.Middleware
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IOcelotConfigurationProvider _provider;
         private readonly IRequestScopedDataRepository _repo;
 
@@ -26,11 +25,11 @@ namespace Ocelot.Errors.Middleware
             IOcelotLoggerFactory loggerFactory, 
             IOcelotConfigurationProvider provider, 
             IRequestScopedDataRepository repo)
+                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
             _provider = provider;
             _repo = repo;
             _next = next;
-            _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -39,47 +38,44 @@ namespace Ocelot.Errors.Middleware
             {               
                 await TrySetGlobalRequestId(context);
 
-                _logger.LogDebug("ocelot pipeline started");
+                Logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(context);
             }
             catch (Exception e)
             {
-                _logger.LogDebug("error calling middleware");
+                Logger.LogDebug("error calling middleware");
 
                 var message = CreateMessage(context, e);
 
-                _logger.LogError(message, e);
+                Logger.LogError(message, e);
                 
                 SetInternalServerErrorOnResponse(context);
             }
 
-            _logger.LogDebug("ocelot pipeline finished");
+            Logger.LogDebug("ocelot pipeline finished");
         }
 
         private async Task TrySetGlobalRequestId(DownstreamContext context)
         {
-                //try and get the global request id and set it for logs...
-                //should this basically be immutable per request...i guess it should!
-                //first thing is get config
-                 var configuration = await _provider.Get(); 
+            //try and get the global request id and set it for logs...
+            //should this basically be immutable per request...i guess it should!
+            //first thing is get config
+            var configuration = await _provider.Get(); 
             
-                //if error throw to catch below..
-                if(configuration.IsError)
-                {
-                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
-                }
-
-                //else set the request id?
-                var key = configuration.Data.RequestId;
-
-                StringValues upstreamRequestIds;
-                if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out upstreamRequestIds))
-                {
-                    //todo fix looking in both places
-                    context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
-                    _repo.Add<string>("RequestId", context.HttpContext.TraceIdentifier);
+            if(configuration.IsError)
+            {
+                throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
             }
+
+            var key = configuration.Data.RequestId;
+
+            if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
+            {
+                context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
+            }
+
+            _repo.Add("RequestId", context.HttpContext.TraceIdentifier);
         }
 
         private void SetInternalServerErrorOnResponse(DownstreamContext context)

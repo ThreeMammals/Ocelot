@@ -11,15 +11,14 @@ namespace Ocelot.Request.Middleware
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly Mapper.IRequestMapper _requestMapper;
 
         public DownstreamRequestInitialiserMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             Mapper.IRequestMapper requestMapper)
+                :base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>();
             _requestMapper = requestMapper;
         }
 

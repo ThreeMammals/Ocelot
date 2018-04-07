@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Responder
         public void should_return_any_errors()
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
-                .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError()))
+                .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError("/path", "GET")))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();

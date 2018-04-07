@@ -6,6 +6,7 @@ using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -17,18 +18,17 @@ namespace Ocelot.Responder.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
-        private readonly IOcelotLogger _logger;
 
         public ResponderMiddleware(OcelotRequestDelegate next, 
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IErrorsToHttpStatusCodeMapper codeMapper
            )
+            :base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
-            _logger = loggerFactory.CreateLogger<ResponderMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -37,19 +37,13 @@ namespace Ocelot.Responder.Middleware
 
             if (context.IsError)
             {
-                var errors = context.Errors;
-                _logger.LogError($"{errors.Count} pipeline errors found in {MiddlewareName}. Setting error response status code");
-
-                foreach(var error in errors)
-                {
-                    _logger.LogError(error.Message);
-                }
+                Logger.LogWarning($"{context.Errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{context.HttpContext.Request.Path}, request method: {context.HttpContext.Request.Method}");
                 
-                SetErrorResponse(context.HttpContext, errors);
+                SetErrorResponse(context.HttpContext, context.Errors);
             }
             else
             {
-                _logger.LogDebug("no pipeline errors, setting and returning completed response");
+                Logger.LogDebug("no pipeline errors, setting and returning completed response");
                 await _responder.SetResponseOnHttpContext(context.HttpContext, context.DownstreamResponse);
             }
         }

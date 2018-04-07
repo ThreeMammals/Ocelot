@@ -20,22 +20,14 @@ namespace Ocelot.Configuration.Parser
 
                 if (instructions.Length <= 1)
                 {
-                    return new ErrorResponse<ClaimToThing>(
-                        new List<Error>
-                    {
-                        new NoInstructionsError(SplitToken)
-                    });
+                    return new ErrorResponse<ClaimToThing>(new NoInstructionsError(SplitToken));
                 }
 
                 var claimMatch = _claimRegex.IsMatch(instructions[0]);
 
                 if (!claimMatch)
                 {
-                    return new ErrorResponse<ClaimToThing>(
-                        new List<Error>
-                        {
-                            new InstructionNotForClaimsError()
-                        });
+                    return new ErrorResponse<ClaimToThing>(new InstructionNotForClaimsError());
                 }
 
                 var newKey = GetIndexValue(instructions[0]);
@@ -53,11 +45,7 @@ namespace Ocelot.Configuration.Parser
             }
             catch (Exception exception)
             {
-                return new ErrorResponse<ClaimToThing>(
-                    new List<Error>
-                    {
-                        new ParsingConfigurationHeaderError(exception)
-                    });
+                return new ErrorResponse<ClaimToThing>(new ParsingConfigurationHeaderError(exception));
             }
         }
 

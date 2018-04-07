@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Ocelot.Infrastructure.Extensions
 {
-    internal static class StringValueExtensions
+    internal static class StringValuesExtensions
     {
         public static string GetValue(this StringValues stringValues)
         {
@@ -11,6 +11,7 @@ namespace Ocelot.Infrastructure.Extensions
             {
                 return stringValues;
             }
+
             return stringValues.ToArray().LastOrDefault();
         }
     }

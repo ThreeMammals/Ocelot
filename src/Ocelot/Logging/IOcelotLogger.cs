@@ -7,16 +7,11 @@ namespace Ocelot.Logging
     /// </summary>
     public interface IOcelotLogger
     {
-        void LogTrace(string message, params object[] args);
-        void LogDebug(string message, params object[] args);
-        void LogInformation(string message, params object[] args);
+        void LogTrace(string message);
+        void LogDebug(string message);
+        void LogInformation(string message);
+        void LogWarning(string message);
         void LogError(string message, Exception exception);
-        void LogError(string message, params object[] args);
         void LogCritical(string message, Exception exception);
-
-        /// <summary>
-        /// The name of the type the logger has been built for.
-        /// </summary>
-        string Name { get; }
     }
 }
