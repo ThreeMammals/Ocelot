@@ -17,8 +17,8 @@ namespace Ocelot.Configuration.Validator
             Errors = errors;
         }
 
-        public bool IsError { get; private set; }
+        public bool IsError { get; }
 
-        public List<Error> Errors { get; private set; } 
+        public List<Error> Errors { get; } 
     }
 }

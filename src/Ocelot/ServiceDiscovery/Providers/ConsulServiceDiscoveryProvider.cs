@@ -47,7 +47,7 @@ namespace Ocelot.ServiceDiscovery.Providers
                 }
                 else
                 {
-                    _logger.LogError($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
                 }
             }
 

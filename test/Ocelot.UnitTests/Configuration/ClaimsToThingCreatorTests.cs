@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheLoggerIsCalledCorrectly()
         {
             _logger
-                .Verify(x => x.LogDebug(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+                .Verify(x => x.LogDebug(It.IsAny<string>()), Times.Once);
         }
 
         private void ThenClaimsToThingsAreReturned()

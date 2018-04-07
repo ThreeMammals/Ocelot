@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
-using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Authorisation
@@ -32,19 +31,13 @@ namespace Ocelot.Authorisation
                     var authorised = values.Data.Contains(required.Value);
                     if (!authorised)
                     {
-                        return new ErrorResponse<bool>(new List<Error>
-                        {
-                            new ClaimValueNotAuthorisedError(
-                                $"claim value: {values.Data} is not the same as required value: {required.Value} for type: {required.Key}")
-                        });
+                        return new ErrorResponse<bool>(new ClaimValueNotAuthorisedError(
+                                $"claim value: {values.Data} is not the same as required value: {required.Value} for type: {required.Key}"));
                     }
                 }
                 else
                 {
-                    return new ErrorResponse<bool>(new List<Error>
-                        {
-                            new UserDoesNotHaveClaimError($"user does not have claim {required.Key}")
-                        });
+                    return new ErrorResponse<bool>(new UserDoesNotHaveClaimError($"user does not have claim {required.Key}"));
                 }
             }
 

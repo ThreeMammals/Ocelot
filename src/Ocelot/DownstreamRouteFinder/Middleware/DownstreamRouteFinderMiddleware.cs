@@ -14,7 +14,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IOcelotLogger _logger;
         private readonly IOcelotConfigurationProvider _configProvider;
         private readonly IMultiplexer _multiplexer;
 
@@ -23,12 +22,12 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             IDownstreamRouteFinder downstreamRouteFinder,
             IOcelotConfigurationProvider configProvider,
             IMultiplexer multiplexer)
+                :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
             _configProvider = configProvider;
             _multiplexer = multiplexer;
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
-            _logger = loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -41,27 +40,27 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             if (configuration.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 SetPipelineError(context, configuration.Errors);
                 return;
             }
 
             context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
 
-            _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
+            Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
             var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;
             }            
             
             var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
-            _logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
+            Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 

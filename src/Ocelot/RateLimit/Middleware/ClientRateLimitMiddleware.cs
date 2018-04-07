@@ -14,16 +14,15 @@ namespace Ocelot.RateLimit.Middleware
     public class ClientRateLimitMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IRateLimitCounterHandler _counterHandler;
         private readonly ClientRateLimitProcessor _processor;
 
         public ClientRateLimitMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRateLimitCounterHandler counterHandler)
+                :base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<ClientRateLimitMiddleware>();
             _counterHandler = counterHandler;
             _processor = new ClientRateLimitProcessor(counterHandler);
         }
@@ -35,7 +34,7 @@ namespace Ocelot.RateLimit.Middleware
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                _logger.LogDebug($"EndpointRateLimiting is not enabled for {context.DownstreamReRoute.DownstreamPathTemplate}");
+                Logger.LogInformation($"EndpointRateLimiting is not enabled for {context.DownstreamReRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(context);
                 return;
             }
@@ -46,7 +45,7 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                _logger.LogDebug($"{context.DownstreamReRoute.DownstreamPathTemplate} is white listed from rate limiting");
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(context);
                 return;
             }
@@ -112,9 +111,10 @@ namespace Ocelot.RateLimit.Middleware
 
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamReRoute downstreamReRoute)
         {
-            _logger.LogDebug($"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate }, TraceIdentifier {httpContext.TraceIdentifier}.");
+            Logger.LogInformation(
+                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.Value }, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
-
+        
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
             var message = string.IsNullOrEmpty(option.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}." : option.QuotaExceededMessage;

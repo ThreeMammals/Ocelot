@@ -8,15 +8,14 @@ using Butterfly.Client.Tracing;
 using System.Linq;
 using System.Collections.Generic;
 using Ocelot.Infrastructure.Extensions;
-using Microsoft.Extensions.Logging;
 using Ocelot.Requester;
 
 namespace Ocelot.Logging
 {
     public class OcelotDiagnosticListener
     {
-        private IServiceTracer _tracer;
-        private IOcelotLogger _logger;
+        private readonly IServiceTracer _tracer;
+        private readonly IOcelotLogger _logger;
 
         public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceTracer tracer)
         {
@@ -27,7 +26,7 @@ namespace Ocelot.Logging
         [DiagnosticName("Ocelot.MiddlewareException")]
         public virtual void OcelotMiddlewareException(Exception exception, DownstreamContext context, string name)
         {
-            _logger.LogTrace($"Ocelot.MiddlewareException: {name}; {exception.Message}");
+            _logger.LogTrace($"Ocelot.MiddlewareException: {name}; {exception.Message};");
             Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
         }
 
@@ -41,7 +40,7 @@ namespace Ocelot.Logging
         [DiagnosticName("Ocelot.MiddlewareFinished")]
         public virtual void OcelotMiddlewareFinished(DownstreamContext context, string name)
         {
-            _logger.LogTrace($"OcelotMiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
+            _logger.LogTrace($"Ocelot.MiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
             Event(context.HttpContext, $"OcelotMiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
         }
 
@@ -55,7 +54,7 @@ namespace Ocelot.Logging
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException")]
         public virtual void OnMiddlewareException(Exception exception, string name)
         {
-            _logger.LogTrace($"MiddlewareException: {name}; {exception.Message}");
+            _logger.LogTrace($"MiddlewareException: {name}; {exception.Message};");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished")]
@@ -67,16 +66,17 @@ namespace Ocelot.Logging
 
         private void Event(HttpContext httpContext, string @event)
         {  
-            // Hack - if the user isnt using tracing the code gets here and will blow up on 
+            // todo - if the user isnt using tracing the code gets here and will blow up on 
             // _tracer.Tracer.TryExtract. We already use the fake tracer for another scenario
-            // so sticking it here as well..I guess we need a factory for this but no idea
-            // how to hook that into the diagnostic framework at the moment.
+            // so sticking it here as well..I guess we need a factory for this but cba to do it at
+            // the moment
             if(_tracer.GetType() == typeof(FakeServiceTracer))
             {
                 return;
             }
 
             var span = httpContext.GetSpan();
+
             if(span == null)
             {
                 var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
@@ -84,10 +84,12 @@ namespace Ocelot.Logging
                     c => c.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.GetValue())).GetEnumerator()))
                 {
                     spanBuilder.AsChildOf(spanContext);
-                };
+                }
+
                 span = _tracer.Start(spanBuilder);        
                 httpContext.SetSpan(span);   
             }
+
             span?.Log(LogField.CreateNew().Event(@event));
         }
     }

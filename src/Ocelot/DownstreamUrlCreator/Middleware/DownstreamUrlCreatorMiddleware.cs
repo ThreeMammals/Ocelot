@@ -16,15 +16,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
-        private readonly IOcelotLogger _logger;
 
         public DownstreamUrlCreatorMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamPathPlaceholderReplacer replacer)
+                :base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
             _replacer = replacer;
-            _logger = loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -34,7 +33,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (dsPath.IsError)
             {
-                _logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
+                Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
                 SetPipelineError(context, dsPath.Errors);
                 return;
@@ -53,7 +52,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 context.DownstreamRequest.AbsolutePath = dsPath.Data.Value;
             }
 
-            _logger.LogDebug("downstream url is {context.DownstreamRequest}", context.DownstreamRequest);
+            Logger.LogDebug($"Downstream url is {context.DownstreamRequest}");
 
             await _next.Invoke(context);
         }

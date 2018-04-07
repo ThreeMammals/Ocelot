@@ -45,13 +45,13 @@ namespace Ocelot.Configuration.Repository
         
         private async Task Poll()
         {
-            _logger.LogDebug("Started polling consul");
+            _logger.LogInformation("Started polling consul");
 
             var fileConfig = await _repo.Get();
 
             if(fileConfig.IsError)
             {
-                _logger.LogDebug($"error geting file config, errors are {string.Join(",", fileConfig.Errors.Select(x => x.Message))}");
+                _logger.LogWarning($"error geting file config, errors are {string.Join(",", fileConfig.Errors.Select(x => x.Message))}");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace Ocelot.Configuration.Repository
                 _previousAsJson = asJson;
             }
 
-            _logger.LogDebug("Finished polling consul");
+            _logger.LogInformation("Finished polling consul");
         }
 
         /// <summary>

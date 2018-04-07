@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Logging
@@ -10,34 +9,38 @@ namespace Ocelot.Logging
         private readonly ILogger _logger;
         private readonly IRequestScopedDataRepository _scopedDataRepository;
 
-        public string Name { get; }
-
-        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository, string typeName)
+        public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
         {
-            Name = typeName;
             _logger = logger;
             _scopedDataRepository = scopedDataRepository;
         }
 
-        public void LogTrace(string message, params object[] args)
+        public void LogTrace(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogTrace("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogTrace("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
-        public void LogDebug(string message, params object[] args)
+        public void LogDebug(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
-        public void LogInformation(string message, params object[] args)
+        public void LogInformation(string message)
         {            
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message},", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
+            _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
+        }
+
+        public void LogWarning(string message)
+        {
+            var requestId = GetOcelotRequestId();
+            var previousRequestId = GetOcelotPreviousRequestId();
+            _logger.LogWarning("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
         public void LogError(string message, Exception exception)
@@ -47,18 +50,11 @@ namespace Ocelot.Logging
             _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, exception: {exception}", requestId, previousRequestId, message, exception);
         }
 
-        public void LogError(string message, params object[] args)
-        {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, new FormattedLogValues(message, args).ToString());
-        }
-
         public void LogCritical(string message, Exception exception)
         {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
-            _logger.LogError("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
+            _logger.LogCritical("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}, exception: {exception}", requestId, previousRequestId, message, exception);
         }
 
         private string GetOcelotRequestId()
