@@ -28,12 +28,12 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
             if (services == null)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"services were null for {_serviceName}") );
             }
 
             if (!services.Any())
             {
-                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreEmptyError($"services were empty for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"services were empty for {_serviceName}"));
             }
 
             lock(_syncLock)

@@ -49,11 +49,8 @@
                 {
                     Logger.LogWarning("user scopes is not authorised setting pipeline error");
 
-                    SetPipelineError(context, new List<Error>
-                    {
-                        new UnauthorisedError(
-                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}")
-                    });
+                    SetPipelineError(context, new UnauthorisedError(
+                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}"));
                 }
             }
 
@@ -80,10 +77,7 @@
                 {
                     Logger.LogWarning($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
 
-                    SetPipelineError(context, new List<Error>
-                    {
-                        new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}")
-                    });
+                    SetPipelineError(context, new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}"));
                 }
             }
             else

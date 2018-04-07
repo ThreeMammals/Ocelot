@@ -37,13 +37,10 @@ namespace Ocelot.Authentication.Middleware
                 }
                 else
                 {
-                    var error = new List<Error>
-                    {
-                        new UnauthenticatedError(
-                            $"Request for authenticated route {context.HttpContext.Request.Path} by {context.HttpContext.User.Identity.Name} was unauthenticated")
-                    };
+                    var error = new UnauthenticatedError(
+                        $"Request for authenticated route {context.HttpContext.Request.Path} by {context.HttpContext.User.Identity.Name} was unauthenticated");
 
-                    Logger.LogWarning($"Client has NOT been authenticated for {context.HttpContext.Request.Path} and pipeline error set. {error.ToErrorString()}");
+                    Logger.LogWarning($"Client has NOT been authenticated for {context.HttpContext.Request.Path} and pipeline error set. {error}");
                     
                     SetPipelineError(context, error);
                 }

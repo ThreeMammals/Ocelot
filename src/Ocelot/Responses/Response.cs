@@ -15,14 +15,8 @@ namespace Ocelot.Responses
             Errors = errors ?? new List<Error>();
         } 
 
-        public List<Error> Errors { get; private set; }
+        public List<Error> Errors { get; }
 
-        public bool IsError
-        {
-            get
-            {
-                return Errors.Count > 0;
-            }
-        }
+        public bool IsError => Errors.Count > 0;
     }
 }

@@ -1,22 +1,20 @@
 using Ocelot.Logging;
 using Moq;
 using TestStack.BDDfy;
-using Shouldly;
 using Butterfly.Client.Tracing;
 using Ocelot.Requester;
 using Xunit;
 using Ocelot.Middleware;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System;
 
 namespace Ocelot.UnitTests.Logging
 {
     public class OcelotDiagnosticListenerTests
     {
-        private OcelotDiagnosticListener _listener;
+        private readonly OcelotDiagnosticListener _listener;
         private Mock<IOcelotLoggerFactory> _factory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private IServiceTracer _tracer;
         private DownstreamContext _downstreamContext;
         private string _name;
@@ -108,7 +106,7 @@ namespace Ocelot.UnitTests.Logging
             _listener.OcelotMiddlewareFinished(_downstreamContext, _name);
         }
 
-         private void WhenOcelotMiddlewareExceptionCalled()
+        private void WhenOcelotMiddlewareExceptionCalled()
         {
             _listener.OcelotMiddlewareException(_exception, _downstreamContext, _name);
         }
@@ -123,7 +121,7 @@ namespace Ocelot.UnitTests.Logging
             _listener.OnMiddlewareFinished(_downstreamContext.HttpContext, _name);
         }
 
-         private void WhenMiddlewareExceptionCalled()
+        private void WhenMiddlewareExceptionCalled()
         {
             _listener.OnMiddlewareException(_exception, _name);
         }

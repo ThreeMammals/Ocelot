@@ -1,23 +1,26 @@
 namespace Ocelot.UnitTests.Logging
 {
     using Moq;
-    using TestStack.BDDfy;
-    using Shouldly;
     using Xunit;
     using Ocelot.Logging;
     using Microsoft.Extensions.Logging;
     using Ocelot.Infrastructure.RequestData;
     using System;
-    using Microsoft.Extensions.Logging.Internal;
 
     public class AspDotNetLoggerTests
     {
-        private Mock<ILogger<object>> _coreLogger;
-        private AspDotNetLogger _logger; 
+        private readonly Mock<ILogger<object>> _coreLogger;
+        private readonly AspDotNetLogger _logger; 
         private Mock<IRequestScopedDataRepository> _repo;
+        private readonly string _b;
+        private readonly string _a;
+        private readonly Exception _ex;
 
         public AspDotNetLoggerTests()
         {
+            _a = "tom";
+            _b = "laura";
+            _ex = new Exception("oh no");
             _coreLogger = new Mock<ILogger<object>>();
             _repo = new Mock<IRequestScopedDataRepository>();
             _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object);
@@ -26,10 +29,7 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_log_trace()
         {
-            var a = "tom";
-            var b = "laura";
-            
-            _logger.LogTrace($"a message from {a} to {b}");
+            _logger.LogTrace($"a message from {_a} to {_b}");
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Trace);
         }
@@ -37,22 +37,15 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_log_info()
         {
-            var a = "tom";
-            var b = "laura";
-            
-            _logger.LogInformation($"a message from {a} to {b}");
+            _logger.LogInformation($"a message from {_a} to {_b}");
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Information);
         }
 
-
         [Fact]
         public void should_log_warning()
         {
-            var a = "tom";
-            var b = "laura";
-            
-            _logger.LogWarning($"a message from {a} to {b}");
+            _logger.LogWarning($"a message from {_a} to {_b}");
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Warning);
         }
@@ -60,11 +53,8 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_log_error()
         {
-            var a = "tom";
-            var b = "laura";
-            var ex = new Exception("oh no");
             
-            _logger.LogError($"a message from {a} to {b}", ex);
+            _logger.LogError($"a message from {_a} to {_b}", _ex);
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Error);
         }
@@ -72,11 +62,7 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_log_critical()
         {
-            var a = "tom";
-            var b = "laura";
-            var ex = new Exception("oh no");
-            
-            _logger.LogCritical($"a message from {a} to {b}", ex);
+            _logger.LogCritical($"a message from {_a} to {_b}", _ex);
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Critical);
         }

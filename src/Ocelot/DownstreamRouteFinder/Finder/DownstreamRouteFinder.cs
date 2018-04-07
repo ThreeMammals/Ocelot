@@ -44,10 +44,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
             }
 
-            return new ErrorResponse<DownstreamRoute>(new List<Error>
-            {
-                new UnableToFindDownstreamRouteError(path, httpMethod)
-            });
+            return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(path, httpMethod));
         }
 
         private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)

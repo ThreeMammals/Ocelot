@@ -26,10 +26,7 @@
 
             if (splits.Length < index || index < 0)
             {
-                return new ErrorResponse<string>(new List<Error>
-                {
-                    new CannotFindClaimError($"Cannot find claim for key: {key}, delimiter: {delimiter}, index: {index}")
-                });
+                return new ErrorResponse<string>(new CannotFindClaimError($"Cannot find claim for key: {key}, delimiter: {delimiter}, index: {index}"));
             }
 
             var value = splits[index];
@@ -55,10 +52,7 @@
                 return new OkResponse<string>(claim.Value);
             }
 
-            return new ErrorResponse<string>(new List<Error>
-            {
-                new CannotFindClaimError($"Cannot find claim for key: {key}")
-            });
+            return new ErrorResponse<string>(new CannotFindClaimError($"Cannot find claim for key: {key}"));
         }
     }
 }
