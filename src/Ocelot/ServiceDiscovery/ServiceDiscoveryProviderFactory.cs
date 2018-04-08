@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
@@ -10,10 +11,12 @@ namespace Ocelot.ServiceDiscovery
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
+        private readonly IConsulClientFactory _clientFactory;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
         {
             _factory = factory;
+            _clientFactory = clientFactory;
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -43,8 +46,8 @@ namespace Ocelot.ServiceDiscovery
                 return new ServiceFabricServiceDiscoveryProvider(config);
             }
 
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory);
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
+            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _clientFactory);
         }
     }
 }

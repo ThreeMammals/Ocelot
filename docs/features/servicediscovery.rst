@@ -38,3 +38,18 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
     }
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
+
+ACL Token
+---------
+
+If you are using ACL with Consul Ocelot supports adding the X-Consul-Token header. In order so this to work you must add the additional property below.
+
+.. code-block:: json
+
+    "ServiceDiscoveryProvider": {
+        "Host": "localhost",
+        "Port": 9500,
+        "Token": "footoken"
+    }
+
+Ocelot will add this token to the consul client that it uses to make requests and that is then used for every request.

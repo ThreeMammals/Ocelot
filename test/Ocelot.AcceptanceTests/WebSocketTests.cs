@@ -37,7 +37,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public async Task should_proxy_websocket_input_to_downstream_service()
+        public void should_proxy_websocket_input_to_downstream_service()
         {
             var downstreamPort = 5001;
             var downstreamHost = "localhost";
@@ -72,7 +72,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public async Task should_proxy_websocket_input_to_downstream_service_and_use_load_balancer()
+        public void should_proxy_websocket_input_to_downstream_service_and_use_load_balancer()
         {
             var downstreamPort = 5005;
             var downstreamHost = "localhost";
@@ -116,7 +116,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public async Task should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
+        public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
         {
             var downstreamPort = 5007;
             var downstreamHost = "localhost";
@@ -274,7 +274,6 @@ namespace Ocelot.AcceptanceTests
                     {
                         _firstRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
                     }
-
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
@@ -321,7 +320,6 @@ namespace Ocelot.AcceptanceTests
                     {
                         _secondRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
                     }
-
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
@@ -332,7 +330,6 @@ namespace Ocelot.AcceptanceTests
 
             await Task.WhenAll(sending, receiving);
         }
-
 
         private async Task StartFakeDownstreamService(string url, string path)
         {
@@ -380,7 +377,6 @@ namespace Ocelot.AcceptanceTests
             await _firstDownstreamHost.StartAsync();
         }
 
-
         private async Task StartSecondFakeDownstreamService(string url, string path)
         {
             _secondDownstreamHost = new WebHostBuilder()
@@ -426,7 +422,6 @@ namespace Ocelot.AcceptanceTests
                 .UseIISIntegration().Build();
             await _secondDownstreamHost.StartAsync();
         }
-
 
         private async Task Echo(WebSocket webSocket)
         {

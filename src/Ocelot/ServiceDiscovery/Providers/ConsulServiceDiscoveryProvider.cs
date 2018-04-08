@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Consul;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Configuration;
@@ -12,30 +13,27 @@ namespace Ocelot.ServiceDiscovery.Providers
 {
     public class ConsulServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
-        private readonly ConsulRegistryConfiguration _consulConfig;
+        private readonly ConsulRegistryConfiguration _config;
         private readonly IOcelotLogger _logger;
         private readonly ConsulClient _consul;
         private const string VersionPrefix = "version-";
 
-        public ConsulServiceDiscoveryProvider(ConsulRegistryConfiguration consulRegistryConfiguration, IOcelotLoggerFactory factory)
+        public ConsulServiceDiscoveryProvider(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
         {;
             _logger = factory.CreateLogger<ConsulServiceDiscoveryProvider>();
 
-            var consulHost = string.IsNullOrEmpty(consulRegistryConfiguration?.HostName) ? "localhost" : consulRegistryConfiguration.HostName;
+            var consulHost = string.IsNullOrEmpty(config?.Host) ? "localhost" : config.Host;
 
-            var consulPort = consulRegistryConfiguration?.Port ?? 8500;
+            var consulPort = config?.Port ?? 8500;
 
-            _consulConfig = new ConsulRegistryConfiguration(consulHost, consulPort, consulRegistryConfiguration?.KeyOfServiceInConsul);
+            _config = new ConsulRegistryConfiguration(consulHost, consulPort, config?.KeyOfServiceInConsul, config?.Token);
 
-            _consul = new ConsulClient(config =>
-            {
-                config.Address = new Uri($"http://{_consulConfig.HostName}:{_consulConfig.Port}");
-            });
+            _consul = clientFactory.Get(_config);
         }
 
         public async Task<List<Service>> Get()
         {
-            var queryResult = await _consul.Health.Service(_consulConfig.KeyOfServiceInConsul, string.Empty, true);
+            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 
             var services = new List<Service>();
 

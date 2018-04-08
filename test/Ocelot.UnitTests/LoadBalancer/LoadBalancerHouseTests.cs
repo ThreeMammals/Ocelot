@@ -25,7 +25,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _factory = new Mock<ILoadBalancerFactory>();
             _loadBalancerHouse = new LoadBalancerHouse(_factory.Object);
-            _serviceProviderConfig = new ServiceProviderConfiguration("myType","myHost",123);
+            _serviceProviderConfig = new ServiceProviderConfiguration("myType","myHost",123, string.Empty);
         }
 
         [Fact]

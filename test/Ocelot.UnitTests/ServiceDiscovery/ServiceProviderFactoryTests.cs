@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -19,11 +20,13 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private readonly ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private IConsulClientFactory _clientFactory;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object);
+            _clientFactory = new ConsulClientFactory();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _clientFactory);
         }
         
         [Fact]
@@ -87,7 +90,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithType("ServiceFabric")
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
