@@ -2,9 +2,9 @@ namespace Ocelot.Headers
 {
     using System.Collections.Generic;
     using System.Net.Http;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
+    using Configuration.Creator;
+    using Infrastructure;
+    using Logging;
 
     public class AddHeadersToResponse : IAddHeadersToResponse
     {

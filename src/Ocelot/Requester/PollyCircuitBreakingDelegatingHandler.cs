@@ -5,7 +5,6 @@ using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Polly;
 using Polly.CircuitBreaker;
-using Polly.Timeout;
 
 namespace Ocelot.Requester
 {

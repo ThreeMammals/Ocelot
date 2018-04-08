@@ -14,8 +14,8 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Logging;
     using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
+    using Responses;
+    using Values;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
@@ -128,7 +128,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheLoadBalancerReturnsAnError()
         {
-            _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
+            _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError("services were null for bah") });
              _loadBalancer
                 .Setup(x => x.Lease())
                 .ReturnsAsync(_getHostAndPortError);
@@ -157,9 +157,9 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheLoadBalancerHouseReturnsAnError()
         {
-            _getLoadBalancerHouseError = new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+            _getLoadBalancerHouseError = new ErrorResponse<ILoadBalancer>(new List<Error>()
             {
-                new UnableToFindLoadBalancerError($"unabe to find load balancer for bah")
+                new UnableToFindLoadBalancerError("unabe to find load balancer for bah")
             });
 
             _loadBalancerHouse

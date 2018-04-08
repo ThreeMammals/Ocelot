@@ -1,13 +1,9 @@
 ﻿namespace Ocelot.Headers
 {
     using System.Collections.Generic;
-    using System.Net.Http;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
+    using Configuration;
+    using Request.Middleware;
+    using Responses;
 
     public interface IAddHeadersToRequest
     {

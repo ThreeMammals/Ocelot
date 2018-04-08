@@ -13,7 +13,7 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
 

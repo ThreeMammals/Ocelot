@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
 using Moq;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using Newtonsoft.Json;
-using System.IO;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 

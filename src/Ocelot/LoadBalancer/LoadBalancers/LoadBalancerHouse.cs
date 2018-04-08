@@ -41,7 +41,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
             catch(Exception ex)
             {
-                return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+                return new ErrorResponse<ILoadBalancer>(new List<Errors.Error>()
                 {
                     new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.ReRouteKey} exception is {ex}")
                 });

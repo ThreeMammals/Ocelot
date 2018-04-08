@@ -17,7 +17,6 @@ using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4;
     using IdentityServer4.Test;
 
     public class ClaimsToHeadersForwardingTests : IDisposable
@@ -25,7 +24,7 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
-        private Action<IdentityServerAuthenticationOptions> _options;
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
         private string _identityServerRootUrl = "http://localhost:52888";
 
         public ClaimsToHeadersForwardingTests()

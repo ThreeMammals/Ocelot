@@ -1,13 +1,9 @@
 ﻿using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ocelot.Infrastructure.RequestData;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.RateLimit.Middleware
 {

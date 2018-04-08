@@ -8,7 +8,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Middleware.Pipeline
@@ -89,7 +88,7 @@ namespace Ocelot.Middleware.Pipeline
                         catch(Exception ex)
                         {
                             WriteException(diagnosticListener, ex, "Ocelot.MiddlewareException", middlewareName, context);
-                            throw ex;
+                            throw;
                         }
                         finally
                         {
@@ -117,18 +116,12 @@ namespace Ocelot.Middleware.Pipeline
 
         private static void Write(DiagnosticListener diagnosticListener, string message, string middlewareName, DownstreamContext context)
         {
-            if(diagnosticListener != null)
-            {
-                diagnosticListener.Write(message, new { name = middlewareName, context = context });
-            }
+            diagnosticListener?.Write(message, new { name = middlewareName, context = context });
         }
 
         private static void WriteException(DiagnosticListener diagnosticListener, Exception exception, string message, string middlewareName, DownstreamContext context)
         {
-            if(diagnosticListener != null)
-            {
-                diagnosticListener.Write(message, new { name = middlewareName, context = context, exception = exception });
-            }
+            diagnosticListener?.Write(message, new { name = middlewareName, context = context, exception = exception });
         }
 
         public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Predicate predicate, Action<IOcelotPipelineBuilder> configuration)

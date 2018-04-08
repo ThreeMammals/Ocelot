@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using CacheManager.Core;
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
@@ -185,9 +184,7 @@ namespace Ocelot.IntegrationTests
         {
             var initialConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                },
+                GlobalConfiguration = new FileGlobalConfiguration(),
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
@@ -225,9 +222,7 @@ namespace Ocelot.IntegrationTests
 
              var updatedConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                },
+                GlobalConfiguration = new FileGlobalConfiguration(),
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
@@ -281,9 +276,7 @@ namespace Ocelot.IntegrationTests
         {
             var initialConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                },
+                GlobalConfiguration = new FileGlobalConfiguration(),
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()

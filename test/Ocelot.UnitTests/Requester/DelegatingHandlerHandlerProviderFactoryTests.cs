@@ -272,12 +272,12 @@ namespace Ocelot.UnitTests.Requester
             where TTwo : DelegatingHandler
         {
             _services.AddTransient<TOne>();
-            _services.AddTransient<GlobalDelegatingHandler>(s => {
+            _services.AddTransient(s => {
                 var service = s.GetService<TOne>();
                 return new GlobalDelegatingHandler(service);
             });
             _services.AddTransient<TTwo>();
-            _services.AddTransient<GlobalDelegatingHandler>(s => {
+            _services.AddTransient(s => {
                 var service = s.GetService<TTwo>();
                 return new GlobalDelegatingHandler(service);
             });

@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Setter;
@@ -48,7 +47,7 @@ namespace Ocelot.Configuration
             {
                 var node = (INode)test;
                 var result = node.Accept(new UpdateFileConfiguration(fileConfiguration));
-                if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
+                if (result.GetType() == typeof(ErrorResponse<UpdateFileConfiguration>))
                 {
                     return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
                 }

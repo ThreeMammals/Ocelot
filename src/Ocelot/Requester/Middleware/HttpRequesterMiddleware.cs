@@ -1,10 +1,6 @@
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Threading.Tasks;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Requester.QoS;
 
 namespace Ocelot.Requester.Middleware
 {

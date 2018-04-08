@@ -93,7 +93,7 @@ namespace Ocelot.AcceptanceTests.Caching
         {
             NotNull(item, nameof(item));
 
-            var serializedItem = _serializer.SerializeCacheItem<TCacheValue>(item);
+            var serializedItem = _serializer.SerializeCacheItem(item);
 
             _cache[GetKey(item.Key, item.Region)] = new Tuple<Type, byte[]>(item.Value.GetType(), serializedItem);
         }

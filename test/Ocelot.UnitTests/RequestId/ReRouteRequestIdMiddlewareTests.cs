@@ -13,7 +13,7 @@
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.RequestId.Middleware;
-    using Ocelot.Responses;
+    using Responses;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.LoadBalancer.LoadBalancers;
 
 namespace Ocelot.Requester.QoS
 {

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Shouldly;
@@ -23,13 +22,9 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_do_nothing()
         {
-            var reRoute = new FileReRoute
-            {
-            };
+            var reRoute = new FileReRoute();
 
-            var expected = new List<DownstreamHostAndPort>
-            {
-            };
+            var expected = new List<DownstreamHostAndPort>();
 
             this.Given(x => GivenTheFollowingReRoute(reRoute))
                 .When(x => WhenICreate())

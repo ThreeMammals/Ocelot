@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -12,7 +11,7 @@ namespace Ocelot.Headers
 {
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
-        private IPlaceholders _placeholders;
+        private readonly IPlaceholders _placeholders;
 
         public HttpResponseHeaderReplacer(IPlaceholders placeholders)
         {

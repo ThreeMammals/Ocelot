@@ -2,13 +2,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Raft;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
 
@@ -20,9 +17,9 @@ namespace Ocelot.Raft
     public class RaftController : Controller
     {
         private readonly INode _node;
-        private IOcelotLogger _logger;
-        private string _baseSchemeUrlAndPort;
-        private JsonSerializerSettings _jsonSerialiserSettings;
+        private readonly IOcelotLogger _logger;
+        private readonly string _baseSchemeUrlAndPort;
+        private readonly JsonSerializerSettings _jsonSerialiserSettings;
 
         public RaftController(INode node, IOcelotLoggerFactory loggerFactory, IBaseUrlFinder finder)
         {
@@ -91,7 +88,7 @@ namespace Ocelot.Raft
             catch(Exception e)
             {
                 _logger.LogError($"THERE WAS A PROBLEM ON NODE {_node.State.CurrentState.Id}", e);
-                throw e;
+                throw;
             }
         }
     }

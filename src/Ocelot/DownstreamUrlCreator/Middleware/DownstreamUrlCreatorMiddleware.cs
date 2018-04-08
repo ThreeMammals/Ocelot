@@ -1,12 +1,7 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
-using System.Linq;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 

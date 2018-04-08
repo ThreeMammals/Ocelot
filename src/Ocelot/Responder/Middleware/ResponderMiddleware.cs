@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Responder.Middleware

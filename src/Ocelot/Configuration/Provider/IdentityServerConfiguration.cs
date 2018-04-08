@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
 
 namespace Ocelot.Configuration.Provider
 {

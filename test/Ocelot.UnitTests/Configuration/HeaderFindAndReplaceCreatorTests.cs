@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Shouldly;
@@ -108,9 +105,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expected = new List<HeaderFindAndReplace>
-            {
-            };
+            var expected = new List<HeaderFindAndReplace>();
 
             this.Given(x => GivenTheReRoute(reRoute))
                 .And(x => GivenTheBaseUrlErrors())

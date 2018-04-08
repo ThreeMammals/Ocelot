@@ -44,8 +44,7 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_downstream_base_url_when_port_is_not_80_or_443()
         {
-            var httpRequest = new HttpRequestMessage();
-            httpRequest.RequestUri = new Uri("http://www.bbc.co.uk");
+            var httpRequest = new HttpRequestMessage {RequestUri = new Uri("http://www.bbc.co.uk")};
             var request = new DownstreamRequest(httpRequest);
             var result = _placeholders.Get("{DownstreamBaseUrl}", request);
             result.Data.ShouldBe("http://www.bbc.co.uk/");
@@ -55,8 +54,7 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_downstream_base_url_when_port_is_80_or_443()
         {
-            var httpRequest = new HttpRequestMessage();
-            httpRequest.RequestUri = new Uri("http://www.bbc.co.uk:123");
+            var httpRequest = new HttpRequestMessage {RequestUri = new Uri("http://www.bbc.co.uk:123")};
             var request = new DownstreamRequest(httpRequest);
             var result = _placeholders.Get("{DownstreamBaseUrl}", request);
             result.Data.ShouldBe("http://www.bbc.co.uk:123/");

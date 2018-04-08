@@ -9,7 +9,7 @@ namespace Ocelot.Middleware
         protected OcelotMiddleware(IOcelotLogger logger)
         {
             Logger = logger;
-            MiddlewareName = this.GetType().Name;
+            MiddlewareName = GetType().Name;
         }
 
         public IOcelotLogger Logger { get; }

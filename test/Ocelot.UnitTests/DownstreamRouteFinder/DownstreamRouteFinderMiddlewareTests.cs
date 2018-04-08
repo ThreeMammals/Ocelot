@@ -15,7 +15,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
+    using Responses;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

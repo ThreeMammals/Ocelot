@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
     public class RateLimitRule
     {

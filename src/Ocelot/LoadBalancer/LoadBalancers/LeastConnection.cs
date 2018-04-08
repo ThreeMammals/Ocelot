@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ocelot.Errors;
 using Ocelot.Responses;
 using Ocelot.Values;
 

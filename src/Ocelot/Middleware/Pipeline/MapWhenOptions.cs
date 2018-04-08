@@ -14,12 +14,7 @@ namespace Ocelot.Middleware.Pipeline
             }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _predicate = value;
+                _predicate = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.Infrastructure.Claims.Parser
 {
-    using Errors;
     using Responses;
     using System.Collections.Generic;
     using System.Linq;

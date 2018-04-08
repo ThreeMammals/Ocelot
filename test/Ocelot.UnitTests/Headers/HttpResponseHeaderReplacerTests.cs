@@ -40,8 +40,7 @@ namespace Ocelot.UnitTests.Headers
             var response = new HttpResponseMessage();
             response.Headers.Add("test", "test");
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("test", "test", "chiken", 0));
+            var fAndRs = new List<HeaderFindAndReplace> {new HeaderFindAndReplace("test", "test", "chiken", 0)};
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
@@ -70,14 +69,16 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
-            request.RequestUri = new System.Uri(downstreamUrl);
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
 
             var response = new HttpResponseMessage();
             response.Headers.Add("Location", downstreamUrl);
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0));
+            var fAndRs = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+            };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheRequestIs(request))
@@ -92,14 +93,16 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
-            request.RequestUri = new System.Uri(downstreamUrl);
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
 
             var response = new HttpResponseMessage();
             response.Headers.Add("Location", downstreamUrl);
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0));
+            var fAndRs = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+            };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheRequestIs(request))
@@ -136,14 +139,16 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com/test/product";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
-            request.RequestUri = new System.Uri(downstreamUrl);
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
 
             var response = new HttpResponseMessage();
             response.Headers.Add("Location", downstreamUrl);
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0));
+            var fAndRs = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+            };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheRequestIs(request))
@@ -158,14 +163,16 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com:123/test/product";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
-            request.RequestUri = new System.Uri(downstreamUrl);
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
 
             var response = new HttpResponseMessage();
             response.Headers.Add("Location", downstreamUrl);
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0));
+            var fAndRs = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+            };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheRequestIs(request))
@@ -180,14 +187,16 @@ namespace Ocelot.UnitTests.Headers
         {
             var downstreamUrl = "http://downstream.com:123/test/product";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
-            request.RequestUri = new System.Uri(downstreamUrl);
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
 
             var response = new HttpResponseMessage();
             response.Headers.Add("Location", downstreamUrl);
 
-            var fAndRs = new List<HeaderFindAndReplace>();
-            fAndRs.Add(new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0));
+            var fAndRs = new List<HeaderFindAndReplace>
+            {
+                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0)
+            };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheRequestIs(request))

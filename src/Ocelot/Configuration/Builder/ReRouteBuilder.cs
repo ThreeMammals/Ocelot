@@ -2,8 +2,6 @@
 using System.Net.Http;
 using Ocelot.Values;
 using System.Linq;
-using Ocelot.Configuration.Creator;
-using System;
 
 namespace Ocelot.Configuration.Builder
 {
