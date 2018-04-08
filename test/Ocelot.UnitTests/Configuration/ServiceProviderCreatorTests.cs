@@ -10,8 +10,7 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ServiceProviderCreatorTests
     {
-        private ServiceProviderConfigurationCreator _creator;
-        private FileReRoute _reRoute;
+        private readonly ServiceProviderConfigurationCreator _creator;
         private FileGlobalConfiguration _globalConfig;
         private ServiceProviderConfiguration _result;
 
@@ -23,34 +22,28 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_service_provider_config()
         {
-            var reRoute = new FileReRoute();
-            
             var globalConfig = new FileGlobalConfiguration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
                     Host = "127.0.0.1",
                     Port = 1234,
-                    Type = "ServiceFabric"
+                    Type = "ServiceFabric",
+                    Token = "testtoken"
                 }
             };
 
             var expected = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderHost("127.0.0.1")
-                .WithServiceDiscoveryProviderPort(1234)
-                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithHost("127.0.0.1")
+                .WithPort(1234)
+                .WithType("ServiceFabric")
+                .WithToken("testtoken")
                 .Build();
 
-            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
-                .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
+            this.Given(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheConfigIs(expected))
                 .BDDfy();
-        }
-
-        private void GivenTheFollowingReRoute(FileReRoute fileReRoute)
-        {
-            _reRoute = fileReRoute;
         }
 
         private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration fileGlobalConfig)
@@ -67,6 +60,8 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.Host.ShouldBe(expected.Host);
             _result.Port.ShouldBe(expected.Port);
+            _result.Token.ShouldBe(expected.Token);
+            _result.Type.ShouldBe(expected.Type);
         }
     }
 }

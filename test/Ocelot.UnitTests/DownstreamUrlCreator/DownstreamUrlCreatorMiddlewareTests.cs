@@ -82,9 +82,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
@@ -118,9 +118,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -148,9 +148,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -178,9 +178,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))

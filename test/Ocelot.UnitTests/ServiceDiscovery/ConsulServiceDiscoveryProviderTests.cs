@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
-using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -22,14 +22,16 @@ namespace Ocelot.UnitTests.ServiceDiscovery
     {
         private IWebHost _fakeConsulBuilder;
         private readonly List<ServiceEntry> _serviceEntries;
-        private readonly ConsulServiceDiscoveryProvider _provider;
+        private ConsulServiceDiscoveryProvider _provider;
         private readonly string _serviceName;
         private readonly int _port;
         private readonly string _consulHost;
         private readonly string _fakeConsulServiceDiscoveryUrl;
         private List<Service> _services;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
+        private string _receivedToken;
+        private IConsulClientFactory _clientFactory;
 
         public ConsulServiceDiscoveryProviderTests()
         {
@@ -40,11 +42,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _serviceEntries = new List<ServiceEntry>();
 
             _factory = new Mock<IOcelotLoggerFactory>();
+            _clientFactory = new ConsulClientFactory();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<ConsulServiceDiscoveryProvider>()).Returns(_logger.Object);
 
-            var config = new ConsulRegistryConfiguration(_consulHost, _port, _serviceName);
-            _provider = new ConsulServiceDiscoveryProvider(config, _factory.Object);
+            var config = new ConsulRegistryConfiguration(_consulHost, _port, _serviceName, null);
+            _provider = new ConsulServiceDiscoveryProvider(config, _factory.Object, _clientFactory);
         }
 
         [Fact]
@@ -66,6 +69,33 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(1))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_token()
+        {
+            var token = "test token";
+            var config = new ConsulRegistryConfiguration(_consulHost, _port, _serviceName, token);
+            _provider = new ConsulServiceDiscoveryProvider(config, _factory.Object, _clientFactory);
+
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = _serviceName,
+                    Address = "localhost",
+                    Port = 50881,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+
+            this.Given(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
+                .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+                .When(_ => WhenIGetTheServices())
+                .Then(_ => ThenTheCountIs(1))
+                .And(_ => _receivedToken.ShouldBe(token))
                 .BDDfy();
         }
 
@@ -197,6 +227,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                     {
                         if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                         {
+                            if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
+                            {
+                                _receivedToken = values.First();
+                            }
+
                             await context.Response.WriteJsonAsync(_serviceEntries);
                         }
                     });

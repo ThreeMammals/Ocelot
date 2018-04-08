@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Configuration;
 
 namespace Ocelot.Configuration.Repository
@@ -13,31 +13,31 @@ namespace Ocelot.Configuration.Repository
     public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         private readonly ConsulClient _consul;
-        private string _ocelotConfiguration = "OcelotConfiguration";
+        private const string OcelotConfiguration = "OcelotConfiguration";
         private readonly Cache.IOcelotCache<FileConfiguration> _cache;
 
-        public ConsulFileConfigurationRepository(Cache.IOcelotCache<FileConfiguration> cache, ServiceProviderConfiguration serviceProviderConfig)
+        public ConsulFileConfigurationRepository(
+            Cache.IOcelotCache<FileConfiguration> cache, 
+            ServiceProviderConfiguration serviceProviderConfig, 
+            IConsulClientFactory factory)
         {
             var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.Host) ? "localhost" : serviceProviderConfig?.Host;
             var consulPort = serviceProviderConfig?.Port ?? 8500;
-            var configuration = new ConsulRegistryConfiguration(consulHost, consulPort, _ocelotConfiguration);
+            var config = new ConsulRegistryConfiguration(consulHost, consulPort, OcelotConfiguration, serviceProviderConfig?.Token);
             _cache = cache;
-            _consul = new ConsulClient(c =>
-            {
-                c.Address = new Uri($"http://{configuration.HostName}:{configuration.Port}");
-            });
+            _consul = factory.Get(config);
         }
 
         public async Task<Response<FileConfiguration>> Get()
         {
-            var config = _cache.Get(_ocelotConfiguration, _ocelotConfiguration);
+            var config = _cache.Get(OcelotConfiguration, OcelotConfiguration);
 
             if (config != null)
             {
                 return new OkResponse<FileConfiguration>(config);
             }
 
-            var queryResult = await _consul.KV.Get(_ocelotConfiguration);
+            var queryResult = await _consul.KV.Get(OcelotConfiguration);
 
             if (queryResult.Response == null)
             {
@@ -59,7 +59,7 @@ namespace Ocelot.Configuration.Repository
 
             var bytes = Encoding.UTF8.GetBytes(json);
 
-            var kvPair = new KVPair(_ocelotConfiguration)
+            var kvPair = new KVPair(OcelotConfiguration)
             {
                 Value = bytes
             };
@@ -68,7 +68,7 @@ namespace Ocelot.Configuration.Repository
 
             if (result.Response)
             {
-                _cache.AddAndDelete(_ocelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), _ocelotConfiguration);
+                _cache.AddAndDelete(OcelotConfiguration, ocelotConfiguration, TimeSpan.FromSeconds(3), OcelotConfiguration);
 
                 return new OkResponse();
             }

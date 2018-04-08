@@ -16,7 +16,6 @@ namespace Ocelot.AcceptanceTests
     public class HeaderTests : IDisposable
     {
         private IWebHost _builder;
-        private string _cookieValue;
         private int _count;
         private readonly Steps _steps;
 
@@ -278,26 +277,27 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        if(_count == 0)
+                    app.Run(context =>
+                    {
+                        if (_count == 0)
                         {
                             context.Response.Cookies.Append("test", "0");
                             _count++;
                             context.Response.StatusCode = statusCode;
-                            return;
-                        } 
+                            return Task.CompletedTask;
+                        }
 
-                        if(context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
+                        if (context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
                         {
-                            if(cookieValue == "0" || headerValue == "test=1; path=/")
+                            if (cookieValue == "0" || headerValue == "test=1; path=/")
                             {
                                 context.Response.StatusCode = statusCode;
-                                return;
+                                return Task.CompletedTask;
                             }
                         }
 
                         context.Response.StatusCode = 500;
+                        return Task.CompletedTask;
                     });
                 })
                 .Build();

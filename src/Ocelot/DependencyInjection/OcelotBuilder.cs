@@ -53,6 +53,7 @@ namespace Ocelot.DependencyInjection
     using System.Net.Http;
     using Butterfly.Client.AspNetCore;
     using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.Consul;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -152,6 +153,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IConsulPollerConfiguration, InMemoryConsulPollerConfiguration>();
             _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             _services.TryAddSingleton<IPlaceholders, Placeholders>();
+            _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -236,10 +238,12 @@ namespace Ocelot.DependencyInjection
         {
             var serviceDiscoveryPort = _configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Port", 0);
             var serviceDiscoveryHost = _configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Host", string.Empty);
+            var serviceDiscoveryToken = _configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Token", string.Empty);
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderPort(serviceDiscoveryPort)
-                .WithServiceDiscoveryProviderHost(serviceDiscoveryHost)
+                .WithPort(serviceDiscoveryPort)
+                .WithHost(serviceDiscoveryHost)
+                .WithToken(serviceDiscoveryToken)
                 .Build();
 
             _services.AddSingleton<ServiceProviderConfiguration>(config);
