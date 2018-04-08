@@ -25,7 +25,6 @@ using Ocelot.AcceptanceTests.Caching;
 using System.IO.Compression;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
-using Ocelot.Requester;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -297,7 +296,7 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(s =>
                 {
                     s.AddSingleton(_webHostBuilder);
-                    s.AddSingleton<FakeDependency>(dependency);
+                    s.AddSingleton(dependency);
                     s.AddOcelot()
                         .AddSingletonDelegatingHandler<TOne>(true);
                 })

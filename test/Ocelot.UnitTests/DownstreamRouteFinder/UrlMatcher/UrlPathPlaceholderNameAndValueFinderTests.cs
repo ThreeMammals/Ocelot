@@ -78,9 +78,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_forward_slash()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
-            {
-            };
+            var expectedTemplates = new List<PlaceholderNameAndValue>();
 
             this.Given(x => x.GivenIHaveAUpstreamPath("/"))
                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/"))

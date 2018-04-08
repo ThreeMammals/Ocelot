@@ -1,13 +1,7 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
 using Ocelot.Middleware.Pipeline;
 using Shouldly;
 using TestStack.BDDfy;

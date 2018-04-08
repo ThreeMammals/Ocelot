@@ -19,7 +19,7 @@ namespace Ocelot.ServiceDiscovery.Providers
         private const string VersionPrefix = "version-";
 
         public ConsulServiceDiscoveryProvider(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
-        {;
+        {
             _logger = factory.CreateLogger<ConsulServiceDiscoveryProvider>();
 
             var consulHost = string.IsNullOrEmpty(config?.Host) ? "localhost" : config.Host;

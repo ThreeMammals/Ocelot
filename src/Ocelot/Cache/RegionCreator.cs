@@ -1,5 +1,4 @@
 using System.Linq;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.Cache

@@ -38,7 +38,7 @@ namespace Ocelot.Requester.QoS
             }
             catch (Exception ex)
             {
-                return new ErrorResponse<IQoSProvider>(new List<Ocelot.Errors.Error>()
+                return new ErrorResponse<IQoSProvider>(new List<Errors.Error>()
                 {
                     new UnableToFindQoSProviderError($"unabe to find qos provider for {reRoute.ReRouteKey}, exception was {ex}")
                 });

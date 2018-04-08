@@ -2,7 +2,6 @@
 using System.Linq;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder

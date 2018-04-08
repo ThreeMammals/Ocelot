@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Requester
     using Ocelot.Logging;
     using Ocelot.Requester;
     using Ocelot.Requester.Middleware;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;
@@ -52,8 +52,11 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheRequestIs()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
-            _downstreamContext.DownstreamReRoute = new DownstreamReRouteBuilder().Build();
+            _downstreamContext =
+                new DownstreamContext(new DefaultHttpContext())
+                {
+                    DownstreamReRoute = new DownstreamReRouteBuilder().Build()
+                };
         }
 
         private void GivenTheRequesterReturns(HttpResponseMessage response)

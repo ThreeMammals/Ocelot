@@ -12,7 +12,7 @@ namespace Ocelot.UnitTests.QueryStrings
     using Ocelot.Logging;
     using Ocelot.QueryStrings;
     using Ocelot.QueryStrings.Middleware;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
     using System.Security.Claims;

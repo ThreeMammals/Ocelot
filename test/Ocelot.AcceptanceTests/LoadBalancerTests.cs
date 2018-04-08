@@ -58,8 +58,6 @@ namespace Ocelot.AcceptanceTests
                         }
                     },
                     GlobalConfiguration = new FileGlobalConfiguration()
-                    {
-                    }
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -142,7 +140,7 @@ namespace Ocelot.AcceptanceTests
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync(response);
                         }
-                        catch (System.Exception exception)
+                        catch (Exception exception)
                         {
                             await context.Response.WriteAsync(exception.StackTrace);
                         }                   

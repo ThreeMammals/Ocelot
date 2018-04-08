@@ -184,7 +184,6 @@ namespace Ocelot.AcceptanceTests
                         {
                             context.Response.StatusCode = 200;
                             await context.Response.WriteAsync(responseBody);
-                            return;
                         }
                     });
                 })

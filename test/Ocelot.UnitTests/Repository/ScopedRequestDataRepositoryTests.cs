@@ -17,8 +17,7 @@ namespace Ocelot.UnitTests.Repository
 
         public ScopedRequestDataRepositoryTests()
         {
-            _httpContextAccesor = new HttpContextAccessor();
-            _httpContextAccesor.HttpContext = new DefaultHttpContext();
+            _httpContextAccesor = new HttpContextAccessor {HttpContext = new DefaultHttpContext()};
             _requestScopedDataRepository = new HttpDataRepository(_httpContextAccesor);
         }
 

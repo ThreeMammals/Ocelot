@@ -14,8 +14,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Logging;
-    using Ocelot.Responses;
-    using Ocelot.Values;
+    using Responses;
+    using Values;
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;

@@ -6,12 +6,12 @@ namespace Ocelot.UnitTests.Authorization
     using System.Security.Claims;
     using System.Threading.Tasks;
     using Moq;
-    using Ocelot.Authorisation;
-    using Ocelot.Authorisation.Middleware;
+    using Authorisation;
+    using Authorisation.Middleware;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
     using Microsoft.AspNetCore.Http;

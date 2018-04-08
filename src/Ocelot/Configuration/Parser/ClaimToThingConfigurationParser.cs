@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser

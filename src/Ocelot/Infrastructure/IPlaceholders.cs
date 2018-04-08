@@ -1,4 +1,3 @@
-using System.Net.Http;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 

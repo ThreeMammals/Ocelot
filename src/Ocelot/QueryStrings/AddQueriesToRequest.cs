@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Security.Claims;
-using System.Net.Http;
-using System;
 using Ocelot.Request.Middleware;
 using Microsoft.Extensions.Primitives;
 using System.Text;

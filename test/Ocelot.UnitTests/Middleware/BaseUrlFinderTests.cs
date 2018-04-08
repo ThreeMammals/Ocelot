@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
-using Moq;
 using Ocelot.Middleware;
 using Shouldly;
 using TestStack.BDDfy;
@@ -64,8 +59,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIFindTheUrl()
         {
-            var source = new MemoryConfigurationSource();
-            source.InitialData = _data;
+            var source = new MemoryConfigurationSource {InitialData = _data};
             var provider = new MemoryConfigurationProvider(source);
             _config = new ConfigurationRoot(new List<IConfigurationProvider>() {
                 provider

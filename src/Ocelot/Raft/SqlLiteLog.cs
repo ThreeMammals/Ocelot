@@ -11,7 +11,7 @@ namespace Ocelot.Raft
     [ExcludeFromCoverage]
     public class SqlLiteLog : ILog
     {
-        private string _path;
+        private readonly string _path;
         private readonly object _lock = new object();
 
         public SqlLiteLog(NodeId nodeId)
@@ -205,7 +205,7 @@ namespace Ocelot.Raft
             }
         }
 
-        public System.Collections.Generic.List<(int index, LogEntry logEntry)> GetFrom(int index)
+        public List<(int index, LogEntry logEntry)> GetFrom(int index)
         {
             lock(_lock)
             {

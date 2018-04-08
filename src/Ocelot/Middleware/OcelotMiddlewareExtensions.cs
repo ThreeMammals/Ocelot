@@ -8,17 +8,17 @@
     using Microsoft.Extensions.Options;
     using System.Diagnostics;
     using Microsoft.AspNetCore.Builder;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Provider;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Configuration.Setter;
-    using Ocelot.Responses;
-    using Ocelot.Logging;
+    using Configuration;
+    using Configuration.Creator;
+    using Configuration.File;
+    using Configuration.Provider;
+    using Configuration.Repository;
+    using Configuration.Setter;
+    using Responses;
+    using Logging;
     using Rafty.Concensus;
     using Rafty.Infrastructure;
-    using Ocelot.Middleware.Pipeline;
+    using Pipeline;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -130,9 +130,9 @@
             return response == null || response.IsError;
         }
 
-        private static bool ConfigurationNotSetUp(Ocelot.Responses.Response<IOcelotConfiguration> ocelotConfiguration)
+        private static bool ConfigurationNotSetUp(Responses.Response<IOcelotConfiguration> ocelotConfiguration)
         {
-            return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
+            return ocelotConfiguration?.Data == null || ocelotConfiguration.IsError;
         }
 
         private static (IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo) GetDependencies(IApplicationBuilder builder)
@@ -152,7 +152,7 @@
         {
             var ocelotConfiguration = await provider.Get();
 
-            if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            if(ocelotConfiguration?.Data == null || ocelotConfiguration.IsError)
             {
                 ThrowToStopOcelotStarting(ocelotConfiguration);
             }

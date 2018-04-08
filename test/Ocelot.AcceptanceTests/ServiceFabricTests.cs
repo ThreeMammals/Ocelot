@@ -1,6 +1,3 @@
-using System.Linq;
-using Microsoft.Extensions.Primitives;
-
 namespace Ocelot.AcceptanceTests
 {
     using System;
@@ -10,8 +7,7 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Shouldly;
+    using Configuration.File;
     using TestStack.BDDfy;
     using Xunit;
 

@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
-using Ocelot.Configuration.Creator;
-using Ocelot.Requester.QoS;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration

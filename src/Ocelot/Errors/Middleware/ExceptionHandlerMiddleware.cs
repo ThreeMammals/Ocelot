@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.Provider;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;

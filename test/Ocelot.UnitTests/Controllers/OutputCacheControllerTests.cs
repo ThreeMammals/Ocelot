@@ -2,10 +2,7 @@ using Xunit;
 using Shouldly;
 using TestStack.BDDfy;
 using Ocelot.Cache;
-using System;
 using Moq;
-using System.Net.Http;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ocelot.UnitTests.Controllers

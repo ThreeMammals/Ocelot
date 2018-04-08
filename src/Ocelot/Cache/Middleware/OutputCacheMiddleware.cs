@@ -2,12 +2,9 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.IO;
-using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.Cache.Middleware
 {

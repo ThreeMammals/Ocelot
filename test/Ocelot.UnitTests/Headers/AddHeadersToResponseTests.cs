@@ -7,11 +7,9 @@ using System.Collections.Generic;
 using Ocelot.Configuration.Creator;
 using System.Linq;
 using Moq;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
 using Ocelot.Infrastructure;
 using Ocelot.UnitTests.Responder;
-using System;
 using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Headers

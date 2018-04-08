@@ -970,9 +970,7 @@ namespace Ocelot.UnitTests.Configuration
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         UseServiceDiscovery = false,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                        }
+                        DownstreamHostAndPorts = new List<FileHostAndPort>()
                     }
                 }
             }))

@@ -8,7 +8,7 @@
     using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.Extensions.Primitives;
     using Ocelot.Request.Mapper;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
     using Shouldly;
@@ -25,7 +25,7 @@
 
         Response<HttpRequestMessage> _mappedRequest;
 
-        List<KeyValuePair<string, StringValues>> _inputHeaders = null;
+        List<KeyValuePair<string, StringValues>> _inputHeaders;
 
         public RequestMapperTests()
         {
@@ -376,7 +376,7 @@
             {
                 var inputHeader = _inputHeaders.First(h => h.Key == header.Key);
                 inputHeader.ShouldNotBeNull();
-                inputHeader.Value.Count().ShouldBe(header.Value.Count());
+                inputHeader.Value.Count.ShouldBe(header.Value.Count());
                 foreach(var inputHeaderValue in inputHeader.Value)
                 {
                     header.Value.Any(v => v == inputHeaderValue);

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
-using Ocelot.Responses;
 
 namespace Ocelot.Responder
 {

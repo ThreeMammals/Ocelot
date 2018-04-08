@@ -8,11 +8,9 @@ namespace Ocelot.UnitTests.Request
     using Ocelot.Logging;
     using Ocelot.Request.Mapper;
     using Ocelot.Request.Middleware;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Responses;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Responses;
     using Shouldly;
 
     public class DownstreamRequestInitialiserMiddlewareTests

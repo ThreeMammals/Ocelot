@@ -1,8 +1,6 @@
 ﻿namespace Ocelot.Authorisation.Middleware
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Errors;
     using Ocelot.Middleware;
     using Logging;
     using Responses;

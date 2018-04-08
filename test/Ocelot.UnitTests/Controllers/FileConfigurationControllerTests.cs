@@ -9,11 +9,8 @@ using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
 using Ocelot.Configuration.Provider;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Raft;
 using Rafty.Concensus;
-using Newtonsoft.Json;
-using Rafty.FiniteStateMachine;
 using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Controllers
@@ -166,7 +163,7 @@ namespace Ocelot.UnitTests.Controllers
            _result.ShouldBeOfType<T>();
         }
 
-        private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
+        private void GivenTheGetConfigurationReturns(Responses.Response<FileConfiguration> fileConfiguration)
         {
             _configGetter
                 .Setup(x => x.Get())

@@ -10,18 +10,8 @@ namespace Ocelot.Middleware.Pipeline
 
         public MapWhenMiddleware(OcelotRequestDelegate next, MapWhenOptions options)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            _next = next;
-            _options = options;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public async Task Invoke(DownstreamContext context)

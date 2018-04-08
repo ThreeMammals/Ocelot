@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Shouldly;

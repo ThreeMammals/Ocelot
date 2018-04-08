@@ -15,7 +15,7 @@ namespace Ocelot.UnitTests.Headers
     using Ocelot.Headers.Middleware;
     using Ocelot.Logging;
     using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
+    using Responses;
     using TestStack.BDDfy;
     using Xunit;
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Castle.Components.DictionaryAdapter;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Cache;
@@ -16,11 +15,10 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using System;
     using Ocelot.DependencyInjection;
     using Ocelot.Errors;
-    using Ocelot.UnitTests.TestData;
-    using Ocelot.Values;
+    using TestData;
+    using Values;
 
     public class FileConfigurationCreatorTests
     {

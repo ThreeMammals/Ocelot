@@ -2,8 +2,6 @@
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;

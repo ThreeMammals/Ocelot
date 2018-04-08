@@ -37,7 +37,7 @@ namespace Ocelot.Claims
                     identity?.RemoveClaim(exists);
                 }
 
-                identity?.AddClaim(new System.Security.Claims.Claim(config.ExistingKey, value.Data));
+                identity?.AddClaim(new Claim(config.ExistingKey, value.Data));
             }
 
             return new OkResponse();

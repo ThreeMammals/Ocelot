@@ -1,7 +1,4 @@
-using System;
-using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
@@ -10,7 +7,7 @@ namespace Ocelot.Configuration.Provider
 {
     public class FileConfigurationProvider : IFileConfigurationProvider
     {
-        private IFileConfigurationRepository _repo;
+        private readonly IFileConfigurationRepository _repo;
 
         public FileConfigurationProvider(IFileConfigurationRepository repo)
         {

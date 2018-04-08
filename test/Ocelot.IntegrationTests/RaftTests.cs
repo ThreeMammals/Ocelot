@@ -65,16 +65,12 @@ namespace Ocelot.IntegrationTests
         {
              var configuration = new FileConfiguration
              { 
-                 GlobalConfiguration = new FileGlobalConfiguration
-                 {
-                 }
+                 GlobalConfiguration = new FileGlobalConfiguration()
              };
 
             var updatedConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                },
+                GlobalConfiguration = new FileGlobalConfiguration(),
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
@@ -122,9 +118,7 @@ namespace Ocelot.IntegrationTests
         [Fact(Skip = "This tests is flakey at the moment so ignoring will be fixed long term see https://github.com/TomPallister/Ocelot/issues/245")]
         public void should_persist_command_to_five_servers_when_using_administration_api()
         {
-             var configuration = new FileConfiguration
-             { 
-             };
+             var configuration = new FileConfiguration();
 
             var updatedConfiguration = new FileConfiguration
             {
@@ -180,7 +174,7 @@ namespace Ocelot.IntegrationTests
                 TypeNameHandling = TypeNameHandling.All
             });
             var httpContent = new StringContent(json);
-            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             using(var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);

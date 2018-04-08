@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using IdentityServer4.AccessTokenValidation;
@@ -17,7 +16,6 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4;
     using IdentityServer4.Test;
     using Shouldly;
 
@@ -26,7 +24,7 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
-        private Action<IdentityServerAuthenticationOptions> _options;
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
         private string _identityServerRootUrl = "http://localhost:57888";
         private string _downstreamQueryString;
 
