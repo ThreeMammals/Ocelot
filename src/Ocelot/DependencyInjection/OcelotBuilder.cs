@@ -67,7 +67,7 @@ namespace Ocelot.DependencyInjection
                 x.WithDictionaryHandle();
             };
 
-            AddCacheManager(ction);
+            AddCacheManager(defaultCachingSettings);
 
             //add ocelot services...
             _services.Configure<FileConfiguration>(configurationRoot);
