@@ -241,8 +241,9 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<T>()
-            where T : class, IDefinedAggregator
+        public void GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<TAggregator, TDepedency>()
+            where TAggregator : class, IDefinedAggregator
+            where TDepedency : class
         {
             _webHostBuilder = new WebHostBuilder();
 
@@ -259,8 +260,9 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(s =>
                 {
                     s.AddSingleton(_webHostBuilder);
+                    s.AddSingleton<TDepedency>();
                     s.AddOcelot()
-                        .AddSingletonDefinedAggregator<T>();
+                        .AddSingletonDefinedAggregator<TAggregator>();
                 })
                 .Configure(a =>
                 {

@@ -32,22 +32,27 @@ namespace Ocelot.Middleware.Multiplexer
 
             await Task.WhenAll(tasks);
 
-            var downstreamContexts = new List<DownstreamContext>();
+            var contexts = new List<DownstreamContext>();
 
             foreach (var task in tasks)
             {
                 var finished = await task;
-                downstreamContexts.Add(finished);
+                contexts.Add(finished);
             }
 
+            await Map(reRoute, context, contexts);
+        }
+
+        private async Task Map(ReRoute reRoute, DownstreamContext context, List<DownstreamContext> contexts)
+        {
             if (reRoute.DownstreamReRoute.Count > 1)
             {
                 var aggregator = _factory.Get(reRoute);
-                await aggregator.Aggregate(reRoute, context, downstreamContexts);
+                await aggregator.Aggregate(reRoute, context, contexts);
             }
             else
             {
-                MapNotAggregate(context, downstreamContexts);
+                MapNotAggregate(context, contexts);
             }
         }
         

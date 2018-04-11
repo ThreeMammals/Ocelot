@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -91,12 +94,13 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<HttpResponseMessage> Aggregate(List<HttpResponseMessage> responses)
+            public async Task<AggregateResponse> Aggregate(List<HttpResponseMessage> responses)
             {
                 var tom = await responses[0].Content.ReadAsStringAsync();
                 var laura = await responses[1].Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
-                return new HttpResponseMessage(){Content = new StringContent(content)};
+                var headers = responses.SelectMany(x => x.Headers).ToList();
+                return new AggregateResponse(new StringContent(content), HttpStatusCode.OK, headers);
             }
         }
     }

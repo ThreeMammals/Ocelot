@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -89,25 +91,12 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51885", "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51886", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<FakeDefinedAggregator>())
+                .And(x => _steps.GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDepdendency>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
-        }
-
-        public class FakeDefinedAggregator : IDefinedAggregator
-        {
-            public async Task<HttpResponseMessage> Aggregate(List<HttpResponseMessage> responses)
-            {
-                var one = await responses[0].Content.ReadAsStringAsync();
-                var two = await responses[1].Content.ReadAsStringAsync();
-
-                var merge = $"{one}, {two}";
-                merge = merge.Replace("Hello", "Bye").Replace("{", "").Replace("}", "");
-                return new HttpResponseMessage() { Content = new StringContent(merge) };
-            }
         }
 
         [Fact]
@@ -451,6 +440,30 @@ namespace Ocelot.AcceptanceTests
             _serviceOneBuilder?.Dispose();
             _serviceTwoBuilder?.Dispose();
             _steps.Dispose();
+        }
+    }
+
+    public class FakeDepdendency
+    {
+    }
+
+    public class FakeDefinedAggregator : IDefinedAggregator
+    {
+        private readonly FakeDepdendency _dep;
+
+        public FakeDefinedAggregator(FakeDepdendency dep)
+        {
+            _dep = dep;
+        }
+        public async Task<AggregateResponse> Aggregate(List<HttpResponseMessage> responses)
+        {
+            var one = await responses[0].Content.ReadAsStringAsync();
+            var two = await responses[1].Content.ReadAsStringAsync();
+
+            var merge = $"{one}, {two}";
+            merge = merge.Replace("Hello", "Bye").Replace("{", "").Replace("}", "");
+            var headers = responses.SelectMany(x => x.Headers).ToList();
+            return new AggregateResponse(new StringContent(merge), HttpStatusCode.OK, headers);
         }
     }
 }

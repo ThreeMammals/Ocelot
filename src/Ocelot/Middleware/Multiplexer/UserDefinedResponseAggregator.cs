@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Ocelot.Configuration;
 
@@ -18,16 +19,29 @@ namespace Ocelot.Middleware.Multiplexer
         {
             var aggregator = _provider.Get(reRoute);
 
-            if(!aggregator.IsError)
+            if (!aggregator.IsError)
             {
-                var response = await aggregator.Data.Aggregate(downstreamContexts.Select(x => x.DownstreamResponse).ToList());
+                var aggregateResponse = await aggregator.Data
+                    .Aggregate(downstreamContexts.Select(x => x.DownstreamResponse)
+                    .ToList());
 
-                originalContext.DownstreamResponse = response;
+                //todo seperate class for this mapping, or remove need for mapping, as we manipulate the response on the way back?
+                var httpResponseMessage = new HttpResponseMessage(aggregateResponse.StatusCode)
+                {
+                    Content = aggregateResponse.Content,
+                };
+
+                foreach(var header in aggregateResponse.Headers)
+                {
+                    httpResponseMessage.Headers.Add(header.Key, header.Value);
+                }
+
+                originalContext.DownstreamResponse = httpResponseMessage;
             }
             else
             {
                 originalContext.Errors.AddRange(aggregator.Errors);
-                originalContext.DownstreamResponse = new System.Net.Http.HttpResponseMessage();
+                originalContext.DownstreamResponse = new HttpResponseMessage();
             }
         }
     }

@@ -197,6 +197,13 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
+        public IOcelotBuilder AddTransientDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator
+        {
+            _services.AddTransient<IDefinedAggregator, T>();
+            return this;
+        }
+
         public IOcelotBuilder AddSingletonDelegatingHandler<THandler>(bool global = false) 
             where THandler : DelegatingHandler
         {

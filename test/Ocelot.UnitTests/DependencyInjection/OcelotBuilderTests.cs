@@ -180,18 +180,35 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_add_defined_aggregators()
+        public void should_add_singleton_defined_aggregators()
         {
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddDefinedAggregator<TestDefinedAggregator>())
-                .When(x => AddDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
+                .And(x => ThenTheAggregatorsAreSingleton<TestDefinedAggregator, TestDefinedAggregator>())
                 .BDDfy();
         }
 
-        private void AddDefinedAggregator<T>() where T : class, IDefinedAggregator
+        [Fact]
+        public void should_add_transient_defined_aggregators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
+                .And(x => ThenTheAggregatorsAreTransient<TestDefinedAggregator, TestDefinedAggregator>())
+                .BDDfy();
+        }
+
+        private void AddSingletonDefinedAggregator<T>() where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
+        }
+
+        private void AddTransientDefinedAggregator<T>() where T : class, IDefinedAggregator
+        {
+            _ocelotBuilder.AddTransientDefinedAggregator<T>();
         }
 
         private void ThenTheSpecificHandlersAreSingleton()
@@ -281,6 +298,24 @@ namespace Ocelot.UnitTests.DependencyInjection
             var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
+        }
+
+        private void ThenTheAggregatorsAreTransient<TOne, TWo>()
+        {
+            var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var first = aggregators[0];
+            aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var second = aggregators[0];
+            first.ShouldNotBe(second);
+        }
+
+        private void ThenTheAggregatorsAreSingleton<TOne, TWo>()
+        {
+            var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var first = aggregators[0];
+            aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var second = aggregators[0];
+            first.ShouldBe(second);
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()
