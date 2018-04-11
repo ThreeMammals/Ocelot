@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,18 +11,6 @@ namespace Ocelot.Middleware.Multiplexer
     public class SimpleJsonResponseAggregator : IResponseAggregator
     {
         public async Task Aggregate(ReRoute reRoute, DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
-        {
-            if (reRoute.DownstreamReRoute.Count > 1)
-            {
-                await MapAggregtes(originalContext, downstreamContexts);
-            }
-            else
-            {
-                MapNotAggregate(originalContext, downstreamContexts);
-            }
-        }
-
-        private async Task MapAggregtes(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
         {
             await MapAggregateContent(originalContext, downstreamContexts);
         }
@@ -67,18 +54,6 @@ namespace Ocelot.Middleware.Multiplexer
         {
             originalContext.Errors.AddRange(downstreamContexts[i].Errors);
             originalContext.DownstreamResponse = downstreamContexts[i].DownstreamResponse;
-        }
-
-        private void MapNotAggregate(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
-        {
-            //assume at least one..if this errors then it will be caught by global exception handler
-            var finished = downstreamContexts.First();
-
-            originalContext.Errors = finished.Errors;
-
-            originalContext.DownstreamRequest = finished.DownstreamRequest;
-
-            originalContext.DownstreamResponse = finished.DownstreamResponse;
         }
     }
 }

@@ -134,7 +134,8 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 "Tom",
                                 "Laura"
-                            }
+                            },
+                            Aggregator = "asdf"
                         }
                     }
             };

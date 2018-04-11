@@ -19,13 +19,16 @@ namespace Ocelot.UnitTests.Middleware
         private readonly OcelotRequestDelegate _pipeline;
         private int _count;
         private Mock<IResponseAggregator> _aggregator;
+        private Mock<IResponseAggregatorFactory> _factory;
 
         public MultiplexerTests()
         {
+            _factory = new Mock<IResponseAggregatorFactory>();
             _aggregator = new Mock<IResponseAggregator>();
             _context = new DownstreamContext(new DefaultHttpContext());
             _pipeline = context => Task.FromResult(_count++); 
-            _multiplexer = new Multiplexer(_aggregator.Object);
+            _factory.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(_aggregator.Object);
+            _multiplexer = new Multiplexer(_factory.Object);
         }
 
         [Fact]

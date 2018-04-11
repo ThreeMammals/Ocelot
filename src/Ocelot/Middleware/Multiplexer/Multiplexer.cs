@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Ocelot.Configuration;
 
@@ -6,11 +7,11 @@ namespace Ocelot.Middleware.Multiplexer
 {
     public class Multiplexer : IMultiplexer
     {
-        private readonly IResponseAggregator _aggregator;
+        private readonly IResponseAggregatorFactory _factory;
 
-        public Multiplexer(IResponseAggregator aggregator)
+        public Multiplexer(IResponseAggregatorFactory factory)
         {
-            _aggregator = aggregator;
+            _factory = factory;
         }
 
         public async Task Multiplex(DownstreamContext context, ReRoute reRoute, OcelotRequestDelegate next)
@@ -39,7 +40,27 @@ namespace Ocelot.Middleware.Multiplexer
                 downstreamContexts.Add(finished);
             }
 
-            await _aggregator.Aggregate(reRoute, context, downstreamContexts);
+            if (reRoute.DownstreamReRoute.Count > 1)
+            {
+                var aggregator = _factory.Get(reRoute);
+                await aggregator.Aggregate(reRoute, context, downstreamContexts);
+            }
+            else
+            {
+                MapNotAggregate(context, downstreamContexts);
+            }
+        }
+        
+        private void MapNotAggregate(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        {
+            //assume at least one..if this errors then it will be caught by global exception handler
+            var finished = downstreamContexts.First();
+
+            originalContext.Errors = finished.Errors;
+
+            originalContext.DownstreamRequest = finished.DownstreamRequest;
+
+            originalContext.DownstreamResponse = finished.DownstreamResponse;
         }
 
         private async Task<DownstreamContext> Fire(DownstreamContext context, OcelotRequestDelegate next)

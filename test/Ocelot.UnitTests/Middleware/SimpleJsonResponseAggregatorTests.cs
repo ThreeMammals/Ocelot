@@ -30,40 +30,6 @@ namespace Ocelot.UnitTests.Middleware
         }
 
         [Fact]
-        public void should_map_all_downstream_to_upstream_when_not_aggregate()
-        {
-            var billDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("Bill").Build();
-
-            var downstreamReRoutes = new List<DownstreamReRoute>
-            {
-                billDownstreamReRoute,
-            };
-
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoutes(downstreamReRoutes)
-                .Build();
-
-            var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
-            {
-                DownstreamResponse =
-                    new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Bill says hi") },
-                DownstreamReRoute = billDownstreamReRoute,
-                Errors = new List<Error> { new AnyError() },
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, new Uri("http://www.bbc.co.uk"))),
-            };
-
-            var downstreamContexts = new List<DownstreamContext> { billDownstreamContext };
-
-            this.Given(x => GivenTheUpstreamContext(new DownstreamContext(new DefaultHttpContext())))
-                .And(x => GivenTheReRoute(reRoute))
-                .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs("Bill says hi"))
-                .And(x => ThenTheUpstreamContextIsMappedForNonAggregate())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
         {
             var billDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("Bill").Build();

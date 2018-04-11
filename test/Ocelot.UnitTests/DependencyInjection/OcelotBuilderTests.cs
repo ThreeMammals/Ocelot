@@ -18,6 +18,8 @@ using Shouldly;
 using IdentityServer4.AccessTokenValidation;
 using TestStack.BDDfy;
 using Xunit;
+using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
@@ -177,6 +179,21 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_defined_aggregators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddDefinedAggregator<TestDefinedAggregator>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
+                .BDDfy();
+        }
+
+        private void AddDefinedAggregator<T>() where T : class, IDefinedAggregator
+        {
+            _ocelotBuilder.AddSingletonDefinedAggregator<T>();
+        }
+
         private void ThenTheSpecificHandlersAreSingleton()
         {
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
@@ -254,6 +271,14 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _serviceProvider = _services.BuildServiceProvider();
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
+            handlers[0].ShouldBeOfType<TOne>();
+            handlers[1].ShouldBeOfType<TWo>();
+        }
+
+        private void ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TOne, TWo>()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
         }
