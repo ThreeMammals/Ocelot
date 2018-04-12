@@ -245,7 +245,7 @@ namespace Ocelot.UnitTests.Headers
             foreach (var f in _headerFindAndReplaces)
             {
                 var values = _response.Headers.First(x => x.Key == f.Key);
-                values.Value.ToList()[f.Index].ShouldBe("test");
+                values.Values.ToList()[f.Index].ShouldBe("test");
             }
         }
 
@@ -267,7 +267,7 @@ namespace Ocelot.UnitTests.Headers
         private void ThenTheHeaderShouldBe(string key, string value)
         {
             var test = _response.Headers.First(x => x.Key == key);
-            test.Value.First().ShouldBe(value);
+            test.Values.First().ShouldBe(value);
         }
 
         private void ThenTheHeadersAreReplaced()
@@ -276,7 +276,7 @@ namespace Ocelot.UnitTests.Headers
             foreach (var f in _headerFindAndReplaces)
             {
                 var values = _response.Headers.First(x => x.Key == f.Key);
-                values.Value.ToList()[f.Index].ShouldBe(f.Replace);
+                values.Values.ToList()[f.Index].ShouldBe(f.Replace);
             }
         }
     }
