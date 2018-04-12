@@ -8,6 +8,7 @@ namespace Ocelot.Configuration.File
         public string UpstreamPathTemplate { get;set; }
         public string UpstreamHost { get; set; }
         public bool ReRouteIsCaseSensitive { get; set; }
+        public string Aggregator { get; set; }
 
         // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
         public List<string> UpstreamHttpMethod 

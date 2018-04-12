@@ -1,10 +1,10 @@
 namespace Ocelot.Headers
 {
     using System.Collections.Generic;
-    using System.Net.Http;
     using Ocelot.Configuration.Creator;
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
 
     public class AddHeadersToResponse : IAddHeadersToResponse
     {
@@ -17,7 +17,7 @@ namespace Ocelot.Headers
             _placeholders = placeholders;
         }
 
-        public void Add(List<AddHeader> addHeaders, HttpResponseMessage response)
+        public void Add(List<AddHeader> addHeaders, DownstreamResponse response)
         {
             foreach(var add in addHeaders)
             {
@@ -31,11 +31,11 @@ namespace Ocelot.Headers
                         continue;
                     }
 
-                    response.Headers.TryAddWithoutValidation(add.Key, value.Data);
+                    response.Headers.Add(new Header(add.Key, new List<string> { value.Data }));
                 }
                 else
                 {
-                    response.Headers.TryAddWithoutValidation(add.Key, add.Value);
+                    response.Headers.Add(new Header(add.Key, new List<string> { add.Value }));
                 }
             }
         }

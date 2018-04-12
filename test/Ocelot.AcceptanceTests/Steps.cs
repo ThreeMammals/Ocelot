@@ -26,6 +26,7 @@ using System.IO.Compression;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using Ocelot.Requester;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -178,12 +179,6 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-/*
-        public void GivenIHaveAddedXForwardedForHeader(string value)
-        {
-            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Forwarded-For", value);
-        }*/
-
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
             _webHostBuilder = new WebHostBuilder();
@@ -235,6 +230,39 @@ namespace Ocelot.AcceptanceTests
                     s.AddOcelot()
                         .AddSingletonDelegatingHandler<TOne>()
                         .AddSingletonDelegatingHandler<TWo>();
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<TAggregator, TDepedency>()
+            where TAggregator : class, IDefinedAggregator
+            where TDepedency : class
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("configuration.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddSingleton<TDepedency>();
+                    s.AddOcelot()
+                        .AddSingletonDefinedAggregator<TAggregator>();
                 })
                 .Configure(a =>
                 {

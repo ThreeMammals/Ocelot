@@ -1,29 +1,29 @@
 using Xunit;
-using Shouldly;
 using TestStack.BDDfy;
 using Ocelot.Headers;
 using System.Net.Http;
 using System.Collections.Generic;
-using Ocelot.Configuration.Creator;
 using System.Linq;
+using Ocelot.Configuration.Creator;
 using Moq;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
 using Ocelot.Infrastructure;
 using Ocelot.UnitTests.Responder;
-using System;
 using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
+using Shouldly;
 
 namespace Ocelot.UnitTests.Headers
 {
     public class AddHeadersToResponseTests
     {
-        private IAddHeadersToResponse _adder;
-        private Mock<IPlaceholders> _placeholders;
-        private HttpResponseMessage _response;
+        private readonly IAddHeadersToResponse _adder;
+        private readonly Mock<IPlaceholders> _placeholders;
+        private DownstreamResponse _response;
         private List<AddHeader> _addHeaders;
         private Mock<IOcelotLoggerFactory> _factory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
 
         public AddHeadersToResponseTests()
         {
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheHeaderIsNotAdded(string key)
         {
-            _response.Headers.TryGetValues(key, out var values).ShouldBeFalse();
+            _response.Headers.Any(x => x.Key == key).ShouldBeFalse();
         }
 
         private void GivenTheTraceIdIs(string traceId)
@@ -126,8 +126,8 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheHeaderIsReturned(string key, string value)
         {
-            var values = _response.Headers.GetValues(key);
-            values.First().ShouldBe(value);
+            var values = _response.Headers.First(x => x.Key == key);
+            values.Values.First().ShouldBe(value);
         }
 
         private void WhenIAdd()
@@ -137,7 +137,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenAResponseMessage()
         {
-            _response = new HttpResponseMessage();
+            _response = new DownstreamResponse(new HttpResponseMessage());
         }
 
         private void GivenTheAddHeaders(List<AddHeader> addHeaders)

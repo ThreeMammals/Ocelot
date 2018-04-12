@@ -1,8 +1,4 @@
-﻿using System.Net;
-using Ocelot.Errors;
-using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.Cache
+﻿namespace Ocelot.UnitTests.Cache
 {
     using System;
     using System.Collections.Generic;
@@ -19,17 +15,20 @@ namespace Ocelot.UnitTests.Cache
     using Ocelot.Logging;
     using TestStack.BDDfy;
     using Xunit;
+    using System.Net;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
 
     public class OutputCacheMiddlewareTests
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cacheManager;    
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private readonly DownstreamContext _downstreamContext;
+        private readonly OcelotRequestDelegate _next;
         private CachedResponse _response;
-        private IRegionCreator _regionCreator;
+        private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddlewareTests()
         {
@@ -46,7 +45,17 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_returned_cached_item_when_it_is_in_cache()
         {
-            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", new Dictionary<string, IEnumerable<string>>());
+            var headers = new Dictionary<string, IEnumerable<string>>
+            {
+                { "test", new List<string> { "test" } }
+            };
+
+            var contentHeaders = new Dictionary<string, IEnumerable<string>>
+            {
+                { "content-type", new List<string> { "application/json" } }
+            };
+
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, "", contentHeaders);
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())
@@ -59,7 +68,6 @@ namespace Ocelot.UnitTests.Cache
         {
             this.Given(x => x.GivenResponseIsNotCached())
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .And(x => x.GivenThereAreNoErrors())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheCacheAddIsCalledCorrectly())
                 .BDDfy();
@@ -81,7 +89,7 @@ namespace Ocelot.UnitTests.Cache
 
         private void GivenResponseIsNotCached()
         {
-            _downstreamContext.DownstreamResponse = new HttpResponseMessage();
+            _downstreamContext.DownstreamResponse = new DownstreamResponse(new HttpResponseMessage());
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -99,11 +107,6 @@ namespace Ocelot.UnitTests.Cache
 
             _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
             _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
-        }
-
-        private void GivenThereAreNoErrors()
-        {
-            _downstreamContext.Errors = new List<Error>();
         }
 
         private void ThenTheCacheGetIsCalledCorrectly()

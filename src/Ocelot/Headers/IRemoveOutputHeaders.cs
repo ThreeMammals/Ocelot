@@ -1,10 +1,12 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections.Generic;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
     public interface IRemoveOutputHeaders
     {
-        Response Remove(HttpResponseHeaders headers);
+        Response Remove(List<Header> headers);
     }
 }

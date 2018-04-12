@@ -51,7 +51,6 @@ namespace Ocelot.UnitTests.Infrastructure
             result.Data.ShouldBe("http://www.bbc.co.uk/");
         }
 
-
         [Fact]
         public void should_return_downstream_base_url_when_port_is_80_or_443()
         {

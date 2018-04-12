@@ -140,25 +140,28 @@ namespace Ocelot.UnitTests.Requester
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    app.Run(async context =>
+                    app.Run(context =>
                     {
                         if (_count == 0)
                         {
                             context.Response.Cookies.Append("test", "0");
                             context.Response.StatusCode = 200;
                             _count++;
-                            return;
+                            return Task.CompletedTask;
                         }
+
                         if (_count == 1)
                         {
                             if (context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
                             {
                                 context.Response.StatusCode = 200;
-                                return;
+                                return Task.CompletedTask;
                             }
 
                             context.Response.StatusCode = 500;
                         }
+
+                        return Task.CompletedTask;
                     });
                 })
                 .Build();
@@ -200,6 +203,7 @@ namespace Ocelot.UnitTests.Requester
                 .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                 .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
+
         private void GivenTheFactoryReturnsNothing()
         {
             var handlers = new List<Func<DelegatingHandler>>();

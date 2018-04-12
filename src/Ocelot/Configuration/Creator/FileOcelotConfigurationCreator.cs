@@ -132,6 +132,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
                 .WithUpstreamHost(aggregateReRoute.UpstreamHost)
+                .WithAggregator(aggregateReRoute.Aggregator)
                 .Build();
 
             return reRoute;

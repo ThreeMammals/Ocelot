@@ -62,7 +62,6 @@ namespace Ocelot.UnitTests.Middleware
         {
             _errors.Add(error);
         }
-
     }
 
     public class FakeMiddleware : OcelotMiddleware

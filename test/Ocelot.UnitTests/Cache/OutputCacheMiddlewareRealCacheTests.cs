@@ -1,7 +1,4 @@
-﻿using Ocelot.Errors;
-using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.Cache
+﻿namespace Ocelot.UnitTests.Cache
 {
     using System.Linq;
     using System.Net;
@@ -17,15 +14,17 @@ namespace Ocelot.UnitTests.Cache
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using TestStack.BDDfy;
     using Xunit;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Middleware.Multiplexer;
 
     public class OutputCacheMiddlewareRealCacheTests
     {
-        private IOcelotCache<CachedResponse> _cacheManager;
-        private OutputCacheMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
+        private readonly IOcelotCache<CachedResponse> _cacheManager;
+        private readonly OutputCacheMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private IRegionCreator _regionCreator;
@@ -56,14 +55,10 @@ namespace Ocelot.UnitTests.Cache
                 Headers = { ContentType = new MediaTypeHeaderValue("application/json")}
             };
 
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = content,
-            };
+            var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>());
 
             this.Given(x => x.GivenResponseIsNotCached(response))
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .And(x => x.GivenThereAreNoErrors())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheContentTypeHeaderIsCached())
                 .BDDfy();
@@ -81,9 +76,9 @@ namespace Ocelot.UnitTests.Cache
             header.First().ShouldBe("application/json");
         }
 
-        private void GivenResponseIsNotCached(HttpResponseMessage message)
+        private void GivenResponseIsNotCached(DownstreamResponse response)
         {
-            _downstreamContext.DownstreamResponse = message;
+            _downstreamContext.DownstreamResponse = response;
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -95,11 +90,6 @@ namespace Ocelot.UnitTests.Cache
                 .Build();
 
             _downstreamContext.DownstreamReRoute = reRoute;
-        }
-
-        private void GivenThereAreNoErrors()
-        {
-            _downstreamContext.Errors = new List<Error>();
         }
     }
 }

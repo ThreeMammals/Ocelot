@@ -154,6 +154,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             _services.TryAddSingleton<IPlaceholders, Placeholders>();
             _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
+            _services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
+            _services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -186,6 +188,20 @@ namespace Ocelot.DependencyInjection
             var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
             _services.Replace(descriptor);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
+        }
+
+        public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator
+        {
+            _services.AddSingleton<IDefinedAggregator, T>();
+            return this;
+        }
+
+        public IOcelotBuilder AddTransientDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator
+        {
+            _services.AddTransient<IDefinedAggregator, T>();
+            return this;
         }
 
         public IOcelotBuilder AddSingletonDelegatingHandler<THandler>(bool global = false) 

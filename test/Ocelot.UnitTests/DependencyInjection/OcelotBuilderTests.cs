@@ -18,6 +18,8 @@ using Shouldly;
 using IdentityServer4.AccessTokenValidation;
 using TestStack.BDDfy;
 using Xunit;
+using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
@@ -177,6 +179,40 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_singleton_defined_aggregators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
+                .And(x => ThenTheAggregatorsAreSingleton<TestDefinedAggregator, TestDefinedAggregator>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_transient_defined_aggregators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
+                .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
+                .And(x => ThenTheAggregatorsAreTransient<TestDefinedAggregator, TestDefinedAggregator>())
+                .BDDfy();
+        }
+
+        private void AddSingletonDefinedAggregator<T>()
+            where T : class, IDefinedAggregator
+        {
+            _ocelotBuilder.AddSingletonDefinedAggregator<T>();
+        }
+
+        private void AddTransientDefinedAggregator<T>()
+            where T : class, IDefinedAggregator
+        {
+            _ocelotBuilder.AddTransientDefinedAggregator<T>();
+        }
+
         private void ThenTheSpecificHandlersAreSingleton()
         {
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
@@ -256,6 +292,32 @@ namespace Ocelot.UnitTests.DependencyInjection
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
+        }
+
+        private void ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TOne, TWo>()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            handlers[0].ShouldBeOfType<TOne>();
+            handlers[1].ShouldBeOfType<TWo>();
+        }
+
+        private void ThenTheAggregatorsAreTransient<TOne, TWo>()
+        {
+            var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var first = aggregators[0];
+            aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var second = aggregators[0];
+            first.ShouldNotBe(second);
+        }
+
+        private void ThenTheAggregatorsAreSingleton<TOne, TWo>()
+        {
+            var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var first = aggregators[0];
+            aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+            var second = aggregators[0];
+            first.ShouldBe(second);
         }
 
         private void OnlyOneVersionOfEachCacheIsRegistered()

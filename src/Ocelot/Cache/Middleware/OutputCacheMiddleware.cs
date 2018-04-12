@@ -2,12 +2,10 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.IO;
-using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Cache.Middleware
 {
@@ -72,38 +70,31 @@ namespace Ocelot.Cache.Middleware
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
-        private void SetHttpResponseMessageThisRequest(DownstreamContext context, HttpResponseMessage response)
+        private void SetHttpResponseMessageThisRequest(DownstreamContext context, DownstreamResponse response)
         {
             context.DownstreamResponse = response;
         }
 
-        internal HttpResponseMessage CreateHttpResponseMessage(CachedResponse cached)
+        internal DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)
         {
             if (cached == null)
             {
                 return null;
             }
 
-            var response = new HttpResponseMessage(cached.StatusCode);
-
-            foreach (var header in cached.Headers)
-            {
-                response.Headers.Add(header.Key, header.Value);
-            }
-
             var content = new MemoryStream(Convert.FromBase64String(cached.Body));
 
-            response.Content = new StreamContent(content);
+            var streamContent = new StreamContent(content);
 
             foreach (var header in cached.ContentHeaders)
             {
-                response.Content.Headers.Add(header.Key, header.Value);
+                streamContent.Headers.Add(header.Key, header.Value);
             }
 
-            return response;
+            return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList());
         }
 
-        internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
+        internal async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
         {
             if (response == null)
             {
@@ -111,7 +102,7 @@ namespace Ocelot.Cache.Middleware
             }
 
             var statusCode = response.StatusCode;
-            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Value);
+            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Values);
             string body = null;
 
             if (response.Content != null)

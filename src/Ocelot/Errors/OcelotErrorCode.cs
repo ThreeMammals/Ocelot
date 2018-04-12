@@ -35,6 +35,7 @@
         PathTemplateDoesntStartWithForwardSlash,
         FileValidationFailedError,
         UnableToFindDelegatingHandlerProviderError,
-        CouldNotFindPlaceholderError
+        CouldNotFindPlaceholderError,
+        CouldNotFindAggregatorError
     }
 }
