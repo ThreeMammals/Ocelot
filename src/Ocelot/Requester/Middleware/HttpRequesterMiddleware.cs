@@ -1,7 +1,6 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Threading.Tasks;
-using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Requester.Middleware
 {
