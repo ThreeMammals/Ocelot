@@ -1,4 +1,5 @@
-using System.Net.Http.Headers;
+using System.Collections.Generic;
+using System.Linq;
 using Ocelot.Responses;
 
 namespace Ocelot.Headers
@@ -14,13 +15,10 @@ namespace Ocelot.Headers
         {
             "Transfer-Encoding"
         };
-        public Response Remove(HttpResponseHeaders headers)
-        {
-            foreach (var unsupported in _unsupportedRequestHeaders)
-            {
-                headers.Remove(unsupported);
-            }
 
+        public Response Remove(List<KeyValuePair<string, IEnumerable<string>>> headers)
+        {
+            headers.RemoveAll(x => _unsupportedRequestHeaders.Contains(x.Key));
             return new OkResponse();
         }
     }

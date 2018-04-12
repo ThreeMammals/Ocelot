@@ -61,7 +61,7 @@ namespace Ocelot.Middleware.Multiplexer
             //assume at least one..if this errors then it will be caught by global exception handler
             var finished = downstreamContexts.First();
 
-            originalContext.Errors = finished.Errors;
+            originalContext.Errors.AddRange(finished.Errors);
 
             originalContext.DownstreamRequest = finished.DownstreamRequest;
 

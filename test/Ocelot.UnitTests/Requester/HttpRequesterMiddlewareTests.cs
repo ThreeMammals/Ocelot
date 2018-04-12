@@ -1,5 +1,4 @@
-using Ocelot.Configuration.Builder;
-using Ocelot.Middleware;
+using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Requester
 {
@@ -14,11 +13,13 @@ namespace Ocelot.UnitTests.Requester
     using Xunit;
     using Shouldly;
     using System.Threading.Tasks;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Middleware;
 
     public class HttpRequesterMiddlewareTests
     {
         private readonly Mock<IHttpRequester> _requester;
-        private OkResponse<HttpResponseMessage> _response;
+        private Response<HttpResponseMessage> _response;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly HttpRequesterMiddleware _middleware;
@@ -39,10 +40,25 @@ namespace Ocelot.UnitTests.Requester
         public void should_call_services_correctly()
         {
             this.Given(x => x.GivenTheRequestIs())
-                .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
+                .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage())))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheScopedRepoIsCalledCorrectly())
+                .Then(x => x.ThenTheDownstreamResponseIsSet())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_error()
+        {
+            this.Given(x => x.GivenTheRequestIs())
+                .And(x => x.GivenTheRequesterReturns(new ErrorResponse<HttpResponseMessage>(new AnyError())))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheErrorIsSet())
+                .BDDfy();
+        }
+
+        private void ThenTheErrorIsSet()
+        {
+            _downstreamContext.IsError.ShouldBeTrue();
         }
 
         private void WhenICallTheMiddleware()
@@ -52,21 +68,27 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheRequestIs()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
-            _downstreamContext.DownstreamReRoute = new DownstreamReRouteBuilder().Build();
+            _downstreamContext =
+                new DownstreamContext(new DefaultHttpContext())
+                {
+                    DownstreamReRoute = new DownstreamReRouteBuilder().Build()
+                };
         }
 
-        private void GivenTheRequesterReturns(HttpResponseMessage response)
+        private void GivenTheRequesterReturns(Response<HttpResponseMessage> response)
         {
-            _response = new OkResponse<HttpResponseMessage>(response);
+            _response = response;
+
             _requester
                 .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>()))
                 .ReturnsAsync(_response);
         }
 
-        private void ThenTheScopedRepoIsCalledCorrectly()
+        private void ThenTheDownstreamResponseIsSet()
         {
-            _downstreamContext.DownstreamResponse.ShouldBe(_response.Data);
+            _downstreamContext.DownstreamResponse.Headers.ShouldBe(_response.Data.Headers);
+            _downstreamContext.DownstreamResponse.Content.ShouldBe(_response.Data.Content);
+            _downstreamContext.DownstreamResponse.StatusCode.ShouldBe(_response.Data.StatusCode);
         }
     }
 }

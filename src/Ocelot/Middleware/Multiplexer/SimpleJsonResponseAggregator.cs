@@ -21,7 +21,7 @@ namespace Ocelot.Middleware.Multiplexer
 
             contentBuilder.Append("{");
 
-            for (int i = 0; i < downstreamContexts.Count; i++)
+            for (var i = 0; i < downstreamContexts.Count; i++)
             {
                 if (downstreamContexts[i].IsError)
                 {
@@ -41,13 +41,12 @@ namespace Ocelot.Middleware.Multiplexer
 
             contentBuilder.Append("}");
 
-            originalContext.DownstreamResponse = new HttpResponseMessage(HttpStatusCode.OK)
+            var stringContent = new StringContent(contentBuilder.ToString())
             {
-                Content = new StringContent(contentBuilder.ToString())
-                {
-                    Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
-                }
+                Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
             };
+
+            originalContext.DownstreamResponse = new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>());
         }
 
         private static void MapAggregateError(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts, int i)

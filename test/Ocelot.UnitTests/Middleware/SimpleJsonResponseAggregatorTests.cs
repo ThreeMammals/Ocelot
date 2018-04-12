@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using Castle.Components.DictionaryAdapter;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -48,15 +49,13 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse =
-                    new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("Bill says hi")},
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>()),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse =
-                    new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("George says hi")},
+                DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
                 DownstreamReRoute = georgeDownstreamReRoute
             };
 
@@ -92,18 +91,17 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse =
-                    new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Bill says hi") },
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse =
-                    new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("Error") },
+                DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
                 DownstreamReRoute = georgeDownstreamReRoute,
-                Errors = new List<Error>() { new AnyError() }
             };
+
+            georgeDownstreamContext.Errors.Add(new AnyError());
 
             var downstreamContexts = new List<DownstreamContext> { billDownstreamContext, georgeDownstreamContext };
 

@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Threading.Tasks;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Requester.Middleware
 {
@@ -36,7 +33,7 @@ namespace Ocelot.Requester.Middleware
 
             Logger.LogDebug("setting http response message");
 
-            context.DownstreamResponse = response.Data;
+            context.DownstreamResponse = new DownstreamResponse(response.Data);
         }
     }
 }

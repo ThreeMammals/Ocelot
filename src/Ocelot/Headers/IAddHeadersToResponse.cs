@@ -1,11 +1,11 @@
 namespace Ocelot.Headers
 {
     using System.Collections.Generic;
-    using System.Net.Http;
     using Ocelot.Configuration.Creator;
+    using Ocelot.Middleware.Multiplexer;
 
     public interface IAddHeadersToResponse
     {
-        void Add(List<AddHeader> addHeaders, HttpResponseMessage response);
+        void Add(List<AddHeader> addHeaders, DownstreamResponse response);
     }
 }

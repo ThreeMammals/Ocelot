@@ -1,12 +1,11 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
-using Ocelot.Responses;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Responder
 {
@@ -25,7 +24,7 @@ namespace Ocelot.Responder
             _removeOutputHeaders = removeOutputHeaders;
         }
 
-        public async Task SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
+        public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response)
         {
             _removeOutputHeaders.Remove(response.Headers);
 

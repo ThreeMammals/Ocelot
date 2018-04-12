@@ -20,8 +20,8 @@ namespace Ocelot.UnitTests.Middleware
 {
     public class UserDefinedResponseAggregatorTests
     {
-        private UserDefinedResponseAggregator _aggregator;
-        private Mock<IDefinedAggregatorProvider> _provider;
+        private readonly UserDefinedResponseAggregator _aggregator;
+        private readonly Mock<IDefinedAggregatorProvider> _provider;
 
         // todo - refactor to bddfy
         public UserDefinedResponseAggregatorTests()
@@ -40,18 +40,12 @@ namespace Ocelot.UnitTests.Middleware
             var contexts = new List<DownstreamContext>
             {
                 new DownstreamContext(new DefaultHttpContext())
-                { 
-                    DownstreamResponse = new HttpResponseMessage
-                    {
-                        Content = new StringContent("Tom")
-                    }
+                {
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
                 },
                 new DownstreamContext(new DefaultHttpContext())
-                { 
-                    DownstreamResponse = new HttpResponseMessage
-                    {
-                        Content = new StringContent("Laura")
-                    }
+                {
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
                 }
             };
 
@@ -64,7 +58,6 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public async Task should_not_find_aggregator()
         {
-            var aggregator = new TestDefinedAggregator();
             _provider.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(new ErrorResponse<IDefinedAggregator>(new AnyError()));
             var reRoute = new ReRouteBuilder().Build();
             var context = new DownstreamContext(new DefaultHttpContext());
@@ -72,17 +65,12 @@ namespace Ocelot.UnitTests.Middleware
             {
                 new DownstreamContext(new DefaultHttpContext())
                 { 
-                    DownstreamResponse = new HttpResponseMessage
-                    {
-                        Content = new StringContent("Tom")
-                    }
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+
                 },
                 new DownstreamContext(new DefaultHttpContext())
-                { 
-                    DownstreamResponse = new HttpResponseMessage
-                    {
-                        Content = new StringContent("Laura")
-                    }
+                {
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
                 }
             };
 
@@ -94,13 +82,13 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<AggregateResponse> Aggregate(List<HttpResponseMessage> responses)
+            public async Task<DownstreamResponse> Aggregate(List<DownstreamResponse> responses)
             {
                 var tom = await responses[0].Content.ReadAsStringAsync();
                 var laura = await responses[1].Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
                 var headers = responses.SelectMany(x => x.Headers).ToList();
-                return new AggregateResponse(new StringContent(content), HttpStatusCode.OK, headers);
+                return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers);
             }
         }
     }
