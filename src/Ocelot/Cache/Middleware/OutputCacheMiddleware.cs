@@ -102,7 +102,7 @@ namespace Ocelot.Cache.Middleware
             }
 
             var statusCode = response.StatusCode;
-            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Value);
+            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Values);
             string body = null;
 
             if (response.Content != null)

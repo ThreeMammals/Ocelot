@@ -1,7 +1,4 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.DownstreamUrlCreator
+﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
     using System;
     using System.Collections.Generic;
@@ -21,17 +18,19 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     using Shouldly;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Request.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Middleware;
 
     public class DownstreamUrlCreatorMiddlewareTests
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private OkResponse<DownstreamPath> _downstreamPath;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private DownstreamUrlCreatorMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
-        private HttpRequestMessage _request;
+        private readonly DownstreamContext _downstreamContext;
+        private readonly OcelotRequestDelegate _next;
+        private readonly HttpRequestMessage _request;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -212,7 +211,6 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private void GivenTheDownstreamRequestUriIs(string uri)
         {
             _request.RequestUri = new Uri(uri);
-            //todo - not sure if needed
             _downstreamContext.DownstreamRequest = new DownstreamRequest(_request);
         }
 

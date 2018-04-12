@@ -53,7 +53,6 @@ namespace Ocelot.UnitTests.Logging
         [Fact]
         public void should_log_error()
         {
-            
             _logger.LogError($"a message from {_a} to {_b}", _ex);
 
             ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Error);

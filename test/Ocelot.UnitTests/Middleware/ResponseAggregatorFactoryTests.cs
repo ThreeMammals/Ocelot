@@ -1,16 +1,19 @@
 namespace Ocelot.UnitTests.Middleware
 {
-    using System;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.Middleware.Multiplexer;
     using Shouldly;
     using Xunit;
+    using Ocelot.Configuration;
+    using TestStack.BDDfy;
 
     public class ResponseAggregatorFactoryTests
     {
-        private InMemoryResponseAggregatorFactory _factory;
+        private readonly InMemoryResponseAggregatorFactory _factory;
         private Mock<IDefinedAggregatorProvider> _provider;
+        private ReRoute _reRoute;
+        private IResponseAggregator _aggregator;
 
         public ResponseAggregatorFactoryTests()
         {
@@ -18,21 +21,44 @@ namespace Ocelot.UnitTests.Middleware
             _factory = new InMemoryResponseAggregatorFactory(_provider.Object);
         }
         
-        // todo - bddfy these tests
         [Fact]
         public void should_return_simple_json_aggregator()
         {
-            var reRoute = new ReRouteBuilder().Build();
-            var aggregator = _factory.Get(reRoute);
-            aggregator.ShouldBeOfType<SimpleJsonResponseAggregator>();
+            var reRoute = new ReRouteBuilder()
+                .Build();
+
+            this.Given(_ => GivenReRoute(reRoute))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheAggregatorIs<SimpleJsonResponseAggregator>())
+                .BDDfy();
         }
 
         [Fact]
         public void should_return_user_defined_aggregator()
         {
-            var reRoute = new ReRouteBuilder().WithAggregator("doesntmatter").Build();
-            var aggregator = _factory.Get(reRoute);
-            aggregator.ShouldBeOfType<UserDefinedResponseAggregator>();        
+            var reRoute = new ReRouteBuilder()
+                .WithAggregator("doesntmatter")
+                .Build();
+
+            this.Given(_ => GivenReRoute(reRoute))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheAggregatorIs<UserDefinedResponseAggregator>())
+                .BDDfy();
+        }
+
+        private void GivenReRoute(ReRoute reRoute)
+        {
+            _reRoute = reRoute;
+        }
+
+        private void WhenIGet()
+        {
+            _aggregator = _factory.Get(_reRoute);
+        }
+
+        private void ThenTheAggregatorIs<T>()
+        {
+            _aggregator.ShouldBeOfType<T>();
         }
     }
 }

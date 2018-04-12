@@ -81,7 +81,6 @@
         {
             foreach (var header in request.Headers)
             {
-                //todo get rid of if..
                 if (IsSupportedHeader(header))
                 {
                     requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());

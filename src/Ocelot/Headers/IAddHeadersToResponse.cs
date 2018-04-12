@@ -1,3 +1,5 @@
+using Ocelot.Middleware;
+
 namespace Ocelot.Headers
 {
     using System.Collections.Generic;

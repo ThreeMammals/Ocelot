@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Ocelot.Configuration;
+using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;

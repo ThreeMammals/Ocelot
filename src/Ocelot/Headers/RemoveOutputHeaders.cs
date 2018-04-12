@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responses;
 
 namespace Ocelot.Headers
@@ -16,7 +18,7 @@ namespace Ocelot.Headers
             "Transfer-Encoding"
         };
 
-        public Response Remove(List<KeyValuePair<string, IEnumerable<string>>> headers)
+        public Response Remove(List<Header> headers)
         {
             headers.RemoveAll(x => _unsupportedRequestHeaders.Contains(x.Key));
             return new OkResponse();

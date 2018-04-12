@@ -4,7 +4,7 @@ namespace Ocelot.Headers
     using Ocelot.Configuration.Creator;
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Middleware;
 
     public class AddHeadersToResponse : IAddHeadersToResponse
     {
@@ -31,11 +31,11 @@ namespace Ocelot.Headers
                         continue;
                     }
 
-                    response.Headers.Add(new KeyValuePair<string, IEnumerable<string>>(add.Key, new List<string> { value.Data }));
+                    response.Headers.Add(new Header(add.Key, new List<string> { value.Data }));
                 }
                 else
                 {
-                    response.Headers.Add(new KeyValuePair<string, IEnumerable<string>>(add.Key, new List<string> { add.Value }));
+                    response.Headers.Add(new Header(add.Key, new List<string> { add.Value }));
                 }
             }
         }

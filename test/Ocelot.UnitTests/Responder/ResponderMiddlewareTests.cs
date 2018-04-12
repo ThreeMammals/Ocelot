@@ -67,7 +67,6 @@ namespace Ocelot.UnitTests.Responder
             _downstreamContext.DownstreamResponse = response;
         }
 
-
         private void ThenThereAreNoErrors()
         {
             //todo a better assert?

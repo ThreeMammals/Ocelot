@@ -201,12 +201,14 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
-        private void AddSingletonDefinedAggregator<T>() where T : class, IDefinedAggregator
+        private void AddSingletonDefinedAggregator<T>()
+            where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
 
-        private void AddTransientDefinedAggregator<T>() where T : class, IDefinedAggregator
+        private void AddTransientDefinedAggregator<T>()
+            where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddTransientDefinedAggregator<T>();
         }

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Headers;
+using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responder;
 using Shouldly;

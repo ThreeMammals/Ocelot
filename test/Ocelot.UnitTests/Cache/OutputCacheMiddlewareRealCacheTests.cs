@@ -1,7 +1,4 @@
-﻿
-using Ocelot.Middleware.Multiplexer;
-
-namespace Ocelot.UnitTests.Cache
+﻿namespace Ocelot.UnitTests.Cache
 {
     using System.Linq;
     using System.Net;
@@ -21,6 +18,7 @@ namespace Ocelot.UnitTests.Cache
     using TestStack.BDDfy;
     using Xunit;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Middleware.Multiplexer;
 
     public class OutputCacheMiddlewareRealCacheTests
     {

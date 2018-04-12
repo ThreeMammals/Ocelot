@@ -9,9 +9,9 @@ namespace Ocelot.UnitTests.Infrastructure
 {
     public class HttpDataRepositoryTests
     {
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
         private IHttpContextAccessor _httpContextAccessor;
-        private HttpDataRepository _httpDataRepository;
+        private readonly HttpDataRepository _httpDataRepository;
         private object _result;
 
         public HttpDataRepositoryTests()

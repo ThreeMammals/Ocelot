@@ -153,8 +153,6 @@ namespace Ocelot.UnitTests.QueryStrings
                 .AddQueryString(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString, key, value);
 
             _request.RequestUri = new Uri(newUri);
-            //todo - might not need to instanciate
-            _downstreamRequest = new DownstreamRequest(_request);
         }
 
         private void GivenTheClaimParserReturns(Response<string> claimValue)

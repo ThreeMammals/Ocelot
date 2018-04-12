@@ -3,6 +3,7 @@ using System.Linq;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -33,19 +34,17 @@ namespace Ocelot.Headers
                     if(!placeholderValue.IsError)
                     {
                         //if it is we need to get the value of the placeholder
-                        var replaced = values.Value.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());
+                        var replaced = values.Values.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());
 
                         response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
-                        response.Headers.Add(
-                            new KeyValuePair<string, IEnumerable<string>>(f.Key, new List<string> { replaced }));
+                        response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
                     }
                     else
                     {
-                        var replaced = values.Value.ToList()[f.Index].Replace(f.Find, f.Replace);
+                        var replaced = values.Values.ToList()[f.Index].Replace(f.Find, f.Replace);
 
                         response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
-                        response.Headers.Add(
-                            new KeyValuePair<string, IEnumerable<string>>(f.Key, new List<string> { replaced }));
+                        response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
                     }
                 }
             }

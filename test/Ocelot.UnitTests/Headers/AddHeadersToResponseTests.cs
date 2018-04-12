@@ -10,6 +10,7 @@ using Ocelot.Responses;
 using Ocelot.Infrastructure;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Shouldly;
 
@@ -126,7 +127,7 @@ namespace Ocelot.UnitTests.Headers
         private void ThenTheHeaderIsReturned(string key, string value)
         {
             var values = _response.Headers.First(x => x.Key == key);
-            values.Value.First().ShouldBe(value);
+            values.Values.First().ShouldBe(value);
         }
 
         private void WhenIAdd()

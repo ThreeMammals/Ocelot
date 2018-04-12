@@ -1,5 +1,3 @@
-using Ocelot.UnitTests.Responder;
-
 namespace Ocelot.UnitTests.Requester
 {
     using Microsoft.AspNetCore.Http;
@@ -15,6 +13,9 @@ namespace Ocelot.UnitTests.Requester
     using System.Threading.Tasks;
     using Ocelot.Configuration.Builder;
     using Ocelot.Middleware;
+    using System;
+    using System.Linq;
+    using Ocelot.UnitTests.Responder;
 
     public class HttpRequesterMiddlewareTests
     {
@@ -86,7 +87,14 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheDownstreamResponseIsSet()
         {
-            _downstreamContext.DownstreamResponse.Headers.ShouldBe(_response.Data.Headers);
+            foreach (var httpResponseHeader in _response.Data.Headers)
+            {
+                if (_downstreamContext.DownstreamResponse.Headers.Any(x => x.Key == httpResponseHeader.Key))
+                {
+                    throw new Exception("Header in response not in downstreamresponse headers");
+                }
+            }
+
             _downstreamContext.DownstreamResponse.Content.ShouldBe(_response.Data.Content);
             _downstreamContext.DownstreamResponse.StatusCode.ShouldBe(_response.Data.StatusCode);
         }

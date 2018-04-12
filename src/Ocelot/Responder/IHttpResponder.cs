@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Responder

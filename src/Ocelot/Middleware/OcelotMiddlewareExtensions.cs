@@ -22,11 +22,6 @@
 
     public static class OcelotMiddlewareExtensions
     {
-        /// <summary>
-        /// Registers the Ocelot default middlewares
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
             await builder.UseOcelot(new OcelotPipelineConfiguration());
@@ -34,12 +29,6 @@
             return builder;
         }
 
-        /// <summary>
-        /// Registers Ocelot with a combination of default middlewares and optional middlewares in the configuration
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="pipelineConfiguration"></param>
-        /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
         {
             var configuration = await CreateConfiguration(builder);
@@ -230,26 +219,14 @@
                 });
             }
         }
-        
-        private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
-        {
-            if (middleware != null)
-            {
-                builder.Use(middleware);
-            }
-        }
 
-        /// <summary>
-         /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
-         /// </summary>
-         /// <param name="builder"></param>
-         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
-         {
+        private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
+        {
             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
             var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
             diagnosticListener.SubscribeWithAdapter(listener);
-         }
+        }
         
         private static void OnShutdown(IApplicationBuilder app)
         {
