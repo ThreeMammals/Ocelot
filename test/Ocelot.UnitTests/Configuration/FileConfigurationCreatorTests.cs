@@ -26,10 +26,10 @@ namespace Ocelot.UnitTests.Configuration
     {
         private readonly Mock<IOptions<FileConfiguration>> _fileConfig;
         private readonly Mock<IConfigurationValidator> _validator;
-        private Response<IOcelotConfiguration> _config;
+        private Response<IInternalConfiguration> _config;
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IOcelotLoggerFactory> _logger;
-        private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
+        private readonly FileInternalConfigurationCreator _internalConfigurationCreator;
         private Mock<IClaimsToThingCreator> _claimsToThingCreator;
         private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
         private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.Configuration
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
 
-            _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
+            _internalConfigurationCreator = new FileInternalConfigurationCreator( 
                 _fileConfig.Object,
                 _validator.Object, 
                 _logger.Object,
@@ -807,7 +807,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create(_fileConfiguration).Result;
+            _config = _internalConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)

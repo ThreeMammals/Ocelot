@@ -21,10 +21,10 @@ namespace Ocelot.Raft
         private JsonSerializerSettings _jsonSerializerSettings;
         private string _baseSchemeUrlAndPort;
         private BearerToken _token;
-        private IOcelotConfiguration _config;
+        private IInternalConfiguration _config;
         private IIdentityServerConfiguration _identityServerConfiguration;
 
-        public HttpPeer(string hostAndPort, HttpClient httpClient, IBaseUrlFinder finder, IOcelotConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
+        public HttpPeer(string hostAndPort, HttpClient httpClient, IBaseUrlFinder finder, IInternalConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
         {
             _identityServerConfiguration = identityServerConfiguration;
             _config = config;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Provider;
+using Ocelot.Configuration.Repository;
 using Ocelot.Middleware;
 using Rafty.Concensus;
 using Rafty.Infrastructure;
@@ -15,20 +16,20 @@ namespace Ocelot.Raft
     public class FilePeersProvider : IPeersProvider
     {
         private readonly IOptions<FilePeers> _options;
-        private List<IPeer> _peers;
+        private readonly List<IPeer> _peers;
         private IBaseUrlFinder _finder;
-        private IOcelotConfigurationProvider _provider;
+        private IInternalConfigurationRepository _repo;
         private IIdentityServerConfiguration _identityServerConfig;
 
-        public FilePeersProvider(IOptions<FilePeers> options, IBaseUrlFinder finder, IOcelotConfigurationProvider provider, IIdentityServerConfiguration identityServerConfig)
+        public FilePeersProvider(IOptions<FilePeers> options, IBaseUrlFinder finder, IInternalConfigurationRepository repo, IIdentityServerConfiguration identityServerConfig)
         {
             _identityServerConfig = identityServerConfig;
-            _provider = provider;
+            _repo = repo;
             _finder = finder;
             _options = options;
             _peers = new List<IPeer>();
             
-            var config = _provider.Get();
+            var config = _repo.Get();
             foreach (var item in _options.Value.Peers)
             {
                 var httpClient = new HttpClient();

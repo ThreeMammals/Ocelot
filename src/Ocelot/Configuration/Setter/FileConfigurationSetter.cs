@@ -8,13 +8,13 @@ namespace Ocelot.Configuration.Setter
 {
     public class FileConfigurationSetter : IFileConfigurationSetter
     {
-        private readonly IOcelotConfigurationRepository _configRepo;
-        private readonly IOcelotConfigurationCreator _configCreator;
+        private readonly IInternalConfigurationRepository _configRepo;
+        private readonly IInternalConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
 
         public FileConfigurationSetter(
-            IOcelotConfigurationRepository configRepo, 
-            IOcelotConfigurationCreator configCreator, 
+            IInternalConfigurationRepository configRepo, 
+            IInternalConfigurationCreator configCreator, 
             IFileConfigurationRepository repo)
         {
             _configRepo = configRepo;

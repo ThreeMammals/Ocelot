@@ -1,35 +1,45 @@
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using Consul;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.Infrastructure.Consul;
-using Ocelot.Logging;
-using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Configuration;
-
 namespace Ocelot.Configuration.Repository
 {
+    using System;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Consul;
+    using Newtonsoft.Json;
+    using Ocelot.Configuration.File;
+    using Ocelot.Infrastructure.Consul;
+    using Ocelot.Logging;
+    using Ocelot.Responses;
+    using Ocelot.ServiceDiscovery.Configuration;
+
     public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         private readonly ConsulClient _consul;
-        private const string OcelotConfiguration = "OcelotConfiguration";
+        private const string OcelotConfiguration = "InternalConfiguration";
         private readonly Cache.IOcelotCache<FileConfiguration> _cache;
         private readonly IOcelotLogger _logger;
 
         public ConsulFileConfigurationRepository(
             Cache.IOcelotCache<FileConfiguration> cache,
-            ServiceProviderConfiguration serviceProviderConfiguration, 
+            IInternalConfigurationRepository repo, 
             IConsulClientFactory factory,
             IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<ConsulFileConfigurationRepository>();
             _cache = cache;
 
-            var consulHost = string.IsNullOrEmpty(serviceProviderConfiguration?.Host) ? "localhost" : serviceProviderConfiguration?.Host;
-            var consulPort = serviceProviderConfiguration?.Port ?? 8500;
-            var token = serviceProviderConfiguration?.Token;
+            var internalConfig = repo.Get();
+
+            var consulHost = "localhost";
+            var consulPort = 8500;
+            string token = null;
+
+            if (!internalConfig.IsError)
+            {
+                consulHost = string.IsNullOrEmpty(internalConfig.Data.ServiceProviderConfiguration?.Host) ? consulHost : internalConfig.Data.ServiceProviderConfiguration?.Host;
+                consulPort = internalConfig.Data.ServiceProviderConfiguration?.Port ?? consulPort;
+                token = internalConfig.Data.ServiceProviderConfiguration?.Token;
+            }
+
             var config = new ConsulRegistryConfiguration(consulHost, consulPort, OcelotConfiguration, token);
 
             _consul = factory.Get(config);

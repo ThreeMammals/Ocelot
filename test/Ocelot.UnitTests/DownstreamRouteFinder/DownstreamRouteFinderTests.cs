@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamUrlPath;
         private Response<DownstreamRoute> _result;
         private List<ReRoute> _reRoutesConfig;
-        private OcelotConfiguration _config;
+        private InternalConfiguration _config;
         private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;
         private string _upstreamHost;
@@ -711,7 +711,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _reRoutesConfig = reRoutesConfig;
-            _config = new OcelotConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig, "");
+            _config = new InternalConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig, "");
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

@@ -325,8 +325,8 @@ namespace Ocelot.UnitTests.DependencyInjection
             var outputCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<CachedResponse>));
             var outputCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<CachedResponse>));
             var instance = (ICacheManager<CachedResponse>)outputCacheManager.ImplementationInstance;
-            var ocelotConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<IOcelotConfiguration>));
-            var ocelotConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<IOcelotConfiguration>));
+            var ocelotConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<IInternalConfiguration>));
+            var ocelotConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<IInternalConfiguration>));
             var fileConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<FileConfiguration>));
             var fileConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<FileConfiguration>));
 

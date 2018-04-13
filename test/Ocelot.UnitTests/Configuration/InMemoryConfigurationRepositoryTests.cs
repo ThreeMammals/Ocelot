@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Repository;
@@ -14,14 +12,14 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class InMemoryConfigurationRepositoryTests
     {
-        private readonly InMemoryOcelotConfigurationRepository _repo;
-        private IOcelotConfiguration _config;
+        private readonly InMemoryInternalConfigurationRepository _repo;
+        private IInternalConfiguration _config;
         private Response _result;
-        private Response<IOcelotConfiguration> _getResult;
+        private Response<IInternalConfiguration> _getResult;
 
         public InMemoryConfigurationRepositoryTests()
         {
-            _repo = new InMemoryOcelotConfigurationRepository();
+            _repo = new InMemoryInternalConfigurationRepository();
         }
 
         [Fact]
@@ -58,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
             WhenIAddOrReplaceTheConfig();
         }
 
-        private void GivenTheConfigurationIs(IOcelotConfiguration config)
+        private void GivenTheConfigurationIs(IInternalConfiguration config)
         {
             _config = config;
         }
@@ -73,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsError.ShouldBeFalse();
         }
 
-        class FakeConfig : IOcelotConfiguration
+        class FakeConfig : IInternalConfiguration
         {
             private readonly string _downstreamTemplatePath;
 

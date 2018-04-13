@@ -19,17 +19,17 @@ namespace Ocelot.UnitTests.Configuration
     {
         private FileConfiguration _fileConfiguration;
         private FileConfigurationSetter _configSetter;
-        private Mock<IOcelotConfigurationRepository> _configRepo;
-        private Mock<IOcelotConfigurationCreator> _configCreator;
-        private Response<IOcelotConfiguration> _configuration;
+        private Mock<IInternalConfigurationRepository> _configRepo;
+        private Mock<IInternalConfigurationCreator> _configCreator;
+        private Response<IInternalConfiguration> _configuration;
         private object _result; 
         private Mock<IFileConfigurationRepository> _repo;
 
         public FileConfigurationSetterTests()
         {
             _repo = new Mock<IFileConfigurationRepository>();
-            _configRepo = new Mock<IOcelotConfigurationRepository>();
-            _configCreator = new Mock<IOcelotConfigurationCreator>();
+            _configRepo = new Mock<IInternalConfigurationRepository>();
+            _configCreator = new Mock<IInternalConfigurationCreator>();
             _configSetter = new FileConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
         }
 
@@ -38,11 +38,11 @@ namespace Ocelot.UnitTests.Configuration
         {
             var fileConfig = new FileConfiguration();
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-            var config = new OcelotConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, "asdf");
+            var config = new InternalConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, "asdf");
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))
-                .And(x => GivenTheCreatorReturns(new OkResponse<IOcelotConfiguration>(config)))
+                .And(x => GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config)))
                 .When(x => WhenISetTheConfiguration())
                 .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))
-                .And(x => GivenTheCreatorReturns(new ErrorResponse<IOcelotConfiguration>(It.IsAny<Error>())))
+                .And(x => GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>())))
                 .When(x => WhenISetTheConfiguration())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.ShouldBeOfType<ErrorResponse>();
         }
 
-        private void GivenTheCreatorReturns(Response<IOcelotConfiguration> configuration)
+        private void GivenTheCreatorReturns(Response<IInternalConfiguration> configuration)
         {
             _configuration = configuration;
             _configCreator
