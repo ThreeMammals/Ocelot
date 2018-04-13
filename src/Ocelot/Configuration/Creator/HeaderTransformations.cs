@@ -7,9 +7,11 @@ namespace Ocelot.Configuration.Creator
         public HeaderTransformations(
             List<HeaderFindAndReplace> upstream, 
             List<HeaderFindAndReplace> downstream,
-            List<AddHeader> addHeader)
+            List<AddHeader> addHeaderToDownstream,
+            List<AddHeader> addHeaderToUpstream)
         {
-            AddHeadersToDownstream = addHeader;
+            AddHeadersToDownstream = addHeaderToDownstream;
+            AddHeadersToUpstream = addHeaderToUpstream;
             Upstream = upstream;
             Downstream = downstream;
         }
@@ -19,5 +21,6 @@ namespace Ocelot.Configuration.Creator
         public List<HeaderFindAndReplace> Downstream { get; }
 
         public List<AddHeader> AddHeadersToDownstream { get; }
+        public List<AddHeader> AddHeadersToUpstream { get; }
     }
 }
