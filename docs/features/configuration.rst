@@ -1,7 +1,7 @@
 Configuration
 ============
 
-An example configuration can be found `here <https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/configuration.json>`_.
+An example configuration can be found `here <https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/ocelot.json>`_.
 There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
 The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
 configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
@@ -99,12 +99,12 @@ to you
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("configuration.json")
+                        .AddJsonFile("ocelot.json")
                         .AddJsonFile($"configuration.{hostingContext.HostingEnvironment.EnvironmentName}.json")
                         .AddEnvironmentVariables();
                 })
 
-Ocelot should now use the environment specific configuration and fall back to configuration.json if there isnt one.
+Ocelot should now use the environment specific configuration and fall back to ocelot.json if there isnt one.
 
 You also need to set the corresponding environment variable which is ASPNETCORE_ENVIRONMENT. More info on this can be found in the `asp.net core docs <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
 
@@ -119,7 +119,7 @@ If you add the following when you register your services Ocelot will attempt to 
     .AddOcelot()
     .AddStoreOcelotConfigurationInConsul();
 
-You also need to add the following to your configuration.json. This is how Ocelot
+You also need to add the following to your ocelot.json. This is how Ocelot
 finds your Consul agent and interacts to load and store the configuration from Consul.
 
 .. code-block:: json

@@ -12,10 +12,12 @@ namespace Ocelot.Configuration.Repository
         private readonly string _configFilePath;
 
         private static readonly object _lock = new object();
-        
+
+        private const string ConfigurationFileName = "ocelot";
+
         public FileConfigurationRepository(IHostingEnvironment hostingEnvironment)
         {
-            _configFilePath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
+            _configFilePath = $"{AppContext.BaseDirectory}/{ConfigurationFileName}{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
         }
 
         public Task<Response<FileConfiguration>> Get()

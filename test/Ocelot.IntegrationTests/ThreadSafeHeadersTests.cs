@@ -108,7 +108,7 @@ namespace Ocelot.IntegrationTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("configuration.json");
+                    config.AddJsonFile("ocelot.json");
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
@@ -138,7 +138,7 @@ namespace Ocelot.IntegrationTests
 
         private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{Directory.GetCurrentDirectory()}/configuration.json";
+            var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
@@ -151,7 +151,7 @@ namespace Ocelot.IntegrationTests
 
             var text = File.ReadAllText(configurationPath);
 
-            configurationPath = $"{AppContext.BaseDirectory}/configuration.json";
+            configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
             if (File.Exists(configurationPath))
             {

@@ -18,7 +18,7 @@ All versions can be found `here <https://www.nuget.org/packages/Ocelot/>`_.
 
 **Configuration**
 
-The following is a very basic configuration.json. It won't do anything but should get Ocelot starting.
+The following is a very basic ocelot.json. It won't do anything but should get Ocelot starting.
 
 .. code-block:: json
 
@@ -55,7 +55,7 @@ AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot m
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("configuration.json")
+                        .AddJsonFile("ocelot.json")
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {
@@ -87,7 +87,7 @@ All versions can be found `here <https://www.nuget.org/packages/Ocelot/>`_.
 
 **Configuration**
 
-The following is a very basic configuration.json. It won't do anything but should get Ocelot starting.
+The following is a very basic ocelot.json. It won't do anything but should get Ocelot starting.
 
 .. code-block:: json
 
@@ -135,7 +135,7 @@ An example startup using a json file for configuration can be seen below.
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("configuration.json")
+                .AddJsonFile("ocelot.json")
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();

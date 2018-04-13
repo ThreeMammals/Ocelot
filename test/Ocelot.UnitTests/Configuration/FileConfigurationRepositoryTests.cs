@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            var configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 

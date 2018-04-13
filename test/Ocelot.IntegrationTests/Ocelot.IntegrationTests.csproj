@@ -14,7 +14,7 @@
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="peers.json;configuration.json;appsettings.json;idsrv3test.pfx">
+    <None Update="peers.json;ocelot.json;appsettings.json;idsrv3test.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

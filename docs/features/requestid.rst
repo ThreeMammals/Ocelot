@@ -12,7 +12,7 @@ In order to use the reques tid feature you have two options.
 
 *Global*
 
-In your configuration.json set the following in the GlobalConfiguration section. This will be used for all requests into Ocelot.
+In your ocelot.json set the following in the GlobalConfiguration section. This will be used for all requests into Ocelot.
 
 .. code-block:: json
 
@@ -24,7 +24,7 @@ I reccomend using the GlobalConfiguration unless you really need it to be ReRout
 
 *ReRoute*
 
-If you want to override this for a specific ReRoute add the following to configuration.json for the specific ReRoute.
+If you want to override this for a specific ReRoute add the following to ocelot.json for the specific ReRoute.
 
 .. code-block:: json
 

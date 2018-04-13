@@ -9,7 +9,7 @@ Add to Response
 This feature was requested in `GitHub #280 <https://github.com/TomPallister/Ocelot/issues/280>`_. I have only implemented
 for responses but could add for requests in the future.
 
-If you want to add a header to your downstream response please add the following to a ReRoute in configuration.json..
+If you want to add a header to your downstream response please add the following to a ReRoute in ocelot.json..
 
 .. code-block:: json
 
@@ -41,7 +41,7 @@ The key is "Test" and the value is "http://www.bbc.co.uk/, http://ocelot.com/". 
 Pre Downstream Request
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Add the following to a ReRoute in configuration.json in order to replace http://www.bbc.co.uk/ with http://ocelot.com/. This header will be changed before the request downstream and will be sent to the downstream server.
+Add the following to a ReRoute in ocelot.json in order to replace http://www.bbc.co.uk/ with http://ocelot.com/. This header will be changed before the request downstream and will be sent to the downstream server.
 
 .. code-block:: json
 
@@ -52,7 +52,7 @@ Add the following to a ReRoute in configuration.json in order to replace http://
 Post Downstream Request
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Add the following to a ReRoute in configuration.json in order to replace http://www.bbc.co.uk/ with http://ocelot.com/. This transformation will take place after Ocelot has received the response from the downstream service.
+Add the following to a ReRoute in ocelot.json in order to replace http://www.bbc.co.uk/ with http://ocelot.com/. This transformation will take place after Ocelot has received the response from the downstream service.
 
 .. code-block:: json
 

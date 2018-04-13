@@ -7,7 +7,7 @@ architecture with Ocelot.
 
 This feature was requested as part of `Issue 79 <https://github.com/TomPallister/Ocelot/pull/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/TomPallister/Ocelot/issue/298>`_.
 
-In order to set this up you must do something like the following in your configuration.json. Here we have specified two normal ReRoutes and each one has a Key property. 
+In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal ReRoutes and each one has a Key property. 
 We then specify an Aggregate that composes the two ReRoutes using their keys in the ReRouteKeys list and says then we have the UpstreamPathTemplate which works like a normal ReRoute.
 Obviously you cannot have duplicate UpstreamPathTemplates between ReRoutes and Aggregates. You can use all of Ocelot's normal ReRoute options apart from RequestIdKey (explained in gotchas below).
 
@@ -17,7 +17,7 @@ Advanced register your own Aggregators
 Ocelot started with just the basic request aggregation and since then we have added a more advanced method that let's the user take in the responses from the 
 downstream services and then aggregate them into a response object.
 
-The configuration.json setup is pretty much the same as the basic aggregation approach apart from you need to add an Aggregator property like below.
+The ocelot.json setup is pretty much the same as the basic aggregation approach apart from you need to add an Aggregator property like below.
 
 .. code-block:: json
 

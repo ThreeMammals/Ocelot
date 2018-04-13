@@ -7,7 +7,7 @@ namespace Ocelot.DependencyInjection
 {
     public static class ConfigurationBuilderExtensions
     {
-        [Obsolete("Please set BaseUrl in configuration.json GlobalConfiguration.BaseUrl")]
+        [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
             var memorySource = new MemoryConfigurationSource();
