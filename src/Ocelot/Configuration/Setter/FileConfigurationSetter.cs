@@ -12,8 +12,10 @@ namespace Ocelot.Configuration.Setter
         private readonly IOcelotConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
 
-        public FileConfigurationSetter(IOcelotConfigurationRepository configRepo, 
-            IOcelotConfigurationCreator configCreator, IFileConfigurationRepository repo)
+        public FileConfigurationSetter(
+            IOcelotConfigurationRepository configRepo, 
+            IOcelotConfigurationCreator configCreator, 
+            IFileConfigurationRepository repo)
         {
             _configRepo = configRepo;
             _configCreator = configCreator;
@@ -33,7 +35,7 @@ namespace Ocelot.Configuration.Setter
 
             if(!config.IsError)
             {
-                await _configRepo.AddOrReplace(config.Data);
+                _configRepo.AddOrReplace(config.Data);
             }
 
             return new ErrorResponse(config.Errors);

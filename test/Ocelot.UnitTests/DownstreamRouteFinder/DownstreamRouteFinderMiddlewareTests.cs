@@ -79,7 +79,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _config = config;
             _provider
                 .Setup(x => x.Get())
-                .ReturnsAsync(new OkResponse<IOcelotConfiguration>(_config));
+                .Returns(new OkResponse<IOcelotConfiguration>(_config));
         }
 
         private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)

@@ -4,7 +4,6 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
     using System.Diagnostics;
     using Microsoft.AspNetCore.Builder;
@@ -89,7 +88,7 @@
         {
             var deps = GetDependencies(builder);
 
-            var ocelotConfiguration = await deps.provider.Get();
+            var ocelotConfiguration = deps.provider.Get();
 
             if (ConfigurationNotSetUp(ocelotConfiguration))
             {
@@ -101,7 +100,7 @@
                 }
             }
 
-            return await GetOcelotConfigAndReturn(deps.provider);
+            return GetOcelotConfigAndReturn(deps.provider);
         }
 
         private static async Task<Response> SetConfig(IApplicationBuilder builder, IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo)
@@ -137,9 +136,9 @@
             return (fileConfiguration, setter, provider, repo);
         }
 
-        private static async Task<IOcelotConfiguration> GetOcelotConfigAndReturn(IOcelotConfigurationProvider provider)
+        private static IOcelotConfiguration GetOcelotConfigAndReturn(IOcelotConfigurationProvider provider)
         {
-            var ocelotConfiguration = await provider.Get();
+            var ocelotConfiguration = provider.Get();
 
             if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
             {
@@ -187,7 +186,7 @@
                     return new ErrorResponse(ocelotConfig.Errors);
                 }
 
-                config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
+                config = ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
 
                 if (config.IsError)
                 {

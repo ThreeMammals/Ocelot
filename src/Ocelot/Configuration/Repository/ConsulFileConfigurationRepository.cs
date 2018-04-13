@@ -5,6 +5,7 @@ using Consul;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Consul;
+using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Configuration;
 
@@ -15,16 +16,22 @@ namespace Ocelot.Configuration.Repository
         private readonly ConsulClient _consul;
         private const string OcelotConfiguration = "OcelotConfiguration";
         private readonly Cache.IOcelotCache<FileConfiguration> _cache;
+        private readonly IOcelotLogger _logger;
 
         public ConsulFileConfigurationRepository(
-            Cache.IOcelotCache<FileConfiguration> cache, 
-            ServiceProviderConfiguration serviceProviderConfig, 
-            IConsulClientFactory factory)
+            Cache.IOcelotCache<FileConfiguration> cache,
+            ServiceProviderConfiguration serviceProviderConfiguration, 
+            IConsulClientFactory factory,
+            IOcelotLoggerFactory loggerFactory)
         {
-            var consulHost = string.IsNullOrEmpty(serviceProviderConfig?.Host) ? "localhost" : serviceProviderConfig?.Host;
-            var consulPort = serviceProviderConfig?.Port ?? 8500;
-            var config = new ConsulRegistryConfiguration(consulHost, consulPort, OcelotConfiguration, serviceProviderConfig?.Token);
+            _logger = loggerFactory.CreateLogger<ConsulFileConfigurationRepository>();
             _cache = cache;
+
+            var consulHost = string.IsNullOrEmpty(serviceProviderConfiguration?.Host) ? "localhost" : serviceProviderConfiguration?.Host;
+            var consulPort = serviceProviderConfiguration?.Port ?? 8500;
+            var token = serviceProviderConfiguration?.Token;
+            var config = new ConsulRegistryConfiguration(consulHost, consulPort, OcelotConfiguration, token);
+
             _consul = factory.Get(config);
         }
 

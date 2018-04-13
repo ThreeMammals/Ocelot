@@ -1,7 +1,3 @@
-using Butterfly.Client.Tracing;
-using Microsoft.Extensions.Options;
-using Ocelot.Middleware.Multiplexer;
-
 namespace Ocelot.DependencyInjection
 {
     using CacheManager.Core;
@@ -22,7 +18,6 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Configuration.Validator;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Headers;
     using Ocelot.Infrastructure.Claims.Parser;
@@ -44,16 +39,16 @@ namespace Ocelot.DependencyInjection
     using System.Security.Cryptography.X509Certificates;
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
     using Microsoft.Extensions.DependencyInjection.Extensions;
-    using System.Linq;
     using System.Net.Http;
     using Butterfly.Client.AspNetCore;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Consul;
+    using Butterfly.Client.Tracing;
+    using Ocelot.Middleware.Multiplexer;
 
     public class OcelotBuilder : IOcelotBuilder
     {

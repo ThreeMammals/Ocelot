@@ -28,8 +28,7 @@ namespace Ocelot.Raft
             _options = options;
             _peers = new List<IPeer>();
             
-            //todo - sort out async nonsense..
-            var config = _provider.Get().GetAwaiter().GetResult();
+            var config = _provider.Get();
             foreach (var item in _options.Value.Peers)
             {
                 var httpClient = new HttpClient();

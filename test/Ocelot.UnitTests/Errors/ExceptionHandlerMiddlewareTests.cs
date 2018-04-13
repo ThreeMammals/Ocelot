@@ -134,7 +134,7 @@ namespace Ocelot.UnitTests.Errors
         {
             var ex = new Exception("outer", new Exception("inner"));
              _provider
-                .Setup(x => x.Get()).ThrowsAsync(ex);
+                .Setup(x => x.Get()).Throws(ex);
         }
 
         private void ThenAnExceptionIsThrown()
@@ -146,7 +146,7 @@ namespace Ocelot.UnitTests.Errors
         {
             var response = new Responses.ErrorResponse<IOcelotConfiguration>(new FakeError());
             _provider
-                .Setup(x => x.Get()).ReturnsAsync(response);
+                .Setup(x => x.Get()).Returns(response);
         }
 
         private void TheRequestIdIsSet(string key, string value)
@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Errors
         {
             var response = new Responses.OkResponse<IOcelotConfiguration>(config);
             _provider
-                .Setup(x => x.Get()).ReturnsAsync(response);
+                .Setup(x => x.Get()).Returns(response);
         }
 
         private void GivenAnExceptionWillNotBeThrownDownstream()

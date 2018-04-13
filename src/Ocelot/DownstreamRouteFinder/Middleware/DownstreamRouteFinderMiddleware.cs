@@ -36,7 +36,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
-            var configuration = await _configProvider.Get();
+            var configuration = _configProvider.Get();
 
             if (configuration.IsError)
             {

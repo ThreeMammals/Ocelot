@@ -56,12 +56,12 @@ namespace Ocelot.UnitTests.Configuration
         {
             _configurationRepository
                 .Setup(x => x.Get())
-                .ReturnsAsync(config);
+                .Returns(config);
         }
 
         private void WhenIGetTheConfig()
         {
-            _result = _ocelotConfigurationProvider.Get().Result;
+            _result = _ocelotConfigurationProvider.Get();
         }
 
         private void TheFollowingIsReturned(Response<IOcelotConfiguration> expected)
