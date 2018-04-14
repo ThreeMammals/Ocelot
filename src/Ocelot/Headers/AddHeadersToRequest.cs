@@ -4,6 +4,7 @@ using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Creator;
 using Ocelot.Request.Middleware;
 
@@ -40,6 +41,20 @@ namespace Ocelot.Headers
             }
 
             return new OkResponse();
+        }
+        
+        public void SetHeadersOnDownstreamRequest(IEnumerable<AddHeader> headers, HttpContext context)
+        {
+            var requestHeader = context.Request.Headers;
+            foreach (var header in headers)
+            {
+                if (requestHeader.ContainsKey(header.Key))
+                {
+                    requestHeader.Remove(header.Key);
+                }
+
+                requestHeader.Add(header.Key, header.Value);
+            }
         }
     }
 }
