@@ -8,11 +8,9 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Authorisation;
     using Ocelot.Cache;
     using Ocelot.Claims;
-    using Ocelot.Configuration.Authentication;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Parser;
-    using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.Configuration.Validator;
@@ -40,8 +38,6 @@ namespace Ocelot.DependencyInjection
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using System.Net.Http;
     using Butterfly.Client.AspNetCore;
@@ -86,9 +82,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
             _services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
             _services.TryAddSingleton<IRegionCreator, RegionCreator>();
-            _services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
-            _services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
-            _services.TryAddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();
+            _services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
+            _services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
             _services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
             _services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             _services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
@@ -287,7 +282,6 @@ namespace Ocelot.DependencyInjection
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
             _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-            _services.TryAddSingleton<IHashMatcher, HashMatcher>();
             var identityServerBuilder = _services
                 .AddIdentityServer(o => {
                     o.IssuerUri = "Ocelot";

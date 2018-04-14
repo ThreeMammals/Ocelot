@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 using Ocelot.Middleware;
 using Rafty.Concensus;

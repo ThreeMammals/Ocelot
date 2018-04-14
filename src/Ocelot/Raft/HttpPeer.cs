@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
-using Ocelot.Authentication;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
 using Ocelot.Middleware;
 using Rafty.Concensus;
 using Rafty.FiniteStateMachine;
@@ -16,13 +12,13 @@ namespace Ocelot.Raft
     [ExcludeFromCoverage]
     public class HttpPeer : IPeer
     {
-        private string _hostAndPort;
-        private HttpClient _httpClient;
-        private JsonSerializerSettings _jsonSerializerSettings;
-        private string _baseSchemeUrlAndPort;
+        private readonly string _hostAndPort;
+        private readonly HttpClient _httpClient;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
+        private readonly string _baseSchemeUrlAndPort;
         private BearerToken _token;
-        private IInternalConfiguration _config;
-        private IIdentityServerConfiguration _identityServerConfiguration;
+        private readonly IInternalConfiguration _config;
+        private readonly IIdentityServerConfiguration _identityServerConfiguration;
 
         public HttpPeer(string hostAndPort, HttpClient httpClient, IBaseUrlFinder finder, IInternalConfiguration config, IIdentityServerConfiguration identityServerConfiguration)
         {

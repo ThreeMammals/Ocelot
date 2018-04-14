@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository
 {

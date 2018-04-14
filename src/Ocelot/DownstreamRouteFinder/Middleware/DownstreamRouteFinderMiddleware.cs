@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using System.Linq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;

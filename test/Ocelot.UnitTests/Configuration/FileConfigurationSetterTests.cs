@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.Configuration
     public class FileConfigurationSetterTests
     {
         private FileConfiguration _fileConfiguration;
-        private FileConfigurationSetter _configSetter;
+        private FileAndInternalConfigurationSetter _configSetter;
         private Mock<IInternalConfigurationRepository> _configRepo;
         private Mock<IInternalConfigurationCreator> _configCreator;
         private Response<IInternalConfiguration> _configuration;
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Configuration
             _repo = new Mock<IFileConfigurationRepository>();
             _configRepo = new Mock<IInternalConfigurationRepository>();
             _configCreator = new Mock<IInternalConfigurationCreator>();
-            _configSetter = new FileConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
+            _configSetter = new FileAndInternalConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
         }
 
         [Fact]

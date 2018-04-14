@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.Configuration
         public FileConfigurationRepositoryTests()
         {
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new FileConfigurationRepository(_hostingEnvironment.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _environmentName = null;
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new FileConfigurationRepository(_hostingEnvironment.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration fileConfiguration)
