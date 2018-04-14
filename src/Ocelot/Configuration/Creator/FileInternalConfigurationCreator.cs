@@ -18,7 +18,6 @@ namespace Ocelot.Configuration.Creator
     /// </summary>
     public class FileInternalConfigurationCreator : IInternalConfigurationCreator
     {
-        private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
         private readonly IOcelotLogger _logger;
         private readonly IClaimsToThingCreator _claimsToThingCreator;
@@ -36,7 +35,6 @@ namespace Ocelot.Configuration.Creator
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
 
         public FileInternalConfigurationCreator(
-            IOptions<FileConfiguration> options, 
             IConfigurationValidator configurationValidator,
             IOcelotLoggerFactory loggerFactory,
             IClaimsToThingCreator claimsToThingCreator,
@@ -62,7 +60,6 @@ namespace Ocelot.Configuration.Creator
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
             _authOptionsCreator = authOptionsCreator;
-            _options = options;
             _configurationValidator = configurationValidator;
             _logger = loggerFactory.CreateLogger<FileInternalConfigurationCreator>();
             _claimsToThingCreator = claimsToThingCreator;

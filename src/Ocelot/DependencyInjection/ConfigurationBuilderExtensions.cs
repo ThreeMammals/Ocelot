@@ -18,5 +18,14 @@ namespace Ocelot.DependencyInjection
             builder.Add(memorySource);
             return builder;
         }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder)
+        {
+            //var load all files with ocelot*.json
+            //merge these files into one
+            //save it as ocelot.json
+            builder.AddJsonFile("ocelot.json");
+            return builder;
+        }
     }
 }
