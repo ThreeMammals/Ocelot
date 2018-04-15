@@ -32,19 +32,32 @@ namespace Ocelot.DependencyInjection
             var reg = new Regex(pattern);
 
             var files = Directory.GetFiles(".")
-                .Where(path => reg.IsMatch(path))
+                .Where(path => reg.IsMatch(path)).Where(x => x.Count(s => s == '.') == 3)
                 .ToList();
+
+            FileConfiguration ocelotConfig = new FileConfiguration();
 
             foreach (var file in files)
             {
+                if(files.Count > 1 && file == "./ocelot.json")
+                {
+                    continue;
+                }
+
                 var lines = File.ReadAllText(file);
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
+                if(file ==  "./ocelot.global.json")
+                {
+                    ocelotConfig.GlobalConfiguration = config.GlobalConfiguration;
+                }
+
+                ocelotConfig.Aggregates.AddRange(config.Aggregates);
+                ocelotConfig.ReRoutes.AddRange(config.ReRoutes);
             }
 
-            //var load all files with ocelot*.json
-            //merge these files into one
-            //save it as ocelot.json
+            var json = JsonConvert.SerializeObject(ocelotConfig);
+            File.WriteAllText("ocelot.json", json);
             builder.AddJsonFile("ocelot.json");
             return builder;
         }

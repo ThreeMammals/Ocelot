@@ -73,11 +73,11 @@ namespace Ocelot.UnitTests.DependencyInjection
             File.WriteAllText("ocelot.global.json", globalJson);
 
             var reRouteJson = JsonConvert.SerializeObject(reRoute);
-            File.WriteAllText("ocelot.reRoute.json", reRouteJson);
+            File.WriteAllText("ocelot.reRoutes.json", reRouteJson);
 
             IConfigurationBuilder builder = new ConfigurationBuilder();
             builder.AddOcelot();
-            
+            var configRoot = builder.Build();
         }
 
         private void GivenTheBaseUrl(string baseUrl)
