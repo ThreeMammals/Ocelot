@@ -70,13 +70,13 @@ namespace Ocelot.UnitTests.DependencyInjection
             };
 
             var globalJson = JsonConvert.SerializeObject(globalConfig);
-            //File.WriteAllText("ocelot.global.json", globalJson);
+            File.WriteAllText("ocelot.global.json", globalJson);
 
             var reRouteJson = JsonConvert.SerializeObject(reRoute);
-            //File.WriteAllText("ocelot.reRoute.json", reRouteJson);
+            File.WriteAllText("ocelot.reRoute.json", reRouteJson);
 
             IConfigurationBuilder builder = new ConfigurationBuilder();
-            //builder.AddOcelot();
+            builder.AddOcelot();
             
         }
 
