@@ -22,12 +22,6 @@ namespace Ocelot.ManualTest
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
                         .AddJsonFile("ocelot.json")
-
-                        //.AddOcelot();
-                        //load all the ocelot.xxx.json files that are not environments from asp.net core
-                        //merge them into megaconfig
-                        //save megaconfig to disk as ocelot.json
-                        //then add to asp.net config stuff..
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {

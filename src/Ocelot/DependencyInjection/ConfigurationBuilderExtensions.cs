@@ -45,6 +45,7 @@ namespace Ocelot.DependencyInjection
                 }
 
                 var lines = File.ReadAllText(file);
+                
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
                 if(file ==  "./ocelot.global.json")
@@ -57,8 +58,11 @@ namespace Ocelot.DependencyInjection
             }
 
             var json = JsonConvert.SerializeObject(ocelotConfig);
+
             File.WriteAllText("ocelot.json", json);
+
             builder.AddJsonFile("ocelot.json");
+
             return builder;
         }
     }
