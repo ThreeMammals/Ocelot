@@ -819,6 +819,7 @@
                 result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);   
                 result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);      
                 result.DownstreamReRoute[0].AddHeadersToDownstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToDownstream);           
+                result.DownstreamReRoute[0].AddHeadersToUpstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToUpstream, "AddHeadersToUpstream should be set");
             }
         }
 
@@ -901,7 +902,7 @@
 
         private void GivenTheHeaderFindAndReplaceCreatorReturns()
         {
-            _headerFindAndReplaceCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>()));
+            _headerFindAndReplaceCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>()));
         }
 
         private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)

@@ -27,7 +27,8 @@ namespace Ocelot.UnitTests.Headers
         private readonly HttpHeadersTransformationMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
-        private readonly Mock<IAddHeadersToResponse> _addHeaders;
+        private readonly Mock<IAddHeadersToResponse> _addHeadersToResponse;
+        private readonly Mock<IAddHeadersToRequest> _addHeadersToRequest;
 
         public HttpHeadersTransformationMiddlewareTests()
         {
@@ -38,8 +39,11 @@ namespace Ocelot.UnitTests.Headers
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _addHeaders = new Mock<IAddHeadersToResponse>();
-            _middleware = new HttpHeadersTransformationMiddleware(_next, _loggerFactory.Object, _preReplacer.Object, _postReplacer.Object, _addHeaders.Object);
+            _addHeadersToResponse = new Mock<IAddHeadersToResponse>();
+            _addHeadersToRequest = new Mock<IAddHeadersToRequest>();
+            _middleware = new HttpHeadersTransformationMiddleware(
+                _next, _loggerFactory.Object, _preReplacer.Object,
+                _postReplacer.Object, _addHeadersToResponse.Object, _addHeadersToRequest.Object);
         }
 
         [Fact]
@@ -51,15 +55,22 @@ namespace Ocelot.UnitTests.Headers
                 .And(x => GivenTheHttpResponseMessageIs())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
+                .Then(x => ThenAddHeadersToRequestIsCalledCorrectly())
                 .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
-                .And(x => ThenAddHeadersIsCalledCorrectly())
+                .And(x => ThenAddHeadersToResponseIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void ThenAddHeadersIsCalledCorrectly()
+        private void ThenAddHeadersToResponseIsCalledCorrectly()
         {
-            _addHeaders
+            _addHeadersToResponse
                 .Verify(x => x.Add(_downstreamContext.DownstreamReRoute.AddHeadersToDownstream, _downstreamContext.DownstreamResponse), Times.Once);
+        }
+
+        private void ThenAddHeadersToRequestIsCalledCorrectly()
+        {
+            _addHeadersToRequest
+                .Verify(x => x.SetHeadersOnDownstreamRequest(_downstreamContext.DownstreamReRoute.AddHeadersToUpstream, _downstreamContext.HttpContext), Times.Once);
         }
 
         private void WhenICallTheMiddleware()

@@ -34,7 +34,8 @@ namespace Ocelot.Configuration
             PathTemplate downstreamPathTemplate, 
             string reRouteKey,
             List<string> delegatingHandlers,
-            List<AddHeader> addHeadersToDownstream)
+            List<AddHeader> addHeadersToDownstream,
+            List<AddHeader> addHeadersToUpstream)
         {
             AddHeadersToDownstream = addHeadersToDownstream;
             DelegatingHandlers = delegatingHandlers;
@@ -64,6 +65,7 @@ namespace Ocelot.Configuration
             AuthenticationOptions = authenticationOptions;
             DownstreamPathTemplate = downstreamPathTemplate;
             ReRouteKey = reRouteKey;
+            AddHeadersToUpstream = addHeadersToUpstream;
         }
 
         public string Key { get; private set; }
@@ -94,5 +96,6 @@ namespace Ocelot.Configuration
         public string ReRouteKey { get; private set; }
         public List<string> DelegatingHandlers {get;private set;}
         public List<AddHeader> AddHeadersToDownstream {get;private set;}
+        public List<AddHeader> AddHeadersToUpstream { get; private set; }
     }
 }

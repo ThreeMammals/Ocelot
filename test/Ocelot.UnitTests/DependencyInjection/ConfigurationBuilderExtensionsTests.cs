@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         private string _result;
         private IConfigurationRoot _configRoot;
         private FileConfiguration _globalConfig;
-        private FileConfiguration _reRoute;
+        private FileConfiguration _reRouteA;
         private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
 
@@ -64,7 +65,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 }
             };
 
-            _reRoute = new FileConfiguration
+            _reRouteA = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
                 {
@@ -160,17 +161,10 @@ namespace Ocelot.UnitTests.DependencyInjection
                 }
             };
 
-            var globalJson = JsonConvert.SerializeObject(_globalConfig);
-            File.WriteAllText("ocelot.global.json", globalJson);
-
-            var reRouteJson = JsonConvert.SerializeObject(_reRoute);
-            File.WriteAllText("ocelot.reRoutes.json", reRouteJson);
-
-            var reRouteJsonB = JsonConvert.SerializeObject(_reRouteB);
-            File.WriteAllText("ocelot.reRoutesB.json", reRouteJsonB);
-
-            var aggregates = JsonConvert.SerializeObject(_aggregate);
-            File.WriteAllText("ocelot.aggregates.json", aggregates);
+            File.WriteAllText("ocelot.global.json", JsonConvert.SerializeObject(_globalConfig));
+            File.WriteAllText("ocelot.reRoutesA.json", JsonConvert.SerializeObject(_reRouteA));
+            File.WriteAllText("ocelot.reRoutesB.json", JsonConvert.SerializeObject(_reRouteB));
+            File.WriteAllText("ocelot.aggregates.json", JsonConvert.SerializeObject(_aggregate));
         }
 
         private void WhenIAddOcelotConfiguration()
@@ -195,21 +189,21 @@ namespace Ocelot.UnitTests.DependencyInjection
             fc.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Port);
             fc.GlobalConfiguration.ServiceDiscoveryProvider.Type.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Type);
 
-            fc.ReRoutes.Count.ShouldBe(_reRoute.ReRoutes.Count + _reRouteB.ReRoutes.Count);
+            fc.ReRoutes.Count.ShouldBe(_reRouteA.ReRoutes.Count + _reRouteB.ReRoutes.Count);
 
-            fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRoute.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteA.ReRoutes[0].DownstreamPathTemplate);
             fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteB.ReRoutes[0].DownstreamPathTemplate);
             fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteB.ReRoutes[1].DownstreamPathTemplate);
 
-            fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRoute.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteA.ReRoutes[0].DownstreamScheme);
             fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteB.ReRoutes[0].DownstreamScheme);
             fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteB.ReRoutes[1].DownstreamScheme);
 
-            fc.ReRoutes.ShouldContain(x => x.Key == _reRoute.ReRoutes[0].Key);
+            fc.ReRoutes.ShouldContain(x => x.Key == _reRouteA.ReRoutes[0].Key);
             fc.ReRoutes.ShouldContain(x => x.Key == _reRouteB.ReRoutes[0].Key);
             fc.ReRoutes.ShouldContain(x => x.Key == _reRouteB.ReRoutes[1].Key);
 
-            fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRoute.ReRoutes[0].UpstreamHost);
+            fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteA.ReRoutes[0].UpstreamHost);
             fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteB.ReRoutes[0].UpstreamHost);
             fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteB.ReRoutes[1].UpstreamHost);
 

@@ -22,23 +22,31 @@ namespace Ocelot.Configuration.Creator
         public HeaderTransformations Create(FileReRoute fileReRoute)
         {
             var upstream = new List<HeaderFindAndReplace>();
+            var addHeadersToUpstream = new List<AddHeader>();
 
             foreach(var input in fileReRoute.UpstreamHeaderTransform)
             {
-                var hAndr = Map(input);
-                if(!hAndr.IsError)
+                if (input.Value.Contains(","))
                 {
-                    upstream.Add(hAndr.Data);
+                    var hAndr = Map(input);
+                    if (!hAndr.IsError)
+                    {
+                        upstream.Add(hAndr.Data);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
+                    }
                 }
                 else
                 {
-                    _logger.LogWarning($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
+                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
                 }
             }
 
             var downstream = new List<HeaderFindAndReplace>();
             var addHeadersToDownstream = new List<AddHeader>();
-
+            
             foreach(var input in fileReRoute.DownstreamHeaderTransform)
             {
                 if(input.Value.Contains(","))
@@ -59,7 +67,7 @@ namespace Ocelot.Configuration.Creator
                 }
             }
             
-            return new HeaderTransformations(upstream, downstream, addHeadersToDownstream);
+            return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
         }
 
         private Response<HeaderFindAndReplace> Map(KeyValuePair<string,string> input)
