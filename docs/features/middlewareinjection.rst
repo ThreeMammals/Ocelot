@@ -9,7 +9,7 @@ and override middleware. This is done as follos.
 
 .. code-block:: csharp
 
-    var configuration = new OcelotMiddlewareConfiguration
+    var configuration = new OcelotPipelineConfiguration
     {
         PreErrorResponderMiddleware = async (ctx, next) =>
         {
