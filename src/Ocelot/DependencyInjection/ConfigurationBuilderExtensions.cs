@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
-
 namespace Ocelot.DependencyInjection
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Configuration.Memory;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -16,12 +15,16 @@ namespace Ocelot.DependencyInjection
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
-            var memorySource = new MemoryConfigurationSource();
-            memorySource.InitialData = new List<KeyValuePair<string, string>>
+            var memorySource = new MemoryConfigurationSource
             {
-                new KeyValuePair<string, string>("BaseUrl", baseUrl)
+                InitialData = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("BaseUrl", baseUrl)
+                }
             };
+
             builder.Add(memorySource);
+
             return builder;
         }
 
@@ -35,11 +38,12 @@ namespace Ocelot.DependencyInjection
                 .Where(path => reg.IsMatch(path)).Where(x => x.Count(s => s == '.') == 3)
                 .ToList();
 
-            FileConfiguration ocelotConfig = new FileConfiguration();
+            var fileConfiguration = new FileConfiguration();
 
             foreach (var file in files)
             {
-                if(files.Count > 1 && file == "./ocelot.json")
+                // windows and unix sigh...
+                if(files.Count > 1 && (file == "./ocelot.json" || file == ".\\ocelot.json"))
                 {
                     continue;
                 }
@@ -48,16 +52,17 @@ namespace Ocelot.DependencyInjection
                 
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
-                if(file ==  "./ocelot.global.json")
+                // windows and unix sigh...
+                if (file == "./ocelot.global.json" || file == ".\\ocelot.global.json")
                 {
-                    ocelotConfig.GlobalConfiguration = config.GlobalConfiguration;
+                    fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
                 }
 
-                ocelotConfig.Aggregates.AddRange(config.Aggregates);
-                ocelotConfig.ReRoutes.AddRange(config.ReRoutes);
+                fileConfiguration.Aggregates.AddRange(config.Aggregates);
+                fileConfiguration.ReRoutes.AddRange(config.ReRoutes);
             }
 
-            var json = JsonConvert.SerializeObject(ocelotConfig);
+            var json = JsonConvert.SerializeObject(fileConfiguration);
 
             File.WriteAllText("ocelot.json", json);
 

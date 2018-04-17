@@ -12,14 +12,14 @@ using Ocelot.Configuration.Repository;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class FileConfigurationRepositoryTests : IDisposable
+    public class FileConfigurationRepositoryTests
     {
         private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
         private IFileConfigurationRepository _repo;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
-        
-        // This is a bit dirty and it is dev.dev so that the configuration tests
+
+        // This is a bit dirty and it is dev.dev so that the ConfigurationBuilderExtensionsTests
         // cant pick it up if they run in parralel..sigh these are not really unit 
         // tests but whatever...
         private string _environmentName = "DEV.DEV";
@@ -224,11 +224,6 @@ namespace Ocelot.UnitTests.Configuration
                 GlobalConfiguration = globalConfiguration,
                 ReRoutes = reRoutes
             };
-        }
-
-        public void Dispose()
-        {
-            File.Delete($"./ocelot.{_environmentName}.json");
         }
     }
 }

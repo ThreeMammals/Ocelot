@@ -1,16 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using Ocelot.DependencyInjection;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.DependencyInjection
+﻿namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using Newtonsoft.Json;
     using Ocelot.Configuration.File;
+    using Microsoft.Extensions.Configuration;
+    using Ocelot.DependencyInjection;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class ConfigurationBuilderExtensionsTests
     {

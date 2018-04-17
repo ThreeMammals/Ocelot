@@ -149,6 +149,7 @@ namespace Ocelot.UnitTests.Configuration
                 .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
                 .BDDfy();
         }
+
         [Fact]
         public void should_add_trace_id_header()
         {
