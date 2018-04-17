@@ -18,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IOcelotConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 

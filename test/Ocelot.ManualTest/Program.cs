@@ -21,7 +21,7 @@ namespace Ocelot.ManualTest
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("configuration.json")
+                        .AddJsonFile("ocelot.json")
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {

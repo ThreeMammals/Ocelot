@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration.Provider;
-using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Configuration.Repository;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -18,16 +15,16 @@ namespace Ocelot.Errors.Middleware
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotConfigurationProvider _provider;
+        private readonly IInternalConfigurationRepository _configRepo;
         private readonly IRequestScopedDataRepository _repo;
 
         public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
-            IOcelotLoggerFactory loggerFactory, 
-            IOcelotConfigurationProvider provider, 
+            IOcelotLoggerFactory loggerFactory,
+            IInternalConfigurationRepository configRepo, 
             IRequestScopedDataRepository repo)
                 : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
-            _provider = provider;
+            _configRepo = configRepo;
             _repo = repo;
             _next = next;
         }
@@ -36,7 +33,7 @@ namespace Ocelot.Errors.Middleware
         {
             try
             {               
-                await TrySetGlobalRequestId(context);
+                TrySetGlobalRequestId(context);
 
                 Logger.LogDebug("ocelot pipeline started");
 
@@ -56,12 +53,12 @@ namespace Ocelot.Errors.Middleware
             Logger.LogDebug("ocelot pipeline finished");
         }
 
-        private async Task TrySetGlobalRequestId(DownstreamContext context)
+        private void TrySetGlobalRequestId(DownstreamContext context)
         {
             //try and get the global request id and set it for logs...
             //should this basically be immutable per request...i guess it should!
             //first thing is get config
-            var configuration = await _provider.Get(); 
+            var configuration = _configRepo.Get(); 
             
             if(configuration.IsError)
             {

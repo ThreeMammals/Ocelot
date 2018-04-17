@@ -26,7 +26,7 @@ namespace Ocelot.AcceptanceTests
         {
             _counter = 0;
             _steps = new Steps();
-            _configurationPath = "configuration.json";
+            _configurationPath = "ocelot.json";
         }
 
         [Fact]

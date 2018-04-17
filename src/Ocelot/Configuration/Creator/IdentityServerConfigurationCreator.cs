@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
-using Ocelot.Configuration.Provider;
 
 namespace Ocelot.Configuration.Creator
 {

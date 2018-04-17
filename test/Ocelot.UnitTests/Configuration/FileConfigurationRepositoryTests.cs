@@ -18,12 +18,16 @@ namespace Ocelot.UnitTests.Configuration
         private IFileConfigurationRepository _repo;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
-        private string _environmentName = "DEV";
+
+        // This is a bit dirty and it is dev.dev so that the ConfigurationBuilderExtensionsTests
+        // cant pick it up if they run in parralel..sigh these are not really unit 
+        // tests but whatever...
+        private string _environmentName = "DEV.DEV";
 
         public FileConfigurationRepositoryTests()
         {
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new FileConfigurationRepository(_hostingEnvironment.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         [Fact]
@@ -75,7 +79,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _environmentName = null;
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new FileConfigurationRepository(_hostingEnvironment.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration fileConfiguration)
@@ -113,7 +117,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{AppContext.BaseDirectory}/configuration{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            var configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 

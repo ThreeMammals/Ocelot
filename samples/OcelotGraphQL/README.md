@@ -47,7 +47,7 @@ RESPONSE
 
 ## Notes
 
-Please note this project never goes out to another service, it just gets the data for GraphQL in memory. You would need to add the details of your GraphQL server in configuration.json e.g.
+Please note this project never goes out to another service, it just gets the data for GraphQL in memory. You would need to add the details of your GraphQL server in ocelot.json e.g.
 
 ```json
 {

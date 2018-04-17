@@ -16,9 +16,8 @@ namespace Ocelot.Configuration.Creator
     /// <summary>
     /// Register as singleton
     /// </summary>
-    public class FileOcelotConfigurationCreator : IOcelotConfigurationCreator
+    public class FileInternalConfigurationCreator : IInternalConfigurationCreator
     {
-        private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
         private readonly IOcelotLogger _logger;
         private readonly IClaimsToThingCreator _claimsToThingCreator;
@@ -35,8 +34,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
 
-        public FileOcelotConfigurationCreator(
-            IOptions<FileConfiguration> options, 
+        public FileInternalConfigurationCreator(
             IConfigurationValidator configurationValidator,
             IOcelotLoggerFactory loggerFactory,
             IClaimsToThingCreator claimsToThingCreator,
@@ -62,9 +60,8 @@ namespace Ocelot.Configuration.Creator
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
             _authOptionsCreator = authOptionsCreator;
-            _options = options;
             _configurationValidator = configurationValidator;
-            _logger = loggerFactory.CreateLogger<FileOcelotConfigurationCreator>();
+            _logger = loggerFactory.CreateLogger<FileInternalConfigurationCreator>();
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
@@ -72,19 +69,19 @@ namespace Ocelot.Configuration.Creator
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
         
-        public async Task<Response<IOcelotConfiguration>> Create(FileConfiguration fileConfiguration)
+        public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
         {     
             var config = await SetUpConfiguration(fileConfiguration);
             return config;
         }
 
-        private async Task<Response<IOcelotConfiguration>> SetUpConfiguration(FileConfiguration fileConfiguration)
+        private async Task<Response<IInternalConfiguration>> SetUpConfiguration(FileConfiguration fileConfiguration)
         {
             var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
             {
-                return new ErrorResponse<IOcelotConfiguration>(response.Data.Errors);
+                return new ErrorResponse<IInternalConfiguration>(response.Data.Errors);
             }
 
             var reRoutes = new List<ReRoute>();
@@ -106,9 +103,9 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            var config = new OcelotConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
+            var config = new InternalConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
 
-            return new OkResponse<IOcelotConfiguration>(config);
+            return new OkResponse<IInternalConfiguration>(config);
         }
 
         public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
@@ -214,7 +211,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
-                .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)  
+                .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
                 .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
                 .Build();
 

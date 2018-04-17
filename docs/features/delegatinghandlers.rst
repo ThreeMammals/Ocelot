@@ -40,7 +40,7 @@ Or transient as below...
             .AddTransientDelegatingHandler<FakeHandlerTwo>()
 
 Both of these Add methods have a default parameter called global which is set to false. If it is false then the intent of 
-the DelegatingHandler is to be applied to specific ReRoutes via configuration.json (more on that later). If it is set to true
+the DelegatingHandler is to be applied to specific ReRoutes via ocelot.json (more on that later). If it is set to true
 then it becomes a global handler and will be applied to all ReRoutes.
 
 e.g.
@@ -58,7 +58,7 @@ Or transient as below...
             .AddTransientDelegatingHandler<FakeHandler>(true)
 
 Finally if you want ReRoute specific DelegatingHandlers or to order your specific and / or global (more on this later) DelegatingHandlers
-then you must add the following json to the specific ReRoute in configuration.json. The names in the array must match the class names of your
+then you must add the following json to the specific ReRoute in ocelot.json. The names in the array must match the class names of your
 DelegatingHandlers for Ocelot to match them together.
 
 .. code-block:: json
@@ -70,8 +70,8 @@ DelegatingHandlers for Ocelot to match them together.
 
 You can have as many DelegatingHandlers as you want and they are run in the following order:
 
-1. Any globals that are left in the order they were added to services and are not in the DelegatingHandlers array from configuration.json.
-2. Any non global DelegatingHandlers plus any globals that were in the DelegatingHandlers array from configuration.json ordered as they are in the DelegatingHandlers array.
+1. Any globals that are left in the order they were added to services and are not in the DelegatingHandlers array from ocelot.json.
+2. Any non global DelegatingHandlers plus any globals that were in the DelegatingHandlers array from ocelot.json ordered as they are in the DelegatingHandlers array.
 3. Tracing DelegatingHandler if enabled (see tracing docs).
 4. QoS DelegatingHandler if enabled (see QoS docs).
 5. The HttpClient sends the HttpRequestMessage.

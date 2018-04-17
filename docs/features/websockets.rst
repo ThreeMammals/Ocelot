@@ -15,7 +15,7 @@ In your Configure method you need to tell your application to use WebSockets.
         app.UseOcelot().Wait();
     })
 
-Then in your configuration.json add the following to proxy a ReRoute using websockets.
+Then in your ocelot.json add the following to proxy a ReRoute using websockets.
 
 .. code-block:: json
 

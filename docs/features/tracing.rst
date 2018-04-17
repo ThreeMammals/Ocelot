@@ -20,7 +20,7 @@ In your ConfigureServices method
             option.Service = "Ocelot";
         });
 
-Then in your configuration.json add the following to the ReRoute you want to trace..
+Then in your ocelot.json add the following to the ReRoute you want to trace..
 
 .. code-block:: json
 

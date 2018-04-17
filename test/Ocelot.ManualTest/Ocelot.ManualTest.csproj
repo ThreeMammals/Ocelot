@@ -16,7 +16,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Update="configuration.json;appsettings.json;idsrv3test.pfx">
+    <None Update="ocelot.json;appsettings.json;idsrv3test.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

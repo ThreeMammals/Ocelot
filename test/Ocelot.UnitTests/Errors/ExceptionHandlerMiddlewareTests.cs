@@ -9,17 +9,17 @@ namespace Ocelot.UnitTests.Errors
     using TestStack.BDDfy;
     using Xunit;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.Provider;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Errors;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Middleware;
+    using Ocelot.Configuration.Repository;
 
     public class ExceptionHandlerMiddlewareTests
     {
         bool _shouldThrowAnException;
-        private readonly Mock<IOcelotConfigurationProvider> _provider;
+        private readonly Mock<IInternalConfigurationRepository> _configRepo;
         private readonly Mock<IRequestScopedDataRepository> _repo;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Errors
 
         public ExceptionHandlerMiddlewareTests()
         {
-            _provider = new Mock<IOcelotConfigurationProvider>();
+            _configRepo = new Mock<IInternalConfigurationRepository>();
             _repo = new Mock<IRequestScopedDataRepository>();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -45,13 +45,13 @@ namespace Ocelot.UnitTests.Errors
 
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
             };
-            _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _provider.Object, _repo.Object);
+            _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _configRepo.Object, _repo.Object);
         }
         
         [Fact]
         public void NoDownstreamException()
         {
-            var config = new OcelotConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void DownstreamException()
         {
-            var config = new OcelotConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -76,7 +76,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void ShouldSetRequestId()
         {
-            var config = new OcelotConfiguration(null, null, null, "requestidkey");
+            var config = new InternalConfiguration(null, null, null, "requestidkey");
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -89,7 +89,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void ShouldSetAspDotNetRequestId()
         {
-            var config = new OcelotConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -133,8 +133,8 @@ namespace Ocelot.UnitTests.Errors
         private void GivenTheConfigThrows()
         {
             var ex = new Exception("outer", new Exception("inner"));
-             _provider
-                .Setup(x => x.Get()).ThrowsAsync(ex);
+             _configRepo
+                .Setup(x => x.Get()).Throws(ex);
         }
 
         private void ThenAnExceptionIsThrown()
@@ -144,9 +144,9 @@ namespace Ocelot.UnitTests.Errors
 
         private void GivenTheConfigReturnsError()
         {
-            var response = new Responses.ErrorResponse<IOcelotConfiguration>(new FakeError());
-            _provider
-                .Setup(x => x.Get()).ReturnsAsync(response);
+            var response = new Responses.ErrorResponse<IInternalConfiguration>(new FakeError());
+            _configRepo
+                .Setup(x => x.Get()).Returns(response);
         }
 
         private void TheRequestIdIsSet(string key, string value)
@@ -154,11 +154,11 @@ namespace Ocelot.UnitTests.Errors
             _repo.Verify(x => x.Add(key, value), Times.Once);
         }
 
-        private void GivenTheConfigurationIs(IOcelotConfiguration config)
+        private void GivenTheConfigurationIs(IInternalConfiguration config)
         {
-            var response = new Responses.OkResponse<IOcelotConfiguration>(config);
-            _provider
-                .Setup(x => x.Get()).ReturnsAsync(response);
+            var response = new Responses.OkResponse<IInternalConfiguration>(config);
+            _configRepo
+                .Setup(x => x.Get()).Returns(response);
         }
 
         private void GivenAnExceptionWillNotBeThrownDownstream()

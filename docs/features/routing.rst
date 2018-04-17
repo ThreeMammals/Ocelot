@@ -145,9 +145,9 @@ Priority
 ^^^^^^^^
 
 In `Issue 270 <https://github.com/TomPallister/Ocelot/pull/270>`_ I finally decided to expose the ReRoute priority in 
-configuration.json. This means you can decide in what order you want your ReRoutes to match the Upstream HttpRequest.
+ocelot.json. This means you can decide in what order you want your ReRoutes to match the Upstream HttpRequest.
 
-In order to get this working add the following to a ReRoute in configuration.json, 0 is just an example value here but will explain below.
+In order to get this working add the following to a ReRoute in ocelot.json, 0 is just an example value here but will explain below.
 
 .. code-block:: json
 

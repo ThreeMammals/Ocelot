@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using System.Linq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
+using Ocelot.Configuration.Repository;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -14,17 +13,17 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IOcelotConfigurationProvider _configProvider;
+        private readonly IInternalConfigurationRepository _repo;
         private readonly IMultiplexer _multiplexer;
 
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder,
-            IOcelotConfigurationProvider configProvider,
+            IInternalConfigurationRepository repo,
             IMultiplexer multiplexer)
                 :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
-            _configProvider = configProvider;
+            _repo = repo;
             _multiplexer = multiplexer;
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
@@ -36,7 +35,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
-            var configuration = await _configProvider.Get();
+            var configuration = _repo.Get();
 
             if (configuration.IsError)
             {
