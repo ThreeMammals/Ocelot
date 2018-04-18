@@ -50,6 +50,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithIsQos(false)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
                 .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(x => GivenTheFactoryReturns())
@@ -66,6 +67,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithIsQos(false)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
                 .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             var fakeOne = new FakeDelegatingHandler();
@@ -93,6 +95,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithIsQos(false)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false))
                 .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(_ => GivenADownstreamService())

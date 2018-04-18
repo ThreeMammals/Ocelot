@@ -14,6 +14,8 @@ using static Rafty.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
+    using Xunit.Abstractions;
+
     public class ButterflyTracingTests : IDisposable
     {
         private IWebHost _serviceOneBuilder;
@@ -23,9 +25,11 @@ namespace Ocelot.AcceptanceTests
         private string _downstreamPathOne;
         private string _downstreamPathTwo;
         private int _butterflyCalled;
+        private readonly ITestOutputHelper _output;
 
-        public ButterflyTracingTests()
+        public ButterflyTracingTests(ITestOutputHelper output)
         {
+            _output = output;
             _steps = new Steps();
         }
 
@@ -104,7 +108,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
                 .BDDfy();
 
-            var commandOnAllStateMachines = WaitFor(10000).Until(() => _butterflyCalled == 4);
+            var commandOnAllStateMachines = WaitFor(10000).Until(() => _butterflyCalled >= 4);
+
+            _output.WriteLine($"_butterflyCalled is {_butterflyCalled}");
 
             commandOnAllStateMachines.ShouldBeTrue();
         }

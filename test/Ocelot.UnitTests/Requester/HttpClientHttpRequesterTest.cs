@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.Requester
     public class HttpClientHttpRequesterTest
     {
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IDelegatingHandlerHandlerFactory> _factory;
+        private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
         private DownstreamContext _request;
@@ -47,8 +47,12 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
 
             var context = new DownstreamContext(new DefaultHttpContext())
             {
@@ -66,8 +70,12 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false)).WithReRouteKey("").Build();
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
 
             var context = new DownstreamContext(new DefaultHttpContext())
             {
@@ -78,6 +86,30 @@ namespace Ocelot.UnitTests.Requester
             this.Given(x => x.GivenTheRequestIs(context))
                 .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledError())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void http_client_request_times_out()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
+                .Build();
+
+            var context = new DownstreamContext(new DefaultHttpContext())
+            {
+                DownstreamReRoute = reRoute,
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
+            };
+
+            this.Given(_ => GivenTheRequestIs(context))
+                .And(_ => GivenTheHouseReturnsTimeoutHandler())
+                .When(_ => WhenIGetResponse())
+                .Then(_ => ThenTheResponseIsCalledError())
+                .And(_ => ThenTheErrorIsTimeout())
                 .BDDfy();
         }
 
@@ -101,6 +133,11 @@ namespace Ocelot.UnitTests.Requester
             _response.IsError.ShouldBeTrue();
         }
 
+        private void ThenTheErrorIsTimeout()
+        {
+            _response.Errors[0].ShouldBeOfType<RequestTimedOutError>();
+        }
+
         private void GivenTheHouseReturnsOkHandler()
         {
             var handlers = new List<Func<DelegatingHandler>>
@@ -111,11 +148,30 @@ namespace Ocelot.UnitTests.Requester
             _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
+        private void GivenTheHouseReturnsTimeoutHandler()
+        {
+            var handlers = new List<Func<DelegatingHandler>>
+            {
+                () => new TimeoutDelegatingHandler()
+            };
+
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+        }
+
         class OkDelegatingHandler : DelegatingHandler
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 return Task.FromResult(new HttpResponseMessage());
+            }
+        }
+
+        class TimeoutDelegatingHandler : DelegatingHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                await Task.Delay(100000, cancellationToken);
+                return new HttpResponseMessage();
             }
         }
     }  

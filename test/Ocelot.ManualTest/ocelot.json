@@ -1,6 +1,21 @@
 ﻿{
   "ReRoutes": [
     {
+      "DownstreamPathTemplate": "/profile",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/profile",
+      "UpstreamHttpMethod": [ "Get" ],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 3000
+        }
+      ],
+      "QoSOptions": {
+        "TimeoutValue": 360000
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/values",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/api/values",
