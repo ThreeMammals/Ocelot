@@ -111,7 +111,7 @@ Instead of adding the configuration directly e.g. AddJsonFile("ocelot.json") you
                 .AddEnvironmentVariables();
         })
 
-In this scenario Ocelot will look for any files that match the pattern ocleot.*.json and then merge these together. If you want to set the GlobalConfiguration property you must have a file called ocelot.global.json. 
+In this scenario Ocelot will look for any files that match the pattern (?i)ocelot.([a-zA-Z0-9]*).json and then merge these together. If you want to set the GlobalConfiguration property you must have a file called ocelot.global.json. 
 
 The way Ocelot merges the files is basically load them, loop over them, add any ReRoutes, add any AggregateReRoutes and if the file is called ocelot.global.json add the GlobalConfiguration aswell as any ReRoutes or AggregateReRoutes. Ocelot will then save the merged configuration to a file called ocelot.json and this will be used as the source of truth while ocelot is running.
 
