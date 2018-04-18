@@ -30,12 +30,12 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder)
         {
-            const string pattern = "(?i)ocelot(.*).json$";
+            const string pattern = "(?i)ocelot.([a-zA-Z0-9]*).json";
 
             var reg = new Regex(pattern);
 
             var files = Directory.GetFiles(".")
-                .Where(path => reg.IsMatch(path)).Where(x => x.Count(s => s == '.') == 3)
+                .Where(path => reg.IsMatch(path))
                 .ToList();
 
             var fileConfiguration = new FileConfiguration();
