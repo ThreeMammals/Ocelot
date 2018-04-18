@@ -17,6 +17,7 @@
     using Rafty.Concensus;
     using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
+    using Pivotal.Discovery.Client;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -37,6 +38,9 @@
             {
                 SetUpRafty(builder);
             }
+
+            //Invoke Steeltow Service Discoverys
+            UserSteeltoeServiceDiscovery(builder, configuration);
 
             ConfigureDiagnosticListener(builder);
 
@@ -61,6 +65,16 @@
             });
 
             return builder;
+        }
+
+        // Inject Service Discovery Client into app
+        private static void UserSteeltoeServiceDiscovery(IApplicationBuilder builder, IInternalConfiguration configuration)
+        {
+            if (configuration != null && configuration.ServiceProviderConfiguration != null &&
+                configuration.ServiceProviderConfiguration.Type == "Steeltoe")
+            {
+                builder.UseDiscoveryClient();
+            }
         }
 
         private static bool UsingRafty(IApplicationBuilder builder)
