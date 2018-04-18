@@ -45,6 +45,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure.Consul;
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
+    using Pivotal.Discovery.Client;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -111,6 +112,20 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+
+            // Steeltoe Service Discovery Implementation
+            if (configurationRoot.GetSection("GlobalConfiguration:ServiceDiscoveryProvider").Key != null &&
+                configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") != null &&
+                configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") == "Steeltoe" &&
+                configurationRoot.GetSection("eureka").Key != null)
+            {
+                _services.AddDiscoveryClient(configurationRoot);
+                _services.TryAddSingleton<IHttpRequester, DiscoveryClientHttpRequester>();
+            }
+            else
+            {
+                _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
+            }
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
