@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.Requester
     public class HttpClientHttpRequesterTest
     {
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IDelegatingHandlerHandlerFactory> _factory;
+        private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
         private DownstreamContext _request;
@@ -170,7 +170,7 @@ namespace Ocelot.UnitTests.Requester
         {
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(100000, cancellationToken);
                 return new HttpResponseMessage();
             }
         }
