@@ -21,7 +21,7 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddSingletonDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
-        
+
         IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
 

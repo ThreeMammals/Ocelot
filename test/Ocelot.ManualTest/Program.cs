@@ -8,6 +8,9 @@ using Ocelot.Middleware;
 
 namespace Ocelot.ManualTest
 {
+    using Requester;
+    using Steeltoe.Discovery.Client;
+
     public class Program
     {
         public static void Main(string[] args)
@@ -33,6 +36,7 @@ namespace Ocelot.ManualTest
                         });
 
                      s.AddOcelot()
+                         .AddSingletonDelegatingHandler<SteeltoeDelegatingHandler>(true)
                          .AddCacheManager(x =>
                          {
                              x.WithDictionaryHandle();

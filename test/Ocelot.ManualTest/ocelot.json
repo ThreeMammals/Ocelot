@@ -328,6 +328,11 @@
   ],
 
   "GlobalConfiguration": {
-    "RequestIdKey": "ot-traceid"
+    "RequestIdKey": "ot-traceid",
+    "ServiceDiscoveryProvider": {
+      "Host": "localhost",
+      "Port": 9500,
+      "Type": "Steeltoe"
+    }
   }
 }

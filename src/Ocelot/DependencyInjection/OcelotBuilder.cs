@@ -120,12 +120,9 @@ namespace Ocelot.DependencyInjection
                 configurationRoot.GetSection("eureka").Key != null)
             {
                 _services.AddDiscoveryClient(configurationRoot);
-                _services.TryAddSingleton<IHttpRequester, DiscoveryClientHttpRequester>();
             }
-            else
-            {
-                _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
-            }
+
+            _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
