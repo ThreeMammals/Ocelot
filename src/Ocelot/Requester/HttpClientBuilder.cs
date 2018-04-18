@@ -17,6 +17,7 @@ namespace Ocelot.Requester
         private HttpClient _httpClient;
         private IHttpClient _client;
         private HttpClientHandler _httpclientHandler;
+        private readonly TimeSpan _defaultTimeout;
 
         public HttpClientBuilder(
             IDelegatingHandlerHandlerFactory factory, 
@@ -26,6 +27,10 @@ namespace Ocelot.Requester
             _factory = factory;
             _cacheHandlers = cacheHandlers;
             _logger = logger;
+
+            // This is hardcoded at the moment but can easily be added to configuration
+            // if required by a user request.
+            _defaultTimeout = TimeSpan.FromSeconds(90);
         }
 
         public IHttpClient Create(DownstreamContext request)
@@ -46,7 +51,14 @@ namespace Ocelot.Requester
                 CookieContainer = new CookieContainer()
             };
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(_httpclientHandler, request.DownstreamReRoute));
+            var timeout = request.DownstreamReRoute.QosOptionsOptions.TimeoutValue == 0
+                ? _defaultTimeout 
+                : TimeSpan.FromMilliseconds(request.DownstreamReRoute.QosOptionsOptions.TimeoutValue);
+
+            _httpClient = new HttpClient(CreateHttpMessageHandler(_httpclientHandler, request.DownstreamReRoute))
+            {
+                Timeout = timeout
+            };
 
             _client = new HttpClientWrapper(_httpClient);
 

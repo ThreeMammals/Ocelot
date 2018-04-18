@@ -48,5 +48,6 @@ namespace Ocelot.Configuration.File
         public string Key { get;set; }
         public List<string> DelegatingHandlers {get;set;}
         public int Priority { get;set; }
+        public int Timeout { get; set; }
     }
 }

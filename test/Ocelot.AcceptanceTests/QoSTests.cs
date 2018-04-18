@@ -26,6 +26,82 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_not_timeout()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51569,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        QoSOptions = new FileQoSOptions
+                        {
+                            TimeoutValue = 1000,
+                        }
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51569", 200, string.Empty, 10))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenThePostHasContent("postContent"))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_timeout()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 51579,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        QoSOptions = new FileQoSOptions
+                        {
+                            TimeoutValue = 10,
+                        }
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51579", 201, string.Empty, 1000))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenThePostHasContent("postContent"))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_open_circuit_breaker_then_close()
         {
             var configuration = new FileConfiguration
@@ -122,7 +198,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51872", "Hello from Laura"))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", 200, "Hello from Tom"))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -193,7 +269,7 @@ namespace Ocelot.AcceptanceTests
             _brokenService.Start();
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
+        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
         {
             _workingService = new WebHostBuilder()
                 .UseUrls(url)
@@ -205,6 +281,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.Run(async context =>
                     {
+                        Thread.Sleep(timeout);
                         context.Response.StatusCode = statusCode;
                         await context.Response.WriteAsync(responseBody);
                     });
