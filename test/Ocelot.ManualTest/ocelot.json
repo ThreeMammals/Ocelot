@@ -332,7 +332,7 @@
     "ServiceDiscoveryProvider": {
       "Host": "localhost",
       "Port": 9500,
-      "Type": "Steeltoe"
+      "Type": "Eureka"
     }
   }
 }

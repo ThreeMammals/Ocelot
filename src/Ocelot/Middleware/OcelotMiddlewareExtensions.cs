@@ -39,8 +39,10 @@
                 SetUpRafty(builder);
             }
 
-            //Invoke Steeltow Service Discoverys
-            UserSteeltoeServiceDiscovery(builder, configuration);
+            if (UsingEurekaServiceDiscoveryProvider(configuration))
+            {
+                builder.UseDiscoveryClient();
+            }
 
             ConfigureDiagnosticListener(builder);
 
@@ -67,14 +69,9 @@
             return builder;
         }
 
-        // Inject Service Discovery Client into app
-        private static void UserSteeltoeServiceDiscovery(IApplicationBuilder builder, IInternalConfiguration configuration)
+        private static bool UsingEurekaServiceDiscoveryProvider(IInternalConfiguration configuration)
         {
-            if (configuration != null && configuration.ServiceProviderConfiguration != null &&
-                configuration.ServiceProviderConfiguration.Type == "Steeltoe")
-            {
-                builder.UseDiscoveryClient();
-            }
+            return configuration?.ServiceProviderConfiguration != null && configuration.ServiceProviderConfiguration.Type.ToLower() == "eureka";
         }
 
         private static bool UsingRafty(IApplicationBuilder builder)

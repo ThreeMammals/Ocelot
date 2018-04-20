@@ -11,12 +11,14 @@ namespace Ocelot.ServiceDiscovery
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
-        private readonly IConsulClientFactory _clientFactory;
+        private readonly IConsulClientFactory _consulFactory;
+        private readonly IEurekaServiceDiscoveryFactory _eurekaFactory;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IEurekaServiceDiscoveryFactory eurekaFactory)
         {
             _factory = factory;
-            _clientFactory = clientFactory;
+            _consulFactory = consulFactory;
+            _eurekaFactory = eurekaFactory;
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -40,14 +42,19 @@ namespace Ocelot.ServiceDiscovery
 
         private IServiceDiscoveryProvider GetServiceDiscoveryProvider(ServiceProviderConfiguration serviceConfig, string serviceName)
         {
-            if (serviceConfig.Type == "ServiceFabric")
+            if (serviceConfig.Type?.ToLower() == "servicefabric")
             {
                 var config = new ServiceFabricConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
                 return new ServiceFabricServiceDiscoveryProvider(config);
             }
 
+            if (serviceConfig.Type?.ToLower() == "eureka")
+            {
+                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaFactory);
+            }
+
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _clientFactory);
+            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
         }
     }
 }

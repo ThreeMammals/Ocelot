@@ -14,13 +14,25 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Newtonsoft.Json;
+    using Steeltoe.Discovery.Client;
+    using DiscoveryClientType = Pivotal.Discovery.Client.DiscoveryClientType;
+    using DiscoveryServiceCollectionExtensions = Pivotal.Discovery.Client.DiscoveryServiceCollectionExtensions;
+    using EurekaClientOptions = Pivotal.Discovery.Client.EurekaClientOptions;
+    using IServiceInstance = Pivotal.Discovery.Client.IServiceInstance;
+
     public class ServiceDiscoveryTests : IDisposable
     {
         private IWebHost _builderOne;
         private IWebHost _builderTwo;
         private IWebHost _fakeConsulBuilder;
         private readonly Steps _steps;
-        private readonly List<ServiceEntry> _serviceEntries;
+        private readonly List<ServiceEntry> _consulServices;
+        private readonly List<IServiceInstance> _eurekaInstances;
         private int _counterOne;
         private int _counterTwo;
         private static readonly object SyncLock = new object();
@@ -31,11 +43,71 @@ namespace Ocelot.AcceptanceTests
         public ServiceDiscoveryTests()
         {
             _steps = new Steps();
-            _serviceEntries = new List<ServiceEntry>();
+            _consulServices = new List<ServiceEntry>();
+            _eurekaInstances = new List<IServiceInstance>();
         }
 
         [Fact]
-        public void should_use_service_discovery_and_load_balance_request()
+        public void should_use_eureka_service_discovery_and_make_request()
+        {
+            var eurekaPort = 8761;
+            var serviceName = "product";
+            var downstreamServiceOneUrl = $"http://{Environment.MachineName}:50371";
+            var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
+
+            var instanceOne = new FakeEurekaService(serviceName, "localhost", 50881, false,
+                new Uri($"http://localhost:{50881}"), new Dictionary<string, string>());
+       
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            ServiceName = serviceName,
+                            LoadBalancer = "LeastConnection",
+                            UseServiceDiscovery = true,
+                        }
+                    },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = eurekaPort,
+                        Type = "Eureka"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
+                //.And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
+                //.And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne, instanceTwo))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))                
+                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaStartup)))
+                .BDDfy();
+        }
+
+        private void Sleep()
+        {
+            var stopWatch = Stopwatch.StartNew();
+            while (stopWatch.ElapsedMilliseconds < 5000)
+            {
+                
+            }
+
+            stopWatch.Stop();
+        }
+
+        [Fact]
+        public void should_use_consul_service_discovery_and_load_balance_request()
         {
             var consulPort = 8502;
             var serviceName = "product";
@@ -102,7 +174,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        //test from issue #213
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request()
         {
@@ -158,7 +229,6 @@ namespace Ocelot.AcceptanceTests
             .BDDfy();
         }
 
-        //test from issue #295
         [Fact]
         public void should_use_token_to_make_request_to_consul()
         {
@@ -218,7 +288,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_send_request_to_service_after_it_becomes_available()
+        public void should_send_request_to_service_after_it_becomes_available_in_consul()
         {
             var consulPort = 8501;
             var serviceName = "product";
@@ -296,7 +366,7 @@ namespace Ocelot.AcceptanceTests
 
         private void WhenIAddAServiceBackIn(ServiceEntry serviceEntryTwo)
         {
-            _serviceEntries.Add(serviceEntryTwo);
+            _consulServices.Add(serviceEntryTwo);
         }
 
         private void ThenOnlyOneServiceHasBeenCalled()
@@ -307,7 +377,7 @@ namespace Ocelot.AcceptanceTests
 
         private void WhenIRemoveAService(ServiceEntry serviceEntryTwo)
         {
-            _serviceEntries.Remove(serviceEntryTwo);
+            _consulServices.Remove(serviceEntryTwo);
         }
 
          private void GivenIResetCounters()
@@ -332,8 +402,98 @@ namespace Ocelot.AcceptanceTests
         {
             foreach(var serviceEntry in serviceEntries)
             {
-                _serviceEntries.Add(serviceEntry);
+                _consulServices.Add(serviceEntry);
             }
+        }
+
+        private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
+        {
+            foreach (var instance in serviceInstances)
+            {
+                _eurekaInstances.Add(instance);
+            }
+        }
+
+        private void GivenThereIsAFakeEurekaServiceDiscoveryProvider(string url, string serviceName)
+        {
+            _fakeConsulBuilder = new WebHostBuilder()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        if (context.Request.Path.Value == "/eureka/apps/")
+                        {
+                            var apps = new List<Application>();
+
+                            foreach (var serviceInstance in _eurekaInstances)
+                            {
+                                var a = new Application
+                                {
+                                    name = serviceName,
+                                    instance = new List<Instance>
+                                    {
+                                        new Instance
+                                        {
+                                            instanceId = $"{serviceInstance.Host}:{serviceInstance}",
+                                            hostName = serviceInstance.Host,
+                                            app = serviceName,
+                                            ipAddr = "127.0.0.1",
+                                            status = "UP",
+                                            overriddenstatus = "UNKNOWN",
+                                            port = new Port {value = serviceInstance.Port, enabled = "true"},
+                                            securePort = new SecurePort {value = serviceInstance.Port, enabled = "true"},
+                                            countryId = 1,
+                                            dataCenterInfo = new DataCenterInfo {value = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", name = "MyOwn"},
+                                            leaseInfo = new LeaseInfo
+                                            {
+                                                renewalIntervalInSecs = 30,
+                                                durationInSecs = 90,
+                                                registrationTimestamp = 1457714988223,
+                                                lastRenewalTimestamp= 1457716158319,
+                                                evictionTimestamp = 0,
+                                                serviceUpTimestamp = 1457714988223
+                                            },
+                                            metadata = new Metadata
+                                            {
+                                                value = "java.util.Collections$EmptyMap"
+                                            },
+                                            homePageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                            statusPageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                            healthCheckUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                            vipAddress = serviceName,
+                                            isCoordinatingDiscoveryServer = "false",
+                                            lastUpdatedTimestamp = "1457714988223",
+                                            lastDirtyTimestamp = "1457714988172",
+                                            actionType = "ADDED"
+                                        }
+                                    }
+                                };
+
+                                apps.Add(a);
+                            }
+
+                            var applications = new EurekaApplications
+                            {
+                                applications = new Applications
+                                {
+                                    application = apps,
+                                    apps__hashcode = "UP_1_",
+                                    versions__delta = "1"
+                                }
+                            };
+
+                            await context.Response.WriteJsonAsync(applications);
+                        }
+                    });
+                })
+                .Build();
+
+            _fakeConsulBuilder.Start();
         }
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
@@ -355,7 +515,7 @@ namespace Ocelot.AcceptanceTests
                                             _receivedToken = values.First();
                                         }
 
-                                        await context.Response.WriteJsonAsync(_serviceEntries);
+                                        await context.Response.WriteJsonAsync(_consulServices);
                                     }
                                 });
                             })
@@ -433,6 +593,77 @@ namespace Ocelot.AcceptanceTests
             _builderTwo.Start();
         }
 
+        private void GivenEurekaProductServiceOneIsRunning(string url, int statusCode)
+        {
+            _builderOne = new WebHostBuilder()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .UseStartup<EurekaStartup>()
+               /* .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        try
+                        {
+                            string response;
+                            lock (SyncLock)
+                            {
+                                _counterOne++;
+                                response = _counterOne.ToString();
+                            }
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(response);
+                        }
+                        catch (Exception exception)
+                        {
+                            await context.Response.WriteAsync(exception.StackTrace);
+                        }
+                    });
+                })*/
+                .Build();
+
+            _builderOne.Start();
+        }
+
+        private void GivenEurekaProductServiceTwoIsRunning(string url, int statusCode)
+        {
+            _builderTwo = new WebHostBuilder()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .UseStartup<EurekaStartup>()
+             /*   .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        try
+                        {
+                            string response;
+                            lock (SyncLock)
+                            {
+                                _counterTwo++;
+                                response = _counterTwo.ToString();
+                            }
+
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(response);
+                        }
+                        catch (Exception exception)
+                        {
+                            await context.Response.WriteAsync(exception.StackTrace);
+                        }
+                    });
+                })*/
+                .Build();
+
+            _builderTwo.Start();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
@@ -469,6 +700,151 @@ namespace Ocelot.AcceptanceTests
             _builderOne?.Dispose();
             _builderTwo?.Dispose();
             _steps.Dispose();
+        }
+    }
+
+    public class FakeEurekaService : IServiceInstance
+    {
+        public FakeEurekaService(string serviceId, string host, int port, bool isSecure, Uri uri, IDictionary<string, string> metadata)
+        {
+            ServiceId = serviceId;
+            Host = host;
+            Port = port;
+            IsSecure = isSecure;
+            Uri = uri;
+            Metadata = metadata;
+        }
+
+        public string ServiceId { get; }
+        public string Host { get; }
+        public int Port { get; }
+        public bool IsSecure { get; }
+        public Uri Uri { get; }
+        public IDictionary<string, string> Metadata { get; }
+    }
+
+    public class Port
+    {
+        [JsonProperty("$")]
+        public int value { get; set; }
+
+        [JsonProperty("@enabled")]
+        public string enabled { get; set; }
+    }
+
+    public class SecurePort
+    {
+        [JsonProperty("$")]
+        public int value { get; set; }
+
+        [JsonProperty("@enabled")]
+        public string enabled { get; set; }
+    }
+
+    public class DataCenterInfo
+    {
+        [JsonProperty("@class")]
+        public string value { get; set; }
+
+        public string name { get; set; }
+    }
+
+    public class LeaseInfo
+    {
+        public int renewalIntervalInSecs { get; set; }
+
+        public int durationInSecs { get; set; }
+
+        public long registrationTimestamp { get; set; }
+
+        public long lastRenewalTimestamp { get; set; }
+
+        public int evictionTimestamp { get; set; }
+
+        public long serviceUpTimestamp { get; set; }
+    }
+
+    public class Metadata
+    {
+        [JsonProperty("@class")]
+        public string value { get; set; }
+    }
+
+    public class Instance
+    {
+        public string instanceId { get; set; }
+        public string hostName { get; set; }
+        public string app { get; set; }
+        public string ipAddr { get; set; }
+        public string status { get; set; }
+        public string overriddenstatus { get; set; }
+        public Port port { get; set; }
+        public SecurePort securePort { get; set; }
+        public int countryId { get; set; }
+        public DataCenterInfo dataCenterInfo { get; set; }
+        public LeaseInfo leaseInfo { get; set; }
+        public Metadata metadata { get; set; }
+        public string homePageUrl { get; set; }
+        public string statusPageUrl { get; set; }
+        public string healthCheckUrl { get; set; }
+        public string vipAddress { get; set; }
+        public string isCoordinatingDiscoveryServer { get; set; }
+        public string lastUpdatedTimestamp { get; set; }
+        public string lastDirtyTimestamp { get; set; }
+        public string actionType { get; set; }
+    }
+
+    public class Application
+    {
+        public string name { get; set; }
+        public List<Instance> instance { get; set; }
+    }
+
+    public class Applications
+    {
+        public string versions__delta { get; set; }
+        public string apps__hashcode { get; set; }
+        public List<Application> application { get; set; }
+    }
+
+    public class EurekaApplications
+    {
+        public Applications applications { get; set; }
+    }
+
+    public class EurekaStartup
+    {
+        public IConfiguration Configuration { get; }
+        public EurekaStartup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.product.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDiscoveryClient(Configuration);
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseDiscoveryClient();
+            app.Run(async context =>
+            {
+                try
+                {
+                    context.Response.StatusCode = 200;
+                    await context.Response.WriteAsync(nameof(EurekaStartup));
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
     }
 }

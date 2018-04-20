@@ -46,6 +46,7 @@ namespace Ocelot.DependencyInjection
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
     using Pivotal.Discovery.Client;
+    using ServiceDiscovery.Providers;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -113,14 +114,12 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
 
-            // Steeltoe Service Discovery Implementation
-            if (configurationRoot.GetSection("GlobalConfiguration:ServiceDiscoveryProvider").Key != null &&
-                configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") != null &&
-                configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") == "Steeltoe" &&
-                configurationRoot.GetSection("eureka").Key != null)
+            if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
             {
                 _services.AddDiscoveryClient(configurationRoot);
             }
+
+            _services.TryAddSingleton<IEurekaServiceDiscoveryFactory, EurekaServiceDiscoveryFactory>();
 
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
@@ -357,6 +356,14 @@ namespace Ocelot.DependencyInjection
                     AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
+        }
+
+        private static bool UsingEurekaServiceDiscoveryProvider(IConfiguration configurationRoot)
+        {
+            return configurationRoot.GetSection("GlobalConfiguration:ServiceDiscoveryProvider").Key != null &&
+                   configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") != null &&
+                   configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type").ToLower() == "eureka" &&
+                   configurationRoot.GetSection("eureka").Key != null;
         }
     }
 }
