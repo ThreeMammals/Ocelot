@@ -13,9 +13,6 @@ namespace Ocelot.AcceptanceTests
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
-    using System.Diagnostics;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json;
     using Pivotal.Discovery.Client;
 
@@ -84,19 +81,8 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))                
-                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaStartup)))
+                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(ServiceDiscoveryTests)))
                 .BDDfy();
-        }
-
-        private void Sleep()
-        {
-            var stopWatch = Stopwatch.StartNew();
-            while (stopWatch.ElapsedMilliseconds < 5000)
-            {
-                
-            }
-
-            stopWatch.Stop();
         }
 
         [Fact]
@@ -594,7 +580,6 @@ namespace Ocelot.AcceptanceTests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseUrls(url)
-                //.UseStartup<EurekaStartup>()
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -602,7 +587,7 @@ namespace Ocelot.AcceptanceTests
                         try
                         {
                             context.Response.StatusCode = 200;
-                            await context.Response.WriteAsync(nameof(EurekaStartup));
+                            await context.Response.WriteAsync(nameof(ServiceDiscoveryTests));
                         }
                         catch (Exception exception)
                         {
@@ -761,41 +746,5 @@ namespace Ocelot.AcceptanceTests
     public class EurekaApplications
     {
         public Applications applications { get; set; }
-    }
-
-    public class EurekaStartup
-    {
-        public IConfiguration Configuration { get; }
-        public EurekaStartup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.product.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-        }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDiscoveryClient(Configuration);
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDiscoveryClient();
-            app.Run(async context =>
-            {
-                try
-                {
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(nameof(EurekaStartup));
-                }
-                catch (Exception exception)
-                {
-                    await context.Response.WriteAsync(exception.StackTrace);
-                }
-            });
-        }
     }
 }
