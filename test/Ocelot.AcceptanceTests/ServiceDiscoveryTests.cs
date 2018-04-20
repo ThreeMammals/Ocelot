@@ -1,25 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using Consul;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
     using System.Diagnostics;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json;
-    using Steeltoe.Common.Discovery;
-    using Steeltoe.Discovery.Client;
+    using Pivotal.Discovery.Client;
 
     public class ServiceDiscoveryTests : IDisposable
     {

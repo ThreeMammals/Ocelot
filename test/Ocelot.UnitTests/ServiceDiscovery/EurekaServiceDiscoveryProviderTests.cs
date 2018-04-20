@@ -4,10 +4,9 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Moq;
-    using Ocelot.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
+    using Pivotal.Discovery.Client;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
     using TestStack.BDDfy;
     using Values;
     using Xunit;
@@ -24,7 +23,7 @@
         {
             _serviceId = "Laura";
             _client = new Mock<IDiscoveryClient>();
-            _provider = new EurekaServiceDiscoveryProvider(_serviceId, new EurekaServiceDiscoveryFactory(_client.Object));
+            _provider = new EurekaServiceDiscoveryProvider(_serviceId, _client.Object);
         }
 
         [Fact]

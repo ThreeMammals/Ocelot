@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using Steeltoe.Common.Discovery;
+    using Pivotal.Discovery.Client;
 
     public class ServiceProviderFactoryTests
     {
@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _discoveryClient = new Mock<IDiscoveryClient>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), new EurekaServiceDiscoveryFactory(_discoveryClient.Object));
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
         }
         
         [Fact]

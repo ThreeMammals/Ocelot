@@ -32,17 +32,17 @@
                             x.Audience = "test";
                         });
 
-                    s.AddOcelot();
-                      /*  .AddCacheManager(x =>
+                    s.AddOcelot()
+                        .AddCacheManager(x =>
                         {
                             x.WithDictionaryHandle();
                         })
-                      .AddOpenTracing(option =>
+                      /*.AddOpenTracing(option =>
                       {
                           option.CollectorUrl = "http://localhost:9618";
                           option.Service = "Ocelot.ManualTest";
-                      })
-                    .AddAdministration("/administration", "secret");*/
+                      })*/
+                    .AddAdministration("/administration", "secret");
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

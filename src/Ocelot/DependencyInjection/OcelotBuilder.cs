@@ -45,8 +45,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure.Consul;
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
+    using Pivotal.Discovery.Client;
     using ServiceDiscovery.Providers;
-    using Steeltoe.Discovery.Client;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -118,8 +118,10 @@ namespace Ocelot.DependencyInjection
             {
                 _services.AddDiscoveryClient(configurationRoot);
             }
-
-            _services.TryAddSingleton<IEurekaServiceDiscoveryFactory, EurekaServiceDiscoveryFactory>();
+            else
+            {
+                _services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
+            }
 
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
@@ -360,10 +362,10 @@ namespace Ocelot.DependencyInjection
 
         private static bool UsingEurekaServiceDiscoveryProvider(IConfiguration configurationRoot)
         {
-            return configurationRoot.GetSection("GlobalConfiguration:ServiceDiscoveryProvider").Key != null &&
-                   configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type") != null &&
-                   configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type").ToLower() == "eureka" &&
-                   configurationRoot.GetSection("eureka").Key != null;
+            var type = configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type",
+                string.Empty);
+
+            return type.ToLower() == "eureka";
         }
     }
 }

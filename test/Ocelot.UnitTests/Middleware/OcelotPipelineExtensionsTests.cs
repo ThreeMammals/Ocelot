@@ -5,9 +5,8 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.DependencyInjection;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Pipeline;
+    using Pivotal.Discovery.Client;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
-    using Steeltoe.Discovery.Client;
     using TestStack.BDDfy;
     using Xunit;
 

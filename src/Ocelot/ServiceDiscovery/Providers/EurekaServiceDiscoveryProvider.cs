@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Steeltoe.Common.Discovery;
+    using Pivotal.Discovery.Client;
     using Values;
 
     public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
@@ -11,9 +11,9 @@
         private readonly IDiscoveryClient _client;
         private readonly string _serviceName;
 
-        public EurekaServiceDiscoveryProvider(string serviceName, IEurekaServiceDiscoveryFactory factory)
+        public EurekaServiceDiscoveryProvider(string serviceName, IDiscoveryClient client)
         {
-            _client = factory.Get();
+            _client = client;
             _serviceName = serviceName;
         }
 

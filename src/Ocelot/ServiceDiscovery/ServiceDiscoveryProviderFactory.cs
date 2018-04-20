@@ -8,17 +8,19 @@ using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
         private readonly IConsulClientFactory _consulFactory;
-        private readonly IEurekaServiceDiscoveryFactory _eurekaFactory;
+        private readonly IDiscoveryClient _eurekaClient;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IEurekaServiceDiscoveryFactory eurekaFactory)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IDiscoveryClient eurekaClient)
         {
             _factory = factory;
             _consulFactory = consulFactory;
-            _eurekaFactory = eurekaFactory;
+            _eurekaClient = eurekaClient;
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -50,7 +52,7 @@ namespace Ocelot.ServiceDiscovery
 
             if (serviceConfig.Type?.ToLower() == "eureka")
             {
-                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaFactory);
+                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
             }
 
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
