@@ -8,15 +8,19 @@ using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
-        private readonly IConsulClientFactory _clientFactory;
+        private readonly IConsulClientFactory _consulFactory;
+        private readonly IDiscoveryClient _eurekaClient;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IDiscoveryClient eurekaClient)
         {
             _factory = factory;
-            _clientFactory = clientFactory;
+            _consulFactory = consulFactory;
+            _eurekaClient = eurekaClient;
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -40,14 +44,19 @@ namespace Ocelot.ServiceDiscovery
 
         private IServiceDiscoveryProvider GetServiceDiscoveryProvider(ServiceProviderConfiguration serviceConfig, string serviceName)
         {
-            if (serviceConfig.Type == "ServiceFabric")
+            if (serviceConfig.Type?.ToLower() == "servicefabric")
             {
                 var config = new ServiceFabricConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
                 return new ServiceFabricServiceDiscoveryProvider(config);
             }
 
+            if (serviceConfig.Type?.ToLower() == "eureka")
+            {
+                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
+            }
+
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _clientFactory);
+            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
         }
     }
 }

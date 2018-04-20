@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
@@ -20,13 +22,13 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private readonly ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private IConsulClientFactory _clientFactory;
+        private Mock<IDiscoveryClient> _discoveryClient;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _clientFactory = new ConsulClientFactory();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _clientFactory);
+            _discoveryClient = new Mock<IDiscoveryClient>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
         }
         
         [Fact]
@@ -96,6 +98,24 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_eureka_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("Eureka")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<EurekaServiceDiscoveryProvider>())
                 .BDDfy();
         }
 

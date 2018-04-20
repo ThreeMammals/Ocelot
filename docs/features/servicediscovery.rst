@@ -53,3 +53,36 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
     }
 
 Ocelot will add this token to the consul client that it uses to make requests and that is then used for every request.
+
+Eureka
+^^^^^^
+
+This feature was requested as part of `Issue 262 <https://github.com/TomPallister/Ocelot/issue/262>`_ . to add support for Netflix's 
+Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something
+to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
+
+In order to get this working add the following to ocelot.json..
+
+.. code-block:: json
+
+    "ServiceDiscoveryProvider": {
+        "Type": "Eureka"
+    }
+
+And following the guide `Here <https://steeltoe.io/docs/steeltoe-discovery/>`_ you may also need to add some stuff to appsettings.json. For example the json below
+tells the steeltoe / pivotal services where to look for the service discovery server and if the service should register with it.
+
+.. code-block:: json
+
+    "eureka": {
+        "client": {
+        "serviceUrl": "http://localhost:8761/eureka/",
+        "shouldRegisterWithEureka": true
+        }
+    }
+
+Ocelot will now register all the necessary services when it starts up and if you have the json above will register itself with 
+Eureka. One of the services polls Eureka every 30 seconds (default) and gets the latest service state and persists this in memory.
+When Ocelot asks for a given service it is retrieved from memory so performance is not a big problem. Please note that this code
+is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them for all the hard work.
+

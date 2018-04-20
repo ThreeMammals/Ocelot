@@ -45,6 +45,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure.Consul;
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
+    using Pivotal.Discovery.Client;
+    using ServiceDiscovery.Providers;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -111,6 +113,17 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+
+            if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
+            {
+                _services.AddDiscoveryClient(configurationRoot);
+            }
+            else
+            {
+                _services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
+            }
+
+            _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -345,6 +358,14 @@ namespace Ocelot.DependencyInjection
                     AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
+        }
+
+        private static bool UsingEurekaServiceDiscoveryProvider(IConfiguration configurationRoot)
+        {
+            var type = configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type",
+                string.Empty);
+
+            return type.ToLower() == "eureka";
         }
     }
 }

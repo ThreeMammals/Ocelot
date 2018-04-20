@@ -39,7 +39,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 * Routing
 * Request Aggregation
-* Service Discovery with Consul
+* Service Discovery with Consul & Eureka
 * Service Fabric
 * WebSockets
 * Authentication
@@ -52,6 +52,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Headers / Query String / Claims Transformation
 * Custom Middleware / Delegating Handlers
 * Configuration / Administration REST API
+* Platform / Cloud agnostic
 
 ## How to install
 

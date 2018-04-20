@@ -1,20 +1,15 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using Ocelot.Middleware.Pipeline;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Middleware
 {
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Pipeline;
+    using Pivotal.Discovery.Client;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class OcelotPipelineExtensionsTests
     {
         private OcelotPipelineBuilder _builder;
@@ -45,6 +40,7 @@ namespace Ocelot.UnitTests.Middleware
             var root = test.Build();
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(root);
+            services.AddDiscoveryClient(new DiscoveryOptions {ClientType = DiscoveryClientType.EUREKA});
             services.AddOcelot();
             var provider = services.BuildServiceProvider();
             _builder = new OcelotPipelineBuilder(provider);

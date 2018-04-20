@@ -17,6 +17,7 @@
     using Rafty.Concensus;
     using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
+    using Pivotal.Discovery.Client;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -36,6 +37,11 @@
             if(UsingRafty(builder))
             {
                 SetUpRafty(builder);
+            }
+
+            if (UsingEurekaServiceDiscoveryProvider(configuration))
+            {
+                builder.UseDiscoveryClient();
             }
 
             ConfigureDiagnosticListener(builder);
@@ -61,6 +67,11 @@
             });
 
             return builder;
+        }
+
+        private static bool UsingEurekaServiceDiscoveryProvider(IInternalConfiguration configuration)
+        {
+            return configuration?.ServiceProviderConfiguration != null && configuration.ServiceProviderConfiguration.Type?.ToLower() == "eureka";
         }
 
         private static bool UsingRafty(IApplicationBuilder builder)

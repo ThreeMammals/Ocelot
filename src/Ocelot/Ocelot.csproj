@@ -46,6 +46,7 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.2" />
     <PackageReference Include="Consul" Version="0.7.2.4" />
     <PackageReference Include="Polly" Version="5.8.0" />
+    <PackageReference Include="Pivotal.Discovery.Client" Version="1.1.0" />
     <PackageReference Include="IdentityServer4" Version="2.1.3" />
     <PackageReference Include="Rafty" Version="0.4.2" />
   </ItemGroup>
