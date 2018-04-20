@@ -15,15 +15,11 @@ using Xunit;
 namespace Ocelot.AcceptanceTests
 {
     using System.Diagnostics;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json;
+    using Steeltoe.Common.Discovery;
     using Steeltoe.Discovery.Client;
-    using DiscoveryClientType = Pivotal.Discovery.Client.DiscoveryClientType;
-    using DiscoveryServiceCollectionExtensions = Pivotal.Discovery.Client.DiscoveryServiceCollectionExtensions;
-    using EurekaClientOptions = Pivotal.Discovery.Client.EurekaClientOptions;
-    using IServiceInstance = Pivotal.Discovery.Client.IServiceInstance;
 
     public class ServiceDiscoveryTests : IDisposable
     {
@@ -52,11 +48,12 @@ namespace Ocelot.AcceptanceTests
         {
             var eurekaPort = 8761;
             var serviceName = "product";
-            var downstreamServiceOneUrl = $"http://{Environment.MachineName}:50371";
+            var downstreamServicePort = 50371;
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 
-            var instanceOne = new FakeEurekaService(serviceName, "localhost", 50881, false,
-                new Uri($"http://localhost:{50881}"), new Dictionary<string, string>());
+            var instanceOne = new FakeEurekaService(serviceName, "localhost", downstreamServicePort, false,
+                new Uri($"http://localhost:{downstreamServicePort}"), new Dictionary<string, string>());
        
             var configuration = new FileConfiguration
             {
@@ -77,16 +74,14 @@ namespace Ocelot.AcceptanceTests
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Host = "localhost",
-                        Port = eurekaPort,
                         Type = "Eureka"
                     }
                 }
             };
 
             this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-                //.And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
-                //.And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne, instanceTwo))
+                .And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -601,67 +596,25 @@ namespace Ocelot.AcceptanceTests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseUrls(url)
-                .UseStartup<EurekaStartup>()
-               /* .Configure(app =>
+                //.UseStartup<EurekaStartup>()
+                .Configure(app =>
                 {
                     app.Run(async context =>
                     {
                         try
                         {
-                            string response;
-                            lock (SyncLock)
-                            {
-                                _counterOne++;
-                                response = _counterOne.ToString();
-                            }
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
+                            context.Response.StatusCode = 200;
+                            await context.Response.WriteAsync(nameof(EurekaStartup));
                         }
                         catch (Exception exception)
                         {
                             await context.Response.WriteAsync(exception.StackTrace);
                         }
                     });
-                })*/
+                })
                 .Build();
 
             _builderOne.Start();
-        }
-
-        private void GivenEurekaProductServiceTwoIsRunning(string url, int statusCode)
-        {
-            _builderTwo = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .UseStartup<EurekaStartup>()
-             /*   .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        try
-                        {
-                            string response;
-                            lock (SyncLock)
-                            {
-                                _counterTwo++;
-                                response = _counterTwo.ToString();
-                            }
-
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                    });
-                })*/
-                .Build();
-
-            _builderTwo.Start();
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)

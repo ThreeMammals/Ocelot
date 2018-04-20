@@ -6,9 +6,10 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.Middleware;
     using Ocelot.Middleware.Pipeline;
     using Shouldly;
+    using Steeltoe.Common.Discovery;
+    using Steeltoe.Discovery.Client;
     using TestStack.BDDfy;
     using Xunit;
-    using Pivotal.Discovery.Client;
 
     public class OcelotPipelineExtensionsTests
     {

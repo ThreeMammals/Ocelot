@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.ServiceDiscovery.Providers
 {
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
 
     public class EurekaServiceDiscoveryFactory : IEurekaServiceDiscoveryFactory
     {

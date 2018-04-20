@@ -17,7 +17,7 @@
     using Rafty.Concensus;
     using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Discovery.Client;
 
     public static class OcelotMiddlewareExtensions
     {

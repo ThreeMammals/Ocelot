@@ -45,8 +45,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure.Consul;
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
-    using Pivotal.Discovery.Client;
     using ServiceDiscovery.Providers;
+    using Steeltoe.Discovery.Client;
 
     public class OcelotBuilder : IOcelotBuilder
     {

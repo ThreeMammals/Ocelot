@@ -23,6 +23,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Discovery\src\Steeltoe.Discovery.ClientCore\Steeltoe.Discovery.ClientCore.csproj" />
+    <ProjectReference Include="..\..\..\Discovery\src\Steeltoe.Discovery.EurekaBase\Steeltoe.Discovery.EurekaBase.csproj" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
   </ItemGroup>
