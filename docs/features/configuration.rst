@@ -64,7 +64,8 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
                 "UseCookieContainer": true,
                 "UseTracing": true
             },
-            "UseServiceDiscovery": false
+            "UseServiceDiscovery": false,
+            "DangerousAcceptAnyServerCertificateValidator": false
         }
 
 More information on how to use these options is below..
@@ -160,3 +161,14 @@ noticed that the cookies were being shared. I tried to think of a nice way to ha
 that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight
 requests. This would also mean that subsequent requests dont use the cookies from the previous response! All in all not a great situation. I would avoid setting 
 UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
+
+SSL Errors
+----------
+
+Id you want to ignore SSL warnings / errors set the following in your ReRoute config.
+
+.. code-block:: json
+
+    "DangerousAcceptAnyServerCertificateValidator": false
+
+I don't reccomend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
