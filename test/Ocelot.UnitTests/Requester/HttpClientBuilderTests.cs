@@ -61,6 +61,25 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
+        public void should_log_if_ignoring_ssl_errors()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .WithDangerousAcceptAnyServerCertificateValidator(true)
+                .Build();
+
+            this.Given(x => GivenTheFactoryReturns())
+                .And(x => GivenARequest(reRoute))
+                .When(x => WhenIBuild())
+                .Then(x => ThenTheHttpClientShouldNotBeNull())
+                .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_call_delegating_handlers_in_order()
         {
             var reRoute = new DownstreamReRouteBuilder()
@@ -109,6 +128,11 @@ namespace Ocelot.UnitTests.Requester
                 .When(_ => WhenICallTheClient("http://localhost:5003"))
                 .Then(_ => ThenTheResponseIsOk())
                 .BDDfy();
+        }
+
+        private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
+        {
+            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamPathTemplate}"), Times.Once);
         }
 
         private void GivenTheClientIsCached()

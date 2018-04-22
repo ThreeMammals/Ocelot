@@ -16,7 +16,6 @@ namespace Ocelot.Requester
         private string _cacheKey;
         private HttpClient _httpClient;
         private IHttpClient _client;
-        private HttpClientHandler _httpclientHandler;
         private readonly TimeSpan _defaultTimeout;
 
         public HttpClientBuilder(
@@ -33,9 +32,9 @@ namespace Ocelot.Requester
             _defaultTimeout = TimeSpan.FromSeconds(90);
         }
 
-        public IHttpClient Create(DownstreamContext request)
+        public IHttpClient Create(DownstreamContext context)
         {
-            _cacheKey = GetCacheKey(request);
+            _cacheKey = GetCacheKey(context);
 
             var httpClient = _cacheHandlers.Get(_cacheKey);
 
@@ -44,18 +43,26 @@ namespace Ocelot.Requester
                 return httpClient;
             }
 
-            _httpclientHandler = new HttpClientHandler
+            var httpclientHandler = new HttpClientHandler
             {
-                AllowAutoRedirect = request.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = request.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
                 CookieContainer = new CookieContainer()
             };
 
-            var timeout = request.DownstreamReRoute.QosOptionsOptions.TimeoutValue == 0
-                ? _defaultTimeout 
-                : TimeSpan.FromMilliseconds(request.DownstreamReRoute.QosOptionsOptions.TimeoutValue);
+            if(context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            {
+                httpclientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(_httpclientHandler, request.DownstreamReRoute))
+                _logger
+                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");
+            }
+
+            var timeout = context.DownstreamReRoute.QosOptionsOptions.TimeoutValue == 0
+                ? _defaultTimeout 
+                : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptionsOptions.TimeoutValue);
+
+            _httpClient = new HttpClient(CreateHttpMessageHandler(httpclientHandler, context.DownstreamReRoute))
             {
                 Timeout = timeout
             };
