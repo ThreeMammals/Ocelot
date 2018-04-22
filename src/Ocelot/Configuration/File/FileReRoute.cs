@@ -49,5 +49,6 @@ namespace Ocelot.Configuration.File
         public List<string> DelegatingHandlers {get;set;}
         public int Priority { get;set; }
         public int Timeout { get; set; }
+        public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
     }
 }

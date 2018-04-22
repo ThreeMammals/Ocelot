@@ -40,6 +40,7 @@ namespace Ocelot.Configuration.Builder
         private List<string> _delegatingHandlers;
         private List<AddHeader> _addHeadersToDownstream;
         private List<AddHeader> _addHeadersToUpstream;
+        private bool _dangerousAcceptAnyServerCertificateValidator;
 
         public DownstreamReRouteBuilder()
         {
@@ -241,6 +242,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithDangerousAcceptAnyServerCertificateValidator(bool dangerousAcceptAnyServerCertificateValidator)
+        {
+            _dangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
@@ -272,7 +279,8 @@ namespace Ocelot.Configuration.Builder
                 _reRouteKey,
                 _delegatingHandlers,
                 _addHeadersToDownstream,
-                _addHeadersToUpstream);
+                _addHeadersToUpstream,
+                _dangerousAcceptAnyServerCertificateValidator);
         }
     }
 }

@@ -35,8 +35,10 @@ namespace Ocelot.Configuration
             string reRouteKey,
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
-            List<AddHeader> addHeadersToUpstream)
+            List<AddHeader> addHeadersToUpstream,
+            bool dangerousAcceptAnyServerCertificateValidator)
         {
+            DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
             DelegatingHandlers = delegatingHandlers;
             Key = key;
@@ -97,5 +99,6 @@ namespace Ocelot.Configuration
         public List<string> DelegatingHandlers {get;private set;}
         public List<AddHeader> AddHeadersToDownstream {get;private set;}
         public List<AddHeader> AddHeadersToUpstream { get; private set; }
+        public bool DangerousAcceptAnyServerCertificateValidator { get; private set; }
     }
 }

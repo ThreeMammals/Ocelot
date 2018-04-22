@@ -213,6 +213,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
                 .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
                 .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
+                .WithDangerousAcceptAnyServerCertificateValidator(fileReRoute.DangerousAcceptAnyServerCertificateValidator)
                 .Build();
 
             return reRoute;
