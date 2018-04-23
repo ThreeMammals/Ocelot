@@ -1,6 +1,9 @@
+using System;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Validators;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
 namespace Ocelot.Benchmarks
@@ -15,6 +18,8 @@ namespace Ocelot.Benchmarks
         public UrlPathToUrlPathTemplateMatcherBenchmarks()
         {
             Add(StatisticColumn.AllStatistics);
+            Add(MemoryDiagnoser.Default);
+            Add(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]
@@ -25,8 +30,8 @@ namespace Ocelot.Benchmarks
             _downstreamUrlPathTemplate = "api/product/products/{productId}/variants/";
         }
 
-        [Benchmark]
-        public void Benchmark1()
+        [Benchmark(Baseline = true)]
+        public void Baseline()
         {
             _urlPathMatcher.Match(_downstreamUrlPath, _downstreamUrlPathTemplate);
         }

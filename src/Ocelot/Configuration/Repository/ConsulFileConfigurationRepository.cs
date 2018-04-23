@@ -13,7 +13,7 @@ namespace Ocelot.Configuration.Repository
 
     public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
-        private readonly ConsulClient _consul;
+        private readonly IConsulClient _consul;
         private const string OcelotConfiguration = "InternalConfiguration";
         private readonly Cache.IOcelotCache<FileConfiguration> _cache;
         private readonly IOcelotLogger _logger;
@@ -72,7 +72,7 @@ namespace Ocelot.Configuration.Repository
 
         public async Task<Response> Set(FileConfiguration ocelotConfiguration)
         {
-            var json = JsonConvert.SerializeObject(ocelotConfiguration);
+            var json = JsonConvert.SerializeObject(ocelotConfiguration, Formatting.Indented);
 
             var bytes = Encoding.UTF8.GetBytes(json);
 

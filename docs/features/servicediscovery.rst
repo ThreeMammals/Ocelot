@@ -69,17 +69,19 @@ In order to get this working add the following to ocelot.json..
         "Type": "Eureka"
     }
 
-And following the guide `Here <https://steeltoe.io/docs/steeltoe-discovery/>`_ you may also need to add some stuff to appsettings.json. For example the json below
-tells the steeltoe / pivotal services where to look for the service discovery server and if the service should register with it.
+And following the guide `Here <https://steeltoe.io/docs/steeltoe-discovery/>`_ you may also need to add some stuff to appsettings.json. For example the json below tells the steeltoe / pivotal services where to look for the service discovery server and if the service should register with it.
 
 .. code-block:: json
 
     "eureka": {
         "client": {
         "serviceUrl": "http://localhost:8761/eureka/",
-        "shouldRegisterWithEureka": true
+        "shouldRegisterWithEureka": false,
+        "shouldFetchRegistry": true
         }
     }
+
+I am told that if shouldRegisterWithEureka is false then shouldFetchRegistry will defaut to true so you don't need it explicitly but left it in there.
 
 Ocelot will now register all the necessary services when it starts up and if you have the json above will register itself with 
 Eureka. One of the services polls Eureka every 30 seconds (default) and gets the latest service state and persists this in memory.

@@ -1,21 +1,22 @@
-using System;
-using System.Collections.Generic;
-using Moq;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-using Newtonsoft.Json;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Ocelot.Configuration.Repository;
-
 namespace Ocelot.UnitTests.Configuration
 {
-    public class FileConfigurationRepositoryTests
+    using System;
+    using System.Collections.Generic;
+    using Moq;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+    using Newtonsoft.Json;
+    using System.IO;
+    using Microsoft.AspNetCore.Hosting;
+    using Ocelot.Configuration.Repository;
+
+    public class DiskFileConfigurationRepositoryTests
     {
         private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
         private IFileConfigurationRepository _repo;
+        private string _configurationPath;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
 
@@ -24,7 +25,7 @@ namespace Ocelot.UnitTests.Configuration
         // tests but whatever...
         private string _environmentName = "DEV.DEV";
 
-        public FileConfigurationRepositoryTests()
+        public DiskFileConfigurationRepositoryTests()
         {
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
@@ -35,9 +36,9 @@ namespace Ocelot.UnitTests.Configuration
         {
             var config = FakeFileConfigurationForGet();
 
-            this.Given(x => x.GivenTheConfigurationIs(config))
-                .When(x => x.WhenIGetTheReRoutes())
-                .Then(x => x.ThenTheFollowingIsReturned(config))
+            this.Given(_ => GivenTheConfigurationIs(config))
+                .When(_ => WhenIGetTheReRoutes())
+                .Then(_ => ThenTheFollowingIsReturned(config))
                 .BDDfy();
         }
 
@@ -46,10 +47,10 @@ namespace Ocelot.UnitTests.Configuration
         {
             var config = FakeFileConfigurationForGet();
 
-            this.Given(x => x.GivenTheEnvironmentNameIsUnavailable())
-                .And(x => x.GivenTheConfigurationIs(config))
-                .When(x => x.WhenIGetTheReRoutes())
-                .Then(x => x.ThenTheFollowingIsReturned(config))
+            this.Given(_ => GivenTheEnvironmentNameIsUnavailable())
+                .And(_ => GivenTheConfigurationIs(config))
+                .When(_ => WhenIGetTheReRoutes())
+                .Then(_ => ThenTheFollowingIsReturned(config))
                 .BDDfy();
         }
 
@@ -58,9 +59,10 @@ namespace Ocelot.UnitTests.Configuration
         {
             var config = FakeFileConfigurationForSet();
 
-            this.Given(x => GivenIHaveAConfiguration(config))
-                .When(x => WhenISetTheConfiguration())
-                .Then(x => ThenTheConfigurationIsStoredAs(config))
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .When(_ => WhenISetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIsStoredAs(config))
+                .And(_ => ThenTheConfigurationJsonIsIndented(config))
                 .BDDfy();
         }
 
@@ -68,10 +70,12 @@ namespace Ocelot.UnitTests.Configuration
         public void should_set_file_configuration_if_environment_name_is_unavailable()
         {
             var config = FakeFileConfigurationForSet();
-            this.Given(x => GivenIHaveAConfiguration(config))
-                .And(x => GivenTheEnvironmentNameIsUnavailable())
-                .When(x => WhenISetTheConfiguration())
-                .Then(x => ThenTheConfigurationIsStoredAs(config))
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenTheEnvironmentNameIsUnavailable())
+                .When(_ => WhenISetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIsStoredAs(config))
+                .And(_ => ThenTheConfigurationJsonIsIndented(config))
                 .BDDfy();
         }
 
@@ -117,16 +121,25 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            var configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
-            if (File.Exists(configurationPath))
+            if (File.Exists(_configurationPath))
             {
-                File.Delete(configurationPath);
+                File.Delete(_configurationPath);
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            File.WriteAllText(_configurationPath, jsonConfiguration);
+        }
+
+        private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds)
+        {
+            var path = !string.IsNullOrEmpty(_configurationPath) ? _configurationPath : _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            
+            var resultText = File.ReadAllText(_configurationPath);
+            var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
         }
 
         private void WhenIGetTheReRoutes()

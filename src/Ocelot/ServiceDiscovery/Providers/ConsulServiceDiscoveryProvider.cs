@@ -15,7 +15,7 @@ namespace Ocelot.ServiceDiscovery.Providers
     {
         private readonly ConsulRegistryConfiguration _config;
         private readonly IOcelotLogger _logger;
-        private readonly ConsulClient _consul;
+        private readonly IConsulClient _consul;
         private const string VersionPrefix = "version-";
 
         public ConsulServiceDiscoveryProvider(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)

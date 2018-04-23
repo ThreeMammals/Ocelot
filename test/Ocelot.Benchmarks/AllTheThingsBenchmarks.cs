@@ -17,19 +17,23 @@ using Ocelot.DependencyInjection;
 using System.Net.Http;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes.Jobs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Validators;
 
 namespace Ocelot.Benchmarks
 {
-    [Config(typeof(AllTheThings))]
-    public class AllTheThings : ManualConfig
+    [Config(typeof(AllTheThingsBenchmarks))]
+    public class AllTheThingsBenchmarks : ManualConfig
     {
         private IWebHost _service;
         private IWebHost _ocelot;
         private HttpClient _httpClient;
 
-        public AllTheThings()
+        public AllTheThingsBenchmarks()
         {
             Add(StatisticColumn.AllStatistics);
+            Add(MemoryDiagnoser.Default);
+            Add(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]
@@ -64,11 +68,12 @@ namespace Ocelot.Benchmarks
             _httpClient = new HttpClient();
         }
 
-        [Benchmark]
-        public async Task Benchmark1()
+        [Benchmark(Baseline = true)]
+        public async Task Baseline()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/");
             var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
         }
 
         // * Summary *
@@ -78,10 +83,9 @@ namespace Ocelot.Benchmarks
         //   [Host]     : .NET Core 2.0.6 (CoreCLR 4.6.0.0, CoreFX 4.6.26212.01), 64bit RyuJIT
         //   DefaultJob : .NET Core 2.0.6 (CoreCLR 4.6.0.0, CoreFX 4.6.26212.01), 64bit RyuJIT
 
-
-        //      Method |     Mean |     Error |    StdDev |    StdErr |      Min |       Q1 |   Median |       Q3 |      Max |  Op/s |
-        // ----------- |---------:|----------:|----------:|----------:|---------:|---------:|---------:|---------:|---------:|------:|
-        //  Benchmark1 | 2.087 ms | 0.0310 ms | 0.0290 ms | 0.0075 ms | 2.049 ms | 2.062 ms | 2.086 ms | 2.105 ms | 2.157 ms | 479.2 |
+        //    Method |     Mean |     Error |    StdDev |    StdErr |      Min |       Q1 |   Median |       Q3 |      Max |  Op/s | Scaled |   Gen 0 |  Gen 1 | Allocated |
+        // --------- |---------:|----------:|----------:|----------:|---------:|---------:|---------:|---------:|---------:|------:|-------:|--------:|-------:|----------:|
+        //  Baseline | 2.102 ms | 0.0292 ms | 0.0273 ms | 0.0070 ms | 2.063 ms | 2.080 ms | 2.093 ms | 2.122 ms | 2.152 ms | 475.8 |   1.00 | 31.2500 | 3.9063 |   1.63 KB |
 
         private void GivenOcelotIsRunning(string url)
         {
