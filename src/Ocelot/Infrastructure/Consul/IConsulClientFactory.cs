@@ -5,6 +5,6 @@ namespace Ocelot.Infrastructure.Consul
 {
     public interface IConsulClientFactory
     {
-        ConsulClient Get(ConsulRegistryConfiguration config);
+        IConsulClient Get(ConsulRegistryConfiguration config);
     }
 }

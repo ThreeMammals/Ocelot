@@ -7,7 +7,9 @@ namespace Ocelot.Benchmarks
         public static void Main(string[] args)
         {
             var switcher = new BenchmarkSwitcher(new[] {
-                   typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
+                    typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
+                    typeof(AllTheThingsBenchmarks),
+                    typeof(ExceptionHandlerMiddlewareBenchmarks)
                });
 
             switcher.Run(args);

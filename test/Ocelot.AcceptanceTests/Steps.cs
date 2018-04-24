@@ -88,7 +88,7 @@ namespace Ocelot.AcceptanceTests
         {
             var configurationPath = TestConfiguration.ConfigurationPath;
 
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
             if (File.Exists(configurationPath))
             {
@@ -100,7 +100,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration, string configurationPath)
         {
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
             if (File.Exists(configurationPath))
             {

@@ -36,7 +36,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
-            string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
             lock(_lock)
             {
