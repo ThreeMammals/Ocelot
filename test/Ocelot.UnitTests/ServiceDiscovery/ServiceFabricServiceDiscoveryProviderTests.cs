@@ -1,4 +1,7 @@
-﻿namespace Ocelot.UnitTests.ServiceDiscovery
+﻿using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
+
+namespace Ocelot.UnitTests.ServiceDiscovery
 {
     using System;
     using System.Collections.Generic;

@@ -34,6 +34,8 @@
         RateLimitOptionsError,
         PathTemplateDoesntStartWithForwardSlash,
         FileValidationFailedError,
-        UnableToFindDelegatingHandlerProviderError
+        UnableToFindDelegatingHandlerProviderError,
+        CouldNotFindPlaceholderError,
+        CouldNotFindAggregatorError
     }
 }

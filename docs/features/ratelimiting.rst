@@ -23,7 +23,7 @@ Period - This value specifies the period, such as 1s, 5m, 1h,1d and so on.
 PeriodTimespan - This value specifies that we can retry after a certain number of seconds.
 Limit - This value specifies the maximum number of requests that a client can make in a defined period.
 
-You can also set the following in the GlobalConfiguration part of configuration.json
+You can also set the following in the GlobalConfiguration part of ocelot.json
 
 .. code-block:: json
 

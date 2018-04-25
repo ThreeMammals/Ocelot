@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
@@ -18,11 +22,13 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private readonly ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IDiscoveryClient> _discoveryClient;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object);
+            _discoveryClient = new Mock<IDiscoveryClient>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
         }
         
         [Fact]
@@ -86,12 +92,30 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
+                .WithType("ServiceFabric")
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_eureka_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("Eureka")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<EurekaServiceDiscoveryProvider>())
                 .BDDfy();
         }
 

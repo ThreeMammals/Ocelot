@@ -1,7 +1,3 @@
-using Butterfly.Client.Tracing;
-using Microsoft.Extensions.Options;
-using Ocelot.Middleware.Multiplexer;
-
 namespace Ocelot.DependencyInjection
 {
     using CacheManager.Core;
@@ -12,17 +8,14 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Authorisation;
     using Ocelot.Cache;
     using Ocelot.Claims;
-    using Ocelot.Configuration.Authentication;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Parser;
-    using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.Configuration.Validator;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Headers;
     using Ocelot.Infrastructure.Claims.Parser;
@@ -44,14 +37,16 @@ namespace Ocelot.DependencyInjection
     using System.Security.Cryptography.X509Certificates;
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using FileConfigurationProvider = Ocelot.Configuration.Provider.FileConfigurationProvider;
     using Microsoft.Extensions.DependencyInjection.Extensions;
-    using System.Linq;
     using System.Net.Http;
     using Butterfly.Client.AspNetCore;
+    using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.Consul;
+    using Butterfly.Client.Tracing;
+    using Ocelot.Middleware.Multiplexer;
+    using Pivotal.Discovery.Client;
+    using ServiceDiscovery.Providers;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -76,8 +71,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
             _services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
             _services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
-            _services.TryAddSingleton<IOcelotConfigurationCreator, FileOcelotConfigurationCreator>();
-            _services.TryAddSingleton<IOcelotConfigurationRepository, InMemoryOcelotConfigurationRepository>();
+            _services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
+            _services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
             _services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
             _services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             _services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
@@ -89,9 +84,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
             _services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
             _services.TryAddSingleton<IRegionCreator, RegionCreator>();
-            _services.TryAddSingleton<IFileConfigurationRepository, FileConfigurationRepository>();
-            _services.TryAddSingleton<IFileConfigurationSetter, FileConfigurationSetter>();
-            _services.TryAddSingleton<IFileConfigurationProvider, FileConfigurationProvider>();
+            _services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
+            _services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
             _services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
             _services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             _services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
@@ -99,7 +93,6 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
             _services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
             _services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
-            _services.TryAddSingleton<IOcelotConfigurationProvider, OcelotConfigurationProvider>();
             _services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             _services.TryAddSingleton<IClaimsAuthoriser, ClaimsAuthoriser>();
             _services.TryAddSingleton<IScopesAuthoriser, ScopesAuthoriser>();
@@ -120,6 +113,17 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+
+            if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
+            {
+                _services.AddDiscoveryClient(configurationRoot);
+            }
+            else
+            {
+                _services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
+            }
+
+            _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -148,6 +152,12 @@ namespace Ocelot.DependencyInjection
 
             // We add this here so that we can always inject something into the factory for IoC..
             _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
+            _services.TryAddSingleton<IConsulPollerConfiguration, InMemoryConsulPollerConfiguration>();
+            _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
+            _services.TryAddSingleton<IPlaceholders, Placeholders>();
+            _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
+            _services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
+            _services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -180,6 +190,20 @@ namespace Ocelot.DependencyInjection
             var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
             _services.Replace(descriptor);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
+        }
+
+        public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator
+        {
+            _services.AddSingleton<IDefinedAggregator, T>();
+            return this;
+        }
+
+        public IOcelotBuilder AddTransientDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator
+        {
+            _services.AddTransient<IDefinedAggregator, T>();
+            return this;
         }
 
         public IOcelotBuilder AddSingletonDelegatingHandler<THandler>(bool global = false) 
@@ -230,15 +254,6 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
         {
-            var serviceDiscoveryPort = _configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Port", 0);
-            var serviceDiscoveryHost = _configurationRoot.GetValue("GlobalConfiguration:ServiceDiscoveryProvider:Host", string.Empty);
-
-            var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderPort(serviceDiscoveryPort)
-                .WithServiceDiscoveryProviderHost(serviceDiscoveryHost)
-                .Build();
-
-            _services.AddSingleton<ServiceProviderConfiguration>(config);
             _services.AddSingleton<ConsulFileConfigurationPoller>();
             _services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
             return this;
@@ -254,12 +269,12 @@ namespace Ocelot.DependencyInjection
             _services.AddSingleton<ICacheManager<CachedResponse>>(cacheManagerOutputCache);
             _services.AddSingleton<IOcelotCache<CachedResponse>>(ocelotOutputCacheManager);
 
-            var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IOcelotConfiguration>("OcelotConfigurationCache", settings);
-            var ocelotConfigCacheManager = new OcelotCacheManagerCache<IOcelotConfiguration>(ocelotConfigCacheManagerOutputCache);
-            _services.RemoveAll(typeof(ICacheManager<IOcelotConfiguration>));
-            _services.RemoveAll(typeof(IOcelotCache<IOcelotConfiguration>));
-            _services.AddSingleton<ICacheManager<IOcelotConfiguration>>(ocelotConfigCacheManagerOutputCache);
-            _services.AddSingleton<IOcelotCache<IOcelotConfiguration>>(ocelotConfigCacheManager);
+            var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IInternalConfiguration>("OcelotConfigurationCache", settings);
+            var ocelotConfigCacheManager = new OcelotCacheManagerCache<IInternalConfiguration>(ocelotConfigCacheManagerOutputCache);
+            _services.RemoveAll(typeof(ICacheManager<IInternalConfiguration>));
+            _services.RemoveAll(typeof(IOcelotCache<IInternalConfiguration>));
+            _services.AddSingleton<ICacheManager<IInternalConfiguration>>(ocelotConfigCacheManagerOutputCache);
+            _services.AddSingleton<IOcelotCache<IInternalConfiguration>>(ocelotConfigCacheManager);
 
             var fileConfigCacheManagerOutputCache = CacheFactory.Build<FileConfiguration>("FileConfigurationCache", settings);
             var fileConfigCacheManager = new OcelotCacheManagerCache<FileConfiguration>(fileConfigCacheManagerOutputCache);
@@ -280,7 +295,6 @@ namespace Ocelot.DependencyInjection
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
             _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-            _services.TryAddSingleton<IHashMatcher, HashMatcher>();
             var identityServerBuilder = _services
                 .AddIdentityServer(o => {
                     o.IssuerUri = "Ocelot";
@@ -344,6 +358,14 @@ namespace Ocelot.DependencyInjection
                     AllowedScopes = { identityServerConfiguration.ApiName }
                 }
             };
+        }
+
+        private static bool UsingEurekaServiceDiscoveryProvider(IConfiguration configurationRoot)
+        {
+            var type = configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type",
+                string.Empty);
+
+            return type.ToLower() == "eureka";
         }
     }
 }

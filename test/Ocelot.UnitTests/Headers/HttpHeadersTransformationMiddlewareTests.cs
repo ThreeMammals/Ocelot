@@ -1,31 +1,34 @@
-using Xunit;
-using Ocelot.Logging;
-using Ocelot.Headers.Middleware;
-using TestStack.BDDfy;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.Configuration.Builder;
-using Ocelot.Headers;
-using System.Net.Http;
-using Ocelot.Authorisation.Middleware;
-using Ocelot.Middleware;
-
 namespace Ocelot.UnitTests.Headers
 {
+    using Xunit;
+    using Ocelot.Logging;
+    using Ocelot.Headers.Middleware;
+    using TestStack.BDDfy;
+    using Microsoft.AspNetCore.Http;
+    using System.Collections.Generic;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Headers;
+    using System.Net.Http;
+    using Ocelot.Authorisation.Middleware;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
     using System.Threading.Tasks;
+    using Ocelot.Request.Middleware;
 
     public class HttpHeadersTransformationMiddlewareTests
     {
-        private Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
-        private Mock<IHttpResponseHeaderReplacer> _postReplacer;
+        private readonly Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
+        private readonly Mock<IHttpResponseHeaderReplacer> _postReplacer;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
-        private HttpHeadersTransformationMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
+        private readonly HttpHeadersTransformationMiddleware _middleware;
+        private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
+        private readonly Mock<IAddHeadersToResponse> _addHeadersToResponse;
+        private readonly Mock<IAddHeadersToRequest> _addHeadersToRequest;
 
         public HttpHeadersTransformationMiddlewareTests()
         {
@@ -36,7 +39,11 @@ namespace Ocelot.UnitTests.Headers
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new HttpHeadersTransformationMiddleware(_next, _loggerFactory.Object, _preReplacer.Object, _postReplacer.Object);
+            _addHeadersToResponse = new Mock<IAddHeadersToResponse>();
+            _addHeadersToRequest = new Mock<IAddHeadersToRequest>();
+            _middleware = new HttpHeadersTransformationMiddleware(
+                _next, _loggerFactory.Object, _preReplacer.Object,
+                _postReplacer.Object, _addHeadersToResponse.Object, _addHeadersToRequest.Object);
         }
 
         [Fact]
@@ -48,8 +55,22 @@ namespace Ocelot.UnitTests.Headers
                 .And(x => GivenTheHttpResponseMessageIs())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
+                .Then(x => ThenAddHeadersToRequestIsCalledCorrectly())
                 .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
+                .And(x => ThenAddHeadersToResponseIsCalledCorrectly())
                 .BDDfy();
+        }
+
+        private void ThenAddHeadersToResponseIsCalledCorrectly()
+        {
+            _addHeadersToResponse
+                .Verify(x => x.Add(_downstreamContext.DownstreamReRoute.AddHeadersToDownstream, _downstreamContext.DownstreamResponse), Times.Once);
+        }
+
+        private void ThenAddHeadersToRequestIsCalledCorrectly()
+        {
+            _addHeadersToRequest
+                .Verify(x => x.SetHeadersOnDownstreamRequest(_downstreamContext.DownstreamReRoute.AddHeadersToUpstream, _downstreamContext.HttpContext), Times.Once);
         }
 
         private void WhenICallTheMiddleware()
@@ -59,12 +80,12 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheDownstreamRequestIs()
         {
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage();
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
         private void GivenTheHttpResponseMessageIs()
         {
-            _downstreamContext.DownstreamResponse = new HttpResponseMessage();
+            _downstreamContext.DownstreamResponse = new DownstreamResponse(new HttpResponseMessage());
         }
 
         private void GivenTheReRouteHasPreFindAndReplaceSetUp()
@@ -88,7 +109,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
         {
-            _postReplacer.Verify(x => x.Replace(It.IsAny<HttpResponseMessage>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<HttpRequestMessage>()), Times.Once);
+            _postReplacer.Verify(x => x.Replace(It.IsAny<DownstreamResponse>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<DownstreamRequest>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()

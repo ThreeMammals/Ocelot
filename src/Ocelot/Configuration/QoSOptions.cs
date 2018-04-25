@@ -16,12 +16,12 @@ namespace Ocelot.Configuration
             TimeoutStrategy = timeoutStrategy;
         }         
 
-        public int ExceptionsAllowedBeforeBreaking { get; private set; }
+        public int ExceptionsAllowedBeforeBreaking { get; }
 
-        public int DurationOfBreak { get; private set; }
+        public int DurationOfBreak { get; }
 
-        public int TimeoutValue { get; private set; }
+        public int TimeoutValue { get; }
 
-        public TimeoutStrategy TimeoutStrategy { get; private set; }
+        public TimeoutStrategy TimeoutStrategy { get; }
     }
 }

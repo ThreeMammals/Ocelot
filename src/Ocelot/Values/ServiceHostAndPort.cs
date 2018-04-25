@@ -8,7 +8,8 @@
             DownstreamPort = downstreamPort;
         }
 
-        public string DownstreamHost { get; private set; }
-        public int DownstreamPort { get; private set; }
+        public string DownstreamHost { get; }
+
+        public int DownstreamPort { get; }
     }
 }

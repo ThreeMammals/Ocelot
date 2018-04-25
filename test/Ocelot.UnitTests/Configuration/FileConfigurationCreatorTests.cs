@@ -1,22 +1,18 @@
-﻿using System.Collections.Generic;
-using Castle.Components.DictionaryAdapter;
-using Microsoft.Extensions.Options;
-using Moq;
-using Ocelot.Cache;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Validator;
-using Ocelot.Logging;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.Configuration
+﻿namespace Ocelot.UnitTests.Configuration
 {
-    using System;
+    using System.Collections.Generic;
+    using Moq;
+    using Ocelot.Cache;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Validator;
+    using Ocelot.Logging;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
     using Ocelot.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
@@ -24,23 +20,22 @@ namespace Ocelot.UnitTests.Configuration
 
     public class FileConfigurationCreatorTests
     {
-        private readonly Mock<IOptions<FileConfiguration>> _fileConfig;
         private readonly Mock<IConfigurationValidator> _validator;
-        private Response<IOcelotConfiguration> _config;
+        private Response<IInternalConfiguration> _config;
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IOcelotLoggerFactory> _logger;
-        private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
-        private Mock<IClaimsToThingCreator> _claimsToThingCreator;
-        private Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
-        private Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
-        private Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
-        private Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
-        private Mock<IQoSOptionsCreator> _qosOptionsCreator;
-        private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
-        private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
-        private Mock<IRegionCreator> _regionCreator;
-        private Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
-        private Mock<IAdministrationPath> _adminPath;
+        private readonly FileInternalConfigurationCreator _internalConfigurationCreator;
+        private readonly Mock<IClaimsToThingCreator> _claimsToThingCreator;
+        private readonly Mock<IAuthenticationOptionsCreator> _authOptionsCreator;
+        private readonly Mock<IUpstreamTemplatePatternCreator> _upstreamTemplatePatternCreator;
+        private readonly Mock<IRequestIdKeyCreator> _requestIdKeyCreator;
+        private readonly Mock<IServiceProviderConfigurationCreator> _serviceProviderConfigCreator;
+        private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
+        private readonly Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
+        private readonly Mock<IRateLimitOptionsCreator> _rateLimitOptions;
+        private readonly Mock<IRegionCreator> _regionCreator;
+        private readonly Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
+        private readonly Mock<IAdministrationPath> _adminPath;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
         private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
 
@@ -48,7 +43,6 @@ namespace Ocelot.UnitTests.Configuration
         {
             _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
-            _fileConfig = new Mock<IOptions<FileConfiguration>>();
             _claimsToThingCreator = new Mock<IClaimsToThingCreator>();
             _authOptionsCreator = new Mock<IAuthenticationOptionsCreator>();
             _upstreamTemplatePatternCreator = new Mock<IUpstreamTemplatePatternCreator>();
@@ -63,8 +57,7 @@ namespace Ocelot.UnitTests.Configuration
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
 
-            _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
-                _fileConfig.Object,
+            _internalConfigurationCreator = new FileInternalConfigurationCreator( 
                 _validator.Object, 
                 _logger.Object,
                 _claimsToThingCreator.Object,
@@ -134,7 +127,8 @@ namespace Ocelot.UnitTests.Configuration
                             {
                                 "Tom",
                                 "Laura"
-                            }
+                            },
+                            Aggregator = "asdf"
                         }
                     }
             };
@@ -261,7 +255,7 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingRegionIsReturned("region"))
                 .When(x => x.WhenICreateTheConfig())
-                .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
+                .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly())
                 .And(x => x.ThenTheHeaderFindAndReplaceCreatorIsCalledCorrectly())
                 .BDDfy();
         }
@@ -799,14 +793,11 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenTheConfigIs(FileConfiguration fileConfiguration)
         {
             _fileConfiguration = fileConfiguration;
-            _fileConfig
-                .Setup(x => x.Value)
-                .Returns(_fileConfiguration);
         }
 
         private void WhenICreateTheConfig()
         {
-            _config = _ocelotConfigurationCreator.Create(_fileConfiguration).Result;
+            _config = _internalConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
@@ -826,7 +817,9 @@ namespace Ocelot.UnitTests.Configuration
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
                 result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);   
-                result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);           
+                result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);      
+                result.DownstreamReRoute[0].AddHeadersToDownstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToDownstream);           
+                result.DownstreamReRoute[0].AddHeadersToUpstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToUpstream, "AddHeadersToUpstream should be set");
             }
         }
 
@@ -909,7 +902,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheHeaderFindAndReplaceCreatorReturns()
         {
-            _headerFindAndReplaceCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>()));
+            _headerFindAndReplaceCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>()));
         }
 
         private void GivenTheFollowingIsReturned(ServiceProviderConfiguration serviceProviderConfiguration)
@@ -925,7 +918,7 @@ namespace Ocelot.UnitTests.Configuration
                 .Returns(region);
         }
 
-        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
+        private void ThenTheRegionCreatorIsCalledCorrectly()
         {
             _regionCreator
                 .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);

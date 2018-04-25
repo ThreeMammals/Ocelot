@@ -1,10 +1,11 @@
 [<img src="http://threemammals.com/images/ocelot_logo.png">](http://threemammals.com/ocelot)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb)
+[![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?branch=develop&svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb) Windows (AppVeyor)
+[![Build Status](https://travis-ci.org/ThreeMammals/Ocelot.svg?branch=develop)](https://travis-ci.org/ThreeMammals/Ocelot) Linux & OSX (Travis)
 
 [![Windows Build history](https://buildstats.info/appveyor/chart/TomPallister/ocelot-fcfpb?branch=develop&includeBuildsFromPullRequest=false)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb/history?branch=develop)
 
-[![Coverage Status](https://coveralls.io/repos/github/TomPallister/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/TomPallister/Ocelot?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
 
 # Ocelot
 
@@ -38,8 +39,9 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 * Routing
 * Request Aggregation
-* Service Discovery with Consul
+* Service Discovery with Consul & Eureka
 * Service Fabric
+* WebSockets
 * Authentication
 * Authorisation
 * Rate Limiting
@@ -50,6 +52,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Headers / Query String / Claims Transformation
 * Custom Middleware / Delegating Handlers
 * Configuration / Administration REST API
+* Platform / Cloud agnostic
 
 ## How to install
 

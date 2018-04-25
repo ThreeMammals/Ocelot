@@ -1,5 +1,6 @@
 namespace Ocelot.Request.Middleware
 {
+    using System.Net.Http;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
@@ -10,15 +11,14 @@ namespace Ocelot.Request.Middleware
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly Mapper.IRequestMapper _requestMapper;
 
         public DownstreamRequestInitialiserMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             Mapper.IRequestMapper requestMapper)
+                :base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>();
             _requestMapper = requestMapper;
         }
 
@@ -31,7 +31,7 @@ namespace Ocelot.Request.Middleware
                 return;
             }
 
-            context.DownstreamRequest = downstreamRequest.Data;
+            context.DownstreamRequest = new DownstreamRequest(downstreamRequest.Data);
 
             await _next.Invoke(context);
         }

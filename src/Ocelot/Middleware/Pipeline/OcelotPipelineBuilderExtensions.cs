@@ -3,6 +3,7 @@
 // Removed code and changed RequestDelete to OcelotRequestDelete, HttpContext to DownstreamContext, removed some exception handling messages
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Middleware.Pipeline
 {
+    using Predicate = Func<DownstreamContext, bool>;
+
     public static class OcelotPipelineBuilderExtensions
     {
         internal const string InvokeMethodName = "Invoke";
@@ -73,7 +76,28 @@ namespace Ocelot.Middleware.Pipeline
                 var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, ctorArgs);
                 if (parameters.Length == 1)
                 {
-                    return (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var ocelotDelegate = (OcelotRequestDelegate)methodinfo.CreateDelegate(typeof(OcelotRequestDelegate), instance);
+                    var diagnosticListener = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
+                    var middlewareName = ocelotDelegate.Target.GetType().Name;
+
+                    OcelotRequestDelegate wrapped = context => {
+                        try
+                        {
+                            Write(diagnosticListener, "Ocelot.MiddlewareStarted", middlewareName, context);
+                            return ocelotDelegate(context);
+                        }
+                        catch(Exception ex)
+                        {
+                            WriteException(diagnosticListener, ex, "Ocelot.MiddlewareException", middlewareName, context);
+                            throw ex;
+                        }
+                        finally
+                        {
+                            Write(diagnosticListener, "Ocelot.MiddlewareFinished", middlewareName, context);
+                        }
+                    };
+
+                    return wrapped;
                 }
 
                 var factory = Compile<object>(methodinfo, parameters);
@@ -91,10 +115,55 @@ namespace Ocelot.Middleware.Pipeline
             });
         }
 
+        private static void Write(DiagnosticListener diagnosticListener, string message, string middlewareName, DownstreamContext context)
+        {
+            if(diagnosticListener != null)
+            {
+                diagnosticListener.Write(message, new { name = middlewareName, context = context });
+            }
+        }
+
+        private static void WriteException(DiagnosticListener diagnosticListener, Exception exception, string message, string middlewareName, DownstreamContext context)
+        {
+            if(diagnosticListener != null)
+            {
+                diagnosticListener.Write(message, new { name = middlewareName, context = context, exception = exception });
+            }
+        }
+
+        public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Predicate predicate, Action<IOcelotPipelineBuilder> configuration)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var branchBuilder = app.New();
+            configuration(branchBuilder);
+            var branch = branchBuilder.Build();
+
+            var options = new MapWhenOptions
+            {
+                Predicate = predicate,
+                Branch = branch,
+            };
+            return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
+        }
+
         private static Func<T, DownstreamContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
         {
             var middleware = typeof(T);
-            var httpContextArg = Expression.Parameter(typeof(HttpContext), "httpContext");
+            var httpContextArg = Expression.Parameter(typeof(DownstreamContext), "downstreamContext");
             var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
             var instanceArg = Expression.Parameter(middleware, "middleware");
 
@@ -111,8 +180,7 @@ namespace Ocelot.Middleware.Pipeline
                 var parameterTypeExpression = new Expression[]
                 {
                     providerArg,
-                    Expression.Constant(parameterType, typeof(Type)),
-                    Expression.Constant(methodinfo.DeclaringType, typeof(Type))
+                    Expression.Constant(parameterType, typeof(Type))
                 };
 
                 var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);

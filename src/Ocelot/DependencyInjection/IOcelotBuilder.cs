@@ -3,6 +3,7 @@ using CacheManager.Core;
 using System;
 using System.Net.Http;
 using IdentityServer4.AccessTokenValidation;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.DependencyInjection
 {
@@ -20,8 +21,13 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddSingletonDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
-        
+
         IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
+
+        IOcelotBuilder AddSingletonDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator;
+        IOcelotBuilder AddTransientDefinedAggregator<T>() 
+            where T : class, IDefinedAggregator;
     }
 }

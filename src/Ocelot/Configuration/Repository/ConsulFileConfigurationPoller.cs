@@ -17,10 +17,16 @@ namespace Ocelot.Configuration.Repository
         private string _previousAsJson;
         private readonly Timer _timer;
         private bool _polling;
+        private readonly IConsulPollerConfiguration _config;
 
-        public ConsulFileConfigurationPoller(IOcelotLoggerFactory factory, IFileConfigurationRepository repo, IFileConfigurationSetter setter)
+        public ConsulFileConfigurationPoller(
+            IOcelotLoggerFactory factory, 
+            IFileConfigurationRepository repo, 
+            IFileConfigurationSetter setter, 
+            IConsulPollerConfiguration config)
         {
             _setter = setter;
+            _config = config;
             _logger = factory.CreateLogger<ConsulFileConfigurationPoller>();
             _repo = repo;
             _previousAsJson = "";
@@ -30,22 +36,22 @@ namespace Ocelot.Configuration.Repository
                 {
                     return;
                 }
-
+                
                 _polling = true;
                 await Poll();
                 _polling = false;
-            }, null, 0, 1000);
+            }, null, 0, _config.Delay);
         }
         
         private async Task Poll()
         {
-            _logger.LogDebug("Started polling consul");
+            _logger.LogInformation("Started polling consul");
 
             var fileConfig = await _repo.Get();
 
             if(fileConfig.IsError)
             {
-                _logger.LogDebug($"error geting file config, errors are {string.Join(",", fileConfig.Errors.Select(x => x.Message))}");
+                _logger.LogWarning($"error geting file config, errors are {string.Join(",", fileConfig.Errors.Select(x => x.Message))}");
                 return;
             }
 
@@ -57,14 +63,13 @@ namespace Ocelot.Configuration.Repository
                 _previousAsJson = asJson;
             }
 
-            _logger.LogDebug("Finished polling consul");
+            _logger.LogInformation("Finished polling consul");
         }
 
         /// <summary>
         /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!
         /// </summary>
-        /// <param name="config"></param>
-        /// <returns></returns>
+        /// <returns>hash of the config</returns>
         private string ToJson(FileConfiguration config)
         {
             var currentHash = JsonConvert.SerializeObject(config);

@@ -18,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IOcelotConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
@@ -44,10 +44,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
             }
 
-            return new ErrorResponse<DownstreamRoute>(new List<Error>
-            {
-                new UnableToFindDownstreamRouteError()
-            });
+            return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(path, httpMethod));
         }
 
         private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)

@@ -1,9 +1,6 @@
-﻿using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.RequestId
+﻿namespace Ocelot.UnitTests.RequestId
 {
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Primitives;
     using Ocelot.Infrastructure.RequestData;
     using System;
     using System.Collections.Generic;
@@ -20,6 +17,8 @@ namespace Ocelot.UnitTests.RequestId
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Middleware;
 
     public class ReRouteRequestIdMiddlewareTests
     {
@@ -35,7 +34,7 @@ namespace Ocelot.UnitTests.RequestId
 
         public ReRouteRequestIdMiddlewareTests()
         {
-            _downstreamRequest = new HttpRequestMessage();
+            _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             _repo = new Mock<IRequestScopedDataRepository>();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -47,7 +46,7 @@ namespace Ocelot.UnitTests.RequestId
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
-            _downstreamContext.DownstreamRequest = _downstreamRequest;
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
         }
 
         [Fact]
@@ -141,6 +140,30 @@ namespace Ocelot.UnitTests.RequestId
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_not_update_if_global_request_id_is_same_as_re_route_request_id()
+        {
+            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate("any old string")
+                        .WithRequestIdKey("LSRequestId")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build())
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .Build());
+
+            var requestId = "alreadyset";
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenTheRequestIdWasSetGlobally())
+                .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheTraceIdIs(requestId))
+                .And(x => ThenTheRequestIdIsNotUpdated())
+                .BDDfy();
+        }
+
         private void WhenICallTheMiddleware()
         {
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
@@ -158,12 +181,17 @@ namespace Ocelot.UnitTests.RequestId
 
         private void ThenTheRequestIdIsSaved()
         {
-            _repo.Verify(x => x.Add<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Add("RequestId", _value), Times.Once);
         }
 
         private void ThenTheRequestIdIsUpdated()
         {
-            _repo.Verify(x => x.Update<string>("RequestId", _value), Times.Once);
+            _repo.Verify(x => x.Update("RequestId", _value), Times.Once);
+        }
+
+        private void ThenTheRequestIdIsNotUpdated()
+        {
+            _repo.Verify(x => x.Update("RequestId", _value), Times.Never);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
@@ -181,15 +209,13 @@ namespace Ocelot.UnitTests.RequestId
 
         private void ThenTheTraceIdIsAnything()
         {
-            StringValues value;
-            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out value);
+            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
             value.First().ShouldNotBeNullOrEmpty();
         }
 
         private void ThenTheTraceIdIs(string expected)
         {
-            StringValues value;
-            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out value);
+            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
             value.First().ShouldBe(expected);
         }
     }

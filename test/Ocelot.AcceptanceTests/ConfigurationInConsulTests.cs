@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -261,21 +263,27 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => GivenTheConsulConfigurationIs(secondConsulConfig))
-                .And(x => GivenIWaitForTheConfigToReplicateToOcelot())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
+                .Then(x => ThenTheConfigIsUpdatedInOcelot())
                 .BDDfy();
         }
 
-        private void GivenIWaitForTheConfigToReplicateToOcelot()
+        private void ThenTheConfigIsUpdatedInOcelot()
         {
-            var stopWatch = Stopwatch.StartNew();
-            while (stopWatch.ElapsedMilliseconds < 10000)
-            {
-                //do nothing!
-            }
+            var result = WaitFor(20000).Until(() => {
+                try
+                {
+                    _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
+                    _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+                    _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
+            result.ShouldBeTrue();
         }
 
         private void GivenTheConsulConfigurationIs(FileConfiguration config)
@@ -295,7 +303,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 app.Run(async context =>
                                 {
-                                    if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/OcelotConfiguration")
+                                    if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                     {
                                         var json = JsonConvert.SerializeObject(_config);
 
@@ -307,7 +315,7 @@ namespace Ocelot.AcceptanceTests
 
                                         await context.Response.WriteJsonAsync(new FakeConsulGetResponse[] { kvp });
                                     }                               
-                                    else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/OcelotConfiguration")
+                                    else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                     {
                                         try
                                         {
@@ -344,7 +352,7 @@ namespace Ocelot.AcceptanceTests
             public int CreateIndex => 100;
             public int ModifyIndex => 200;
             public int LockIndex => 200;
-            public string Key => "OcelotConfiguration";
+            public string Key => "InternalConfiguration";
             public int Flags => 0;
             public string Value { get; private set; }
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";

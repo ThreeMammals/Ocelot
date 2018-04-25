@@ -1,5 +1,4 @@
 ﻿using IdentityModel;
-using Ocelot.Errors;
 using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -38,11 +37,8 @@ namespace Ocelot.Authorisation
 
             if (matchesScopes.Count == 0)
             {
-                return new ErrorResponse<bool>(new List<Error>
-                {
-                     new ScopeNotAuthorisedError(
-                         $"no one user scope: '{string.Join(",", userScopes)}' match with some allowed scope: '{string.Join(",", routeAllowedScopes)}'")
-                });
+                return new ErrorResponse<bool>(
+                    new ScopeNotAuthorisedError($"no one user scope: '{string.Join(",", userScopes)}' match with some allowed scope: '{string.Join(",", routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);

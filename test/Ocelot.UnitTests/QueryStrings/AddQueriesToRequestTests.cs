@@ -12,24 +12,27 @@ using TestStack.BDDfy;
 using Xunit;
 using System.Net.Http;
 using System;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
     public class AddQueriesToRequestTests
     {
         private readonly AddQueriesToRequest _addQueriesToRequest;
-        private readonly HttpRequestMessage _downstreamRequest;
+        private DownstreamRequest _downstreamRequest;
         private readonly Mock<IClaimsParser> _parser;
         private List<ClaimToThing> _configuration;
         private List<Claim> _claims;
         private Response _result;
         private Response<string> _claimValue;
+        private HttpRequestMessage _request;
 
         public AddQueriesToRequestTests()
         {
+            _request = new HttpRequestMessage(HttpMethod.Post, "http://my.url/abc?q=123");
             _parser = new Mock<IClaimsParser>();
             _addQueriesToRequest = new AddQueriesToRequest(_parser.Object);
-            _downstreamRequest = new HttpRequestMessage(HttpMethod.Post, "http://my.url/abc?q=123");
+            _downstreamRequest = new DownstreamRequest(_request);
         }
 
         [Fact]
@@ -51,6 +54,34 @@ namespace Ocelot.UnitTests.QueryStrings
                 .Then(x => x.ThenTheResultIsSuccess())
                 .And(x => x.ThenTheQueryIsAdded())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_new_queries_to_downstream_request_and_preserve_other_queries()
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("test", "data")
+            };
+
+            this.Given(
+                x => x.GivenAClaimToThing(new List<ClaimToThing>
+                {
+                    new ClaimToThing("query-key", "", "", 0)
+                }))
+                .Given(x => x.GivenClaims(claims))
+                .And(x => GivenTheDownstreamRequestHasQueryString("?test=1&test=2"))
+                .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
+                .When(x => x.WhenIAddQueriesToTheRequest())
+                .Then(x => x.ThenTheResultIsSuccess())
+                .And(x => x.ThenTheQueryIsAdded())
+                .And(x => TheTheQueryStringIs("?test=1&test=2&query-key=value"))
+                .BDDfy();
+        }
+
+        private void TheTheQueryStringIs(string expected)
+        {
+            _downstreamRequest.Query.ShouldBe(expected);
         }
 
         [Fact]
@@ -95,7 +126,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void ThenTheQueryIsAdded()
         {
-            var queries = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_downstreamRequest.RequestUri.OriginalString);
+            var queries = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString);
             var query = queries.First(x => x.Key == "query-key");
             query.Value.First().ShouldBe(_claimValue.Data);
         }
@@ -110,12 +141,18 @@ namespace Ocelot.UnitTests.QueryStrings
             _claims = claims;
         }
 
+        private void GivenTheDownstreamRequestHasQueryString(string queryString)
+        {
+            _request = new HttpRequestMessage(HttpMethod.Post, $"http://my.url/abc{queryString}");
+            _downstreamRequest = new DownstreamRequest(_request);
+        }
+
         private void GivenTheDownstreamRequestHasQueryString(string key, string value)
         {
             var newUri = Microsoft.AspNetCore.WebUtilities.QueryHelpers
-                .AddQueryString(_downstreamRequest.RequestUri.OriginalString, key, value);
+                .AddQueryString(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString, key, value);
 
-            _downstreamRequest.RequestUri = new Uri(newUri);
+            _request.RequestUri = new Uri(newUri);
         }
 
         private void GivenTheClaimParserReturns(Response<string> claimValue)

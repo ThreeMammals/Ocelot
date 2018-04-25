@@ -5,7 +5,7 @@
 
     public class UnmappableRequestError : Error
     {
-        public UnmappableRequestError(Exception ex) : base($"Error when parsing incoming request, exception: {ex.Message}", OcelotErrorCode.UnmappableRequestError)
+        public UnmappableRequestError(Exception exception) : base($"Error when parsing incoming request, exception: {exception}", OcelotErrorCode.UnmappableRequestError)
         {
         }
     }

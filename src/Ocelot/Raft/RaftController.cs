@@ -40,9 +40,13 @@ namespace Ocelot.Raft
             using(var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var json = await reader.ReadToEndAsync();
+
                 var appendEntries = JsonConvert.DeserializeObject<AppendEntries>(json, _jsonSerialiserSettings);
+
                 _logger.LogDebug($"{_baseSchemeUrlAndPort}/appendentries called, my state is {_node.State.GetType().FullName}");
+
                 var appendEntriesResponse = _node.Handle(appendEntries);
+
                 return new OkObjectResult(appendEntriesResponse);
             }
         }
@@ -53,9 +57,13 @@ namespace Ocelot.Raft
             using(var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var json = await reader.ReadToEndAsync();
+
                 var requestVote = JsonConvert.DeserializeObject<RequestVote>(json, _jsonSerialiserSettings);
+
                 _logger.LogDebug($"{_baseSchemeUrlAndPort}/requestvote called, my state is {_node.State.GetType().FullName}");
+
                 var requestVoteResponse = _node.Handle(requestVote);
+
                 return new OkObjectResult(requestVoteResponse);
             }
         }
@@ -68,10 +76,15 @@ namespace Ocelot.Raft
                 using(var reader = new StreamReader(HttpContext.Request.Body))
                 {
                     var json = await reader.ReadToEndAsync();
+
                     var command = JsonConvert.DeserializeObject<ICommand>(json, _jsonSerialiserSettings);
+
                     _logger.LogDebug($"{_baseSchemeUrlAndPort}/command called, my state is {_node.State.GetType().FullName}");
+
                     var commandResponse = _node.Accept(command);
+
                     json = JsonConvert.SerializeObject(commandResponse, _jsonSerialiserSettings);
+
                     return StatusCode(200, json);
                 }
             }

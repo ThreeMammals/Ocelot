@@ -1,7 +1,4 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.DownstreamUrlCreator
+﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
     using System;
     using System.Collections.Generic;
@@ -20,16 +17,20 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
     using Xunit;
     using Shouldly;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Middleware;
 
     public class DownstreamUrlCreatorMiddlewareTests
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private OkResponse<DownstreamPath> _downstreamPath;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private DownstreamUrlCreatorMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private readonly DownstreamContext _downstreamContext;
+        private readonly OcelotRequestDelegate _next;
+        private readonly HttpRequestMessage _request;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -38,7 +39,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
-            _downstreamContext.DownstreamRequest = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
+            _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_request);
             _next = context => Task.CompletedTask;
         }
 
@@ -79,9 +81,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
@@ -115,9 +117,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -145,9 +147,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -175,9 +177,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
-                .WithServiceDiscoveryProviderType("ServiceFabric")
-                .WithServiceDiscoveryProviderHost("localhost")
-                .WithServiceDiscoveryProviderPort(19081)
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -208,7 +210,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void GivenTheDownstreamRequestUriIs(string uri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri = new Uri(uri);
+            _request.RequestUri = new Uri(uri);
+            _downstreamContext.DownstreamRequest = new DownstreamRequest(_request);
         }
 
         private void GivenTheUrlReplacerWillReturn(string path)
@@ -221,7 +224,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
 
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
-            _downstreamContext.DownstreamRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
+            _downstreamContext.DownstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString.ShouldBe(expectedUri);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.Responder
 {
@@ -40,8 +41,7 @@ namespace Ocelot.UnitTests.Responder
         [Fact]
         public void should_not_return_any_errors()
         {
-            this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
-                .And(x => x.GivenThereAreNoPipelineErrors())
+            this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
@@ -50,8 +50,8 @@ namespace Ocelot.UnitTests.Responder
         [Fact]
         public void should_return_any_errors()
         {
-            this.Given(x => x.GivenTheHttpResponseMessageIs(new HttpResponseMessage()))
-                .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError()))
+            this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
+                .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError("/path", "GET")))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
@@ -62,14 +62,9 @@ namespace Ocelot.UnitTests.Responder
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
-        private void GivenTheHttpResponseMessageIs(HttpResponseMessage response)
+        private void GivenTheHttpResponseMessageIs(DownstreamResponse response)
         {
             _downstreamContext.DownstreamResponse = response;
-        }
-
-        private void GivenThereAreNoPipelineErrors()
-        {
-            _downstreamContext.Errors = new List<Error>();
         }
 
         private void ThenThereAreNoErrors()
@@ -79,7 +74,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void GivenThereArePipelineErrors(Error error)
         {
-            _downstreamContext.Errors = new List<Error>(){error};
+            _downstreamContext.Errors.Add(error);
         }  
     }
 }

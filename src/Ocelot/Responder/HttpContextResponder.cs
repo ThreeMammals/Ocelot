@@ -1,17 +1,14 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
-using Ocelot.Responses;
+using Ocelot.Middleware;
 
 namespace Ocelot.Responder
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Cannot unit test things in this class due to methods not being implemented
     /// on .net concretes used for testing
@@ -25,7 +22,7 @@ namespace Ocelot.Responder
             _removeOutputHeaders = removeOutputHeaders;
         }
 
-        public async Task SetResponseOnHttpContext(HttpContext context, HttpResponseMessage response)
+        public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response)
         {
             _removeOutputHeaders.Remove(response.Headers);
 
@@ -36,12 +33,12 @@ namespace Ocelot.Responder
 
             foreach (var httpResponseHeader in response.Content.Headers)
             {
-                AddHeaderIfDoesntExist(context, httpResponseHeader);
+                AddHeaderIfDoesntExist(context, new Header(httpResponseHeader.Key, httpResponseHeader.Value));
             }
 
             var content = await response.Content.ReadAsByteArrayAsync();
 
-            AddHeaderIfDoesntExist(context, new KeyValuePair<string, IEnumerable<string>>("Content-Length", new []{ content.Length.ToString() }) );
+            AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ content.Length.ToString() }) );
 
             context.Response.OnStarting(state =>
             {
@@ -70,11 +67,11 @@ namespace Ocelot.Responder
             }, context);
         }
 
-        private static void AddHeaderIfDoesntExist(HttpContext context, KeyValuePair<string, IEnumerable<string>> httpResponseHeader)
+        private static void AddHeaderIfDoesntExist(HttpContext context, Header httpResponseHeader)
         {
             if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
             {
-                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Value.ToArray()));
+                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Values.ToArray()));
             }
         }
     }

@@ -5,7 +5,11 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
+using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -17,12 +21,17 @@ namespace Ocelot.UnitTests.Configuration
         private HeaderFindAndReplaceCreator _creator;
         private FileReRoute _reRoute;
         private HeaderTransformations _result;
-        private Mock<IBaseUrlFinder> _finder;
+        private Mock<IPlaceholders> _placeholders;
+        private Mock<IOcelotLoggerFactory> _factory;
+        private Mock<IOcelotLogger> _logger;
 
         public HeaderFindAndReplaceCreatorTests()
         {
-            _finder = new Mock<IBaseUrlFinder>();
-            _creator = new HeaderFindAndReplaceCreator(_finder.Object);
+            _logger = new Mock<IOcelotLogger>();
+            _factory = new Mock<IOcelotLoggerFactory>();
+            _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
+            _placeholders = new Mock<IPlaceholders>();
+            _creator = new HeaderFindAndReplaceCreator(_placeholders.Object, _factory.Object);
         }
 
         [Fact]
@@ -85,6 +94,40 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void should_log_errors_and_not_add_headers()
+        {
+            var reRoute = new FileReRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
+                },
+                UpstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
+                }
+            };
+
+            var expected = new List<HeaderFindAndReplace>
+            {
+            };
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheBaseUrlErrors())
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
+                .And(x => ThenTheFollowingUpstreamIsReturned(expected))
+                .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
+                .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
+                .BDDfy();
+        }
+
+        private void ThenTheLoggerIsCalledCorrectly(string message)
+        {
+            _logger.Verify(x => x.LogWarning(message), Times.Once);
+        }
+
+        [Fact]
         public void should_use_base_url_partial_placeholder()
         {
             var reRoute = new FileReRoute
@@ -107,9 +150,84 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_trace_id_header()
+        {
+            var reRoute = new FileReRoute
+            {
+                 DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Trace-Id", "{TraceId}"},
+                }
+            };
+
+            var expected = new AddHeader("Trace-Id", "{TraceId}");
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheBaseUrlIs("http://ocelot.com/"))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_downstream_header_as_is_when_no_replacement_is_given()
+        {
+            var reRoute = new FileReRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"X-Custom-Header", "Value"},
+                }
+            };
+
+            var expected = new AddHeader("X-Custom-Header", "Value");
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .And(x => WhenICreate())
+                .Then(x => x.ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_upstream_header_as_is_when_no_replacement_is_given()
+        {
+            var reRoute = new FileReRoute
+            {
+                UpstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"X-Custom-Header", "Value"},
+                }
+            };
+
+            var expected = new AddHeader("X-Custom-Header", "Value");
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .And(x => WhenICreate())
+                .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
+                .BDDfy();
+        }
+
         private void GivenTheBaseUrlIs(string baseUrl)
         {
-            _finder.Setup(x => x.Find()).Returns(baseUrl);
+            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>(baseUrl));
+        }
+
+        private void GivenTheBaseUrlErrors()
+        {
+            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
+        }
+
+        private void ThenTheFollowingAddHeaderToDownstreamIsReturned(AddHeader addHeader)
+        {
+            _result.AddHeadersToDownstream[0].Key.ShouldBe(addHeader.Key);
+            _result.AddHeadersToDownstream[0].Value.ShouldBe(addHeader.Value);
+        }
+        
+        private void ThenTheFollowingAddHeaderToUpstreamIsReturned(AddHeader addHeader)
+        {
+            _result.AddHeadersToUpstream[0].Key.ShouldBe(addHeader.Key);
+            _result.AddHeadersToUpstream[0].Value.ShouldBe(addHeader.Value);
         }
 
         private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)

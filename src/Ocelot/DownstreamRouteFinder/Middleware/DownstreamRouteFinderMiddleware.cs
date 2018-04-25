@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Provider;
+using System.Linq;
+using Ocelot.Configuration.Repository;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -13,21 +13,20 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamRouteFinder _downstreamRouteFinder;
-        private readonly IOcelotLogger _logger;
-        private readonly IOcelotConfigurationProvider _configProvider;
+        private readonly IInternalConfigurationRepository _repo;
         private readonly IMultiplexer _multiplexer;
 
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteFinder downstreamRouteFinder,
-            IOcelotConfigurationProvider configProvider,
+            IInternalConfigurationRepository repo,
             IMultiplexer multiplexer)
+                :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
-            _configProvider = configProvider;
+            _repo = repo;
             _multiplexer = multiplexer;
             _next = next;
             _downstreamRouteFinder = downstreamRouteFinder;
-            _logger = loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>();
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -36,31 +35,31 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
-            var configuration = await _configProvider.Get();
+            var configuration = _repo.Get();
 
             if (configuration.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 SetPipelineError(context, configuration.Errors);
                 return;
             }
 
             context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
 
-            _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
+            Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
             var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {
-                _logger.LogError($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;
-            }
-
-            // todo - put this back in
-            //// _logger.LogDebug("downstream template is {downstreamRoute.Data.ReRoute.DownstreamPath}", downstreamRoute.Data.ReRoute.DownstreamReRoute.DownstreamPathTemplate);
+            }            
+            
+            var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
+            Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 

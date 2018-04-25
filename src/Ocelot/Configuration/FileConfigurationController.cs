@@ -2,34 +2,34 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Setter;
 using Ocelot.Raft;
 using Rafty.Concensus;
 
 namespace Ocelot.Configuration
 {
+    using Repository;
+
     [Authorize]
     [Route("configuration")]
     public class FileConfigurationController : Controller
     {
-        private readonly IFileConfigurationProvider _configGetter;
-        private readonly IFileConfigurationSetter _configSetter;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IFileConfigurationRepository _repo;
+        private readonly IFileConfigurationSetter _setter;
+        private readonly IServiceProvider _provider;
 
-        public FileConfigurationController(IFileConfigurationProvider getFileConfig, IFileConfigurationSetter configSetter, IServiceProvider serviceProvider)
+        public FileConfigurationController(IFileConfigurationRepository repo, IFileConfigurationSetter setter, IServiceProvider provider)
         {
-            _configGetter = getFileConfig;
-            _configSetter = configSetter;
-            _serviceProvider = serviceProvider;
+            _repo = repo;
+            _setter = setter;
+            _provider = provider;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var response = await _configGetter.Get();
+            var response = await _repo.Get();
 
             if(response.IsError)
             {
@@ -43,7 +43,7 @@ namespace Ocelot.Configuration
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
             //todo - this code is a bit shit sort it out..
-            var test = _serviceProvider.GetService(typeof(INode));
+            var test = _provider.GetService(typeof(INode));
             if (test != null)
             {
                 var node = (INode)test;
@@ -56,7 +56,7 @@ namespace Ocelot.Configuration
                 return new OkObjectResult(result.Command.Configuration);
             }
 
-            var response = await _configSetter.Set(fileConfiguration);
+            var response = await _setter.Set(fileConfiguration);
 
             if (response.IsError)
             {

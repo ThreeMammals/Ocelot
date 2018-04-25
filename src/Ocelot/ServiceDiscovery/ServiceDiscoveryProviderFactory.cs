@@ -1,17 +1,26 @@
 using System.Collections.Generic;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
+        private readonly IConsulClientFactory _consulFactory;
+        private readonly IDiscoveryClient _eurekaClient;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IDiscoveryClient eurekaClient)
         {
             _factory = factory;
+            _consulFactory = consulFactory;
+            _eurekaClient = eurekaClient;
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -35,14 +44,19 @@ namespace Ocelot.ServiceDiscovery
 
         private IServiceDiscoveryProvider GetServiceDiscoveryProvider(ServiceProviderConfiguration serviceConfig, string serviceName)
         {
-            if (serviceConfig.Type == "ServiceFabric")
+            if (serviceConfig.Type?.ToLower() == "servicefabric")
             {
                 var config = new ServiceFabricConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
                 return new ServiceFabricServiceDiscoveryProvider(config);
             }
 
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory);
+            if (serviceConfig.Type?.ToLower() == "eureka")
+            {
+                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
+            }
+
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
+            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
         }
     }
 }
