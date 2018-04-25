@@ -130,6 +130,38 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        [InlineData("PUT")]
+        [InlineData("DELETE")]
+        [InlineData("PATCH")]
+        public void should_add_verb_to_cache_key(string verb)
+        {
+            var client = "http://localhost:5012";
+
+            HttpMethod method = new HttpMethod(verb);
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithIsQos(false)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
+                .WithReRouteKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
+
+            this.Given(_ => GivenADownstreamService())
+                .And(_ => GivenARequestWithAUrlAndMethod(reRoute, client, method))
+                .And(_ => GivenTheFactoryReturnsNothing())
+                .And(_ => WhenIBuild())
+                .And(_ => GivenCacheIsCalledWithExpectedKey($"{method.ToString()}:{client}"))
+                .BDDfy();
+        }
+
+        private void GivenCacheIsCalledWithExpectedKey(string expectedKey)
+        {
+            this._cacheHandlers.Verify(x => x.Get(It.Is<string>(p => p.Equals(expectedKey, StringComparison.OrdinalIgnoreCase))), Times.Once);
+        }
+
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
         {
             _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamPathTemplate}"), Times.Once);
@@ -198,10 +230,15 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequest(DownstreamReRoute downstream)
         {
+            GivenARequestWithAUrlAndMethod(downstream, "http://localhost:5003", HttpMethod.Get);
+        }
+
+        private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)
+        {
             var context = new DownstreamContext(new DefaultHttpContext())
             {
                 DownstreamReRoute = downstream,
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:5003") }),
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }),
             };
 
             _context = context;
