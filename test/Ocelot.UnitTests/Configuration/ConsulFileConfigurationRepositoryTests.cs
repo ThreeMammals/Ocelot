@@ -32,7 +32,8 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IConsulClient> _client;
         private Mock<IKVEndpoint> _kvEndpoint;
         private FileConfiguration _fileConfiguration;
-        private Response _result;
+        private Response _setResult;
+        private Response<FileConfiguration> _getResult;
 
         public ConsulFileConfigurationRepositoryTests()
         {
@@ -70,6 +71,56 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_get_config()
+        {
+            var config = FakeFileConfiguration();
+
+             this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenFetchFromConsulSucceeds())
+                .When(_ => WhenIGetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIs(config))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_null_config()
+        {
+             this.Given(_ => GivenFetchFromConsulReturnsNull())
+                .When(_ => WhenIGetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIsNull())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_config_from_cache()
+        {
+            var config = FakeFileConfiguration();
+
+             this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenFetchFromCacheSucceeds())
+                .When(_ => WhenIGetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIs(config))
+                .BDDfy();
+        }
+
+        private void ThenTheConfigurationIsNull()
+        {
+            _getResult.Data.ShouldBeNull();
+        }
+
+        private void ThenTheConfigurationIs(FileConfiguration config)
+        {
+            var expected = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var result = JsonConvert.SerializeObject(_getResult.Data, Formatting.Indented);
+            result.ShouldBe(expected);
+        }
+
+        private async Task WhenIGetTheConfiguration()
+        {
+            _getResult = await _repo.Get();
+        }
+
         private void GivenWritingToConsulSucceeds()
         {
             var response = new WriteResult<bool>();
@@ -77,6 +128,37 @@ namespace Ocelot.UnitTests.Configuration
 
             _kvEndpoint
                 .Setup(x => x.Put(It.IsAny<KVPair>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
+        }
+
+         private void GivenFetchFromCacheSucceeds()
+        {
+            _cache.Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>())).Returns(_fileConfiguration);
+        }
+
+        private void GivenFetchFromConsulReturnsNull()
+        {
+            QueryResult<KVPair> result = new QueryResult<KVPair>();
+
+            _kvEndpoint
+                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(result);
+        }
+
+        private void GivenFetchFromConsulSucceeds()
+        {
+            var json = JsonConvert.SerializeObject(_fileConfiguration, Formatting.Indented);
+
+            var bytes = Encoding.UTF8.GetBytes(json);
+
+            var kvp = new KVPair("OcelotConfiguration");
+            kvp.Value = bytes;
+
+            var query = new QueryResult<KVPair>();
+            query.Response = kvp;
+
+            _kvEndpoint
+                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(query);
         }
 
         private void ThenTheConfigurationIsStoredAs(FileConfiguration config)
@@ -91,7 +173,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private async Task WhenISetTheConfiguration()
         {
-            _result = await _repo.Set(_fileConfiguration);
+            _setResult = await _repo.Set(_fileConfiguration);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration config)
