@@ -29,6 +29,33 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_error_if_no_services()
+        {
+            var services = new List<Service>();
+
+            this.Given(x => x.GivenServices(services))
+                .When(x => x.WhenIGetTheNextHostAndPort())
+                .Then(x => x.ThenThereIsAnError())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_null_services()
+        {
+            List<Service> services = null;
+
+            this.Given(x => x.GivenServices(services))
+                .When(x => x.WhenIGetTheNextHostAndPort())
+                .Then(x => x.ThenThereIsAnError())
+                .BDDfy();
+        }
+
+        private void ThenThereIsAnError()
+        {
+            _result.IsError.ShouldBeTrue();
+        }
+
         private void GivenServices(List<Service> services)
         {
             _services = services;
