@@ -11,8 +11,7 @@
 
 Ocelot is a .NET Api Gateway. This project is aimed at people using .NET running 
 a micro services / service orientated architecture 
-that need a unified point of entry into their system. However it will worth with anything that
-speaks HTTP and run on any platform that asp.net core supports.
+that need a unified point of entry into their system. However it will work with anything that speaks HTTP and run on any platform that asp.net core supports.
 
 In particular I want easy integration with 
 IdentityServer reference and bearer tokens. 
