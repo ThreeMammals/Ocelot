@@ -22,7 +22,7 @@ namespace Ocelot.Configuration
             string requestIdKey, 
             bool isCached, 
             CacheOptions cacheOptions, 
-            string loadBalancer, 
+            LoadBalancerOptions loadBalancerOptions, 
             RateLimitOptions rateLimitOptions, 
             Dictionary<string, string> routeClaimsRequirement, 
             List<ClaimToThing> claimsToQueries, 
@@ -56,7 +56,7 @@ namespace Ocelot.Configuration
             RequestIdKey = requestIdKey;
             IsCached = isCached;
             CacheOptions = cacheOptions;
-            LoadBalancer = loadBalancer;
+            LoadBalancerOptions = loadBalancerOptions;
             RateLimitOptions = rateLimitOptions;
             RouteClaimsRequirement = routeClaimsRequirement;
             ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
@@ -85,7 +85,7 @@ namespace Ocelot.Configuration
         public string RequestIdKey { get; private set; }
         public bool IsCached { get; private set; }
         public CacheOptions CacheOptions { get; private set; }
-        public string LoadBalancer { get; private set; }
+        public LoadBalancerOptions LoadBalancerOptions { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; private set; }
         public List<ClaimToThing> ClaimsToQueries { get; private set; }

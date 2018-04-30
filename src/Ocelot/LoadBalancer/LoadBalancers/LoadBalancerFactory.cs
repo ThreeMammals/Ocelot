@@ -16,12 +16,15 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {            
             var serviceProvider = _serviceProviderFactory.Get(config, reRoute);
 
-            switch (reRoute.LoadBalancer)
+            switch (reRoute.LoadBalancerOptions.Type)
             {
                 case "RoundRobin":
                     return new RoundRobin(async () => await serviceProvider.Get());
                 case "LeastConnection":
                     return new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName);
+                case "CookieStickySessions":
+                    var loadBalancer = new RoundRobin(async () => await serviceProvider.Get());
+                    return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs);
                 default:
                     return new NoLoadBalancer(await serviceProvider.Get());
             }

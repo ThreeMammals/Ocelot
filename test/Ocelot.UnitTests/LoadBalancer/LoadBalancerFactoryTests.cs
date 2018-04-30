@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_return_round_robin_load_balancer()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancer("RoundRobin")
+                .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .Build();
 
@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_return_round_least_connection_balancer()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancer("LeastConnection")
+                .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .Build();
 
@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_call_service_provider()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancer("RoundRobin")
+                .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .Build();
 
@@ -87,6 +87,22 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_sticky_session()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithLoadBalancerOptions(new LoadBalancerOptions("CookieStickySessions", "", 0))
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .Build();
+
+            this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
+                .When(x => x.WhenIGetTheLoadBalancer())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<CookieStickySessions>())
                 .BDDfy();
         }
 

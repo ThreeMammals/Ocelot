@@ -26,7 +26,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 {
                     loadBalancer = _loadBalancers[reRoute.ReRouteKey];
 
-                    if(reRoute.LoadBalancer != loadBalancer.GetType().Name)
+                    if(reRoute.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
                     {
                         loadBalancer = await _factory.Get(reRoute, config);
                         AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);

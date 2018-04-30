@@ -180,6 +180,8 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
+            var lbOptions = CreateLoadBalancerOptions(fileReRoute);
+
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
@@ -197,7 +199,7 @@ namespace Ocelot.Configuration.Creator
                 .WithIsCached(fileReRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
-                .WithLoadBalancer(fileReRoute.LoadBalancer)
+                .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)
                 .WithReRouteKey(reRouteKey)
                 .WithIsQos(fileReRouteOptions.IsQos)
@@ -217,6 +219,11 @@ namespace Ocelot.Configuration.Creator
                 .Build();
 
             return reRoute;
+        }
+
+        private LoadBalancerOptions CreateLoadBalancerOptions(FileReRoute fileReRoute)
+        {
+            return new LoadBalancerOptions(fileReRoute.LoadBalancerOptions.Type, fileReRoute.LoadBalancerOptions.Key, fileReRoute.LoadBalancerOptions.ExpiryInMs);
         }
 
         private string CreateReRouteKey(FileReRoute fileReRoute)

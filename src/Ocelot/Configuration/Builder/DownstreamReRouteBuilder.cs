@@ -24,7 +24,7 @@ namespace Ocelot.Configuration.Builder
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
         private string _downstreamScheme;
-        private string _loadBalancer;
+        private LoadBalancerOptions _loadBalancerOptions;
         private bool _useQos;
         private QoSOptions _qosOptions;
         private HttpHandlerOptions _httpHandlerOptions;
@@ -62,9 +62,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithLoadBalancer(string loadBalancer)
+        public DownstreamReRouteBuilder WithLoadBalancerOptions(LoadBalancerOptions loadBalancerOptions)
         {
-          _loadBalancer = loadBalancer;
+          _loadBalancerOptions = loadBalancerOptions;
             return this;
         }
 
@@ -266,7 +266,7 @@ namespace Ocelot.Configuration.Builder
                 _requestIdHeaderKey, 
                 _isCached, 
                 _fileCacheOptions, 
-                _loadBalancer, 
+                _loadBalancerOptions, 
                 _rateLimitOptions,
                 _routeClaimRequirement, 
                 _claimToQueries, 
