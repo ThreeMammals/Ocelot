@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
@@ -64,7 +66,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void WhenIGetTheNextHostAndPort()
         {
             _loadBalancer = new NoLoadBalancer(_services);
-            _result = _loadBalancer.Lease().Result;
+            _result = _loadBalancer.Lease(new DownstreamContext(new DefaultHttpContext())).Result;
         }
 
         private void ThenTheHostAndPortIs(ServiceHostAndPort expected)

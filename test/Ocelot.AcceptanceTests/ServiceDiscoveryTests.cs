@@ -61,7 +61,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ServiceName = serviceName,
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             UseServiceDiscovery = true,
                         }
                     },
@@ -127,7 +127,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ServiceName = serviceName,
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             UseServiceDiscovery = true,
                         }
                     },
@@ -183,7 +183,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/home",
                             UpstreamHttpMethod = new List<string> { "Get", "Options" },
                             ServiceName = serviceName,
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             UseServiceDiscovery = true,
                         }
                     },
@@ -239,7 +239,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/home",
                             UpstreamHttpMethod = new List<string> { "Get", "Options" },
                             ServiceName = serviceName,
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             UseServiceDiscovery = true,
                         }
                     },
@@ -308,7 +308,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             ServiceName = serviceName,
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             UseServiceDiscovery = true,
                         }
                     },

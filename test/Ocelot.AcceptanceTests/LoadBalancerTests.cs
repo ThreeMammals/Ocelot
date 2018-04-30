@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancer = "LeastConnection",
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new FileHostAndPort

@@ -30,6 +30,9 @@ using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.Net.Http.Headers;
+    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
+
     public class Steps : IDisposable
     {
         private TestServer _ocelotServer;
@@ -671,6 +674,14 @@ namespace Ocelot.AcceptanceTests
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
+        {
+            var request = _ocelotServer.CreateRequest(url);
+            request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
+            var response = request.GetAsync().Result;
+            _response = response;
+        }
+
         public void GivenIAddAHeader(string key, string value)
         {
             _ocelotClient.DefaultRequestHeaders.Add(key, value);
@@ -688,6 +699,30 @@ namespace Ocelot.AcceptanceTests
             }
 
             Task.WaitAll(tasks);
+        }
+
+        public async Task WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+        {
+            var tasks = new Task[times];
+
+            for (int i = 0; i < times; i++)
+            {
+                var urlCopy = url;
+                tasks[i] = GetForServiceDiscoveryTest(urlCopy, cookie, value);
+                Thread.Sleep(_random.Next(40, 60));
+            }
+
+            Task.WaitAll(tasks);
+        }
+
+        private async Task GetForServiceDiscoveryTest(string url, string cookie, string value)
+        {
+            var request = _ocelotServer.CreateRequest(url);
+            request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
+            var response = await request.GetAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            int count = int.Parse(content);
+            count.ShouldBeGreaterThan(0);
         }
 
         private async Task GetForServiceDiscoveryTest(string url)
