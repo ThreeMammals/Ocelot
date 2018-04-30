@@ -76,6 +76,61 @@
         }
 
         [Fact]
+        public void should_set_up_sticky_sessions_config()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("127.0.0.1", 80) })
+                .WithDownstreamPathTemplate("/products/{productId}")
+                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithReRouteKey("CookieStickySessions:sessionid")
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                                    {
+                                        new FileHostAndPort
+                                        {
+                                            Host = "127.0.0.1",
+                                        }
+                                    },
+                                    LoadBalancerOptions = new FileLoadBalancerOptions
+                                    {
+                                        Expiry = 10,
+                                        Key = "sessionid",
+                                        Type = "CookieStickySessions"
+                                    },
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
+                                }
+                            },
+            }))
+                            .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheDownstreamAddresses())
+                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                            .When(x => x.WhenICreateTheConfig())
+                            .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
+                            {
+                                new ReRouteBuilder()
+                                    .WithDownstreamReRoute(downstreamReRoute)
+                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                                    .Build()
+                            }))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_set_up_aggregate_re_route()
         {
             var configuration = new FileConfiguration
@@ -827,7 +882,7 @@
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
                 result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);   
-                result.DownstreamReRoute[0].ReRouteKey.ShouldBe(expected.DownstreamReRoute[0].ReRouteKey);   
+                result.DownstreamReRoute[0].LoadBalancerKey.ShouldBe(expected.DownstreamReRoute[0].LoadBalancerKey);   
                 result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);      
                 result.DownstreamReRoute[0].AddHeadersToDownstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToDownstream);           
                 result.DownstreamReRoute[0].AddHeadersToUpstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToUpstream, "AddHeadersToUpstream should be set");

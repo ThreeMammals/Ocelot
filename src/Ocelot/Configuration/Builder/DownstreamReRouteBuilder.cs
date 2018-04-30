@@ -41,6 +41,7 @@ namespace Ocelot.Configuration.Builder
         private List<AddHeader> _addHeadersToDownstream;
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
+        private string _qosKey;
 
         public DownstreamReRouteBuilder()
         {
@@ -170,6 +171,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithQosKey(string qosKey)
+        {
+            _qosKey = qosKey;
+            return this;
+        }
+
         public DownstreamReRouteBuilder WithAuthenticationOptions(AuthenticationOptions authenticationOptions)
         {
             _authenticationOptions = authenticationOptions;
@@ -280,7 +287,8 @@ namespace Ocelot.Configuration.Builder
                 _delegatingHandlers,
                 _addHeadersToDownstream,
                 _addHeadersToUpstream,
-                _dangerousAcceptAnyServerCertificateValidator);
+                _dangerousAcceptAnyServerCertificateValidator,
+                _qosKey);
         }
     }
 }

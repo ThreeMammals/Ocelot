@@ -1,23 +1,23 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
-
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    public class CookieStickySessions : ILoadBalancer
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Ocelot.Middleware;
+    using Responses;
+    using Values;
+
+    public class CookieStickySessions : ILoadBalancer, IDisposable
     {
-        private readonly ILoadBalancer _loadBalancer;
-        private ConcurrentDictionary<string, StickySession> _stored;
-        private Timer _timer;
-        private bool _expiring;
-        private string _key;
         private readonly int _expiryInMs;
+        private readonly string _key;
+        private readonly ILoadBalancer _loadBalancer;
+        private readonly ConcurrentDictionary<string, StickySession> _stored;
+        private readonly Timer _timer;
+        private bool _expiring;
 
         public CookieStickySessions(ILoadBalancer loadBalancer, string key, int expiryInMs)
         {
@@ -27,7 +27,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _stored = new ConcurrentDictionary<string, StickySession>();
             _timer = new Timer(x =>
             {
-                if(_expiring)
+                if (_expiring)
                 {
                     return;
                 }
@@ -35,10 +35,14 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 _expiring = true;
 
                 Expire();
-                
-                _expiring = false;
 
+                _expiring = false;
             }, null, 0, 50);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
 
         public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
@@ -48,8 +52,11 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             if (!string.IsNullOrEmpty(value) && _stored.ContainsKey(value))
             {
                 var cached = _stored[value];
+
                 var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_expiryInMs));
+
                 _stored[value] = updated;
+
                 return new OkResponse<ServiceHostAndPort>(updated.HostAndPort);
             }
 
@@ -70,14 +77,13 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public void Release(ServiceHostAndPort hostAndPort)
         {
-            
         }
 
         private void Expire()
         {
             var expired = _stored.Where(x => x.Value.Expiry < DateTime.UtcNow);
 
-            foreach(var expire in expired)
+            foreach (var expire in expired)
             {
                 _stored.Remove(expire.Key, out _);
                 _loadBalancer.Release(expire.Value.HostAndPort);

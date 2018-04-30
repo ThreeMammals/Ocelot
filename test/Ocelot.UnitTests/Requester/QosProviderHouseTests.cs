@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_store_qos_provider_on_first_request()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithReRouteKey("test").Build();
+            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .Then(x => x.ThenItIsAdded())
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_not_store_qos_provider_on_first_request()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithReRouteKey("test").Build();
+            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .When(x => x.WhenWeGetTheQoSProvider(reRoute))
@@ -47,8 +47,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_store_qos_providers_by_key()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithReRouteKey("test").Build();
-            var reRouteTwo = new DownstreamReRouteBuilder().WithReRouteKey("testTwo").Build();
+            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
+            var reRouteTwo = new DownstreamReRouteBuilder().WithQosKey("testTwo").Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .And(x => x.GivenThereIsAQoSProvider(reRouteTwo, new FakePollyQoSProvider()))
@@ -72,9 +72,9 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_get_new_qos_provider_if_reroute_qos_provider_has_changed()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithReRouteKey("test").Build();
+            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
 
-            var reRouteTwo = new DownstreamReRouteBuilder().WithReRouteKey("test").WithIsQos(true).Build();
+            var reRouteTwo = new DownstreamReRouteBuilder().WithQosKey("test").WithIsQos(true).Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .When(x => x.WhenWeGetTheQoSProvider(reRoute))

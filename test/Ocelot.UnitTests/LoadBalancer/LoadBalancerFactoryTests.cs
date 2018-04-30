@@ -14,10 +14,10 @@ namespace Ocelot.UnitTests.LoadBalancer
     public class LoadBalancerFactoryTests
     {
         private DownstreamReRoute _reRoute;
-        private LoadBalancerFactory _factory;
+        private readonly LoadBalancerFactory _factory;
         private ILoadBalancer _result;
-        private Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
-        private Mock<IServiceDiscoveryProvider> _serviceProvider;
+        private readonly Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
+        private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private ServiceProviderConfiguration _serviceProviderConfig;
 
         public LoadBalancerFactoryTests()
