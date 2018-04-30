@@ -46,6 +46,13 @@ namespace Ocelot.UnitTests.Responder
         }
 
         [Theory]
+        [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
+        public void should_return_internal_server_error(OcelotErrorCode errorCode)
+        {
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.InternalServerError);
+        }
+
+        [Theory]
         [InlineData(OcelotErrorCode.CannotAddDataError)]
         [InlineData(OcelotErrorCode.CannotFindDataError)]
         [InlineData(OcelotErrorCode.DownstreamHostNullOrEmptyError)]
@@ -60,7 +67,6 @@ namespace Ocelot.UnitTests.Responder
         [InlineData(OcelotErrorCode.RateLimitOptionsError)]
         [InlineData(OcelotErrorCode.ServicesAreEmptyError)]
         [InlineData(OcelotErrorCode.ServicesAreNullError)]
-        [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
         [InlineData(OcelotErrorCode.UnableToCreateAuthenticationHandlerError)]
         [InlineData(OcelotErrorCode.UnableToFindDownstreamRouteError)]
         [InlineData(OcelotErrorCode.UnableToFindLoadBalancerError)]
