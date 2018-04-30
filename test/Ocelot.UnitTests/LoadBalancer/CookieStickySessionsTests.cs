@@ -1,6 +1,5 @@
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
     using System.Threading.Tasks;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Responses;
@@ -14,18 +13,78 @@ namespace Ocelot.UnitTests.LoadBalancer
     using System.Threading;
     using Ocelot.Middleware;
     using Ocelot.UnitTests.Responder;
+    using TestStack.BDDfy;
 
     public class CookieStickySessionsTests
     {
         private readonly CookieStickySessions _stickySessions;
         private readonly Mock<ILoadBalancer> _loadBalancer;
-        private readonly int _defaultExpiryInMs;
+        private DownstreamContext _downstreamContext;
+        private Response<ServiceHostAndPort> _result;
+        private Response<ServiceHostAndPort> _firstHostAndPort;
+        private Response<ServiceHostAndPort> _secondHostAndPort;
 
         public CookieStickySessionsTests()
         {
             _loadBalancer = new Mock<ILoadBalancer>();
-            _defaultExpiryInMs = 100;
-            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs);
+            const int defaultExpiryInMs = 100;
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", defaultExpiryInMs);
+            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+        }
+
+        [Fact]
+        public void should_return_host_and_port()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturns())
+                .When(_ => WhenILease())
+                .Then(_ => ThenTheHostAndPortIsNotNull())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_same_host_and_port()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
+                .And(_ => GivenTheDownstreamRequestHasSessionId("321"))
+                .When(_ => WhenILeaseTwiceInARow())
+                .Then(_ => ThenTheFirstAndSecondResponseAreTheSame())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_different_host_and_port_if_load_balancer_does()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
+                .When(_ => WhenIMakeTwoRequetsWithDifferentSessionValues())
+                .Then(_ => ThenADifferentHostAndPortIsReturned())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturnsError())
+                .When(_ => WhenILease())
+                .Then(_ => ThenAnErrorIsReturned())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_expire_sticky_session()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
+                .When(_ => WhenTheStickySessionExpires())
+                .Then(_ => ThenANewHostAndPortIsReturned())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_refresh_sticky_session()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
+                .When(_ => WhenIMakeRequestsToKeepRefreshingTheSession())
+                .Then(_ => ThenTheSessionIsRefreshed())
+                .BDDfy();
         }
 
         [Fact]
@@ -40,92 +99,54 @@ namespace Ocelot.UnitTests.LoadBalancer
             _stickySessions.Release(new ServiceHostAndPort("", 0));
         }
 
-        [Fact]
-        public async Task should_return_host_and_port()
+        private async Task ThenTheSessionIsRefreshed()
         {
+            var postExpireHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("one");
+            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
+
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("", 80)));
-            var downstreamContext = new DownstreamContext(new DefaultHttpContext());
-
-            var hostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            hostAndPort.Data.ShouldNotBeNull();
+                .Verify(x => x.Lease(It.IsAny<DownstreamContext>()), Times.Once);
         }
 
-        [Fact]
-        public async Task should_return_same_host_and_port()
+        private async Task WhenIMakeRequestsToKeepRefreshingTheSession()
         {
-            _loadBalancer
-                .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
             var context = new DefaultHttpContext();
             var cookies = new FakeCookies();
             cookies.AddCookie("sessionid", "321");
             context.Request.Cookies = cookies;
-            var downstreamContext = new DownstreamContext(context);
+            _downstreamContext = new DownstreamContext(context);
 
-            var firstHostAndPort = await _stickySessions.Lease(downstreamContext);
-            var secondHostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            firstHostAndPort.Data.DownstreamHost.ShouldBe(secondHostAndPort.Data.DownstreamHost);
-            firstHostAndPort.Data.DownstreamPort.ShouldBe(secondHostAndPort.Data.DownstreamPort);
-        }
-
-        [Fact]
-        public async Task should_return_different_host_and_port_if_load_balancer_does()
-        {
-            _loadBalancer
-                .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
-            var contextOne = new DefaultHttpContext();
-            var cookiesOne = new FakeCookies();
-            cookiesOne.AddCookie("sessionid", "321");
-            contextOne.Request.Cookies = cookiesOne;
-            var contextTwo = new DefaultHttpContext();
-            var cookiesTwo = new FakeCookies();
-            cookiesTwo.AddCookie("sessionid", "123");
-            contextTwo.Request.Cookies = cookiesTwo;
-
-            var firstHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextOne));
-            var secondHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextTwo));
-
+            var firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
             firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
             firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
-            secondHostAndPort.Data.DownstreamHost.ShouldBe("two");
+
+            Thread.Sleep(80);
+
+            var secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            secondHostAndPort.Data.DownstreamHost.ShouldBe("one");
             secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
+
+            Thread.Sleep(80);
         }
 
-        [Fact]
-        public async Task should_return_error()
+        private async Task ThenANewHostAndPortIsReturned()
         {
-            _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(new ErrorResponse<ServiceHostAndPort>(new AnyError()));
-            var downstreamContext = new DownstreamContext(new DefaultHttpContext());
-
-            var hostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            hostAndPort.IsError.ShouldBeTrue();
+            var postExpireHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("two");
+            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
         }
 
-        [Fact]
-        public async Task should_expire_sticky_session()
+        private async Task WhenTheStickySessionExpires()
         {
-            _loadBalancer
-                .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
-                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
             var context = new DefaultHttpContext();
             var cookies = new FakeCookies();
             cookies.AddCookie("sessionid", "321");
             context.Request.Cookies = cookies;
-            var downstreamContext = new DownstreamContext(context);
+            _downstreamContext = new DownstreamContext(context);
 
-            var firstHostAndPort = await _stickySessions.Lease(downstreamContext);
-            var secondHostAndPort = await _stickySessions.Lease(downstreamContext);
+            var firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            var secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
 
             firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
             firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
@@ -134,47 +155,86 @@ namespace Ocelot.UnitTests.LoadBalancer
             secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
 
             Thread.Sleep(150);
-
-            var postExpireHostAndPort = await _stickySessions.Lease(downstreamContext);
-            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("two");
-            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
         }
 
-        [Fact]
-        public async Task should_refresh_sticky_session()
+        private void ThenAnErrorIsReturned()
+        {
+            _result.IsError.ShouldBeTrue();
+        }
+
+        private void GivenTheLoadBalancerReturnsError()
+        {
+            _loadBalancer
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .ReturnsAsync(new ErrorResponse<ServiceHostAndPort>(new AnyError()));
+        }
+
+        private void ThenADifferentHostAndPortIsReturned()
+        {
+            _firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
+            _firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
+            _secondHostAndPort.Data.DownstreamHost.ShouldBe("two");
+            _secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
+        }
+
+        private async Task WhenIMakeTwoRequetsWithDifferentSessionValues()
+        {
+            var contextOne = new DefaultHttpContext();
+            var cookiesOne = new FakeCookies();
+            cookiesOne.AddCookie("sessionid", "321");
+            contextOne.Request.Cookies = cookiesOne;
+            var contextTwo = new DefaultHttpContext();
+            var cookiesTwo = new FakeCookies();
+            cookiesTwo.AddCookie("sessionid", "123");
+            contextTwo.Request.Cookies = cookiesTwo;
+            _firstHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextOne));
+            _secondHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextTwo));
+        }
+
+        private void GivenTheLoadBalancerReturnsSequence()
         {
             _loadBalancer
                 .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
+        }
 
+        private void ThenTheFirstAndSecondResponseAreTheSame()
+        {
+            _firstHostAndPort.Data.DownstreamHost.ShouldBe(_secondHostAndPort.Data.DownstreamHost);
+            _firstHostAndPort.Data.DownstreamPort.ShouldBe(_secondHostAndPort.Data.DownstreamPort);
+        }
+
+        private async Task WhenILeaseTwiceInARow()
+        {
+            _firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            _secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
+        }
+
+        private void GivenTheDownstreamRequestHasSessionId(string value)
+        {
             var context = new DefaultHttpContext();
             var cookies = new FakeCookies();
-            cookies.AddCookie("sessionid", "321");
+            cookies.AddCookie("sessionid", value);
             context.Request.Cookies = cookies;
-            var downstreamContext = new DownstreamContext(context);
+            _downstreamContext = new DownstreamContext(context);
+        }
 
-            var firstHostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            Thread.Sleep(80);
-
-            var secondHostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            Thread.Sleep(80);
-
-            var postExpireHostAndPort = await _stickySessions.Lease(downstreamContext);
-
-            firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            secondHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
+        private void GivenTheLoadBalancerReturns()
+        {
             _loadBalancer
-                .Verify(x => x.Lease(It.IsAny<DownstreamContext>()), Times.Once);
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("", 80)));
+        }
+
+        private async Task WhenILease()
+        {
+            _result = await _stickySessions.Lease(_downstreamContext);
+        }
+
+        private void ThenTheHostAndPortIsNotNull()
+        {
+            _result.Data.ShouldNotBeNull();
         }
     }
     
