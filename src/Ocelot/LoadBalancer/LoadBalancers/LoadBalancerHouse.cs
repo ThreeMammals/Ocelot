@@ -22,28 +22,28 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {
             try
             {
-                if(_loadBalancers.TryGetValue(reRoute.ReRouteKey, out var loadBalancer))
+                if(_loadBalancers.TryGetValue(reRoute.LoadBalancerKey, out var loadBalancer))
                 {
-                    loadBalancer = _loadBalancers[reRoute.ReRouteKey];
+                    loadBalancer = _loadBalancers[reRoute.LoadBalancerKey];
 
-                    if(reRoute.LoadBalancer != loadBalancer.GetType().Name)
+                    if(reRoute.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
                     {
                         loadBalancer = await _factory.Get(reRoute, config);
-                        AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
+                        AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                     }
 
                     return new OkResponse<ILoadBalancer>(loadBalancer);
                 }
 
                 loadBalancer = await _factory.Get(reRoute, config);
-                AddLoadBalancer(reRoute.ReRouteKey, loadBalancer);
+                AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                 return new OkResponse<ILoadBalancer>(loadBalancer);
             }
             catch(Exception ex)
             {
                 return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
                 {
-                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.ReRouteKey} exception is {ex}")
+                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.LoadBalancerKey} exception is {ex}")
                 });
             }
         }

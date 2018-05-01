@@ -101,7 +101,7 @@ namespace Ocelot.AcceptanceTests
                                 Port = secondDownstreamPort
                             }
                         },
-                        LoadBalancer = "RoundRobin"
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" }
                     }
                 }
             };
@@ -159,7 +159,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
                         DownstreamScheme = "ws",
-                        LoadBalancer = "RoundRobin",
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
                         ServiceName = serviceName,
                         UseServiceDiscovery = true
                     }

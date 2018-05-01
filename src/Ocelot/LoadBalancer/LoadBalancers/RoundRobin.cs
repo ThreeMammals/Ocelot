@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Ocelot.Responses;
 using Ocelot.Values;
 using System;
+using Ocelot.Middleware;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -17,7 +18,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _services = services;
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease()
+        public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
             var services = await _services.Invoke();
             if (_last >= services.Count)

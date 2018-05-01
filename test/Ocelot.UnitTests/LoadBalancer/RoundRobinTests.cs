@@ -7,6 +7,8 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using System.Threading.Tasks;
+using Ocelot.Middleware;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
@@ -15,9 +17,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly RoundRobin _roundRobin;
         private readonly List<Service> _services;
         private Response<ServiceHostAndPort> _hostAndPort;
+        private DownstreamContext _context;
 
         public RoundRobinTests()
         {
+            _context = new DownstreamContext(new DefaultHttpContext());
+
             _services = new List<Service>
             {
                 new Service("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, new string[0]),
@@ -47,18 +52,18 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             while (stopWatch.ElapsedMilliseconds < 1000)
             {
-                var address = _roundRobin.Lease().Result;
+                var address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[0].HostAndPort);
-                address = _roundRobin.Lease().Result;
+                address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[1].HostAndPort);
-                address = _roundRobin.Lease().Result;
+                address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[2].HostAndPort);
             }
         }
 
         private void GivenIGetTheNextAddress()
         {
-            _hostAndPort = _roundRobin.Lease().Result;
+            _hostAndPort = _roundRobin.Lease(_context).Result;
         }
 
         private void ThenTheNextAddressIndexIs(int index)

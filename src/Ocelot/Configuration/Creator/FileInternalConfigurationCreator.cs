@@ -13,6 +13,8 @@ using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Creator
 {
+    using LoadBalancer.LoadBalancers;
+
     /// <summary>
     /// Register as singleton
     /// </summary>
@@ -158,6 +160,8 @@ namespace Ocelot.Configuration.Creator
 
             var reRouteKey = CreateReRouteKey(fileReRoute);
 
+            var qosKey = CreateQosKey(fileReRoute);
+
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
@@ -180,6 +184,8 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
+            var lbOptions = CreateLoadBalancerOptions(fileReRoute);
+
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
@@ -197,9 +203,10 @@ namespace Ocelot.Configuration.Creator
                 .WithIsCached(fileReRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
-                .WithLoadBalancer(fileReRoute.LoadBalancer)
+                .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)
                 .WithReRouteKey(reRouteKey)
+                .WithQosKey(qosKey)
                 .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
@@ -219,7 +226,22 @@ namespace Ocelot.Configuration.Creator
             return reRoute;
         }
 
+        private LoadBalancerOptions CreateLoadBalancerOptions(FileReRoute fileReRoute)
+        {
+            return new LoadBalancerOptions(fileReRoute.LoadBalancerOptions.Type, fileReRoute.LoadBalancerOptions.Key, fileReRoute.LoadBalancerOptions.Expiry);
+        }
+
         private string CreateReRouteKey(FileReRoute fileReRoute)
+        {
+            if (!string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Type) && !string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Key) && fileReRoute.LoadBalancerOptions.Type == nameof(CookieStickySessions))
+            {
+                return $"{nameof(CookieStickySessions)}:{fileReRoute.LoadBalancerOptions.Key}";
+            }
+
+            return CreateQosKey(fileReRoute);
+        }
+
+        private string CreateQosKey(FileReRoute fileReRoute)
         {
             //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
             var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";

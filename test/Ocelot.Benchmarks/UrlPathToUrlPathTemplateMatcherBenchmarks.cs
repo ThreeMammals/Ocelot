@@ -43,8 +43,6 @@ namespace Ocelot.Benchmarks
         // .NET Core SDK=2.1.4
         //   [Host]     : .NET Core 2.0.6 (CoreCLR 4.6.0.0, CoreFX 4.6.26212.01), 64bit RyuJIT
         //   DefaultJob : .NET Core 2.0.6 (CoreCLR 4.6.0.0, CoreFX 4.6.26212.01), 64bit RyuJIT
-
-
         //      Method |     Mean |     Error |    StdDev |    StdErr |      Min |       Q1 |   Median |       Q3 |      Max |      Op/s |
         // ----------- |---------:|----------:|----------:|----------:|---------:|---------:|---------:|---------:|---------:|----------:|
         //  Benchmark1 | 3.133 us | 0.0492 us | 0.0460 us | 0.0119 us | 3.082 us | 3.100 us | 3.122 us | 3.168 us | 3.233 us | 319,161.9 |
