@@ -60,7 +60,7 @@ namespace Ocelot.IntegrationTests
             }
         }
 
-        [Fact(Skip = "This tests is flakey at the moment so ignoring will be fixed long term see https://github.com/TomPallister/Ocelot/issues/245")]
+        [Fact]
         public void should_persist_command_to_five_servers()
         {
              var configuration = new FileConfiguration
@@ -113,13 +113,12 @@ namespace Ocelot.IntegrationTests
             var command = new UpdateFileConfiguration(updatedConfiguration);
             GivenThereIsAConfiguration(configuration);
             GivenFiveServersAreRunning();
-            GivenALeaderIsElected();
             GivenIHaveAnOcelotToken("/administration");
             WhenISendACommandIntoTheCluster(command);
             ThenTheCommandIsReplicatedToAllStateMachines(command);
         }
 
-        [Fact(Skip = "This tests is flakey at the moment so ignoring will be fixed long term see https://github.com/TomPallister/Ocelot/issues/245")]
+        [Fact]
         public void should_persist_command_to_five_servers_when_using_administration_api()
         {
              var configuration = new FileConfiguration
@@ -166,7 +165,6 @@ namespace Ocelot.IntegrationTests
             var command = new UpdateFileConfiguration(updatedConfiguration);
             GivenThereIsAConfiguration(configuration);
             GivenFiveServersAreRunning();
-            GivenALeaderIsElected();
             GivenIHaveAnOcelotToken("/administration");
             GivenIHaveAddedATokenToMyRequest();
             WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
@@ -175,37 +173,45 @@ namespace Ocelot.IntegrationTests
 
         private void WhenISendACommandIntoTheCluster(UpdateFileConfiguration command)
         {
-            var p = _peers.Peers.First();
-            var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
-                TypeNameHandling = TypeNameHandling.All
-            });
-            var httpContent = new StringContent(json);
-            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            using(var httpClient = new HttpClient())
+            bool SendCommand()
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-                var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
-                response.EnsureSuccessStatusCode();
-                var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var result = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
-                result.Command.Configuration.ReRoutes.Count.ShouldBe(2);
+                var p = _peers.Peers.First();
+                var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
+                    TypeNameHandling = TypeNameHandling.All
+                });
+                var httpContent = new StringContent(json);
+                httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                using(var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+                    var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
+                    response.EnsureSuccessStatusCode();
+                    var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                    var errorResult = JsonConvert.DeserializeObject<ErrorResponse<UpdateFileConfiguration>>(content);
+
+                    if(!string.IsNullOrEmpty(errorResult.Error))
+                    {
+                        return false;
+                    }
+
+                    var okResult = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
+
+                    if(okResult.Command.Configuration.ReRoutes.Count == 2)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
-            //dirty sleep to make sure command replicated...
-            var stopwatch = Stopwatch.StartNew();
-            while(stopwatch.ElapsedMilliseconds < 10000)
-            {
-            }
+            var commandSent = WaitFor(20000).Until(() => SendCommand());
+            commandSent.ShouldBeTrue();   
         }
 
         private void ThenTheCommandIsReplicatedToAllStateMachines(UpdateFileConfiguration expecteds)
-        {
-            //dirty sleep to give a chance to replicate...
-            var stopwatch = Stopwatch.StartNew();
-            while(stopwatch.ElapsedMilliseconds < 2000)
-            {
-            }
-            
+        {            
             bool CommandCalledOnAllStateMachines()
             {
                 try
@@ -267,10 +273,34 @@ namespace Ocelot.IntegrationTests
 
         private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
         {
-            var json = JsonConvert.SerializeObject(updatedConfiguration);
-            var content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = _httpClient.PostAsync(url, content).Result;
+            bool SendCommand()
+            {
+                var json = JsonConvert.SerializeObject(updatedConfiguration);
+                var content = new StringContent(json);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                _response = _httpClient.PostAsync(url, content).Result;
+                var responseContent = _response.Content.ReadAsStringAsync().Result;
+                
+                //Console.ForegroundColor = ConsoleColor.Green;
+                //Console.WriteLine(responseContent);
+                //Console.WriteLine(_response.StatusCode);
+                //Console.ForegroundColor = ConsoleColor.White;
+
+                if(responseContent == "There was a problem. This error message sucks raise an issue in GitHub.")
+                {
+                    return false;
+                }
+
+                if(string.IsNullOrEmpty(responseContent))
+                {
+                    return false;
+                }
+
+                return _response.IsSuccessStatusCode;
+            }
+
+            var commandSent = WaitFor(20000).Until(() => SendCommand());
+            commandSent.ShouldBeTrue();  
         }
 
         private void GivenIHaveAddedATokenToMyRequest()
@@ -280,23 +310,40 @@ namespace Ocelot.IntegrationTests
 
         private void GivenIHaveAnOcelotToken(string adminPath)
         {
-            var tokenUrl = $"{adminPath}/connect/token";
-            var formData = new List<KeyValuePair<string, string>>
+            bool AddToken()
             {
-                new KeyValuePair<string, string>("client_id", "admin"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("grant_type", "client_credentials")
-            };
-            var content = new FormUrlEncodedContent(formData);
+                try
+                {
+                    var tokenUrl = $"{adminPath}/connect/token";
+                    var formData = new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("client_id", "admin"),
+                        new KeyValuePair<string, string>("client_secret", "secret"),
+                        new KeyValuePair<string, string>("scope", "admin"),
+                        new KeyValuePair<string, string>("grant_type", "client_credentials")
+                    };
+                    var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-            response.EnsureSuccessStatusCode();
-            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-            var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).Result;
-            response.EnsureSuccessStatusCode();
+                    var response = _httpClient.PostAsync(tokenUrl, content).Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    if(!response.IsSuccessStatusCode)
+                    {
+                        return false;
+                    }
+                    _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+                    var configPath = $"{adminPath}/.well-known/openid-configuration";
+                    response = _httpClient.GetAsync(configPath).Result;
+                    return response.IsSuccessStatusCode;
+                }
+                catch(Exception e)
+                {
+                    return false;
+                }
+            }
+
+            var addToken = WaitFor(20000).Until(() => AddToken());
+            addToken.ShouldBeTrue();   
+            
         }
 
         private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
@@ -378,15 +425,6 @@ namespace Ocelot.IntegrationTests
                 var thread = new Thread(() => GivenAServerIsRunning(peer.HostAndPort));
                 thread.Start();
                 _threads.Add(thread);
-            }
-        }
-
-        private void GivenALeaderIsElected()
-        {
-            //dirty sleep to make sure we have a leader
-            var stopwatch = Stopwatch.StartNew();
-            while(stopwatch.ElapsedMilliseconds < 20000)
-            {
             }
         }
     }

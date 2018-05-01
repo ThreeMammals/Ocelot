@@ -99,7 +99,8 @@ namespace Ocelot.Raft
             var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/command", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
-                return JsonConvert.DeserializeObject<OkResponse<T>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), _jsonSerializerSettings);
+                var okResponse =  JsonConvert.DeserializeObject<OkResponse<ICommand>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), _jsonSerializerSettings);
+                return new OkResponse<T>((T)okResponse.Command);
             }
             else 
             {
