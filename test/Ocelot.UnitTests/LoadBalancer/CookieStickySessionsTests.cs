@@ -159,7 +159,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             secondHostAndPort.Data.DownstreamHost.ShouldBe("one");
             secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
 
-            Thread.Sleep(200);
+            Thread.Sleep(300);
         }
 
         private void ThenAnErrorIsReturned()
