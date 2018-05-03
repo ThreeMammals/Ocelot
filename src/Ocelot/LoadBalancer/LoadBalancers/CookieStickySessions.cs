@@ -19,7 +19,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private readonly Timer _timer;
         private bool _expiring;
 
-        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, int expiryPeriodInMs)
+        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs)
         {
             _key = key;
             _keyExpiryInMs = keyExpiryInMs;
@@ -37,7 +37,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 Expire();
 
                 _expiring = false;
-            }, null, 0, expiryPeriodInMs);
+            }, null, 0, 50);
         }
 
         public void Dispose()

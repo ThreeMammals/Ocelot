@@ -7,7 +7,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     public class LoadBalancerFactory : ILoadBalancerFactory
     {
         private readonly IServiceDiscoveryProviderFactory _serviceProviderFactory;
-        private const int ExpiryPeriodInMs = 50;
 
         public LoadBalancerFactory(IServiceDiscoveryProviderFactory serviceProviderFactory)
         {
@@ -26,7 +25,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     return new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName);
                 case nameof(CookieStickySessions):
                     var loadBalancer = new RoundRobin(async () => await serviceProvider.Get());
-                    return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs, ExpiryPeriodInMs);
+                    return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs);
                 default:
                     return new NoLoadBalancer(await serviceProvider.Get());
             }
