@@ -12,17 +12,17 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
     public class CookieStickySessions : ILoadBalancer, IDisposable
     {
-        private readonly int _expiryInMs;
+        private readonly int _keyExpiryInMs;
         private readonly string _key;
         private readonly ILoadBalancer _loadBalancer;
         private readonly ConcurrentDictionary<string, StickySession> _stored;
         private readonly Timer _timer;
         private bool _expiring;
 
-        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int expiryInMs)
+        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, int expiryPeriodInMs)
         {
             _key = key;
-            _expiryInMs = expiryInMs;
+            _keyExpiryInMs = keyExpiryInMs;
             _loadBalancer = loadBalancer;
             _stored = new ConcurrentDictionary<string, StickySession>();
             _timer = new Timer(x =>
@@ -37,7 +37,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 Expire();
 
                 _expiring = false;
-            }, null, 0, 50);
+            }, null, 0, expiryPeriodInMs);
         }
 
         public void Dispose()
@@ -53,7 +53,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             {
                 var cached = _stored[value];
 
-                var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_expiryInMs));
+                var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs));
 
                 _stored[value] = updated;
 
@@ -69,7 +69,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
             if (!string.IsNullOrEmpty(value) && !_stored.ContainsKey(value))
             {
-                _stored[value] = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_expiryInMs));
+                _stored[value] = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs));
             }
 
             return new OkResponse<ServiceHostAndPort>(next.Data);

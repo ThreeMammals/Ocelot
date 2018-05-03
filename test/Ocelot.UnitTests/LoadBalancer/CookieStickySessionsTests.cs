@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _loadBalancer = new Mock<ILoadBalancer>();
             const int defaultExpiryInMs = 100;
-            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", defaultExpiryInMs);
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", defaultExpiryInMs, 1);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
         }
 
