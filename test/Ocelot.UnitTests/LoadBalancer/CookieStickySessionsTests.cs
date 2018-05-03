@@ -17,8 +17,9 @@ namespace Ocelot.UnitTests.LoadBalancer
 
     public class CookieStickySessionsTests
     {
-        private readonly CookieStickySessions _stickySessions;
+        private CookieStickySessions _stickySessions;
         private readonly Mock<ILoadBalancer> _loadBalancer;
+        private readonly int _defaultExpiryInMs;
         private DownstreamContext _downstreamContext;
         private Response<ServiceHostAndPort> _result;
         private Response<ServiceHostAndPort> _firstHostAndPort;
@@ -27,8 +28,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         public CookieStickySessionsTests()
         {
             _loadBalancer = new Mock<ILoadBalancer>();
-            const int defaultExpiryInMs = 100;
-            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", defaultExpiryInMs, 1);
+            _defaultExpiryInMs = 100;
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, 1);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
         }
 
@@ -72,6 +73,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_expire_sticky_session()
         {
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, 1);
+
             this.Given(_ => GivenTheLoadBalancerReturnsSequence())
                 .When(_ => WhenTheStickySessionExpires())
                 .Then(_ => ThenANewHostAndPortIsReturned())
@@ -81,6 +84,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_refresh_sticky_session()
         {
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, 50);
+
             this.Given(_ => GivenTheLoadBalancerReturnsSequence())
                 .When(_ => WhenIMakeRequestsToKeepRefreshingTheSession())
                 .Then(_ => ThenTheSessionIsRefreshed())
