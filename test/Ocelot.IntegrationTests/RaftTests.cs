@@ -45,21 +45,7 @@ namespace Ocelot.IntegrationTests
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
         }
-
-        public void Dispose()
-        {
-            foreach (var builder in _builders)
-            {
-                builder?.Dispose();
-            }
-
-            foreach (var peer in _peers.Peers)
-            {
-                File.Delete(peer.HostAndPort.Replace("/","").Replace(":",""));
-                File.Delete($"{peer.HostAndPort.Replace("/","").Replace(":","")}.db");
-            }
-        }
-
+        
         [Fact]
         public void should_persist_command_to_five_servers()
         {
@@ -417,9 +403,32 @@ namespace Ocelot.IntegrationTests
 
             foreach (var peer in _peers.Peers)
             {
+                File.Delete(peer.HostAndPort.Replace("/", "").Replace(":", ""));
+                File.Delete($"{peer.HostAndPort.Replace("/", "").Replace(":", "")}.db");
                 var thread = new Thread(() => GivenAServerIsRunning(peer.HostAndPort));
                 thread.Start();
                 _threads.Add(thread);
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var builder in _builders)
+            {
+                builder?.Dispose();
+            }
+
+            foreach (var peer in _peers.Peers)
+            {
+                try
+                {
+                    File.Delete(peer.HostAndPort.Replace("/", "").Replace(":", ""));
+                    File.Delete($"{peer.HostAndPort.Replace("/", "").Replace(":", "")}.db");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
     }
