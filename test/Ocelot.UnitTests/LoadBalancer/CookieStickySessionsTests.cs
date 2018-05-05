@@ -11,7 +11,6 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Microsoft.AspNetCore.Http;
     using System.Collections.Generic;
     using System.Collections;
-    using System.Threading;
     using Ocelot.Middleware;
     using Ocelot.UnitTests.Responder;
     using TestStack.BDDfy;
@@ -19,7 +18,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
     public class CookieStickySessionsTests
     {
-        private CookieStickySessions _stickySessions;
+        private readonly CookieStickySessions _stickySessions;
         private readonly Mock<ILoadBalancer> _loadBalancer;
         private readonly int _defaultExpiryInMs;
         private DownstreamContext _downstreamContext;
@@ -35,6 +34,18 @@ namespace Ocelot.UnitTests.LoadBalancer
             _defaultExpiryInMs = 0;
             _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+        }
+
+        [Fact]
+        public void should_expire_sticky_session()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturns())
+                .And(_ => GivenTheDownstreamRequestHasSessionId("321"))
+                .And(_ => GivenIHackAMessageInWithAPastExpiry())
+                .And(_ => WhenILease())
+                .When(_ => WhenTheMessagesAreProcessed())
+                .Then(_ => ThenTheLoadBalancerIsCalled())
+                .BDDfy();
         }
 
         [Fact]
@@ -79,6 +90,22 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_release()
         {
             _stickySessions.Release(new ServiceHostAndPort("", 0));
+        }
+
+        private void ThenTheLoadBalancerIsCalled()
+        {
+            _loadBalancer.Verify(x => x.Release(It.IsAny<ServiceHostAndPort>()), Times.Once);
+        }
+
+        private void WhenTheMessagesAreProcessed()
+        {
+            _bus.Process();
+        }
+
+        private void GivenIHackAMessageInWithAPastExpiry()
+        {
+            var hostAndPort = new ServiceHostAndPort("999", 999);
+            _bus.Publish(new StickySession(hostAndPort, DateTime.UtcNow.AddDays(-1), "321"), 0);
         }
 
         private void ThenAnErrorIsReturned()
@@ -208,17 +235,31 @@ namespace Ocelot.UnitTests.LoadBalancer
         public FakeBus()
         {
             Messages = new List<T>();
+            Subscriptions = new List<Action<T>>();
         }
 
         public List<T> Messages { get; }
+        public List<Action<T>> Subscriptions { get; }
 
         public void Subscribe(Action<T> action)
         {
+            Subscriptions.Add(action);
         }
 
         public void Publish(T message, int delay)
         {
             Messages.Add(message);
+        }
+
+        public void Process()
+        {
+            foreach (var message in Messages)
+            {
+                foreach (var subscription in Subscriptions)
+                {
+                    subscription(message);
+                }
+            }
         }
     }
 }
