@@ -8,15 +8,15 @@ namespace Ocelot.Infrastructure
 {
     public class InMemoryBus<T> : IBus<T>
     {
-        private readonly BlockingCollection<T> _queue;
+        private readonly BlockingCollection<DelayedMessage<T>> _queue;
         private readonly List<Action<T>> _subscriptions;
         private Thread _processing;
 
         public InMemoryBus()
         {
-            _queue = new BlockingCollection<T>();
+            _queue = new BlockingCollection<DelayedMessage<T>>();
             _subscriptions = new List<Action<T>>();
-            _processing = new Thread(Process);
+            _processing = new Thread(async () => await Process());
             _processing.Start();
         }
 
@@ -25,19 +25,21 @@ namespace Ocelot.Infrastructure
             _subscriptions.Add(action);
         }
 
-        public async Task Publish(T message, int delay)
+        public void Publish(T message, int delay)
         {
-            await Task.Delay(delay);
-            _queue.Add(message);
+            var delayed = new DelayedMessage<T>(message, delay);
+            _queue.Add(delayed);
         }
 
-        private void Process()
+        private async Task Process()
         {
-            foreach(var message in _queue.GetConsumingEnumerable())
+            foreach(var delayedMessage in _queue.GetConsumingEnumerable())
             {
-                foreach(var subscription in _subscriptions)
+                await Task.Delay(delayedMessage.Delay);
+
+                foreach (var subscription in _subscriptions)
                 {
-                    subscription(message);
+                    subscription(delayedMessage.Message);
                 }
             }
         }

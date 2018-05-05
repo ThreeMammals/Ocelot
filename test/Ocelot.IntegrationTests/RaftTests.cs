@@ -280,11 +280,6 @@ namespace Ocelot.IntegrationTests
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 _response = _httpClient.PostAsync(url, content).Result;
                 var responseContent = _response.Content.ReadAsStringAsync().Result;
-                
-                //Console.ForegroundColor = ConsoleColor.Green;
-                //Console.WriteLine(responseContent);
-                //Console.WriteLine(_response.StatusCode);
-                //Console.ForegroundColor = ConsoleColor.White;
 
                 if(responseContent == "There was a problem. This error message sucks raise an issue in GitHub.")
                 {
@@ -330,12 +325,13 @@ namespace Ocelot.IntegrationTests
                     {
                         return false;
                     }
+
                     _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
                     var configPath = $"{adminPath}/.well-known/openid-configuration";
                     response = _httpClient.GetAsync(configPath).Result;
                     return response.IsSuccessStatusCode;
                 }
-                catch(Exception e)
+                catch(Exception)
                 {
                     return false;
                 }
@@ -343,7 +339,6 @@ namespace Ocelot.IntegrationTests
 
             var addToken = WaitFor(20000).Until(() => AddToken());
             addToken.ShouldBeTrue();   
-            
         }
 
         private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)

@@ -7,11 +7,11 @@ namespace Ocelot.UnitTests.Infrastructure
 {
     public class InMemoryBusTests
     {
-        private InMemoryBus<Message> _bus;
+        private readonly InMemoryBus<object> _bus;
 
         public InMemoryBusTests()
         {
-            _bus = new InMemoryBus<Message>();
+            _bus = new InMemoryBus<object>();
         }
 
         [Fact]
@@ -21,26 +21,20 @@ namespace Ocelot.UnitTests.Infrastructure
             _bus.Subscribe(x => {
                 called = true;
             });
-            await _bus.Publish(new Message(), 1);
+            _bus.Publish(new object(), 1);
             await Task.Delay(10);
             called.ShouldBeTrue();
         }
 
         [Fact]
-        public async Task should_not_be_publish_yet_as_no_delay_in_caller()
+        public void should_not_be_publish_yet_as_no_delay_in_caller()
         {
             var called = false;
             _bus.Subscribe(x => {
                 called = true;
             });
-            await _bus.Publish(new Message(), 1);
+            _bus.Publish(new object(), 1);
             called.ShouldBeFalse();
-        }
-
-
-        class Message
-        {
-            
         }
     }
 }
