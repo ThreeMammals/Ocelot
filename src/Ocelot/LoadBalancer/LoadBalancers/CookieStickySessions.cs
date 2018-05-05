@@ -6,6 +6,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware;
     using Responses;
     using Values;
@@ -16,28 +17,29 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private readonly string _key;
         private readonly ILoadBalancer _loadBalancer;
         private readonly ConcurrentDictionary<string, StickySession> _stored;
-        private readonly Timer _timer;
-        private bool _expiring;
+        private IBus<StickySession> _bus;
+        private readonly object _lock = new object();
 
-        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs)
+        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, IBus<StickySession> bus)
         {
+            _bus = bus;
             _key = key;
             _keyExpiryInMs = keyExpiryInMs;
             _loadBalancer = loadBalancer;
             _stored = new ConcurrentDictionary<string, StickySession>();
-            _timer = new Timer(x =>
-            {
-                if (_expiring)
+            _bus.Subscribe(ss => {
+                if(_stored.TryGetValue(ss.Key, out var stickySession))
                 {
-                    return;
+                    lock(_lock)
+                    {
+                        if(stickySession.Expiry < DateTime.Now)
+                        {
+                            _stored.Remove(stickySession.Key, out _);
+                            _loadBalancer.Release(stickySession.HostAndPort);
+                        }
+                    }
                 }
-
-                _expiring = true;
-
-                Expire();
-
-                _expiring = false;
-            }, null, 0, 50);
+            });
         }
 
         public void Dispose()
@@ -47,15 +49,17 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
         {
-            var value = context.HttpContext.Request.Cookies[_key];
-
-            if (!string.IsNullOrEmpty(value) && _stored.ContainsKey(value))
+            var key = context.HttpContext.Request.Cookies[_key];
+            
+            if (!string.IsNullOrEmpty(key) && _stored.ContainsKey(key))
             {
-                var cached = _stored[value];
+                var cached = _stored[key];
 
-                var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs));
+                var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
 
-                _stored[value] = updated;
+                _stored[key] = updated;
+
+                await _bus.Publish(updated, _keyExpiryInMs);
 
                 return new OkResponse<ServiceHostAndPort>(updated.HostAndPort);
             }
@@ -67,9 +71,11 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 return new ErrorResponse<ServiceHostAndPort>(next.Errors);
             }
 
-            if (!string.IsNullOrEmpty(value) && !_stored.ContainsKey(value))
+            if (!string.IsNullOrEmpty(key) && !_stored.ContainsKey(key))
             {
-                _stored[value] = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs));
+                var ss = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
+                _stored[key] = ss;
+                await _bus.Publish(ss, _keyExpiryInMs);
             }
 
             return new OkResponse<ServiceHostAndPort>(next.Data);
@@ -77,17 +83,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public void Release(ServiceHostAndPort hostAndPort)
         {
-        }
-
-        private void Expire()
-        {
-            var expired = _stored.Where(x => x.Value.Expiry < DateTime.UtcNow);
-
-            foreach (var expire in expired)
-            {
-                _stored.Remove(expire.Key, out _);
-                _loadBalancer.Release(expire.Value.HostAndPort);
-            }
         }
     }
 }

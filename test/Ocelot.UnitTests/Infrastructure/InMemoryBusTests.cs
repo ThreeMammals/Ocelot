@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Ocelot.Infrastructure;
 using Shouldly;
 using Xunit;
 

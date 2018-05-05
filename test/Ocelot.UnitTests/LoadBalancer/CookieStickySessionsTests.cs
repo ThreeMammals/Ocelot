@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.Middleware;
     using Ocelot.UnitTests.Responder;
     using TestStack.BDDfy;
+    using Ocelot.Infrastructure;
 
     public class CookieStickySessionsTests
     {
@@ -24,12 +25,14 @@ namespace Ocelot.UnitTests.LoadBalancer
         private Response<ServiceHostAndPort> _result;
         private Response<ServiceHostAndPort> _firstHostAndPort;
         private Response<ServiceHostAndPort> _secondHostAndPort;
+        private IBus<StickySession> _bus;
 
         public CookieStickySessionsTests()
         {
+            _bus = new InMemoryBus<StickySession>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _defaultExpiryInMs = 100;
-            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs);
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
         }
 
