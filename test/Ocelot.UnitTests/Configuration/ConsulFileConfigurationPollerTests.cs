@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 0))
-                .Then(x => ThenTheSetterIsCalled(newConfig, 1))
+                .Then(x => ThenTheSetterIsCalledAtLeast(newConfig, 1))
                 .BDDfy();
         }
 
@@ -145,6 +145,22 @@ namespace Ocelot.UnitTests.Configuration
                 try
                 {
                     _setter.Verify(x => x.Set(fileConfig), Times.Exactly(times));
+                    return true;
+                }
+                catch(Exception)
+                {
+                    return false;
+                }
+            });
+            result.ShouldBeTrue();
+        }
+
+        private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
+        {
+            var result = WaitFor(2000).Until(() => {
+                try
+                {
+                    _setter.Verify(x => x.Set(fileConfig), Times.AtLeast(times));
                     return true;
                 }
                 catch(Exception)
