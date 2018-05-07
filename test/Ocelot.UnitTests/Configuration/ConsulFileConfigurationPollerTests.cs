@@ -17,11 +17,11 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ConsulFileConfigurationPollerTests : IDisposable
     {
-        private ConsulFileConfigurationPoller _poller;
+        private readonly ConsulFileConfigurationPoller _poller;
         private Mock<IOcelotLoggerFactory> _factory;
-        private Mock<IFileConfigurationRepository> _repo;
-        private Mock<IFileConfigurationSetter> _setter;
-        private FileConfiguration _fileConfig;
+        private readonly Mock<IFileConfigurationRepository> _repo;
+        private readonly Mock<IFileConfigurationSetter> _setter;
+        private readonly FileConfiguration _fileConfig;
         private Mock<IConsulPollerConfiguration> _config;
 
         public ConsulFileConfigurationPollerTests()
