@@ -617,17 +617,7 @@ namespace Ocelot.IntegrationTests
                 })
                 .ConfigureServices(x =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (s) =>
-                    {
-                        s.WithMicrosoftLogging(log =>
-                            {
-                                log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithDictionaryHandle();
-                    };
-
                     x.AddOcelot()
-                        .AddCacheManager(settings)
                         .AddAdministration("/administration", "secret");
                 })
                 .Configure(app =>

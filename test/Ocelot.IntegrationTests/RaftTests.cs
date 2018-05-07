@@ -23,6 +23,8 @@ using Ocelot.Middleware;
 
 namespace Ocelot.IntegrationTests
 {
+    using Xunit.Abstractions;
+
     public class RaftTests : IDisposable
     {
         private readonly List<IWebHost> _builders;
@@ -34,9 +36,11 @@ namespace Ocelot.IntegrationTests
         private BearerToken _token;
         private HttpResponseMessage _response;
         private static readonly object _lock = new object();
+        private ITestOutputHelper _output;
 
-        public RaftTests()
+        public RaftTests(ITestOutputHelper output)
         {
+            _output = output;
             _httpClientForAssertions = new HttpClient();
             _httpClient = new HttpClient();
             var ocelotBaseUrl = "http://localhost:5000";
@@ -161,35 +165,44 @@ namespace Ocelot.IntegrationTests
         {
             bool SendCommand()
             {
-                var p = _peers.Peers.First();
-                var json = JsonConvert.SerializeObject(command,new JsonSerializerSettings() { 
-                    TypeNameHandling = TypeNameHandling.All
-                });
-                var httpContent = new StringContent(json);
-                httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                using(var httpClient = new HttpClient())
+                try
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-                    var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
-                    response.EnsureSuccessStatusCode();
-                    var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                    var errorResult = JsonConvert.DeserializeObject<ErrorResponse<UpdateFileConfiguration>>(content);
-
-                    if(!string.IsNullOrEmpty(errorResult.Error))
+                    var p = _peers.Peers.First();
+                    var json = JsonConvert.SerializeObject(command, new JsonSerializerSettings()
                     {
-                        return false;
+                        TypeNameHandling = TypeNameHandling.All
+                    });
+                    var httpContent = new StringContent(json);
+                    httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+                        var response = httpClient.PostAsync($"{p.HostAndPort}/administration/raft/command", httpContent).GetAwaiter().GetResult();
+                        response.EnsureSuccessStatusCode();
+                        var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                        var errorResult = JsonConvert.DeserializeObject<ErrorResponse<UpdateFileConfiguration>>(content);
+
+                        if (!string.IsNullOrEmpty(errorResult.Error))
+                        {
+                            return false;
+                        }
+
+                        var okResult = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
+
+                        if (okResult.Command.Configuration.ReRoutes.Count == 2)
+                        {
+                            return true;
+                        }
                     }
 
-                    var okResult = JsonConvert.DeserializeObject<OkResponse<UpdateFileConfiguration>>(content);
-
-                    if(okResult.Command.Configuration.ReRoutes.Count == 2)
-                    {
-                        return true;
-                    }
+                    return false;
                 }
-
-                return false;
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return false;
+                }
             }
 
             var commandSent = WaitFor(20000).Until(() => SendCommand());
@@ -248,6 +261,7 @@ namespace Ocelot.IntegrationTests
                 }
                 catch(Exception e)
                 {
+                    _output.WriteLine($"{e.Message}, {e.StackTrace}");
                     Console.WriteLine(e);
                     return false;
                 }
