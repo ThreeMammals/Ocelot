@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Configuration
                     Port = 1234,
                     Type = "ServiceFabric",
                     Token = "testtoken",
-                    ConfigurationKey = "wooo"
+                    ConfigurationKey = "woo"
                 }
             };
 
