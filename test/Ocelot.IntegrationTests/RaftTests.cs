@@ -105,6 +105,7 @@ namespace Ocelot.IntegrationTests
             GivenFiveServersAreRunning();
             GivenIHaveAnOcelotToken("/administration");
             WhenISendACommandIntoTheCluster(command);
+            Thread.Sleep(5000);
             ThenTheCommandIsReplicatedToAllStateMachines(command);
         }
 
@@ -261,8 +262,8 @@ namespace Ocelot.IntegrationTests
                 }
                 catch(Exception e)
                 {
-                    _output.WriteLine($"{e.Message}, {e.StackTrace}");
-                    Console.WriteLine(e);
+                    //_output.WriteLine($"{e.Message}, {e.StackTrace}");
+                    //Console.WriteLine(e);
                     return false;
                 }
             }

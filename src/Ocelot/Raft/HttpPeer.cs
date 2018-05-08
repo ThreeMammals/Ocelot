@@ -88,6 +88,7 @@ namespace Ocelot.Raft
         public Response<T> Request<T>(T command)
             where T : ICommand
         {
+            Console.WriteLine("SENDING REQUEST....");
             if(_token == null)
             {
                 SetToken();
@@ -99,11 +100,13 @@ namespace Ocelot.Raft
             var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/command", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
+                Console.WriteLine("REQUEST OK....");
                 var okResponse = JsonConvert.DeserializeObject<OkResponse<ICommand>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), _jsonSerializerSettings);
                 return new OkResponse<T>((T)okResponse.Command);
             }
             else 
             {
+                Console.WriteLine("REQUEST NOT OK....");
                 return new ErrorResponse<T>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), command);
             }
         }
