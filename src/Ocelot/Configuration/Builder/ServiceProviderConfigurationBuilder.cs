@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Builder
         private int _serviceDiscoveryProviderPort;
         private string _type;
         private string _token;
+        private string _configurationKey;
 
         public ServiceProviderConfigurationBuilder WithHost(string serviceDiscoveryProviderHost)
         {
@@ -31,9 +32,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ServiceProviderConfigurationBuilder WithConfigurationKey(string configurationKey)
+        {
+            _configurationKey = configurationKey;
+            return this;
+        }
+
         public ServiceProviderConfiguration Build()
         {
-            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token);
+            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey);
         }
     }
 }

@@ -146,6 +146,25 @@ I guess it means if you want to use Ocelot to its fullest you take on Consul as 
 
 This feature has a 3 second ttl cache before making a new request to your local consul agent.
 
+Configuration Key
+-----------------
+
+If you are using Consul for configuration (or other providers in the future) you might want to key your configurations so you can have multiple configurations :) This feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_! In order to specify the key you need to set the ConfigurationKey property in the ServiceDiscoveryProvider section of the configuration json file e.g.
+
+.. code-block:: json
+
+    "GlobalConfiguration": {
+        "ServiceDiscoveryProvider": {
+            "Host": "localhost",
+            "Port": 9500,
+            "ConfigurationKey": "Oceolot_A"
+        }
+    }
+
+In this example Ocelot will use Oceolot_A as the key for your configuration when looking it up in Consul.
+
+If you do not set the ConfigurationKey Ocelot will use the string InternalConfiguration as the key.
+
 Follow Redirects / Use CookieContainer 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

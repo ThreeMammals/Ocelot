@@ -48,6 +48,7 @@ namespace Ocelot.UnitTests.Configuration
             _client
                 .Setup(x => x.KV)
                 .Returns(_kvEndpoint.Object);
+
             _factory
                 .Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>()))
                 .Returns(_client.Object);
@@ -102,6 +103,46 @@ namespace Ocelot.UnitTests.Configuration
                 .When(_ => WhenIGetTheConfiguration())
                 .Then(_ => ThenTheConfigurationIs(config))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_config_key()
+        {
+            var config = FakeFileConfiguration();
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenTheConfigKeyComesFromFileConfig("Tom"))
+                .And(_ => GivenFetchFromConsulSucceeds())
+                .When(_ => WhenIGetTheConfiguration())
+                .And(_ => ThenTheConfigKeyIs("Tom"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_set_default_config_key()
+        {
+            var config = FakeFileConfiguration();
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenFetchFromConsulSucceeds())
+                .When(_ => WhenIGetTheConfiguration())
+                .And(_ => ThenTheConfigKeyIs("InternalConfiguration"))
+                .BDDfy();
+        }
+
+        private void ThenTheConfigKeyIs(string expected)
+        {
+            _kvEndpoint
+                .Verify(x => x.Get(expected, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        private void GivenTheConfigKeyComesFromFileConfig(string key)
+        {
+            _internalRepo
+                .Setup(x => x.Get())
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "", new ServiceProviderConfigurationBuilder().WithConfigurationKey(key).Build(), "")));
+            
+            _repo = new ConsulFileConfigurationRepository(_cache.Object, _internalRepo.Object, _factory.Object, _loggerFactory.Object);
         }
 
         private void ThenTheConfigurationIsNull()

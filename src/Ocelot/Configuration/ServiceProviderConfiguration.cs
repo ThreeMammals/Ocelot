@@ -2,8 +2,9 @@
 {
     public class ServiceProviderConfiguration
     {
-        public ServiceProviderConfiguration(string type, string host, int port, string token)
+        public ServiceProviderConfiguration(string type, string host, int port, string token, string configurationKey)
         {
+            ConfigurationKey = configurationKey;
             Host = host;
             Port = port;
             Token = token;
@@ -14,5 +15,6 @@
         public int Port { get; }
         public string Type { get; }
         public string Token { get; }
+        public string ConfigurationKey { get; }
     }
 }
