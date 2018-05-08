@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
@@ -25,7 +26,8 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     return new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName);
                 case nameof(CookieStickySessions):
                     var loadBalancer = new RoundRobin(async () => await serviceProvider.Get());
-                    return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs);
+                    var bus = new InMemoryBus<StickySession>();
+                    return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs, bus);
                 default:
                     return new NoLoadBalancer(await serviceProvider.Get());
             }
