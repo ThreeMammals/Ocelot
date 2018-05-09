@@ -12,13 +12,13 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IDownstreamRouteFinder _downstreamRouteFinder;
+        private readonly IDownstreamRouteFinderFactory _factory;
         private readonly IInternalConfigurationRepository _repo;
         private readonly IMultiplexer _multiplexer;
 
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamRouteFinder downstreamRouteFinder,
+            IDownstreamRouteFinderFactory downstreamRouteFinder,
             IInternalConfigurationRepository repo,
             IMultiplexer multiplexer)
                 :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
@@ -26,7 +26,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             _repo = repo;
             _multiplexer = multiplexer;
             _next = next;
-            _downstreamRouteFinder = downstreamRouteFinder;
+            _factory = downstreamRouteFinder;
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -35,6 +35,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
+            //todo we get this in exception handling mdidleware, just stick it on the context?
             var configuration = _repo.Get();
 
             if (configuration.IsError)
@@ -44,11 +45,14 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
+            //todo we get this in exception handling mdidleware, just stick it on the context?
             context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
-            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
+            var provider = _factory.Get(configuration.Data);
+
+            var downstreamRoute = provider.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {

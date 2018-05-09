@@ -104,6 +104,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             _services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
             _services.TryAddSingleton<IDownstreamRouteFinder, DownstreamRouteFinder>();
+            _services.TryAddSingleton<IDownstreamRouteFinder, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
+            _services.TryAddSingleton<IDownstreamRouteFinderFactory, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinderFactory>();
             _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
             _services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             _services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();

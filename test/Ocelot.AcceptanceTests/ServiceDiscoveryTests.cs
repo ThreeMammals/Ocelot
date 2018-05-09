@@ -209,6 +209,49 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
+        {
+            const int consulPort = 8505;
+            const string serviceName = "web";
+            const string downstreamServiceOneUrl = "http://localhost:8080";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = 8080,
+                    ID = "web_90_0_2_224_8080",
+                    Tags = new[] {"version-v1"}
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                    GlobalConfiguration = new FileGlobalConfiguration()
+                    {
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                        {
+                            Host = "localhost",
+                            Port = consulPort
+                            //todo - global load balancer in this config?
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))                
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/web/something"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+        }
+
+        [Fact]
         public void should_use_token_to_make_request_to_consul()
         {
             var token = "abctoken";
