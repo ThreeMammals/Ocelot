@@ -44,9 +44,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
-        public void should_return_downstream_route_creator()
+        public void should_return_downstream_route_finder_as_no_service_discovery()
         {
             var spConfig = new ServiceProviderConfigurationBuilder().Build();
+            var reRoutes = new List<ReRoute>
+            {
+            };
+            IInternalConfiguration config = new InternalConfiguration(reRoutes, "", spConfig, "");
+            var result = _factory.Get(config);
+            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
+        }
+
+        [Fact]
+        public void should_return_downstream_route_creator()
+        {
+            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).Build();
             var reRoutes = new List<ReRoute>
             {
             };
