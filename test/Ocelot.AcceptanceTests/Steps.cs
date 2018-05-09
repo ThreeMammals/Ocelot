@@ -701,7 +701,7 @@ namespace Ocelot.AcceptanceTests
             Task.WaitAll(tasks);
         }
 
-        public async Task WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
         {
             var tasks = new Task[times];
 
