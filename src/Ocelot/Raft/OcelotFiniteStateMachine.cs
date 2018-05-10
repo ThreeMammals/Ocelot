@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Ocelot.Configuration.Setter;
 using Rafty.FiniteStateMachine;
 using Rafty.Log;
@@ -14,12 +15,12 @@ namespace Ocelot.Raft
             _setter = setter;
         }
 
-        public void Handle(LogEntry log)
+        public async Task Handle(LogEntry log)
         {
             //todo - handle an error
             //hack it to just cast as at the moment we know this is the only command :P
             var hack = (UpdateFileConfiguration)log.CommandData;
-            _setter.Set(hack.Configuration).GetAwaiter().GetResult();
+            await _setter.Set(hack.Configuration);
         }
     }
 }

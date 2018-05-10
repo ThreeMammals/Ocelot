@@ -49,10 +49,10 @@
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
+    <PackageReference Include="Rafty" Version="0.4.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="WebSockets\" />
   </ItemGroup>
-
 </Project>

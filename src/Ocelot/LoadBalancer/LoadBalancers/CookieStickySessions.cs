@@ -35,7 +35,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     {
                         if (stickySession.Expiry < DateTime.UtcNow)
                         {
-                            _stored.Remove(stickySession.Key, out _);
+                            _stored.TryRemove(stickySession.Key, out _);
                             _loadBalancer.Release(stickySession.HostAndPort);
                         }
                     }

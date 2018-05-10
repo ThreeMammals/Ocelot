@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Ocelot.Configuration;
 using Ocelot.Middleware;
@@ -35,7 +36,7 @@ namespace Ocelot.Raft
 
         public string Id {get; private set;}
 
-        public RequestVoteResponse Request(RequestVote requestVote)
+        public async Task<RequestVoteResponse> Request(RequestVote requestVote)
         {
             if(_token == null)
             {
@@ -48,7 +49,7 @@ namespace Ocelot.Raft
             var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/requestvote", content).GetAwaiter().GetResult();
             if(response.IsSuccessStatusCode)
             {
-                return JsonConvert.DeserializeObject<RequestVoteResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), _jsonSerializerSettings);
+                return JsonConvert.DeserializeObject<RequestVoteResponse>(await response.Content.ReadAsStringAsync(), _jsonSerializerSettings);
             }
             else
             {
@@ -56,7 +57,7 @@ namespace Ocelot.Raft
             }
         }
 
-        public AppendEntriesResponse Request(AppendEntries appendEntries)
+        public async Task<AppendEntriesResponse> Request(AppendEntries appendEntries)
         {
             try
             {
@@ -71,7 +72,7 @@ namespace Ocelot.Raft
                 var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/appendEntries", content).GetAwaiter().GetResult();
                 if(response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<AppendEntriesResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(),_jsonSerializerSettings);
+                    return JsonConvert.DeserializeObject<AppendEntriesResponse>(await response.Content.ReadAsStringAsync(), _jsonSerializerSettings);
                 }
                 else
                 {
@@ -85,7 +86,7 @@ namespace Ocelot.Raft
             }
         }
 
-        public Response<T> Request<T>(T command)
+        public async Task<Response<T>> Request<T>(T command)
             where T : ICommand
         {
             Console.WriteLine("SENDING REQUEST....");
@@ -107,7 +108,7 @@ namespace Ocelot.Raft
             else 
             {
                 Console.WriteLine("REQUEST NOT OK....");
-                return new ErrorResponse<T>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), command);
+                return new ErrorResponse<T>(await response.Content.ReadAsStringAsync(), command);
             }
         }
 

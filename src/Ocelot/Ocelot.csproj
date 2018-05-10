@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -25,14 +25,22 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /> 
+    <PackageReference Include="Butterfly.Client" Version="0.0.8" />
+    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="FluentValidation" Version="7.5.2" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.1">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.1" />
@@ -48,6 +56,6 @@
     <PackageReference Include="Polly" Version="5.8.0" />
     <PackageReference Include="Pivotal.Discovery.Client" Version="1.1.0" />
     <PackageReference Include="IdentityServer4" Version="2.1.3" />
-    <PackageReference Include="Rafty" Version="0.4.2" />
+    <PackageReference Include="Rafty" Version="0.4.3" />
   </ItemGroup>
 </Project>
