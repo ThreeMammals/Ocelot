@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    public class DownstreamRouteProviderTests
+    public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteProvider _downstreamRouteFinder;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
@@ -26,11 +26,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamHttpMethod;
         private string _upstreamHost;
 
-        public DownstreamRouteProviderTests()
+        public DownstreamRouteFinderTests()
         {
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _finder = new Mock<IPlaceholderNameAndValueFinder>();
-            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteProvider(_mockMatcher.Object, _finder.Object);
+            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockMatcher.Object, _finder.Object);
         }
 
         [Fact]

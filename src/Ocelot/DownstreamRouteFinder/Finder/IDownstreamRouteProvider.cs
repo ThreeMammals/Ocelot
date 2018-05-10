@@ -5,6 +5,8 @@ using Ocelot.Responses;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Linq;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
@@ -17,7 +19,41 @@ namespace Ocelot.DownstreamRouteFinder.Finder
     {
         public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
-            throw new NotImplementedException();
+            var serviceName = upstreamUrlPath
+                .Substring(1, upstreamUrlPath.IndexOf('/', 1))
+                .TrimEnd('/');
+
+            var downstreamPath = upstreamUrlPath
+                .Substring(upstreamUrlPath.IndexOf('/', 1));
+
+            if(downstreamPath.Contains("?"))
+            {
+                downstreamPath = downstreamPath
+                    .Substring(0, downstreamPath.IndexOf('?'));
+            }
+
+            var key = CreateReRouteKey(upstreamUrlPath, upstreamHttpMethod);
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithServiceName(serviceName)
+                .WithReRouteKey(key)
+                .WithDownstreamPathTemplate(downstreamPath)
+                .Build();
+
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
+                .WithUpstreamHttpMethod(new List<string>(){ upstreamHttpMethod })
+                .Build();
+
+            return new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
+        
+        }
+
+        private string CreateReRouteKey(string downstreamTemplatePath, string httpMethod)
+        {
+            //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
+            var loadBalancerKey = $"{downstreamTemplatePath}|{httpMethod}";
+            return loadBalancerKey;
         }
     }
 
@@ -42,7 +78,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 return _providers[nameof(DownstreamRouteCreator)];
             }
                 
-            return _providers[nameof(DownstreamRouteProvider)];
+            return _providers[nameof(DownstreamRouteFinder)];
         }
 
         private bool IsServiceDiscovery(ServiceProviderConfiguration config)

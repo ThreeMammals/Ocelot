@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var services = new ServiceCollection();
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
-            services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteProvider>();
+            services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
             var provider = services.BuildServiceProvider();
             _factory = new DownstreamRouteProviderFactory(provider);
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             };
             IInternalConfiguration config = new InternalConfiguration(reRoutes, "", null, "");
             var result = _factory.Get(config);
-            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteProvider>();
+            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             };
             IInternalConfiguration config = new InternalConfiguration(reRoutes, "", spConfig, "");
             var result = _factory.Get(config);
-            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteProvider>();
+            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
         }
 
         [Fact]

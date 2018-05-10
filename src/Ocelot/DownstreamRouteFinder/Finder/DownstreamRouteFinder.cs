@@ -7,12 +7,12 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
-    public class DownstreamRouteProvider : IDownstreamRouteProvider
+    public class DownstreamRouteFinder : IDownstreamRouteProvider
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private readonly IPlaceholderNameAndValueFinder _placeholderNameAndValueFinder;
 
-        public DownstreamRouteProvider(IUrlPathToUrlTemplateMatcher urlMatcher, IPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
+        public DownstreamRouteFinder(IUrlPathToUrlTemplateMatcher urlMatcher, IPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder)
         {
             _urlMatcher = urlMatcher;
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
