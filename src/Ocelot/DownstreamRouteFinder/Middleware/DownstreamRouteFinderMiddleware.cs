@@ -12,13 +12,13 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
-        private readonly IDownstreamRouteFinderFactory _factory;
+        private readonly IDownstreamRouteProviderFactory _factory;
         private readonly IInternalConfigurationRepository _repo;
         private readonly IMultiplexer _multiplexer;
 
         public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamRouteFinderFactory downstreamRouteFinder,
+            IDownstreamRouteProviderFactory downstreamRouteFinder,
             IInternalConfigurationRepository repo,
             IMultiplexer multiplexer)
                 :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
@@ -52,7 +52,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var provider = _factory.Get(configuration.Data);
 
-            var downstreamRoute = provider.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
+            var downstreamRoute = provider.Get(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {
