@@ -34,27 +34,25 @@ namespace Ocelot.Raft
             _baseSchemeUrlAndPort = finder.Find();
         }
 
-        public string Id {get; private set;}
+        public string Id { get; }
 
         public async Task<RequestVoteResponse> Request(RequestVote requestVote)
         {
             if(_token == null)
             {
-                SetToken();
+                await SetToken();
             }
 
             var json = JsonConvert.SerializeObject(requestVote, _jsonSerializerSettings);
             var content = new StringContent(json);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/requestvote", content).GetAwaiter().GetResult();
+            var response = await _httpClient.PostAsync($"{_hostAndPort}/administration/raft/requestvote", content);
             if(response.IsSuccessStatusCode)
             {
                 return JsonConvert.DeserializeObject<RequestVoteResponse>(await response.Content.ReadAsStringAsync(), _jsonSerializerSettings);
             }
-            else
-            {
-                return new RequestVoteResponse(false, requestVote.Term);
-            }
+
+            return new RequestVoteResponse(false, requestVote.Term);
         }
 
         public async Task<AppendEntriesResponse> Request(AppendEntries appendEntries)
@@ -63,21 +61,19 @@ namespace Ocelot.Raft
             {
                 if(_token == null)
                 {
-                    SetToken();
-                }                
+                    await SetToken();
+                }
 
                 var json = JsonConvert.SerializeObject(appendEntries, _jsonSerializerSettings);
                 var content = new StringContent(json);
                 content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/appendEntries", content).GetAwaiter().GetResult();
+                var response = await _httpClient.PostAsync($"{_hostAndPort}/administration/raft/appendEntries", content);
                 if(response.IsSuccessStatusCode)
                 {
                     return JsonConvert.DeserializeObject<AppendEntriesResponse>(await response.Content.ReadAsStringAsync(), _jsonSerializerSettings);
                 }
-                else
-                {
-                    return new AppendEntriesResponse(appendEntries.Term, false);
-                }
+
+                return new AppendEntriesResponse(appendEntries.Term, false);
             }
             catch(Exception ex)
             {
@@ -92,27 +88,25 @@ namespace Ocelot.Raft
             Console.WriteLine("SENDING REQUEST....");
             if(_token == null)
             {
-                SetToken();
+                await SetToken();
             }   
 
             var json = JsonConvert.SerializeObject(command, _jsonSerializerSettings);
             var content = new StringContent(json);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            var response = _httpClient.PostAsync($"{_hostAndPort}/administration/raft/command", content).GetAwaiter().GetResult();
+            var response = await _httpClient.PostAsync($"{_hostAndPort}/administration/raft/command", content);
             if(response.IsSuccessStatusCode)
             {
                 Console.WriteLine("REQUEST OK....");
-                var okResponse = JsonConvert.DeserializeObject<OkResponse<ICommand>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), _jsonSerializerSettings);
+                var okResponse = JsonConvert.DeserializeObject<OkResponse<ICommand>>(await response.Content.ReadAsStringAsync(), _jsonSerializerSettings);
                 return new OkResponse<T>((T)okResponse.Command);
             }
-            else 
-            {
-                Console.WriteLine("REQUEST NOT OK....");
-                return new ErrorResponse<T>(await response.Content.ReadAsStringAsync(), command);
-            }
+
+            Console.WriteLine("REQUEST NOT OK....");
+            return new ErrorResponse<T>(await response.Content.ReadAsStringAsync(), command);
         }
 
-        private void SetToken()
+        private async Task SetToken()
         {
             var tokenUrl = $"{_baseSchemeUrlAndPort}{_config.AdministrationPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -123,8 +117,8 @@ namespace Ocelot.Raft
                 new KeyValuePair<string, string>("grant_type", "client_credentials")
             };
             var content = new FormUrlEncodedContent(formData);
-            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
-            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var response = await _httpClient.PostAsync(tokenUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_token.TokenType, _token.AccessToken);

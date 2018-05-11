@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Raft
 {
+    //todo - use async await
     [ExcludeFromCoverage]
     public class SqlLiteLog : ILog
     {

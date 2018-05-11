@@ -316,8 +316,6 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     new Scope("api2"),
                                     new Scope("api2.readOnly"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
