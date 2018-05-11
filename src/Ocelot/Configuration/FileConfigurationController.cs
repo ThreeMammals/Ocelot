@@ -49,7 +49,7 @@ namespace Ocelot.Configuration
                 if (test != null)
                 {
                     var node = (INode)test;
-                    var result = node.Accept(new UpdateFileConfiguration(fileConfiguration));
+                    var result = await node.Accept(new UpdateFileConfiguration(fileConfiguration));
                     if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
                     {
                         return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");

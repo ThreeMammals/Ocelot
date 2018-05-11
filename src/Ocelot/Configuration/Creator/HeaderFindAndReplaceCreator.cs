@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;

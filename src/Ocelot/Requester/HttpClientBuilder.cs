@@ -52,7 +52,7 @@ namespace Ocelot.Requester
 
             if(context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
             {
-                httpclientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                httpclientHandler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");

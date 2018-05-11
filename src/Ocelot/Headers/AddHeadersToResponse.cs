@@ -3,6 +3,7 @@ namespace Ocelot.Headers
     using System.Collections.Generic;
     using Ocelot.Configuration.Creator;
     using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.Extensions;
     using Ocelot.Logging;
     using Ocelot.Middleware;
 

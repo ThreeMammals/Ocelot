@@ -263,7 +263,7 @@ namespace Ocelot.IntegrationTests
                 catch(Exception e)
                 {
                     //_output.WriteLine($"{e.Message}, {e.StackTrace}");
-                    //Console.WriteLine(e);
+                    Console.WriteLine(e);
                     return false;
                 }
             }

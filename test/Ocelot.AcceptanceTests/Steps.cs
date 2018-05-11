@@ -664,7 +664,8 @@ namespace Ocelot.AcceptanceTests
         {
             using (var httpClient = new HttpClient())
             {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
+                var content = response.Content.ReadAsStringAsync().GetAwaiter();
                 response.EnsureSuccessStatusCode();
             }
         }
