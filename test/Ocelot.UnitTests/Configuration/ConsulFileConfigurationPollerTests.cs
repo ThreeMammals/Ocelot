@@ -17,11 +17,11 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class ConsulFileConfigurationPollerTests : IDisposable
     {
-        private ConsulFileConfigurationPoller _poller;
+        private readonly ConsulFileConfigurationPoller _poller;
         private Mock<IOcelotLoggerFactory> _factory;
-        private Mock<IFileConfigurationRepository> _repo;
-        private Mock<IFileConfigurationSetter> _setter;
-        private FileConfiguration _fileConfig;
+        private readonly Mock<IFileConfigurationRepository> _repo;
+        private readonly Mock<IFileConfigurationSetter> _setter;
+        private readonly FileConfiguration _fileConfig;
         private Mock<IConsulPollerConfiguration> _config;
 
         public ConsulFileConfigurationPollerTests()
@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 0))
-                .Then(x => ThenTheSetterIsCalled(newConfig, 1))
+                .Then(x => ThenTheSetterIsCalledAtLeast(newConfig, 1))
                 .BDDfy();
         }
 
@@ -145,6 +145,22 @@ namespace Ocelot.UnitTests.Configuration
                 try
                 {
                     _setter.Verify(x => x.Set(fileConfig), Times.Exactly(times));
+                    return true;
+                }
+                catch(Exception)
+                {
+                    return false;
+                }
+            });
+            result.ShouldBeTrue();
+        }
+
+        private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
+        {
+            var result = WaitFor(2000).Until(() => {
+                try
+                {
+                    _setter.Verify(x => x.Set(fileConfig), Times.AtLeast(times));
                     return true;
                 }
                 catch(Exception)

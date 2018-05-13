@@ -664,7 +664,8 @@ namespace Ocelot.AcceptanceTests
         {
             using (var httpClient = new HttpClient())
             {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
+                var content = response.Content.ReadAsStringAsync().GetAwaiter();
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -701,7 +702,7 @@ namespace Ocelot.AcceptanceTests
             Task.WaitAll(tasks);
         }
 
-        public async Task WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
         {
             var tasks = new Task[times];
 

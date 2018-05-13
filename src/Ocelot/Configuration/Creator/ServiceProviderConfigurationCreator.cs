@@ -15,6 +15,7 @@ namespace Ocelot.Configuration.Creator
                 .WithPort(serviceProviderPort)
                 .WithType(globalConfiguration?.ServiceDiscoveryProvider?.Type)
                 .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
+                .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)
                 .Build();
         }
     }

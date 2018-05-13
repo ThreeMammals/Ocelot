@@ -42,28 +42,35 @@ namespace Ocelot.Configuration
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
         {
-            //todo - this code is a bit shit sort it out..
-            var test = _provider.GetService(typeof(INode));
-            if (test != null)
+            try
             {
-                var node = (INode)test;
-                var result = node.Accept(new UpdateFileConfiguration(fileConfiguration));
-                if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
+                //todo - this code is a bit shit sort it out..
+                var test = _provider.GetService(typeof(INode));
+                if (test != null)
                 {
-                    return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
+                    var node = (INode)test;
+                    var result = await node.Accept(new UpdateFileConfiguration(fileConfiguration));
+                    if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
+                    {
+                        return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
+                    }
+
+                    return new OkObjectResult(result.Command.Configuration);
                 }
 
-                return new OkObjectResult(result.Command.Configuration);
+                var response = await _setter.Set(fileConfiguration);
+
+                if (response.IsError)
+                {
+                    return new BadRequestObjectResult(response.Errors);
+                }
+
+                return new OkObjectResult(fileConfiguration);
             }
-
-            var response = await _setter.Set(fileConfiguration);
-
-            if (response.IsError)
+            catch(Exception e)
             {
-                return new BadRequestObjectResult(response.Errors);
+                return new BadRequestObjectResult($"{e.Message}:{e.StackTrace}");
             }
-
-            return new OkObjectResult(fileConfiguration);
         }
     }
 }

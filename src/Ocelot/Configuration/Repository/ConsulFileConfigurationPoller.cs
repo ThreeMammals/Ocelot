@@ -40,7 +40,7 @@ namespace Ocelot.Configuration.Repository
                 _polling = true;
                 await Poll();
                 _polling = false;
-            }, null, 0, _config.Delay);
+            }, null, _config.Delay, _config.Delay);
         }
         
         private async Task Poll()

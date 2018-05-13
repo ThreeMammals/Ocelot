@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.File
 {

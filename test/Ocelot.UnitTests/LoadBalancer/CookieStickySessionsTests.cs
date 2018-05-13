@@ -1,5 +1,6 @@
 namespace Ocelot.UnitTests.LoadBalancer
 {
+    using System;
     using System.Threading.Tasks;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Responses;
@@ -10,26 +11,41 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Microsoft.AspNetCore.Http;
     using System.Collections.Generic;
     using System.Collections;
-    using System.Threading;
     using Ocelot.Middleware;
     using Ocelot.UnitTests.Responder;
     using TestStack.BDDfy;
+    using Ocelot.Infrastructure;
 
     public class CookieStickySessionsTests
     {
         private readonly CookieStickySessions _stickySessions;
         private readonly Mock<ILoadBalancer> _loadBalancer;
+        private readonly int _defaultExpiryInMs;
         private DownstreamContext _downstreamContext;
         private Response<ServiceHostAndPort> _result;
         private Response<ServiceHostAndPort> _firstHostAndPort;
         private Response<ServiceHostAndPort> _secondHostAndPort;
+        private readonly FakeBus<StickySession> _bus;
 
         public CookieStickySessionsTests()
         {
+            _bus = new FakeBus<StickySession>();
             _loadBalancer = new Mock<ILoadBalancer>();
-            const int defaultExpiryInMs = 100;
-            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", defaultExpiryInMs);
+            _defaultExpiryInMs = 0;
+            _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus);
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+        }
+
+        [Fact]
+        public void should_expire_sticky_session()
+        {
+            this.Given(_ => GivenTheLoadBalancerReturns())
+                .And(_ => GivenTheDownstreamRequestHasSessionId("321"))
+                .And(_ => GivenIHackAMessageInWithAPastExpiry())
+                .And(_ => WhenILease())
+                .When(_ => WhenTheMessagesAreProcessed())
+                .Then(_ => ThenTheLoadBalancerIsCalled())
+                .BDDfy();
         }
 
         [Fact]
@@ -48,6 +64,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(_ => GivenTheDownstreamRequestHasSessionId("321"))
                 .When(_ => WhenILeaseTwiceInARow())
                 .Then(_ => ThenTheFirstAndSecondResponseAreTheSame())
+                .And(_ => ThenTheStickySessionWillTimeout())
                 .BDDfy();
         }
 
@@ -70,91 +87,25 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public void should_expire_sticky_session()
-        {
-            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
-                .When(_ => WhenTheStickySessionExpires())
-                .Then(_ => ThenANewHostAndPortIsReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_refresh_sticky_session()
-        {
-            this.Given(_ => GivenTheLoadBalancerReturnsSequence())
-                .When(_ => WhenIMakeRequestsToKeepRefreshingTheSession())
-                .Then(_ => ThenTheSessionIsRefreshed())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_dispose()
-        {
-            _stickySessions.Dispose();
-        }
-
-        [Fact]
         public void should_release()
         {
             _stickySessions.Release(new ServiceHostAndPort("", 0));
         }
 
-        private async Task ThenTheSessionIsRefreshed()
+        private void ThenTheLoadBalancerIsCalled()
         {
-            var postExpireHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            _loadBalancer
-                .Verify(x => x.Lease(It.IsAny<DownstreamContext>()), Times.Once);
+            _loadBalancer.Verify(x => x.Release(It.IsAny<ServiceHostAndPort>()), Times.Once);
         }
 
-        private async Task WhenIMakeRequestsToKeepRefreshingTheSession()
+        private void WhenTheMessagesAreProcessed()
         {
-            var context = new DefaultHttpContext();
-            var cookies = new FakeCookies();
-            cookies.AddCookie("sessionid", "321");
-            context.Request.Cookies = cookies;
-            _downstreamContext = new DownstreamContext(context);
-
-            var firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            Thread.Sleep(80);
-
-            var secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            secondHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            Thread.Sleep(80);
+            _bus.Process();
         }
 
-        private async Task ThenANewHostAndPortIsReturned()
+        private void GivenIHackAMessageInWithAPastExpiry()
         {
-            var postExpireHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            postExpireHostAndPort.Data.DownstreamHost.ShouldBe("two");
-            postExpireHostAndPort.Data.DownstreamPort.ShouldBe(80);
-        }
-
-        private async Task WhenTheStickySessionExpires()
-        {
-            var context = new DefaultHttpContext();
-            var cookies = new FakeCookies();
-            cookies.AddCookie("sessionid", "321");
-            context.Request.Cookies = cookies;
-            _downstreamContext = new DownstreamContext(context);
-
-            var firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            var secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
-
-            firstHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            firstHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            secondHostAndPort.Data.DownstreamHost.ShouldBe("one");
-            secondHostAndPort.Data.DownstreamPort.ShouldBe(80);
-
-            Thread.Sleep(150);
+            var hostAndPort = new ServiceHostAndPort("999", 999);
+            _bus.Publish(new StickySession(hostAndPort, DateTime.UtcNow.AddDays(-1), "321"), 0);
         }
 
         private void ThenAnErrorIsReturned()
@@ -236,9 +187,14 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _result.Data.ShouldNotBeNull();
         }
+
+        private void ThenTheStickySessionWillTimeout()
+        {
+            _bus.Messages.Count.ShouldBe(2);
+        }
     }
-    
-    class FakeCookies : IRequestCookieCollection
+
+    internal class FakeCookies : IRequestCookieCollection
     {
         private readonly Dictionary<string, string> _cookies = new Dictionary<string, string>();
 
@@ -271,6 +227,39 @@ namespace Ocelot.UnitTests.LoadBalancer
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _cookies.GetEnumerator();
+        }
+    }
+
+    internal class FakeBus<T> : IBus<T>
+    {
+        public FakeBus()
+        {
+            Messages = new List<T>();
+            Subscriptions = new List<Action<T>>();
+        }
+
+        public List<T> Messages { get; }
+        public List<Action<T>> Subscriptions { get; }
+
+        public void Subscribe(Action<T> action)
+        {
+            Subscriptions.Add(action);
+        }
+
+        public void Publish(T message, int delay)
+        {
+            Messages.Add(message);
+        }
+
+        public void Process()
+        {
+            foreach (var message in Messages)
+            {
+                foreach (var subscription in Subscriptions)
+                {
+                    subscription(message);
+                }
+            }
         }
     }
 }
