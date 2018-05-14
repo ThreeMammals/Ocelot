@@ -73,7 +73,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static bool ServiceFabricRequest(DownstreamContext context)
         {
-            return context.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery;
+            return context.Configuration.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery;
         }
 
         private static bool RequestForStatefullService(string query)

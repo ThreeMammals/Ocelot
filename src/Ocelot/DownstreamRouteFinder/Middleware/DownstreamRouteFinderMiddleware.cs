@@ -35,24 +35,11 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
-            //todonow we get this in exception handling mdidleware, just stick it on the context?
-            var configuration = _repo.Get();
-
-            if (configuration.IsError)
-            {
-                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
-                SetPipelineError(context, configuration.Errors);
-                return;
-            }
-
-            //todonow we get this in exception handling mdidleware, just stick it on the context?
-            context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
-
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
-            var provider = _factory.Get(configuration.Data);
+            var provider = _factory.Get(context.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
+            var downstreamRoute = provider.Get(upstreamUrlPath, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
 
             if (downstreamRoute.IsError)
             {

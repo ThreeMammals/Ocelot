@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
-using Ocelot.Middleware.Multiplexer;
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.Middleware
@@ -20,8 +17,6 @@ namespace Ocelot.Middleware
 
         public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; set; }
 
-        public ServiceProviderConfiguration ServiceProviderConfiguration {get; set;}
-
         public HttpContext HttpContext { get; }
 
         public DownstreamReRoute DownstreamReRoute { get; set; }
@@ -31,6 +26,8 @@ namespace Ocelot.Middleware
         public DownstreamResponse DownstreamResponse { get; set; }
 
         public List<Error> Errors { get; }
+
+        public IInternalConfiguration Configuration { get; set; }
 
         public bool IsError => Errors.Count > 0;
     }

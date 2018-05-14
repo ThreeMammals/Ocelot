@@ -117,7 +117,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
         {
             _config = config;
-            _downstreamContext.ServiceProviderConfiguration = config;
+            var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null);
+            _downstreamContext.Configuration = configuration;
         }
 
         private void GivenTheDownStreamUrlIs(string downstreamUrl)

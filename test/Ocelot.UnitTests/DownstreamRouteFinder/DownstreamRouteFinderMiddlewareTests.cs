@@ -79,9 +79,7 @@
         private void GivenTheFollowingConfig(IInternalConfiguration config)
         {
             _config = config;
-            _repo
-                .Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(_config));
+            _downstreamContext.Configuration = config;
         }
 
         private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)
@@ -95,7 +93,7 @@
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
             _downstreamContext.TemplatePlaceholderNameAndValues.ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
-            _downstreamContext.ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
+            _downstreamContext.Configuration.ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
         }
     }
 }

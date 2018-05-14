@@ -193,7 +193,8 @@
 
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
-            _downstreamContext.ServiceProviderConfiguration = config;
+            var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null);
+            _downstreamContext.Configuration = configuration;
         }
 
         private void WhenICallTheMiddleware()
