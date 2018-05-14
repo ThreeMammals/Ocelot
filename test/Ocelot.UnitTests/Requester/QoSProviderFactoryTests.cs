@@ -31,9 +31,12 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_no_qos_provider()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
                 .WithUpstreamHttpMethod(new List<string> { "get" })
-                .WithIsQos(false)
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -53,7 +56,6 @@ namespace Ocelot.UnitTests.Requester
 
             var reRoute = new DownstreamReRouteBuilder()
                .WithUpstreamHttpMethod(new List<string> { "get" })
-               .WithIsQos(true)
                .WithQosOptions(qosOptions)
                .Build();
 

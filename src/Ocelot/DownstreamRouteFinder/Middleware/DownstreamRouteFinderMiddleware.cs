@@ -35,7 +35,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
-            //todo we get this in exception handling mdidleware, just stick it on the context?
+            //todonow we get this in exception handling mdidleware, just stick it on the context?
             var configuration = _repo.Get();
 
             if (configuration.IsError)
@@ -45,7 +45,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            //todo we get this in exception handling mdidleware, just stick it on the context?
+            //todonow we get this in exception handling mdidleware, just stick it on the context?
             context.ServiceProviderConfiguration = configuration.Data.ServiceProviderConfiguration;
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");

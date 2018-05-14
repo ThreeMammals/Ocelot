@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var fileConfig = new FileConfiguration();
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-            var config = new InternalConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, "asdf");
+            var config = new InternalConfiguration(new List<ReRoute>(), string.Empty, serviceProviderConfig, "asdf", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))

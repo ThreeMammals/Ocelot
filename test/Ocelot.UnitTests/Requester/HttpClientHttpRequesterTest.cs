@@ -47,10 +47,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -70,10 +73,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -92,10 +98,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void http_client_request_times_out()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 

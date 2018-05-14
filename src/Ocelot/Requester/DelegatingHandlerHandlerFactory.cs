@@ -68,7 +68,7 @@ namespace Ocelot.Requester
                 handlers.Add(() => (DelegatingHandler)_factory.Get());
             }
 
-            if (request.IsQos)
+            if (request.QosOptions.UseQos)
             {
                 var qosProvider = _qosProviderHouse.Get(request);
 

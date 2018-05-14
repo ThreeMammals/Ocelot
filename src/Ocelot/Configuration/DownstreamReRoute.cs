@@ -16,8 +16,7 @@ namespace Ocelot.Configuration
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
             bool enableEndpointEndpointRateLimiting,
-            bool isQos,
-            QoSOptions qosOptionsOptions,
+            QoSOptions qosOptions,
             string downstreamScheme,
             string requestIdKey,
             bool isCached,
@@ -36,8 +35,7 @@ namespace Ocelot.Configuration
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
             List<AddHeader> addHeadersToUpstream,
-            bool dangerousAcceptAnyServerCertificateValidator,
-            string qosKey)
+            bool dangerousAcceptAnyServerCertificateValidator)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -51,8 +49,7 @@ namespace Ocelot.Configuration
             HttpHandlerOptions = httpHandlerOptions;
             UseServiceDiscovery = useServiceDiscovery;
             EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
-            IsQos = isQos;
-            QosOptionsOptions = qosOptionsOptions;
+            QosOptions = qosOptions;
             DownstreamScheme = downstreamScheme;
             RequestIdKey = requestIdKey;
             IsCached = isCached;
@@ -69,10 +66,8 @@ namespace Ocelot.Configuration
             DownstreamPathTemplate = downstreamPathTemplate;
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
-            QosKey = qosKey;
         }
 
-        public string QosKey { get; }
         public string Key { get; }
         public PathTemplate UpstreamPathTemplate { get; }
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace { get; }
@@ -82,8 +77,7 @@ namespace Ocelot.Configuration
         public HttpHandlerOptions HttpHandlerOptions { get; }
         public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }
-        public bool IsQos { get; }
-        public QoSOptions QosOptionsOptions { get; }
+        public QoSOptions QosOptions { get; }
         public string DownstreamScheme { get; }
         public string RequestIdKey { get; }
         public bool IsCached { get; }

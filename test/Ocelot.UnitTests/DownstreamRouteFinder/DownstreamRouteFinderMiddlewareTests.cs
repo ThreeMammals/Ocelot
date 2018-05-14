@@ -51,7 +51,7 @@
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "");
+            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")

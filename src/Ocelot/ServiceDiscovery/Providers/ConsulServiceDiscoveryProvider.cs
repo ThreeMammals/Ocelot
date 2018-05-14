@@ -22,7 +22,7 @@ namespace Ocelot.ServiceDiscovery.Providers
         {;
             _logger = factory.CreateLogger<ConsulServiceDiscoveryProvider>();
 
-            //todo - set these in the builder, not here? Is hacky now because we need to run logic in route finder factory to
+            //todonow - set these in the builder, not here? Is hacky now because we need to run logic in route finder factory to
             //see if serviee discovery set
             var consulHost = string.IsNullOrEmpty(config?.Host) ? "localhost" : config.Host;
 

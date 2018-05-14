@@ -211,9 +211,10 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
         {
-            const int consulPort = 8505;
+            const int consulPort = 8513;
             const string serviceName = "web";
-            const string downstreamServiceOneUrl = "http://localhost:8080";
+            const int downstreamServicePort = 8087;
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -221,7 +222,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = 8080,
+                    Port = downstreamServicePort,
                     ID = "web_90_0_2_224_8080",
                     Tags = new[] {"version-v1"}
                 },
@@ -229,13 +230,25 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                    GlobalConfiguration = new FileGlobalConfiguration()
+                    GlobalConfiguration = new FileGlobalConfiguration
                     {
-                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                         {
                             Host = "localhost",
                             Port = consulPort
-                            //todo - global load balancer in this config?
+                        },
+                        DownstreamScheme = "http",
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            AllowAutoRedirect = true,
+                            UseCookieContainer = true,
+                            UseTracing = false
+                        },
+                        QoSOptions = new FileQoSOptions
+                        {
+                            TimeoutValue = 100,
+                            DurationOfBreak = 1000,
+                            ExceptionsAllowedBeforeBreaking = 1
                         }
                     }
             };
@@ -249,6 +262,65 @@ namespace Ocelot.AcceptanceTests
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
+        {
+            var consulPort = 8510;
+            var serviceName = "product";
+            var serviceOnePort = 50888;
+            var serviceTwoPort = 50889;
+            var downstreamServiceOneUrl = $"http://localhost:{serviceOnePort}";
+            var downstreamServiceTwoUrl = $"http://localhost:{serviceTwoPort}";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = serviceOnePort,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+            var serviceEntryTwo = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = serviceTwoPort,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    },
+                    LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                    DownstreamScheme = "http"
+                }
+            };
+
+            this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
+                .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
+                .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
+                .BDDfy();
         }
 
         [Fact]

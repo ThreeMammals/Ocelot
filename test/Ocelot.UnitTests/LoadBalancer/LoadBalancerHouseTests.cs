@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_store_load_balancer_on_first_request()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithReRouteKey("test")
+                .WithLoadBalancerKey("test")
                 .Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
-                .WithReRouteKey("test")
+                .WithLoadBalancerKey("test")
                 .Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
@@ -60,12 +60,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
-                .WithReRouteKey("test")
+                .WithLoadBalancerKey("test")
                 .Build();
             
             var reRouteTwo = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeRoundRobinLoadBalancer", "", 0))
-                .WithReRouteKey("testtwo")
+                .WithLoadBalancerKey("testtwo")
                 .Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))
@@ -92,12 +92,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
-                .WithReRouteKey("test")
+                .WithLoadBalancerKey("test")
                 .Build();
 
             var reRouteTwo = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
-                .WithReRouteKey("test")
+                .WithLoadBalancerKey("test")
                 .Build();
 
             this.Given(x => x.GivenThereIsALoadBalancer(reRoute, new FakeLoadBalancer()))

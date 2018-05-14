@@ -29,11 +29,6 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     EnableRateLimiting = true
                 },
-                QoSOptions = new FileQoSOptions
-                {
-                    ExceptionsAllowedBeforeBreaking = 1,
-                    TimeoutValue = 1
-                },
                 AuthenticationOptions = new FileAuthenticationOptions()
                 {
                     AuthenticationProviderKey = "Test"
@@ -52,7 +47,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithIsAuthenticated(true)
                 .WithIsAuthorised(true)
                 .WithIsCached(true)
-                .WithIsQos(true)
                 .WithRateLimiting(true)
                 .Build();
 
@@ -76,7 +70,6 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
             _result.IsAuthorised.ShouldBe(expected.IsAuthorised);
-            _result.IsQos.ShouldBe(expected.IsQos);
             _result.IsCached.ShouldBe(expected.IsCached);
             _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         }
