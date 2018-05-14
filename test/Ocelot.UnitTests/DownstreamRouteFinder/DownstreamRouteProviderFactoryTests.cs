@@ -19,6 +19,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     public class DownstreamRouteProviderFactoryTests
     {
         private readonly DownstreamRouteProviderFactory _factory;
+        private IInternalConfiguration _config;
+        private IDownstreamRouteProvider _result;
 
         public DownstreamRouteProviderFactoryTests()
         {
@@ -32,7 +34,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _factory = new DownstreamRouteProviderFactory(provider);
         }
 
-        //todonow - bddfy
         [Fact]
         public void should_return_downstream_route_finder()
         {
@@ -40,9 +41,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             {
                 new ReRouteBuilder().Build()
             };
-            IInternalConfiguration config = new InternalConfiguration(reRoutes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
-            var result = _factory.Get(config);
-            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
+
+            this.Given(_ => GivenTheReRoutes(reRoutes))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .BDDfy();
         }
 
         [Fact]
@@ -52,9 +55,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var reRoutes = new List<ReRoute>
             {
             };
-            IInternalConfiguration config = new InternalConfiguration(reRoutes, "", spConfig, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
-            var result = _factory.Get(config);
-            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
+
+            this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .BDDfy();
         }
 
         [Fact]
@@ -64,9 +69,30 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var reRoutes = new List<ReRoute>
             {
             };
-            IInternalConfiguration config = new InternalConfiguration(reRoutes, "", spConfig, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
-            var result = _factory.Get(config);
-            result.ShouldBeOfType<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
+            this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>())
+                .BDDfy();
+        }
+
+        private void ThenTheResultShouldBe<T>()
+        {
+            _result.ShouldBeOfType<T>();
+        }
+
+        private void WhenIGet()
+        {
+            _result = _factory.Get(_config);
+        }
+
+        private void GivenTheReRoutes(List<ReRoute> reRoutes)
+        {
+            _config = new InternalConfiguration(reRoutes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+        }
+
+        private void GivenTheReRoutes(List<ReRoute> reRoutes, ServiceProviderConfiguration config)
+        {
+            _config = new InternalConfiguration(reRoutes, "", config, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
         }
     }
 }
