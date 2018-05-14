@@ -22,12 +22,7 @@ namespace Ocelot.ServiceDiscovery.Providers
         {;
             _logger = factory.CreateLogger<ConsulServiceDiscoveryProvider>();
 
-            var consulHost = string.IsNullOrEmpty(config?.Host) ? "localhost" : config.Host;
-
-            var consulPort = config?.Port ?? 8500;
-
-            _config = new ConsulRegistryConfiguration(consulHost, consulPort, config?.KeyOfServiceInConsul, config?.Token);
-
+            _config = config;
             _consul = clientFactory.Get(_config);
         }
 

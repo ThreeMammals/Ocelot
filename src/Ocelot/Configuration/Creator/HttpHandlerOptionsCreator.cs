@@ -6,19 +6,19 @@ namespace Ocelot.Configuration.Creator
 {
     public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {
-        private IServiceTracer _tracer;
+        private readonly IServiceTracer _tracer;
 
         public HttpHandlerOptionsCreator(IServiceTracer tracer)
         {
             _tracer = tracer;
         }
 
-        public HttpHandlerOptions Create(FileReRoute fileReRoute)
+        public HttpHandlerOptions Create(FileHttpHandlerOptions options)
         {
-            var useTracing = _tracer.GetType() != typeof(FakeServiceTracer) ? fileReRoute.HttpHandlerOptions.UseTracing : false;
+            var useTracing = _tracer.GetType() != typeof(FakeServiceTracer) && options.UseTracing;
 
-            return new HttpHandlerOptions(fileReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                fileReRoute.HttpHandlerOptions.UseCookieContainer, useTracing);
+            return new HttpHandlerOptions(options.AllowAutoRedirect,
+                options.UseCookieContainer, useTracing);
         }
     }
 }

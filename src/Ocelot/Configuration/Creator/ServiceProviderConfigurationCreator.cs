@@ -7,12 +7,12 @@ namespace Ocelot.Configuration.Creator
     {
         public ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration)
         {
-            //todo log or return error here dont just default to something that wont work..
-            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var port = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var host = globalConfiguration?.ServiceDiscoveryProvider?.Host ?? "consul";
 
             return new ServiceProviderConfigurationBuilder()
-                .WithHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
-                .WithPort(serviceProviderPort)
+                .WithHost(host)
+                .WithPort(port)
                 .WithType(globalConfiguration?.ServiceDiscoveryProvider?.Type)
                 .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
                 .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)

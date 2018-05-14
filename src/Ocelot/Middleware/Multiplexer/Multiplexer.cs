@@ -23,7 +23,7 @@ namespace Ocelot.Middleware.Multiplexer
                 var downstreamContext = new DownstreamContext(context.HttpContext)
                 {
                     TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
-                    ServiceProviderConfiguration = context.ServiceProviderConfiguration,
+                    Configuration = context.Configuration,
                     DownstreamReRoute = reRoute.DownstreamReRoute[i],
                 };
 

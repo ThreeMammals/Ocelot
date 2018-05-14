@@ -7,7 +7,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
-    public class DownstreamRouteFinder : IDownstreamRouteFinder
+    public class DownstreamRouteFinder : IDownstreamRouteProvider
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private readonly IPlaceholderNameAndValueFinder _placeholderNameAndValueFinder;
@@ -18,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 

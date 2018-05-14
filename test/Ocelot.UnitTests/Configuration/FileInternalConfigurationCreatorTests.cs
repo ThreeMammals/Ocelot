@@ -86,7 +86,7 @@
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithReRouteKey("CookieStickySessions:sessionid")
+                .WithLoadBalancerKey("CookieStickySessions:sessionid")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -199,7 +199,7 @@
                 .WithDownstreamScheme("http")
                 .WithUpstreamHttpMethod(new List<string>() {"Get"})
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("localhost", 51878)})
-                .WithReRouteKey("/laura|Get")
+                .WithLoadBalancerKey("/laura|Get")
                 .Build();
 
             var lauraReRoute = new ReRouteBuilder()
@@ -218,7 +218,7 @@
                 .WithDownstreamScheme("http")
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("localhost", 51878) })
-                .WithReRouteKey("/tom|Get")
+                .WithLoadBalancerKey("/tom|Get")
                 .Build();
 
             var tomReRoute = new ReRouteBuilder()
@@ -361,7 +361,6 @@
                 .Build();
 
             var serviceOptions = new ReRouteOptionsBuilder()
-                .WithIsQos(true)
                 .Build();
 
              this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -410,7 +409,7 @@
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -462,7 +461,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithDelegatingHandlers(handlers)
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -507,7 +506,7 @@
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(true)
                 .WithServiceName("ProductService")
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -558,7 +557,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(false)
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -601,7 +600,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -646,7 +645,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithRequestIdKey("blahhhh")
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -741,7 +740,7 @@
                 {
                     new ClaimToThing("CustomerId", "CustomerId", "", 0),
                 })
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             var expected = new List<ReRoute>
@@ -784,7 +783,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
-                .WithReRouteKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get")
                 .Build();
 
             var expected = new List<ReRoute>
@@ -942,16 +941,15 @@
         private void GivenTheQosOptionsCreatorReturns(QoSOptions qosOptions)
         {
             _qosOptionsCreator
-                .Setup(x => x.Create(_fileConfiguration.ReRoutes[0]))
+                .Setup(x => x.Create(_fileConfiguration.ReRoutes[0].QoSOptions, It.IsAny<string>(), It.IsAny<string[]>()))
                 .Returns(qosOptions);
         }
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
-
-            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
 
         private void ThenTheServiceProviderCreatorIsCalledCorrectly()
@@ -992,13 +990,13 @@
         
         private void GivenTheFollowingHttpHandlerOptionsAreReturned(HttpHandlerOptions httpHandlerOptions)
         {
-            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileReRoute>()))
+            _httpHandlerOptionsCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>()))
                 .Returns(httpHandlerOptions);
         }
 
         private void ThenTheHttpHandlerOptionsCreatorIsCalledCorrectly()
         {
-            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once());
+            _httpHandlerOptionsCreator.Verify(x => x.Create(_fileConfiguration.ReRoutes[0].HttpHandlerOptions), Times.Once());
         }
 
         private void GivenTheDownstreamAddresses()
