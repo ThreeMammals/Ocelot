@@ -6,6 +6,7 @@ using System.Net.Http;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
+    using System;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
@@ -26,6 +27,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamHttpMethod;
         private IInternalConfiguration _configuration;
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
+        private Response<DownstreamRoute> _resultTwo;
 
         public DownstreamRouteCreatorTests()
         {
@@ -51,6 +53,32 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
+        public void should_cache_downstream_route()
+        {
+            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
+
+            this.Given(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
+                .When(_ => WhenICreate())
+                .And(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
+                .When(_ => WhenICreateAgain())
+                .Then(_ => ThenTheDownstreamRoutesAreTheSameReference())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_cache_downstream_route()
+        {
+            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
+
+            this.Given(_ => GivenTheConfiguration(configuration, "/geoffistheworst/"))
+                .When(_ => WhenICreate())
+                .And(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
+                .When(_ => WhenICreateAgain())
+                .Then(_ => ThenTheDownstreamRoutesAreTheNotSameReference())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_create_downstream_route_with_no_path()
         {
             var upstreamUrlPath = "/auth/";
@@ -59,6 +87,30 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheDownstreamPathIsForwardSlash())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_downstream_route_with_only_first_segment_no_traling_slash()
+        {
+            var upstreamUrlPath = "/auth";
+            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
+
+            this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheDownstreamPathIsForwardSlash())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_downstream_route_with_segments_no_traling_slash()
+        {
+            var upstreamUrlPath = "/auth/test";
+            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
+
+            this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenThePathDoesNotHaveTrailingSlash())
                 .BDDfy();
         }
 
@@ -143,6 +195,13 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/|GET");
         }
 
+        private void ThenThePathDoesNotHaveTrailingSlash()
+        {
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
+            _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
+        }
+
         private void ThenTheQueryStringIsRemoved()
         {
             _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
@@ -189,6 +248,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void WhenICreate()
         {
             _result = _creator.Get(_upstreamUrlPath, _upstreamHttpMethod, _configuration, _upstreamHost);
+        }
+
+        private void WhenICreateAgain()
+        {
+            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamHttpMethod, _configuration, _upstreamHost);
+        }
+
+        private void ThenTheDownstreamRoutesAreTheSameReference()
+        {
+            _result.ShouldBe(_resultTwo);
+        }
+
+        private void ThenTheDownstreamRoutesAreTheNotSameReference()
+        {
+            _result.ShouldNotBe(_resultTwo);
         }
     }
 }

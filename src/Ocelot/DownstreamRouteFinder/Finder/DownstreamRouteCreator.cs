@@ -1,5 +1,6 @@
 ﻿namespace Ocelot.DownstreamRouteFinder.Finder
 {
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using Configuration;
     using Configuration.Builder;
@@ -12,14 +13,16 @@
     public class DownstreamRouteCreator : IDownstreamRouteProvider
     {
         private readonly IQoSOptionsCreator _qoSOptionsCreator;
+        private readonly ConcurrentDictionary<string, OkResponse<DownstreamRoute>> _cache;
 
         public DownstreamRouteCreator(IQoSOptionsCreator qoSOptionsCreator)
         {
             _qoSOptionsCreator = qoSOptionsCreator;
+            _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRoute>>();
         }
 
         public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
-        {
+        {            
             var serviceName = GetServiceName(upstreamUrlPath);
 
             var downstreamPath = GetDownstreamPath(upstreamUrlPath);
@@ -32,6 +35,11 @@
             var downstreamPathForKeys = $"/{serviceName}{downstreamPath}";
 
             var loadBalancerKey = CreateLoadBalancerKey(downstreamPathForKeys, upstreamHttpMethod, configuration.LoadBalancerOptions);
+
+            if(_cache.TryGetValue(loadBalancerKey, out var downstreamRoute))
+            {
+                return downstreamRoute;
+            }
 
             var qosOptions = _qoSOptionsCreator.Create(configuration.QoSOptions, downstreamPathForKeys, new []{ upstreamHttpMethod });
 
@@ -51,7 +59,11 @@
                 .WithUpstreamHttpMethod(new List<string>(){ upstreamHttpMethod })
                 .Build();
 
-            return new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
+            downstreamRoute = new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
+
+            _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y)  => downstreamRoute);
+
+            return downstreamRoute;
         }
 
         private static string RemoveQueryString(string downstreamPath)
@@ -67,12 +79,23 @@
 
         private static string GetDownstreamPath(string upstreamUrlPath)
         {
+            if(upstreamUrlPath.IndexOf('/', 1) == -1)
+            {
+                return "/";
+            }
+
             return upstreamUrlPath
                 .Substring(upstreamUrlPath.IndexOf('/', 1));
         }
 
         private static string GetServiceName(string upstreamUrlPath)
         {
+            if(upstreamUrlPath.IndexOf('/', 1) == -1)
+            {
+                return upstreamUrlPath
+                    .Substring(1);
+            }
+
             return upstreamUrlPath
                 .Substring(1, upstreamUrlPath.IndexOf('/', 1))
                 .TrimEnd('/');
