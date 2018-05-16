@@ -20,13 +20,13 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
-            var services = await _services.Invoke();
+            var services = await _services();
             if (_last >= services.Count)
             {
                 _last = 0;
             }
 
-            var next = await Task.FromResult(services[_last]);
+            var next = services[_last];
             _last++;
             return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
         }
