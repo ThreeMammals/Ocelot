@@ -32,7 +32,17 @@ namespace Ocelot.Requester
 
             try
             {
-                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
+                var message = context.DownstreamRequest.ToHttpRequestMessage();
+
+                // Remove Content from the message if not put or post or the http client will choke
+                // under .Net Full 46
+                if (message.Method != HttpMethod.Post &&
+                    message.Method != HttpMethod.Put)
+                {
+                    message.Content = null;
+                }
+                _logger.LogDebug(string.Format("Sending {0}", message));
+                var response = await httpClient.SendAsync(message);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (TimeoutRejectedException exception)
