@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Middleware;
@@ -16,6 +18,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         private NoLoadBalancer _loadBalancer;
         private Response<ServiceHostAndPort> _result;
 
+        public NoLoadBalancerTests()
+        {
+            _services = new List<Service>();
+            _loadBalancer = new NoLoadBalancer(() => Task.FromResult(_services));
+        }
+
         [Fact]
         public void should_return_host_and_port()
         {
@@ -25,6 +33,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             {
                 new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
             };
+
             this.Given(x => x.GivenServices(services))
                 .When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenTheHostAndPortIs(hostAndPort))
@@ -34,23 +43,41 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_return_error_if_no_services()
         {
-            var services = new List<Service>();
-
-            this.Given(x => x.GivenServices(services))
-                .When(x => x.WhenIGetTheNextHostAndPort())
+            this.When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenThereIsAnError())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_no_services_then_when_services_available_return_host_and_port()
+        {
+            var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
+
+            var services = new List<Service>
+            {
+                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
+            };
+
+            this.Given(_ => WhenIGetTheNextHostAndPort())
+                .And(_ => ThenThereIsAnError())
+                .And(_ => GivenServices(services))
+                .When(_ => WhenIGetTheNextHostAndPort())
+                .Then(_ => ThenTheHostAndPortIs(hostAndPort))
                 .BDDfy();
         }
 
         [Fact]
         public void should_return_error_if_null_services()
         {
-            List<Service> services = null;
-
-            this.Given(x => x.GivenServices(services))
+            this.Given(x => x.GivenServicesAreNull())
                 .When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenThereIsAnError())
                 .BDDfy();
+        }
+
+        private void GivenServicesAreNull()
+        {
+            _loadBalancer = new NoLoadBalancer(() => Task.FromResult((List<Service>)null));
         }
 
         private void ThenThereIsAnError()
@@ -60,12 +87,11 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenServices(List<Service> services)
         {
-            _services = services;
+            _services.AddRange(services);
         }
 
         private void WhenIGetTheNextHostAndPort()
         {
-            _loadBalancer = new NoLoadBalancer(_services);
             _result = _loadBalancer.Lease(new DownstreamContext(new DefaultHttpContext())).Result;
         }
 

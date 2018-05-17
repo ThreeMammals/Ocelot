@@ -29,7 +29,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     var bus = new InMemoryBus<StickySession>();
                     return new CookieStickySessions(loadBalancer, reRoute.LoadBalancerOptions.Key, reRoute.LoadBalancerOptions.ExpiryInMs, bus);
                 default:
-                    return new NoLoadBalancer(await serviceProvider.Get());
+                    return new NoLoadBalancer(async () => await serviceProvider.Get());
             }
         }
     }
