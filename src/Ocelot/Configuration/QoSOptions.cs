@@ -8,12 +8,14 @@ namespace Ocelot.Configuration
             int exceptionsAllowedBeforeBreaking, 
             int durationofBreak, 
             int timeoutValue, 
+            string key,
             TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             DurationOfBreak = durationofBreak;
             TimeoutValue = timeoutValue;
             TimeoutStrategy = timeoutStrategy;
+            Key = key;
         }         
 
         public int ExceptionsAllowedBeforeBreaking { get; }
@@ -23,5 +25,8 @@ namespace Ocelot.Configuration
         public int TimeoutValue { get; }
 
         public TimeoutStrategy TimeoutStrategy { get; }
+
+        public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 && TimeoutValue > 0;
+        public string Key { get; }
     }
 }

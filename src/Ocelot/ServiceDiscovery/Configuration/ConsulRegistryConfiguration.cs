@@ -4,8 +4,8 @@ namespace Ocelot.ServiceDiscovery.Configuration
     {
         public ConsulRegistryConfiguration(string host, int port, string keyOfServiceInConsul, string token)
         {
-            Host = host;
-            Port = port;
+            Host = string.IsNullOrEmpty(host) ? "localhost" : host;
+            Port = port > 0 ? port : 8500;
             KeyOfServiceInConsul = keyOfServiceInConsul;
             Token = token;
         }

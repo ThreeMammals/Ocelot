@@ -46,10 +46,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_build_http_client()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -63,10 +66,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_log_if_ignoring_ssl_errors()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .WithDangerousAcceptAnyServerCertificateValidator(true)
                 .Build();
@@ -82,10 +88,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_delegating_handlers_in_order()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -110,10 +119,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_re_use_cookies_from_container()
         {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -142,10 +154,13 @@ namespace Ocelot.UnitTests.Requester
 
             HttpMethod method = new HttpMethod(verb);
 
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
+                .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithLoadBalancerKey("")
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 

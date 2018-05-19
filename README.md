@@ -51,7 +51,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Headers / Query String / Claims Transformation
 * Custom Middleware / Delegating Handlers
 * Configuration / Administration REST API
-* Platform / Cloud agnostic
+* Platform / Cloud Agnostic
 
 ## How to install
 

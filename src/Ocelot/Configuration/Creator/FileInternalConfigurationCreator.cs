@@ -104,8 +104,22 @@ namespace Ocelot.Configuration.Creator
             }
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
-            
-            var config = new InternalConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
+
+            var lbOptions = CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
+
+            var qosOptions = _qosOptionsCreator.Create(fileConfiguration.GlobalConfiguration.QoSOptions);
+
+            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
+
+            var config = new InternalConfiguration(reRoutes, 
+                _adminPath.Path, 
+                serviceProviderConfiguration, 
+                fileConfiguration.GlobalConfiguration.RequestIdKey, 
+                lbOptions, 
+                fileConfiguration.GlobalConfiguration.DownstreamScheme,
+                qosOptions,
+                httpHandlerOptions
+                );
 
             return new OkResponse<IInternalConfiguration>(config);
         }
@@ -160,8 +174,6 @@ namespace Ocelot.Configuration.Creator
 
             var reRouteKey = CreateReRouteKey(fileReRoute);
 
-            var qosKey = CreateQosKey(fileReRoute);
-
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
@@ -172,19 +184,19 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
-            var qosOptions = _qosOptionsCreator.Create(fileReRoute);
+            var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod.ToArray());
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
             var region = _regionCreator.Create(fileReRoute);
 
-            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute);
+            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute.HttpHandlerOptions);
 
             var hAndRs = _headerFAndRCreator.Create(fileReRoute);
 
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
-            var lbOptions = CreateLoadBalancerOptions(fileReRoute);
+            var lbOptions = CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
 
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
@@ -205,9 +217,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)
-                .WithReRouteKey(reRouteKey)
-                .WithQosKey(qosKey)
-                .WithIsQos(fileReRouteOptions.IsQos)
+                .WithLoadBalancerKey(reRouteKey)
                 .WithQosOptions(qosOptions)
                 .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
@@ -226,9 +236,13 @@ namespace Ocelot.Configuration.Creator
             return reRoute;
         }
 
-        private LoadBalancerOptions CreateLoadBalancerOptions(FileReRoute fileReRoute)
+        private LoadBalancerOptions CreateLoadBalancerOptions(FileLoadBalancerOptions options)
         {
-            return new LoadBalancerOptions(fileReRoute.LoadBalancerOptions.Type, fileReRoute.LoadBalancerOptions.Key, fileReRoute.LoadBalancerOptions.Expiry);
+            return new LoadBalancerOptionsBuilder()
+                .WithType(options.Type)
+                .WithKey(options.Key)
+                .WithExpiryInMs(options.Expiry)
+                .Build();
         }
 
         private string CreateReRouteKey(FileReRoute fileReRoute)
@@ -238,14 +252,7 @@ namespace Ocelot.Configuration.Creator
                 return $"{nameof(CookieStickySessions)}:{fileReRoute.LoadBalancerOptions.Key}";
             }
 
-            return CreateQosKey(fileReRoute);
-        }
-
-        private string CreateQosKey(FileReRoute fileReRoute)
-        {
-            //note - not sure if this is the correct key, but this is probably the only unique key i can think of given my poor brain
-            var loadBalancerKey = $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";
-            return loadBalancerKey;
+            return $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";
         }
     }
 }

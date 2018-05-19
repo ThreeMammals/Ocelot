@@ -178,3 +178,10 @@ and
 
 In the example above if you make a request into Ocelot on /goods/delete Ocelot will match /goods/delete ReRoute. Previously it would have
 matched /goods/{catchAll} (because this is the first ReRoute in the list!).
+
+Dynamic Routing
+^^^^^^^^^^^^^^^
+
+This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. The idea is to enable dynamic routing 
+when using a service discovery provider so you don't have to provide the ReRoute config. See the docs :ref:`service-discovery` if 
+this sounds interesting to you.

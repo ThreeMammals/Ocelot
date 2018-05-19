@@ -9,6 +9,8 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Errors.Middleware
 {
+    using Configuration;
+
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
@@ -32,8 +34,20 @@ namespace Ocelot.Errors.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             try
-            {               
-                TrySetGlobalRequestId(context);
+            {
+                //try and get the global request id and set it for logs...
+                //should this basically be immutable per request...i guess it should!
+                //first thing is get config
+                var configuration = _configRepo.Get();
+
+                if (configuration.IsError)
+                {
+                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                }
+
+                TrySetGlobalRequestId(context, configuration.Data);
+
+                context.Configuration = configuration.Data;
 
                 Logger.LogDebug("ocelot pipeline started");
 
@@ -53,19 +67,9 @@ namespace Ocelot.Errors.Middleware
             Logger.LogDebug("ocelot pipeline finished");
         }
 
-        private void TrySetGlobalRequestId(DownstreamContext context)
+        private void TrySetGlobalRequestId(DownstreamContext context, IInternalConfiguration configuration)
         {
-            //try and get the global request id and set it for logs...
-            //should this basically be immutable per request...i guess it should!
-            //first thing is get config
-            var configuration = _configRepo.Get(); 
-            
-            if(configuration.IsError)
-            {
-                throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
-            }
-
-            var key = configuration.Data.RequestId;
+            var key = configuration.RequestId;
 
             if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {

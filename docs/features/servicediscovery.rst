@@ -1,3 +1,5 @@
+.. service-discovery:
+
 Service Discovery
 =================
 
@@ -88,3 +90,65 @@ Eureka. One of the services polls Eureka every 30 seconds (default) and gets the
 When Ocelot asks for a given service it is retrieved from memory so performance is not a big problem. Please note that this code
 is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them for all the hard work.
 
+Dynamic Routing
+^^^^^^^^^^^^^^^
+
+This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. The idea is to enable dynamic routing when using 
+a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segmentof the upstream path to lookup the
+downstream service with the service discovery provider. 
+
+An example of this would be calling ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
+the path which is product and use it as a key to look up the service in consul. If consul returns a service Ocelot will request it on whatever host and
+port comes back from consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. 
+Ocelot will apprend any query string to the downstream url as normal.
+
+In order to enable dynamic routing you need to have 0 ReRoutes in your config. At the moment you cannot mix dynamic and configuration ReRoutes. In addition to this you
+need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
+
+In addition to that you can set RateLimitOptions, QoSOptions, LoadBalancerOptions and HttpHandlerOptions, DownstreamScheme (You might want to call Ocelot on https but 
+talk to private services over http) that will be applied to all of the dynamic ReRoutes.
+
+The config might look something like 
+
+.. code-block:: json
+
+    {
+        "ReRoutes": [],
+        "Aggregates": [],
+        "GlobalConfiguration": {
+            "RequestIdKey": null,
+            "ServiceDiscoveryProvider": {
+                "Host": "localhost",
+                "Port": 8510,
+                "Type": null,
+                "Token": null,
+                "ConfigurationKey": null
+            },
+            "RateLimitOptions": {
+                "ClientIdHeader": "ClientId",
+                "QuotaExceededMessage": null,
+                "RateLimitCounterPrefix": "ocelot",
+                "DisableRateLimitHeaders": false,
+                "HttpStatusCode": 429
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 0,
+                "DurationOfBreak": 0,
+                "TimeoutValue": 0
+            },
+            "BaseUrl": null,
+                "LoadBalancerOptions": {
+                "Type": "LeastConnection",
+                "Key": null,
+                "Expiry": 0
+            },
+            "DownstreamScheme": "http",
+            "HttpHandlerOptions": {
+                "AllowAutoRedirect": false,
+                "UseCookieContainer": false,
+                "UseTracing": false
+            }
+        }
+    }
+
+Please take a look through all of the docs to understand these options.

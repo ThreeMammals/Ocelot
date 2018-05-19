@@ -103,7 +103,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateHttpHandlerOptions()
         {
-            _httpHandlerOptions = _httpHandlerOptionsCreator.Create(_fileReRoute);
+            _httpHandlerOptions = _httpHandlerOptionsCreator.Create(_fileReRoute.HttpHandlerOptions);
         }
 
         private void ThenTheFollowingOptionsReturned(HttpHandlerOptions expected)

@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void NoDownstreamException()
         {
-            var config = new InternalConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null, null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void DownstreamException()
         {
-            var config = new InternalConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null, null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -76,7 +76,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void ShouldSetRequestId()
         {
-            var config = new InternalConfiguration(null, null, null, "requestidkey");
+            var config = new InternalConfiguration(null, null, null, "requestidkey", null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
@@ -89,7 +89,7 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void ShouldSetAspDotNetRequestId()
         {
-            var config = new InternalConfiguration(null, null, null, null);
+            var config = new InternalConfiguration(null, null, null, null, null, null, null, null);
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))

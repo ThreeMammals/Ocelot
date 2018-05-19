@@ -14,7 +14,7 @@ namespace Ocelot.Requester.QoS
 
         public IQoSProvider Get(DownstreamReRoute reRoute)
         {
-            if (reRoute.IsQos)
+            if (reRoute.QosOptions.UseQos)
             {
                 return new PollyQoSProvider(reRoute, _loggerFactory);
             }

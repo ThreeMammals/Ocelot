@@ -26,7 +26,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_store_qos_provider_on_first_request()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
+            var qosOptions = new QoSOptionsBuilder()
+                .WithKey("test")
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .Then(x => x.ThenItIsAdded())
@@ -36,7 +42,13 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_not_store_qos_provider_on_first_request()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
+            var qosOptions = new QoSOptionsBuilder()
+                .WithKey("test")
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .When(x => x.WhenWeGetTheQoSProvider(reRoute))
@@ -47,8 +59,21 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_store_qos_providers_by_key()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
-            var reRouteTwo = new DownstreamReRouteBuilder().WithQosKey("testTwo").Build();
+            var qosOptions = new QoSOptionsBuilder()
+                .WithKey("test")
+                .Build();
+
+            var qosOptionsTwo = new QoSOptionsBuilder()
+                .WithKey("testTwo")
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .Build();
+
+            var reRouteTwo = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptionsTwo)
+                .Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .And(x => x.GivenThereIsAQoSProvider(reRouteTwo, new FakePollyQoSProvider()))
@@ -62,7 +87,12 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_return_error_if_no_qos_provider_with_key()
         {
-            var reRoute = new DownstreamReRouteBuilder().Build();
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .Build();
 
             this.When(x => x.WhenWeGetTheQoSProvider(reRoute))
             .Then(x => x.ThenAnErrorIsReturned())
@@ -72,9 +102,24 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_get_new_qos_provider_if_reroute_qos_provider_has_changed()
         {
-            var reRoute = new DownstreamReRouteBuilder().WithQosKey("test").Build();
+            var useQoSOptions = new QoSOptionsBuilder()
+                .WithTimeoutValue(1)
+                .WithKey("test")
+                .WithDurationOfBreak(1)
+                .WithExceptionsAllowedBeforeBreaking(1)
+                .Build();
 
-            var reRouteTwo = new DownstreamReRouteBuilder().WithQosKey("test").WithIsQos(true).Build();
+            var dontUseQoSOptions = new QoSOptionsBuilder()
+                .WithKey("test")
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(dontUseQoSOptions)
+                .Build();
+
+            var reRouteTwo = new DownstreamReRouteBuilder()
+                .WithQosOptions(useQoSOptions)
+                .Build();
 
             this.Given(x => x.GivenThereIsAQoSProvider(reRoute, new FakeQoSProvider()))
                 .When(x => x.WhenWeGetTheQoSProvider(reRoute))

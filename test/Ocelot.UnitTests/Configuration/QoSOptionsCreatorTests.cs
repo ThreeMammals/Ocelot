@@ -50,7 +50,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_fileReRoute);
+            _result = _creator.Create(_fileReRoute.QoSOptions);
         }
 
         private void ThenTheFollowingIsReturned(QoSOptions expected)

@@ -30,20 +30,18 @@ namespace Ocelot.Configuration.Repository
             var internalConfig = repo.Get();
 
             _configurationKey = "InternalConfiguration";
-            var consulHost = "localhost";
-            var consulPort = 8500;
+          
             string token = null;
 
             if (!internalConfig.IsError)
             {
-                consulHost = string.IsNullOrEmpty(internalConfig.Data.ServiceProviderConfiguration?.Host) ? consulHost : internalConfig.Data.ServiceProviderConfiguration?.Host;
-                consulPort = internalConfig.Data.ServiceProviderConfiguration?.Port ?? consulPort;
-                token = internalConfig.Data.ServiceProviderConfiguration?.Token;
-                _configurationKey = !string.IsNullOrEmpty(internalConfig.Data.ServiceProviderConfiguration?.ConfigurationKey) ?
-                    internalConfig.Data.ServiceProviderConfiguration?.ConfigurationKey : _configurationKey;
+                token = internalConfig.Data.ServiceProviderConfiguration.Token;
+                _configurationKey = !string.IsNullOrEmpty(internalConfig.Data.ServiceProviderConfiguration.ConfigurationKey) ?
+                    internalConfig.Data.ServiceProviderConfiguration.ConfigurationKey : _configurationKey;
             }
 
-            var config = new ConsulRegistryConfiguration(consulHost, consulPort, _configurationKey, token);
+            var config = new ConsulRegistryConfiguration(internalConfig.Data.ServiceProviderConfiguration.Host,
+                internalConfig.Data.ServiceProviderConfiguration.Port, _configurationKey, token);
 
             _consul = factory.Get(config);
         }
