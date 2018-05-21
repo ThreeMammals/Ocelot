@@ -14,7 +14,7 @@ namespace Ocelot.AcceptanceTests
     using TestStack.BDDfy;
     using Xunit;
     using Newtonsoft.Json;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
 
     public class ServiceDiscoveryTests : IDisposable
     {

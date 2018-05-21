@@ -7,6 +7,7 @@
     using Ocelot.ServiceDiscovery.Providers;
     using Pivotal.Discovery.Client;
     using Shouldly;
+    using Steeltoe.Common.Discovery;
     using TestStack.BDDfy;
     using Values;
     using Xunit;

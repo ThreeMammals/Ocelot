@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
 
     public class FakeEurekaDiscoveryClient : IDiscoveryClient
     {
