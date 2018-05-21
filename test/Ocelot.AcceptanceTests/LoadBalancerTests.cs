@@ -118,7 +118,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
                 .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(23, 27))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
                 .BDDfy();
         }
 
