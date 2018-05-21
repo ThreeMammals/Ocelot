@@ -10,6 +10,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
+        private readonly object _lock = new object();
 
         private int _last;
 
@@ -21,14 +22,17 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
             var services = await _services();
-            if (_last >= services.Count)
+            lock(_lock)
             {
-                _last = 0;
-            }
+                if (_last >= services.Count)
+                {
+                    _last = 0;
+                }
 
-            var next = services[_last];
-            _last++;
-            return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
+                var next = services[_last];
+                _last++;
+                return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
+            }
         }
 
         public void Release(ServiceHostAndPort hostAndPort)
