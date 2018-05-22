@@ -14,6 +14,7 @@ using Xunit;
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
     using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
 
     public class ServiceProviderFactoryTests
     {

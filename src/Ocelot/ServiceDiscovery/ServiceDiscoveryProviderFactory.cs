@@ -7,8 +7,8 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
-{
-    using Pivotal.Discovery.Client;
+{    
+    using Steeltoe.Common.Discovery;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {

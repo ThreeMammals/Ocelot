@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
     using Values;
 
     public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
