@@ -33,11 +33,17 @@ namespace Ocelot.Requester
             try
             {
                 var message = context.DownstreamRequest.ToHttpRequestMessage();
+                /** According to https://tools.ietf.org/html/rfc7231
+                 * GET,HEAD,DELETE,CONNECT,TRACE
+                 * Can have body but server can reject the request.
+                 * And MS HttpClient in Full Framework actually rejects it.
+                 * see #366 at issue 
+                **/
 
-                // Remove Content from the message if not put or post or the http client will choke
-                // under .Net Full 46
-                if (message.Method != HttpMethod.Post &&
-                    message.Method != HttpMethod.Put)
+                if (message.Method == HttpMethod.Get ||
+                    message.Method == HttpMethod.Head ||
+                    message.Method == HttpMethod.Delete ||
+                    message.Method == HttpMethod.Trace)
                 {
                     message.Content = null;
                 }

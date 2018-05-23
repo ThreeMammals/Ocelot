@@ -45,7 +45,7 @@ namespace Ocelot.Requester
             bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
             HttpClientHandler httpclientHandler;
             // Dont' create the CookieContainer if UseCookies is not set ot the HttpClient will complain
-            // under .Net Full 46
+            // under .Net Full Framework
             if (useCookies)
             {
                 httpclientHandler = new HttpClientHandler
