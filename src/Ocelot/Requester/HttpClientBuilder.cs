@@ -42,15 +42,29 @@ namespace Ocelot.Requester
             {
                 return httpClient;
             }
-
-            var httpclientHandler = new HttpClientHandler
+            bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
+            HttpClientHandler httpclientHandler;
+            // Dont' create the CookieContainer if UseCookies is not set ot the HttpClient will complain
+            // under .Net Full Framework
+            if (useCookies)
             {
-                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                CookieContainer = new CookieContainer()
-            };
+                httpclientHandler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                    CookieContainer = new CookieContainer()
+                };
+            }
+            else
+            {
+                httpclientHandler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                };
+            }
 
-            if(context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
             {
                 httpclientHandler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
