@@ -32,24 +32,7 @@ namespace Ocelot.Requester
 
             try
             {
-                var message = context.DownstreamRequest.ToHttpRequestMessage();
-                /** 
-                 * According to https://tools.ietf.org/html/rfc7231
-                 * GET,HEAD,DELETE,CONNECT,TRACE
-                 * Can have body but server can reject the request.
-                 * And MS HttpClient in Full Framework actually rejects it.
-                 * see #366 issue 
-                **/
-
-                if (message.Method == HttpMethod.Get ||
-                    message.Method == HttpMethod.Head ||
-                    message.Method == HttpMethod.Delete ||
-                    message.Method == HttpMethod.Trace)
-                {
-                    message.Content = null;
-                }
-                _logger.LogDebug(string.Format("Sending {0}", message));
-                var response = await httpClient.SendAsync(message);
+                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (TimeoutRejectedException exception)
