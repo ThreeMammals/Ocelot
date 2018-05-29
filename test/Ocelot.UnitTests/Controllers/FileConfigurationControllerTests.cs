@@ -15,6 +15,7 @@ using Ocelot.Configuration;
 namespace Ocelot.UnitTests.Controllers
 {
     using Ocelot.Configuration.Repository;
+    using Rafty.Concensus.Node;
 
     public class FileConfigurationControllerTests
     {
@@ -126,14 +127,14 @@ namespace Ocelot.UnitTests.Controllers
         {
             _node
                 .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .ReturnsAsync(new Rafty.Concensus.OkResponse<UpdateFileConfiguration>(new UpdateFileConfiguration(new FileConfiguration())));
+                .ReturnsAsync(new Rafty.Infrastructure.OkResponse<UpdateFileConfiguration>(new UpdateFileConfiguration(new FileConfiguration())));
         }
 
         private void GivenTheNodeReturnsError()
         {
             _node
                 .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .ReturnsAsync(new Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>("error", new UpdateFileConfiguration(new FileConfiguration())));
+                .ReturnsAsync(new Rafty.Infrastructure.ErrorResponse<UpdateFileConfiguration>("error", new UpdateFileConfiguration(new FileConfiguration())));
         }
 
         private void GivenTheConfigSetterReturns(Response response)

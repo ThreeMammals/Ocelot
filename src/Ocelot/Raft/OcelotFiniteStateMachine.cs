@@ -8,7 +8,7 @@ namespace Ocelot.Raft
     [ExcludeFromCoverage]
     public class OcelotFiniteStateMachine : IFiniteStateMachine
     {
-        private IFileConfigurationSetter _setter;
+        private readonly IFileConfigurationSetter _setter;
 
         public OcelotFiniteStateMachine(IFileConfigurationSetter setter)
         {

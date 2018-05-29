@@ -9,6 +9,8 @@ using Rafty.Infrastructure;
 
 namespace Ocelot.Raft
 {
+    using Rafty.Concensus.Peers;
+
     [ExcludeFromCoverage]
     public class FilePeersProvider : IPeersProvider
     {

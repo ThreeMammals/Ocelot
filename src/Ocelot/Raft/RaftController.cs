@@ -14,6 +14,9 @@ using Rafty.FiniteStateMachine;
 
 namespace Ocelot.Raft
 {
+    using Rafty.Concensus.Messages;
+    using Rafty.Concensus.Node;
+
     [ExcludeFromCoverage]
     [Authorize]
     [Route("raft")]

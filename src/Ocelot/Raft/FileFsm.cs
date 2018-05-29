@@ -1,3 +1,4 @@
+/*
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Ocelot.Raft
     [ExcludeFromCoverage]
     public class FileFsm : IFiniteStateMachine
     {
-        private string _id;
+        private readonly string _id;
 
         public FileFsm(NodeId nodeId)
         {
@@ -34,3 +35,4 @@ namespace Ocelot.Raft
         }
     }
 }
+*/
