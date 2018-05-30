@@ -32,7 +32,7 @@ namespace Ocelot.IntegrationTests
         private readonly List<IWebHostBuilder> _webHostBuilders;
         private readonly List<Thread> _threads;
         private FilePeers _peers;
-        private readonly HttpClient _httpClient;
+        private HttpClient _httpClient;
         private readonly HttpClient _httpClientForAssertions;
         private BearerToken _token;
         private HttpResponseMessage _response;
@@ -43,9 +43,6 @@ namespace Ocelot.IntegrationTests
         {
             _output = output;
             _httpClientForAssertions = new HttpClient();
-            _httpClient = new HttpClient();
-            var ocelotBaseUrl = "http://localhost:5000";
-            _httpClient.BaseAddress = new Uri(ocelotBaseUrl);
             _webHostBuilders = new List<IWebHostBuilder>();
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
@@ -197,6 +194,9 @@ namespace Ocelot.IntegrationTests
             filePeers.Peers.AddRange(peers);
             var json = JsonConvert.SerializeObject(filePeers);
             File.WriteAllText("peers.json", json);
+            _httpClient = new HttpClient();
+            var ocelotBaseUrl = peers[0].HostAndPort;
+            _httpClient.BaseAddress = new Uri(ocelotBaseUrl);
         }
 
         private async Task WhenISendACommandIntoTheCluster(UpdateFileConfiguration command)
