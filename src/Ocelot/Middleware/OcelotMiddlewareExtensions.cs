@@ -18,6 +18,7 @@
     using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
     using Pivotal.Discovery.Client;
+    using Rafty.Concensus.Node;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -91,7 +92,7 @@
             applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
             var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
             var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
-            node.Start(nodeId.Id);
+            node.Start(nodeId);
         }
 
         private static async Task<IInternalConfiguration> CreateConfiguration(IApplicationBuilder builder)

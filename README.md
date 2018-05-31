@@ -83,6 +83,12 @@ advice on the easiest way to do things :)
 
 Finally we mark all existing issues as help wanted, small, medium and large effort. If you want to contriute for the first time I suggest looking at a help wanted & small effort issue :)
 
+## Donate
+
+If you think this project is worth supporting financially please make a contribution using the button below!
+
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.me/ThreeMammals/)
+
 ## Things that are currently annoying me
 
 [![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)

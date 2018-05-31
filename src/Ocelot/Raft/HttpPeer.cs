@@ -10,6 +10,10 @@ using Rafty.FiniteStateMachine;
 
 namespace Ocelot.Raft
 {
+    using Rafty.Concensus.Messages;
+    using Rafty.Concensus.Peers;
+    using Rafty.Infrastructure;
+
     [ExcludeFromCoverage]
     public class HttpPeer : IPeer
     {

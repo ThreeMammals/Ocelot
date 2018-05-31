@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
 using Ocelot.Raft;
-using Rafty.Concensus;
 
 namespace Ocelot.Configuration
 {
+    using Rafty.Concensus.Node;
     using Repository;
 
     [Authorize]
@@ -50,7 +50,7 @@ namespace Ocelot.Configuration
                 {
                     var node = (INode)test;
                     var result = await node.Accept(new UpdateFileConfiguration(fileConfiguration));
-                    if (result.GetType() == typeof(Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>))
+                    if (result.GetType() == typeof(Rafty.Infrastructure.ErrorResponse<UpdateFileConfiguration>))
                     {
                         return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
                     }
