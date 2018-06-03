@@ -4,7 +4,7 @@
 #addin nuget:?package=Newtonsoft.Json&version=9.0.1
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
-#tool coveralls.net
+#tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls
 
 // compile
