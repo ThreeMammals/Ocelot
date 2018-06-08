@@ -48,7 +48,7 @@ namespace Ocelot.IntegrationTests
             _threads = new List<Thread>();
         }
         
-        [Fact]
+        [Fact(Skip = "Still not stable, more work required in rafty..")]
         public async Task should_persist_command_to_five_servers()
         {
             var peers = new List<FilePeer>
@@ -121,7 +121,7 @@ namespace Ocelot.IntegrationTests
             await ThenTheCommandIsReplicatedToAllStateMachines(command);
         }
 
-        [Fact]
+        [Fact(Skip = "Still not stable, more work required in rafty..")]
         public async Task should_persist_command_to_five_servers_when_using_administration_api()
         {
             var peers = new List<FilePeer>
