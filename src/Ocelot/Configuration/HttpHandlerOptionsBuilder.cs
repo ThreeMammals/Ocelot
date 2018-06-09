@@ -5,6 +5,7 @@
         private bool _allowAutoRedirect;
         private bool _useCookieContainer;
         private bool _useTracing;
+        private bool _useProxy;
 
         public HttpHandlerOptionsBuilder WithAllowAutoRedirect(bool input)
         {
@@ -24,9 +25,15 @@
             return this;
         }
 
+        public HttpHandlerOptionsBuilder WithUseProxy(bool useProxy)
+        {
+            _useProxy = useProxy;
+            return this;
+        }
+
         public HttpHandlerOptions Build()
         {
-            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing);
+            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy);
         }
     }
 }

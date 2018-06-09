@@ -89,6 +89,7 @@ namespace Ocelot.Requester
             {
                 AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
                 UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy
             };
         }
 
@@ -98,6 +99,7 @@ namespace Ocelot.Requester
                 {
                     AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
                     UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                    UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
                     CookieContainer = new CookieContainer()
                 };
         }
