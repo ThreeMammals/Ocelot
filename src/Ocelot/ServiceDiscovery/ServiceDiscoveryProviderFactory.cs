@@ -55,6 +55,12 @@ namespace Ocelot.ServiceDiscovery
                 return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
             }
 
+            if (serviceConfig.Type?.ToLower() == "pollconsul")
+            {
+                var pollingConsulRegistryConfiguration = new PollingConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token, serviceConfig.PollingInterval);
+                return new PollingConsulServiceDiscoveryProvider(pollingConsulRegistryConfiguration, _factory, _consulFactory);            
+            }
+
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
             return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
         }

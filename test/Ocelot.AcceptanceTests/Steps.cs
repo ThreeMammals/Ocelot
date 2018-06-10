@@ -27,6 +27,7 @@ using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using Ocelot.Requester;
 using Ocelot.Middleware.Multiplexer;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -673,6 +674,24 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
+        {
+            var result = WaitFor(2000).Until(() => {
+                try
+                {
+                    _response = _ocelotClient.GetAsync(url).Result;
+                    _response.EnsureSuccessStatusCode();
+                    return true;
+                }
+                catch(Exception)
+                {
+                    return false;
+                }
+            });
+
+            result.ShouldBeTrue();
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)

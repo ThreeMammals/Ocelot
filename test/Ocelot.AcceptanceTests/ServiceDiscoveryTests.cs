@@ -458,6 +458,63 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
+        {
+            const int consulPort = 8505;
+            const string serviceName = "web";
+            const string downstreamServiceOneUrl = "http://localhost:8080";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = 8080,
+                    ID = "web_90_0_2_224_8080",
+                    Tags = new[] {"version-v1"}
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/home",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/home",
+                            UpstreamHttpMethod = new List<string> { "Get", "Options" },
+                            ServiceName = serviceName,
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                            UseServiceDiscovery = true,
+                        }
+                    },
+                    GlobalConfiguration = new FileGlobalConfiguration()
+                    {
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                        {
+                            Host = "localhost",
+                            Port = consulPort,
+                            Type = "PollConsul",
+                            PollingInterval = 0
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))                
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+        }
+
         private void WhenIAddAServiceBackIn(ServiceEntry serviceEntryTwo)
         {
             _consulServices.Add(serviceEntryTwo);
