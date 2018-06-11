@@ -41,8 +41,6 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
 
-todo - get the link to github issues where this has been requeted and add here..
-
 A lot of people have asked me to implement a feature where Ocelot polls consul for latest service information rather than per request. If you want to poll consul for the latest services rather than per request (default behaviour) then you need to set the following configuration.
 
 .. code-block:: json
