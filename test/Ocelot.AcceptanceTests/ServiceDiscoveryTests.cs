@@ -461,9 +461,10 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
         {
-            const int consulPort = 8505;
+            const int consulPort = 8518;
             const string serviceName = "web";
-            const string downstreamServiceOneUrl = "http://localhost:8080";
+            const int downstreamServicePort = 8082;
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -471,8 +472,8 @@ namespace Ocelot.AcceptanceTests
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = 8080,
-                    ID = "web_90_0_2_224_8080",
+                    Port = downstreamServicePort,
+                    ID = $"web_90_0_2_224_{downstreamServicePort}",
                     Tags = new[] {"version-v1"}
                 },
             };
