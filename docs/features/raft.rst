@@ -42,4 +42,4 @@ In addition to this you must add a file called peers.json to your main project a
 
 Each instance of Ocelot must have it's address in the array so that they can communicate using Rafty.
 
-Once you have made these configuration changes you must deploy and start each instance of Ocelot using the addresses in the peers.json file. The servers should then start communicating with each other! You can test if everything is working by posting a configuration update and checking it has replicated to all servers by getting there configuration.
+Once you have made these configuration changes you must deploy and start each instance of Ocelot using the addresses in the peers.json file. The servers should then start communicating with each other! You can test if everything is working by posting a configuration update and checking it has replicated to all servers by getting their configuration.
