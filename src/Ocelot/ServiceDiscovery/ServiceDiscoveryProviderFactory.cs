@@ -54,15 +54,17 @@ namespace Ocelot.ServiceDiscovery
             {
                 return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
             }
+            
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
+
+            var consulServiceDiscoveryProvider =  new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
 
             if (serviceConfig.Type?.ToLower() == "pollconsul")
             {
-                var pollingConsulRegistryConfiguration = new PollingConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token, serviceConfig.PollingInterval);
-                return new PollingConsulServiceDiscoveryProvider(pollingConsulRegistryConfiguration, _factory, _consulFactory);            
+                return new PollingConsulServiceDiscoveryProvider(serviceConfig.PollingInterval, consulRegistryConfiguration.KeyOfServiceInConsul, _factory, consulServiceDiscoveryProvider);
             }
 
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
+            return consulServiceDiscoveryProvider;
         }
     }
 }
