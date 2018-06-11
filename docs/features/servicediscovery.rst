@@ -35,7 +35,9 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         "UpstreamPathTemplate": "/posts/{postId}",
         "UpstreamHttpMethod": [ "Put" ],
         "ServiceName": "product",
-        "LoadBalancer": "LeastConnection",
+        "LoadBalancerOptions": {
+            "Type": "LeastConnection"
+        },
         "UseServiceDiscovery": true
     }
 
