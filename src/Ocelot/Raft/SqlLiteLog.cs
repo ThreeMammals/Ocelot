@@ -11,6 +11,7 @@ namespace Ocelot.Raft
     using Rafty.Infrastructure;
     using Rafty.Log;
 
+    [ExcludeFromCoverage]
     public class SqlLiteLog : ILog
     {
         private readonly string _path;
