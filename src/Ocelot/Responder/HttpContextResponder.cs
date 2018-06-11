@@ -60,11 +60,7 @@ namespace Ocelot.Responder
 
         public void SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
-            context.Response.OnStarting(x =>
-            {
-                context.Response.StatusCode = statusCode;
-                return Task.CompletedTask;
-            }, context);
+            context.Response.StatusCode = statusCode;
         }
 
         private static void AddHeaderIfDoesntExist(HttpContext context, Header httpResponseHeader)
