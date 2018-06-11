@@ -98,7 +98,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .WithType("PollConsul")
-                .WithPollingInterval(1000)
+                .WithPollingInterval(100000)
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
