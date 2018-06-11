@@ -32,7 +32,8 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<PollingConsulServiceDiscoveryProvider>()).Returns(_logger.Object);
             _discoveryClient = new Mock<IDiscoveryClient>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
+            var consulClient = new Mock<IConsulClientFactory>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, consulClient.Object, _discoveryClient.Object);
         }
         
         [Fact]
@@ -97,6 +98,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .WithType("PollConsul")
+                .WithPollingInterval(1000)
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
