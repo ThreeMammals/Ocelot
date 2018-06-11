@@ -6,7 +6,7 @@
     /// </summary>
     public class HttpHandlerOptions
     {
-        public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy = true)
+        public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy)
         {
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;

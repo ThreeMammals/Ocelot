@@ -688,7 +688,7 @@
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
-            var httpHandlerOptions = new HttpHandlerOptions(true, true,false);
+            var httpHandlerOptions = new HttpHandlerOptions(true, true,false, true);
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
