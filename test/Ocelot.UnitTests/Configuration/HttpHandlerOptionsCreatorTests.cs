@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, true);
+            var expectedOptions = new HttpHandlerOptions(false, false, true, true);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .And(x => GivenARealTracer())
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Configuration
         public void should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
         {
             var fileReRoute = new FileReRoute();
-            var expectedOptions = new HttpHandlerOptions(false, false, false);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -88,7 +88,42 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true);
+
+            this.Given(x => GivenTheFollowing(fileReRoute))
+                .When(x => WhenICreateHttpHandlerOptions())
+                .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_options_with_useproxy_true_as_default()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                HttpHandlerOptions = new FileHttpHandlerOptions()
+            };
+
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true);
+
+            this.Given(x => GivenTheFollowing(fileReRoute))
+                .When(x => WhenICreateHttpHandlerOptions())
+                .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_options_with_specified_useproxy()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                HttpHandlerOptions = new FileHttpHandlerOptions
+                {
+                    UseProxy = false
+                }
+            };
+
+            var expectedOptions = new HttpHandlerOptions(false, false, false, false);
 
             this.Given(x => GivenTheFollowing(fileReRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -112,6 +147,7 @@ namespace Ocelot.UnitTests.Configuration
             _httpHandlerOptions.AllowAutoRedirect.ShouldBe(expected.AllowAutoRedirect);
             _httpHandlerOptions.UseCookieContainer.ShouldBe(expected.UseCookieContainer);
             _httpHandlerOptions.UseTracing.ShouldBe(expected.UseTracing);
+            _httpHandlerOptions.UseProxy.ShouldBe(expected.UseProxy);
         }
 
         private void GivenARealTracer()
