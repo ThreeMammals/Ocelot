@@ -51,6 +51,7 @@ namespace Ocelot.RateLimit.Middleware
             }
 
             var rule = options.RateLimitRule;
+
             if (rule.Limit > 0)
             {
                 // increment counter
@@ -60,7 +61,7 @@ namespace Ocelot.RateLimit.Middleware
                 if (counter.TotalRequests > rule.Limit)
                 {
                     //compute retry after value
-                    var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
+                    var retryAfter = _processor.RetryAfter(counter.Timestamp, rule);
 
                     // log blocked request
                     LogBlockedRequest(context.HttpContext, identity, counter, rule, context.DownstreamReRoute);

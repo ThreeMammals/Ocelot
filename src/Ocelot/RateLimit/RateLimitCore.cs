@@ -22,58 +22,62 @@ namespace Ocelot.RateLimit
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            RateLimitCounter counter = new RateLimitCounter(DateTime.UtcNow, 1);
-            var rule = option.RateLimitRule;
+            var rateLimitCounter = new RateLimitCounter(DateTime.UtcNow, 1);
 
-            var counterId = ComputeCounterKey(requestIdentity, option);
+            var rateLimitRule = option.RateLimitRule;
+
+            var rateLimitCounterKey = ComputeCounterKey(requestIdentity, option);
 
             // serial reads and writes
             lock (_processLocker)
             {
-                var entry = _counterHandler.Get(counterId);
-                if (entry.HasValue)
+                var existingRateLimitCounter = _counterHandler.Get(rateLimitCounterKey);
+
+                if (existingRateLimitCounter.HasValue)
                 {
                     // entry has not expired
-                    if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
+                    if (EntryHasNotExpired(existingRateLimitCounter.Value, rateLimitRule))
                     {
                         // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
+                        var totalRequests = existingRateLimitCounter.Value.TotalRequests + 1;
                         
                         // deep copy
-                        counter = new RateLimitCounter(entry.Value.Timestamp, totalRequests);
+                        rateLimitCounter = new RateLimitCounter(existingRateLimitCounter.Value.Timestamp, totalRequests);
                     }
                 }
             }
 
-            if (counter.TotalRequests > rule.Limit)
+            if (rateLimitCounter.TotalRequests > rateLimitRule.Limit)
             {
-                var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
+                var retryAfter = RetryAfter(rateLimitCounter.Timestamp, rateLimitRule);
+
                 if (retryAfter > 0)
                 {
-                    var expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
-                    _counterHandler.Set(counterId, counter, expirationTime);
+                    // use of PeriodTimespan here is basically saying, expire this counter after the 
+                    // PeriodTimespan value. This means that the counter will no longer be in
+                    // the cache if a request is made after the timespan has elapsed.
+                    var expirationTime = TimeSpan.FromSeconds(rateLimitRule.PeriodTimespan);
+
+                    _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, expirationTime);
                 }
                 else
                 {
-                    _counterHandler.Remove(counterId);
+                    _counterHandler.Remove(rateLimitCounterKey);
                 }
             }
             else
             {
-                var expirationTime = ConvertToTimeSpan(rule.Period);
-                _counterHandler.Set(counterId, counter, expirationTime);
+                var expirationTime = ConvertToTimeSpan(rateLimitRule.Period);
+
+                _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, expirationTime);
             }
 
-            return counter;
+            return rateLimitCounter;
         }
 
-        public void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
+        private bool EntryHasNotExpired(RateLimitCounter existingRateLimitCounter, RateLimitRule rateLimitRule)
         {
-            var counterId = ComputeCounterKey(requestIdentity, option);
-            var rule = option.RateLimitRule;
-            
-            // stores: id (string) - timestamp (datetime) - total_requests (long)
-            _counterHandler.Set(counterId, counter, expirationTime);
+            return existingRateLimitCounter.Timestamp + ConvertToTimeSpan(rateLimitRule.Period) >= DateTime.UtcNow;
         }
 
         public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
@@ -116,12 +120,14 @@ namespace Ocelot.RateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+        public int RetryAfter(DateTime timestamp, RateLimitRule rule)
         {
-            var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
-            retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-            return retryAfter;
+            var secondsPastBetweenNowAndTimestamp = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
+            // use of PeriodTimespan here is just converting its value to seconds
+            var retryAfterPeriodTimespan = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
+            // if retryAfterPeriodTimespan is greater than one then return retryAfterPeriodTimespan minus secondsPastBetweenNowAndTimestamp else just return 1...
+            retryAfterPeriodTimespan = retryAfterPeriodTimespan > 1 ? retryAfterPeriodTimespan - secondsPastBetweenNowAndTimestamp : 1;
+            return retryAfterPeriodTimespan;
         }
 
         public TimeSpan ConvertToTimeSpan(string timeSpan)
