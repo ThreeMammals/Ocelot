@@ -15,8 +15,12 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
+    using System.Threading.Tasks;
     using IdentityServer4;
+    using IdentityServer4.Services;
     using IdentityServer4.Test;
+    using IdentityServer4.Validation;
+    using Microsoft.Extensions.Logging;
 
     public class AuthorisationTests : IDisposable
     {
@@ -295,6 +299,66 @@ namespace Ocelot.AcceptanceTests
                .BDDfy();
         }
 
+        [Fact]
+        public void should_fix_issue_389()
+        {
+           var configuration = new FileConfiguration
+           {
+               ReRoutes = new List<FileReRoute>
+                   {
+                       new FileReRoute
+                       {
+                           DownstreamPathTemplate = "/",
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new FileHostAndPort
+                               {
+                                   Host = "localhost",
+                                   Port = 56876,
+                               }
+                           },
+                           DownstreamScheme = "http",
+                           UpstreamPathTemplate = "/",
+                           UpstreamHttpMethod = new List<string> { "Get" },
+                           AuthenticationOptions = new FileAuthenticationOptions
+                           {
+                               AuthenticationProviderKey = "Test"
+                           },
+                           RouteClaimsRequirement =
+                           {
+                               {"role", "Contributor"}
+                           }
+                       }
+                   }
+           };
+
+            var users = new List<TestUser>
+            {
+                new TestUser
+                {
+                    Username = "test",
+                    Password = "test",
+                    SubjectId = "registered|1231231",
+                    // Claims = new List<Claim>
+                    // {
+                    //     new Claim("Role", "AdminUser"), 
+                    //     new Claim("Role", "User")
+                    // },
+                }
+            };
+
+           this.Given(x => x.GivenThereIsAnIdentityServerWithCustomProfileServiceOn("http://localhost:51888", "api", AccessTokenType.Jwt, users))
+               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:56876", 200, "Hello from Laura"))
+               .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+               .And(x => _steps.GivenThereIsAConfiguration(configuration))
+               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
+               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+               .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+               .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+               .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
             _servicebuilder = new WebHostBuilder()
@@ -463,11 +527,122 @@ namespace Ocelot.AcceptanceTests
             _steps.VerifyIdentiryServerStarted(url);
         }
 
+        private void GivenThereIsAnIdentityServerWithCustomProfileServiceOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
+        {
+            _identityServerBuilder = new WebHostBuilder()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .ConfigureServices(services =>
+                {
+                    services.AddLogging();
+                    services.AddIdentityServer()
+                        .AddProfileService<ProfileService>()
+                        .AddResourceOwnerValidator<FakeResourceOwnerPasswordValidator>()
+                        .AddDeveloperSigningCredential()
+                        .AddInMemoryApiResources(new List<ApiResource>
+                        {
+                            new ApiResource
+                            {
+                                Name = apiName,
+                                Description = "My API",
+                                Enabled = true,
+                                DisplayName = "test",
+                                Scopes = new List<Scope>()
+                                {
+                                    new Scope("api"),
+                                    new Scope("api.readOnly"),
+                                    new Scope("openid"),
+                                    new Scope("offline_access"),
+                                },
+                                ApiSecrets = new List<Secret>()
+                                {
+                                    new Secret
+                                    {
+                                        Value = "secret".Sha256()
+                                    }
+                                },
+                                UserClaims = new List<string>()
+                                {
+                                    "CustomerId", "LocationId", "UserType", "UserId", "Role"
+                                }
+                            },
+                        })
+                        .AddInMemoryClients(new List<Client>
+                        {
+                            new Client
+                            {
+                                ClientId = "client",
+                                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                                ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                                AllowedScopes = new List<string> { apiName, "api.readOnly", "openid", "offline_access" },
+                                AccessTokenType = tokenType,
+                                Enabled = true,
+                                RequireClientSecret = false,
+                            }
+                        });
+                        //.AddTestUsers(users);
+                })
+                .Configure(app =>
+                {
+                    app.UseIdentityServer();
+                })
+                .Build();
+
+            _identityServerBuilder.Start();
+
+            _steps.VerifyIdentiryServerStarted(url);
+        }
+
         public void Dispose()
         {
             _servicebuilder?.Dispose();
             _steps.Dispose();
             _identityServerBuilder?.Dispose();
+        }
+
+        public class ProfileService : DefaultProfileService, IProfileService
+        {
+            //UserManager<User> _userManager;
+
+            public ProfileService(
+                //UserManager<User> userManager, 
+                ILogger<ProfileService> logger) 
+                : base(logger)
+            {
+                //_userManager = userManager;
+            }
+
+            override async public Task GetProfileDataAsync(ProfileDataRequestContext context)
+            {
+                await base.GetProfileDataAsync(context);
+
+                var user = new TestUser();
+
+                context.IssuedClaims.Add(new Claim("role", "Administrator"));
+                context.IssuedClaims.Add(new Claim("role", "Contributor"));
+            }
+
+            override async public Task IsActiveAsync(IsActiveContext context)
+            {
+                await base.IsActiveAsync(context);
+
+                var user = new TestUser();
+
+                context.IsActive = user != null;
+            }
+        }
+
+        public class FakeResourceOwnerPasswordValidator : IResourceOwnerPasswordValidator
+        {
+            public async Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
+            {
+                context.Result = new GrantValidationResult(
+                subject: "818727",
+                authenticationMethod: "custom");
+            }
         }
     }
 }
