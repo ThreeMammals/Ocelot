@@ -33,9 +33,8 @@ namespace Ocelot.UnitTests.Configuration
                 RateLimitOptions = new FileRateLimitRule
                 {
                     ClientWhitelist = new List<string>(),
-                    Period = "Period",
+                    Period = 1,
                     Limit = 1,
-                    PeriodTimespan = 1,
                     EnableRateLimiting = true
                 }
             };
@@ -59,7 +58,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithQuotaExceededMessage("QuotaExceededMessage")
                 .WithRateLimitCounterPrefix("RateLimitCounterPrefix")
                 .WithRateLimitRule(new RateLimitRule(fileReRoute.RateLimitOptions.Period,
-                       fileReRoute.RateLimitOptions.PeriodTimespan,
                        fileReRoute.RateLimitOptions.Limit))
                 .Build();
 
@@ -102,7 +100,6 @@ namespace Ocelot.UnitTests.Configuration
             _result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
             _result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
             _result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);
-            TimeSpan.FromSeconds(_result.RateLimitRule.PeriodTimespan).Ticks.ShouldBe(TimeSpan.FromSeconds(expected.RateLimitRule.PeriodTimespan).Ticks);
         }
     }
 }

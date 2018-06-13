@@ -23,19 +23,14 @@ namespace Ocelot.RateLimit
             return _core.ProcessRequest(requestIdentity, option);
         }
 
-        public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+        public int RetryAfter(RateLimitCounter timestamp, RateLimitRule rule)
         {
-            return _core.RetryAfterFrom(timestamp, rule);
+            return _core.RetryAfter(timestamp, rule);
         }
 
         public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
             return _core.GetRateLimitHeaders(context, requestIdentity, option);
-        }
-
-        public TimeSpan ConvertToTimeSpan(string timeSpan)
-        {
-            return _core.ConvertToTimeSpan(timeSpan);
         }
     }
 }

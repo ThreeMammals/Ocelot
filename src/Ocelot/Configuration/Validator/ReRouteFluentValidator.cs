@@ -77,9 +77,9 @@ namespace Ocelot.Configuration.Validator
 
         private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
         {
-            string period = rateLimitOptions.Period;
+            var period = rateLimitOptions.Period;
 
-            return !rateLimitOptions.EnableRateLimiting || period.Contains("s") || period.Contains("m") || period.Contains("h") || period.Contains("d");
+            return !rateLimitOptions.EnableRateLimiting || period > 0;
         }
     }
 }

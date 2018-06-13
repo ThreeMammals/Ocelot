@@ -13,14 +13,12 @@ OK so to get rate limiting working for a ReRoute you need to add the following j
         "ClientWhitelist": [],  
         "EnableRateLimiting": true,  
         "Period": "1s",  
-        "PeriodTimespan": 1,  
         "Limit": 1  
     }  
 
 ClientWhitelist - This is an array that contains the whitelist of the client. It means that the client in this array will not be affected by the rate limiting.
 EnableRateLimiting - This value specifies enable endpoint rate limiting.
-Period - This value specifies the period, such as 1s, 5m, 1h,1d and so on.
-PeriodTimespan - This value specifies that we can retry after a certain number of seconds.
+Period - The period of time the rule applies for and the value specifies that we can retry after a certain number of milliseconds.
 Limit - This value specifies the maximum number of requests that a client can make in a defined period.
 
 You can also set the following in the GlobalConfiguration part of ocelot.json

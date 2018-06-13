@@ -21,7 +21,6 @@ namespace Ocelot.Configuration.Creator
                     .WithQuotaExceededMessage(globalConfiguration.RateLimitOptions.QuotaExceededMessage)
                     .WithRateLimitCounterPrefix(globalConfiguration.RateLimitOptions.RateLimitCounterPrefix)
                     .WithRateLimitRule(new RateLimitRule(fileReRoute.RateLimitOptions.Period,
-                        fileReRoute.RateLimitOptions.PeriodTimespan,
                         fileReRoute.RateLimitOptions.Limit))
                     .Build();
             }

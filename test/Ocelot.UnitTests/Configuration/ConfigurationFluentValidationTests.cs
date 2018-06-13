@@ -779,7 +779,7 @@ namespace Ocelot.UnitTests.Configuration
                         },
                         RateLimitOptions = new FileRateLimitRule
                         {
-                            Period = "1x",
+                            Period = 0,
                             EnableRateLimiting = true
                         }
                     }
@@ -812,7 +812,7 @@ namespace Ocelot.UnitTests.Configuration
                         },
                         RateLimitOptions = new FileRateLimitRule
                         {
-                            Period = "1d",
+                            Period = 1000,
                             EnableRateLimiting = true
                         }
                     }
