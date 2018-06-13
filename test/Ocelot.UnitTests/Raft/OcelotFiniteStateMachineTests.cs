@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Raft
 
         private void WhenTheCommandIsHandled()
         {
-             _fsm.Handle(new Rafty.Log.LogEntry(_command, _command.GetType(), 0));
+             _fsm.Handle(new Rafty.Log.LogEntry(_command, _command.GetType(), 0)).GetAwaiter().GetResult();
         }
 
         private void ThenTheStateIsUpdated()

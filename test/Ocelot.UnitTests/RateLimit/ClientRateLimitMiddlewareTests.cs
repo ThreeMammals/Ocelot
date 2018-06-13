@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.RateLimit
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                  new ReRouteBuilder()
                      .WithDownstreamReRoute(new DownstreamReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                             new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
+                             new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule(1000, 3), 429))
                          .WithUpstreamHttpMethod(new List<string> { "Get" })
                          .Build())
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -75,7 +75,7 @@ namespace Ocelot.UnitTests.RateLimit
                      .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                          .WithEnableRateLimiting(true)
                          .WithRateLimitOptions(
-                             new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new RateLimitRule("1s", 100, 3), 429))
+                             new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new RateLimitRule(1000, 3), 429))
                          .WithUpstreamHttpMethod(new List<string> { "Get" })
                          .Build())
                      .WithUpstreamHttpMethod(new List<string> { "Get" })

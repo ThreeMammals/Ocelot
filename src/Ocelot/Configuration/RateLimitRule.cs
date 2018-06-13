@@ -4,19 +4,16 @@ namespace Ocelot.Configuration
 {
     public class RateLimitRule
     {
-        public RateLimitRule(string period, double periodTimespan, long limit)
+        public RateLimitRule(long period, long limit)
         {
-            Period = period;
-            //PeriodTimespan = periodTimespan;
+            Period = TimeSpan.FromMilliseconds(period);
             Limit = limit;
         }
 
         /// <summary>
-        /// Rate limit period as in 1s, 1m, 1h,1d
+        /// Rate limit period in milliseconds
         /// </summary>
-        public string Period { get; private set; }
-
-        //public double PeriodTimespan { get; private set; }
+        public TimeSpan Period { get; private set; }
         
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period

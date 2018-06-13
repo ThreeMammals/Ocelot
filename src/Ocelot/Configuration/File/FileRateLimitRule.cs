@@ -24,10 +24,8 @@ namespace Ocelot.Configuration.File
         /// <summary>
         /// Rate limit period as in 1s, 1m, 1h
         /// </summary>
-        public string Period { get; set; }
+        public long Period { get; set; }
 
-        public double PeriodTimespan { get; set; }
-        
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>
@@ -42,7 +40,7 @@ namespace Ocelot.Configuration.File
 
             var sb = new StringBuilder();
             sb.Append(
-                $"{nameof(Period)}:{Period},{nameof(PeriodTimespan)}:{PeriodTimespan:F},{nameof(Limit)}:{Limit},{nameof(ClientWhitelist)}:[");
+                $"{nameof(Period)}:{Period},{nameof(Limit)}:{Limit},{nameof(ClientWhitelist)}:[");
 
             sb.AppendJoin(',', ClientWhitelist);
             sb.Append(']');

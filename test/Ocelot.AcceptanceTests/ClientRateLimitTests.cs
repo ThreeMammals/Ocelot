@@ -59,8 +59,7 @@ namespace Ocelot.AcceptanceTests
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>(),
                                 Limit = 3,
-                                Period = "1s",
-                                PeriodTimespan = 1000
+                                Period = 1000
                             }
                         }
                 },
@@ -118,8 +117,7 @@ namespace Ocelot.AcceptanceTests
                                 EnableRateLimiting = true,
                                 ClientWhitelist = new List<string>() { "ocelotclient1"},
                                 Limit = 3,
-                                Period = "1s",
-                                PeriodTimespan = 100
+                                Period = 1000
                             }
                         }
                 },

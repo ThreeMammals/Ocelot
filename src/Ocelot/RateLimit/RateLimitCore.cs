@@ -49,16 +49,11 @@ namespace Ocelot.RateLimit
 
             if (rateLimitCounter.TotalRequests > rateLimitRule.Limit)
             {
-                var retryAfter = RetryAfter(rateLimitCounter.Timestamp, rateLimitRule);
+                var retryAfter = RetryAfter(rateLimitCounter, rateLimitRule);
 
                 if (retryAfter > 0)
                 {
-                    // use of PeriodTimespan here is basically saying, expire this counter after the 
-                    // PeriodTimespan value. This means that the counter will no longer be in
-                    // the cache if a request is made after the timespan has elapsed.
-                    var expirationTime = TimeSpan.FromSeconds(rateLimitRule.PeriodTimespan);
-
-                    _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, expirationTime);
+                    _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, rateLimitRule.Period);
                 }
                 else
                 {
@@ -67,9 +62,7 @@ namespace Ocelot.RateLimit
             }
             else
             {
-                var expirationTime = ConvertToTimeSpan(rateLimitRule.Period);
-
-                _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, expirationTime);
+                _counterHandler.Set(rateLimitCounterKey, rateLimitCounter, rateLimitRule.Period);
             }
 
             return rateLimitCounter;
@@ -77,7 +70,7 @@ namespace Ocelot.RateLimit
 
         private bool EntryHasNotExpired(RateLimitCounter existingRateLimitCounter, RateLimitRule rateLimitRule)
         {
-            return existingRateLimitCounter.Timestamp + ConvertToTimeSpan(rateLimitRule.Period) >= DateTime.UtcNow;
+            return existingRateLimitCounter.Timestamp + rateLimitRule.Period >= DateTime.UtcNow;
         }
 
         public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
@@ -90,7 +83,7 @@ namespace Ocelot.RateLimit
             {
                 headers = new RateLimitHeaders(context, rule.Period,
                     (rule.Limit - entry.Value.TotalRequests).ToString(),
-                    (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo)
+                    (entry.Value.Timestamp + rule.Period).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo)
                     );
             }
             else
@@ -98,7 +91,7 @@ namespace Ocelot.RateLimit
                 headers = new RateLimitHeaders(context,
                     rule.Period,
                     rule.Limit.ToString(),
-                    (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                    (DateTime.UtcNow + rule.Period).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
             }
 
             return headers;
@@ -120,35 +113,14 @@ namespace Ocelot.RateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        public int RetryAfter(DateTime timestamp, RateLimitRule rule)
+        public int RetryAfter(RateLimitCounter counter, RateLimitRule rule)
         {
-            var secondsPastBetweenNowAndTimestamp = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            // use of PeriodTimespan here is just converting its value to seconds
-            var retryAfterPeriodTimespan = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
+            var secondsPastBetweenNowAndTimestamp = Convert.ToInt32((DateTime.UtcNow - counter.Timestamp).TotalSeconds);
+            // use of PeriodTimespan here is just converting its value to seconds, could it not just use the value as an int?
+            var retryAfterPeriodTimespan = rule.Period.TotalSeconds;
             // if retryAfterPeriodTimespan is greater than one then return retryAfterPeriodTimespan minus secondsPastBetweenNowAndTimestamp else just return 1...
             retryAfterPeriodTimespan = retryAfterPeriodTimespan > 1 ? retryAfterPeriodTimespan - secondsPastBetweenNowAndTimestamp : 1;
-            return retryAfterPeriodTimespan;
+            return (int)retryAfterPeriodTimespan;
         }
-
-        public TimeSpan ConvertToTimeSpan(string timeSpan)
-        {
-            var l = timeSpan.Length - 1;
-            var value = timeSpan.Substring(0, l);
-            var type = timeSpan.Substring(l, 1);
-
-            switch (type)
-            {
-                case "d":
-                    return TimeSpan.FromDays(double.Parse(value));
-                case "h":
-                    return TimeSpan.FromHours(double.Parse(value));
-                case "m":
-                    return TimeSpan.FromMinutes(double.Parse(value));
-                case "s":
-                    return TimeSpan.FromSeconds(double.Parse(value));
-                default:
-                    throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}");
-            }
-        }  
     }
 }

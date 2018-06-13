@@ -60,16 +60,15 @@ namespace Ocelot.RateLimit.Middleware
                 // check if limit is reached
                 if (counter.TotalRequests > rule.Limit)
                 {
-                    //compute retry after value
-                    var retryAfter = _processor.RetryAfter(counter.Timestamp, rule);
+                    //compute retry after value, period timespan is being used here to tell the user
+                    //when they should retry their request
+                    var retryAfter = _processor.RetryAfter(counter, rule);
 
                     // log blocked request
                     LogBlockedRequest(context.HttpContext, identity, counter, rule, context.DownstreamReRoute);
 
-                    var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    
                     // break execution
-                    await ReturnQuotaExceededResponse(context.HttpContext, options, retrystring);
+                    await ReturnQuotaExceededResponse(context.HttpContext, options, retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
                     return;
                 }
@@ -133,7 +132,7 @@ namespace Ocelot.RateLimit.Middleware
         {
             var headers = (RateLimitHeaders)rateLimitHeaders;
 
-            headers.Context.Response.Headers["X-Rate-Limit-Limit"] = headers.Limit;
+            headers.Context.Response.Headers["X-Rate-Limit-Limit"] = headers.Limit.ToString();
             headers.Context.Response.Headers["X-Rate-Limit-Remaining"] = headers.Remaining;
             headers.Context.Response.Headers["X-Rate-Limit-Reset"] = headers.Reset;
 
