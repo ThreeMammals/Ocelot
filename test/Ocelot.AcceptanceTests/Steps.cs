@@ -392,6 +392,12 @@ namespace Ocelot.AcceptanceTests
             header.First().ShouldBe(value);
         }
 
+        public void ThenTheResponseBodyHeaderIs(string key, string value)
+        {
+            var header = _response.Content.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
         public void ThenTheTraceHeaderIsSet(string key)
         {
             var header = _response.Headers.GetValues(key);
