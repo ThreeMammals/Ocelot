@@ -30,7 +30,7 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder)
         {
-            const string pattern = "(?i)ocelot.([a-zA-Z0-9]*).json";
+            const string pattern = "(?i)ocelot\\.([a-zA-Z0-9]*)(\\.json)$";
 
             var reg = new Regex(pattern);
 
