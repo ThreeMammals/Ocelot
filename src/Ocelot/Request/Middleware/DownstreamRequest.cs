@@ -3,10 +3,12 @@ namespace Ocelot.Request.Middleware
     using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
+    using System.Runtime.InteropServices;
 
     public class DownstreamRequest
     {
         private readonly HttpRequestMessage _request;
+        private const string dotNetFramework = ".NET Framework";
 
         public DownstreamRequest(HttpRequestMessage request)
         {
@@ -55,15 +57,18 @@ namespace Ocelot.Request.Middleware
                 * And MS HttpClient in Full Framework actually rejects it.
                 * see #366 issue 
             **/
-#if NET461 || NET462 || NET47 || NET471 || NET472
-            if (_request.Method == HttpMethod.Get ||
-                _request.Method == HttpMethod.Head ||
-                _request.Method == HttpMethod.Delete ||
-                _request.Method == HttpMethod.Trace)
+
+            if(RuntimeInformation.FrameworkDescription == dotNetFramework)
             {
-                _request.Content = null;
+                if (_request.Method == HttpMethod.Get ||
+                    _request.Method == HttpMethod.Head ||
+                    _request.Method == HttpMethod.Delete ||
+                    _request.Method == HttpMethod.Trace)
+                {
+                    _request.Content = null;
+                }
             }
-#endif
+           
             _request.RequestUri = uriBuilder.Uri;
             return _request;
         }
