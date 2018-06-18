@@ -1,7 +1,8 @@
 Welcome to Ocelot
 =================
 
-Thanks for taking a look at the Ocelot documentation. Please use the left hand nav to get around. I would suggest taking a look at introduction first.
+Thanks for taking a look at the Ocelot documentation. Please use the left hand nav to get around. I would suggest taking a look at introduction first and reading through everything so
+you get a good understanding of what Ocelot can do before starting out.
 
 .. toctree::
    :maxdepth: 2
