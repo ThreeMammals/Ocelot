@@ -25,7 +25,7 @@ namespace Ocelot.Request.Creator
                 * see #366 issue 
             **/
 
-            if(_framework.Get() == dotNetFramework)
+            if(_framework.Get().Contains(dotNetFramework))
             {
                 if (request.Method == HttpMethod.Get ||
                     request.Method == HttpMethod.Head ||
