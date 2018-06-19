@@ -51,7 +51,7 @@ A lot of people have asked me to implement a feature where Ocelot polls consul f
         "Host": "localhost",
         "Port": 8500,
         "Type": "PollConsul",
-        "PollingInteral": 100
+        "PollingInterval": 100
     }
 
 The polling interval is in milliseconds and tells Ocelot how often to call Consul for changes in service configuration.
