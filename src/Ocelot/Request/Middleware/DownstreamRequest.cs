@@ -3,12 +3,10 @@ namespace Ocelot.Request.Middleware
     using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using System.Runtime.InteropServices;
 
     public class DownstreamRequest
     {
         private readonly HttpRequestMessage _request;
-        private const string dotNetFramework = ".NET Framework";
 
         public DownstreamRequest(HttpRequestMessage request)
         {
@@ -50,25 +48,6 @@ namespace Ocelot.Request.Middleware
                 Scheme = Scheme
             };
 
-            /** 
-                * According to https://tools.ietf.org/html/rfc7231
-                * GET,HEAD,DELETE,CONNECT,TRACE
-                * Can have body but server can reject the request.
-                * And MS HttpClient in Full Framework actually rejects it.
-                * see #366 issue 
-            **/
-
-            if(RuntimeInformation.FrameworkDescription == dotNetFramework)
-            {
-                if (_request.Method == HttpMethod.Get ||
-                    _request.Method == HttpMethod.Head ||
-                    _request.Method == HttpMethod.Delete ||
-                    _request.Method == HttpMethod.Trace)
-                {
-                    _request.Content = null;
-                }
-            }
-           
             _request.RequestUri = uriBuilder.Uri;
             return _request;
         }
