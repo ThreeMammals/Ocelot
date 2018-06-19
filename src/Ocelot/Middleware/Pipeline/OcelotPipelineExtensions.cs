@@ -28,6 +28,15 @@ namespace Ocelot.Middleware.Pipeline
             // It also sets the Request Id if anything is set globally
             builder.UseExceptionHandlerMiddleware();
 
+            //Expand other branch pipes
+            if (pipelineConfiguration.MapWhenOcelotPipeline != null)
+            {
+                foreach (var pipeline in pipelineConfiguration.MapWhenOcelotPipeline)
+                {
+                    builder.MapWhen(pipeline);
+                }
+            }
+
             // If the request is for websockets upgrade we fork into a different pipeline
             builder.MapWhen(context => context.HttpContext.WebSockets.IsWebSocketRequest,
                 app =>
@@ -39,15 +48,6 @@ namespace Ocelot.Middleware.Pipeline
                     app.UseWebSocketsProxyMiddleware();
                 });
 
-            //Expand other branch pipes
-            if (pipelineConfiguration.MapWhenOcelotPipeline != null)
-            {
-                foreach (var pipeline in pipelineConfiguration.MapWhenOcelotPipeline)
-                {
-                    builder.MapWhen(pipeline);
-                }
-            }
-        
             // Allow the user to respond with absolutely anything they want.
             builder.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);
 
