@@ -39,6 +39,15 @@ namespace Ocelot.Middleware.Pipeline
                     app.UseWebSocketsProxyMiddleware();
                 });
 
+            //Expand other branch pipes
+            if (pipelineConfiguration.MapWhenOcelotPipeline != null)
+            {
+                foreach (var pipeline in pipelineConfiguration.MapWhenOcelotPipeline)
+                {
+                    builder.MapWhen(pipeline);
+                }
+            }
+        
             // Allow the user to respond with absolutely anything they want.
             builder.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);
 

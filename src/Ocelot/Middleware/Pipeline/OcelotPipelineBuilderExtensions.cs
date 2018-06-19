@@ -160,6 +160,20 @@ namespace Ocelot.Middleware.Pipeline
             return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
         }
 
+        public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, MapWhenOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
+        }
+
         private static Func<T, DownstreamContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
         {
             var middleware = typeof(T);

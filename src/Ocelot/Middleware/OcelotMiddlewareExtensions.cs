@@ -29,13 +29,19 @@
             return builder;
         }
 
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, Action<OcelotPipelineConfiguration> pipelineConfiguration)
+        {
+            var config = new OcelotPipelineConfiguration();
+            pipelineConfiguration?.Invoke(config);
+            return await builder.UseOcelot(config);
+        }
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
         {
             var configuration = await CreateConfiguration(builder);
-            
+
             CreateAdministrationArea(builder, configuration);
 
-            if(UsingRafty(builder))
+            if (UsingRafty(builder))
             {
                 SetUpRafty(builder);
             }
@@ -78,7 +84,7 @@
         private static bool UsingRafty(IApplicationBuilder builder)
         {
             var possible = builder.ApplicationServices.GetService(typeof(INode)) as INode;
-            if(possible != null)
+            if (possible != null)
             {
                 return true;
             }
@@ -100,7 +106,7 @@
             // make configuration from file system?
             // earlier user needed to add ocelot files in startup configuration stuff, asp.net will map it to this
             var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
-            
+
             // now create the config
             var internalConfigCreator = (IInternalConfigurationCreator)builder.ApplicationServices.GetService(typeof(IInternalConfigurationCreator));
             var internalConfig = await internalConfigCreator.Create(fileConfig.Value);
@@ -196,7 +202,7 @@
         {
             var ocelotConfiguration = provider.Get();
 
-            if(ocelotConfiguration?.Data == null || ocelotConfiguration.IsError)
+            if (ocelotConfiguration?.Data == null || ocelotConfiguration.IsError)
             {
                 ThrowToStopOcelotStarting(ocelotConfiguration);
             }
@@ -216,7 +222,7 @@
 
         private static void CreateAdministrationArea(IApplicationBuilder builder, IInternalConfiguration configuration)
         {
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
+            if (!string.IsNullOrEmpty(configuration.AdministrationPath))
             {
                 builder.Map(configuration.AdministrationPath, app =>
                 {
@@ -240,7 +246,7 @@
             var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
             diagnosticListener.SubscribeWithAdapter(listener);
         }
-        
+
         private static void OnShutdown(IApplicationBuilder app)
         {
             var node = (INode)app.ApplicationServices.GetService(typeof(INode));
