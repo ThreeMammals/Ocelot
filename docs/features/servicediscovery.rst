@@ -18,7 +18,7 @@ will be used.
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 9500
+        "Port": 8500
     }
 
 In the future we can add a feature that allows ReRoute specfic configuration. 
@@ -49,9 +49,9 @@ A lot of people have asked me to implement a feature where Ocelot polls consul f
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 9500,
+        "Port": 8500,
         "Type": "PollConsul",
-        "PollingInteral": 100
+        "PollingInterval": 100
     }
 
 The polling interval is in milliseconds and tells Ocelot how often to call Consul for changes in service configuration.
@@ -67,7 +67,7 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 9500,
+        "Port": 8500,
         "Token": "footoken"
     }
 
