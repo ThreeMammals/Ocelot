@@ -49,7 +49,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
         {
-            return reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower()) && !(!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost);
+            return (reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
+                   (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost);
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, ReRoute reRoute)

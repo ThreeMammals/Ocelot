@@ -583,6 +583,19 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
                             .WithUpstreamHost("MATCH")
+                            .Build(),
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+                                .WithDownstreamPathTemplate("someDownstreamPath")
+                                .WithUpstreamPathTemplate("someUpstreamPath")
+                                .WithUpstreamHttpMethod(new List<string> { }) // empty list of methods
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamHost("MATCH")
+                                .Build())
+                            .WithUpstreamPathTemplate("someUpstreamPath")
+                            .WithUpstreamHttpMethod(new List<string> { }) // empty list of methods
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
                 ))
