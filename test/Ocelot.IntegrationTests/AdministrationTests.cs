@@ -345,10 +345,11 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
                 .Then(x => ThenTheResponseBodyShouldBe("bar"))
-                // .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                // .And(x => ThenTheResponseShouldBe(updatedConfiguration))
-                // .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
-                // .Then(x => ThenTheResponseBodyShouldBe("bar"))
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", initialConfiguration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseShouldBe(initialConfiguration))
+                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
+                .Then(x => ThenTheResponseBodyShouldBe("foo"))
                 .BDDfy();
         }
 
