@@ -252,7 +252,7 @@ namespace Ocelot.Configuration.Creator
                 return $"{nameof(CookieStickySessions)}:{fileReRoute.LoadBalancerOptions.Key}";
             }
 
-            return $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}";
+            return $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}|{string.Join(",", fileReRoute.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}";
         }
     }
 }
