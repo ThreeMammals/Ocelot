@@ -57,14 +57,14 @@ namespace Ocelot.ServiceDiscovery
             
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
 
-            var consulServiceDiscoveryProvider =  new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
-
             if (serviceConfig.Type?.ToLower() == "pollconsul")
             {
-                return new PollingConsulServiceDiscoveryProvider(serviceConfig.PollingInterval, consulRegistryConfiguration.KeyOfServiceInConsul, _factory, consulServiceDiscoveryProvider);
+                return new PollingConsulServiceDiscoveryProvider(serviceConfig.PollingInterval, consulRegistryConfiguration, _factory, _consulFactory);
             }
-
-            return consulServiceDiscoveryProvider;
+            else
+            {
+                return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
+            }
         }
     }
 }
