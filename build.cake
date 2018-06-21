@@ -5,7 +5,7 @@
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
-#addin Cake.Coveralls
+#addin Cake.Coveralls&version=0.7.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
