@@ -91,6 +91,71 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_wait_for_period_timespan_to_elapse_before_making_next_request()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/ClientRateLimit",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51926,
+                                }
+                            },
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/api/ClientRateLimit",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            RequestIdKey = _steps.RequestIdKey,
+                             
+                            RateLimitOptions = new FileRateLimitRule()
+                            {
+                                EnableRateLimiting = true,
+                                ClientWhitelist = new List<string>(),
+                                Limit = 3,
+                                Period = "1s",
+                                PeriodTimespan = 2
+                            }
+                        }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                    RateLimitOptions = new FileRateLimitOptions()
+                    {
+                        ClientIdHeader = "ClientId",
+                        DisableRateLimitHeaders = false,
+                        QuotaExceededMessage = "",
+                        RateLimitCounterPrefix = "",
+                        HttpStatusCode = 428
+                    },
+                     RequestIdKey ="oceclientrequest"
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51926", "/api/ClientRateLimit"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
+                .And(x => _steps.GivenIWait(1000))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
+                .And(x => _steps.GivenIWait(1000))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
             var configuration = new FileConfiguration

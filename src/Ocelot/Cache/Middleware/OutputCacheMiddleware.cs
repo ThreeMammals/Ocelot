@@ -88,7 +88,7 @@ namespace Ocelot.Cache.Middleware
 
             foreach (var header in cached.ContentHeaders)
             {
-                streamContent.Headers.Add(header.Key, header.Value);
+                streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
             return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList());

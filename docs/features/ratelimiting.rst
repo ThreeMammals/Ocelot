@@ -19,7 +19,7 @@ OK so to get rate limiting working for a ReRoute you need to add the following j
 
 ClientWhitelist - This is an array that contains the whitelist of the client. It means that the client in this array will not be affected by the rate limiting.
 EnableRateLimiting - This value specifies enable endpoint rate limiting.
-Period - This value specifies the period, such as 1s, 5m, 1h,1d and so on.
+Period - This value specifies the period that the limit applies to, such as 1s, 5m, 1h,1d and so on. If you make more requests in the period than the limit allows then you need to wait for PeriodTimespan to elapse before you make another request.
 PeriodTimespan - This value specifies that we can retry after a certain number of seconds.
 Limit - This value specifies the maximum number of requests that a client can make in a defined period.
 

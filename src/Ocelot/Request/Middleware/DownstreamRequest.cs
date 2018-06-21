@@ -48,22 +48,6 @@ namespace Ocelot.Request.Middleware
                 Scheme = Scheme
             };
 
-            /** 
-                * According to https://tools.ietf.org/html/rfc7231
-                * GET,HEAD,DELETE,CONNECT,TRACE
-                * Can have body but server can reject the request.
-                * And MS HttpClient in Full Framework actually rejects it.
-                * see #366 issue 
-            **/
-#if NET461 || NET462 || NET47 || NET471 || NET472
-            if (_request.Method == HttpMethod.Get ||
-                _request.Method == HttpMethod.Head ||
-                _request.Method == HttpMethod.Delete ||
-                _request.Method == HttpMethod.Trace)
-            {
-                _request.Content = null;
-            }
-#endif
             _request.RequestUri = uriBuilder.Uri;
             return _request;
         }

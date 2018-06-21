@@ -14,6 +14,8 @@ namespace Ocelot.UnitTests.Request
     using Ocelot.Responses;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Shouldly;
+    using Ocelot.Request.Creator;
+    using Ocelot.Infrastructure;
 
     public class DownstreamRequestInitialiserMiddlewareTests
     {
@@ -50,7 +52,8 @@ namespace Ocelot.UnitTests.Request
             _middleware = new DownstreamRequestInitialiserMiddleware(
                 _next.Object, 
                 _loggerFactory.Object, 
-                _requestMapper.Object);
+                _requestMapper.Object,
+                new DownstreamRequestCreator(new FrameworkDescription()));
 
             _downstreamContext = new DownstreamContext(_httpContext.Object);
         }

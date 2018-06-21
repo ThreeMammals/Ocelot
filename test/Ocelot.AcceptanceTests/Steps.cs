@@ -183,6 +183,11 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        internal void GivenIWait(int wait)
+        {
+            Thread.Sleep(wait);
+        }
+
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
             _webHostBuilder = new WebHostBuilder();
@@ -384,6 +389,12 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheResponseHeaderIs(string key, string value)
         {
             var header = _response.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
+        public void ThenTheResponseBodyHeaderIs(string key, string value)
+        {
+            var header = _response.Content.Headers.GetValues(key);
             header.First().ShouldBe(value);
         }
 
