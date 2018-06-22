@@ -15,42 +15,130 @@ namespace Ocelot.ServiceDiscovery.Providers
 {
     public class PollingConsulServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
+        private readonly ConsulRegistryConfiguration _config;
         private readonly IOcelotLogger _logger;
-        private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
-        private readonly Timer _timer;
-        private bool _polling;
+        private readonly IConsulClient _consul;
+        private const string VersionPrefix = "version-";
         private List<Service> _services;
-        private string _keyOfServiceInConsul;
 
-        public PollingConsulServiceDiscoveryProvider(int pollingInterval, string keyOfServiceInConsul, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
-        {;
+        private int _pollingInterval;
+        private ulong _waitIndex;
+
+        public PollingConsulServiceDiscoveryProvider(int pollingInterval, ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
+        {
+            ;
+            _pollingInterval = pollingInterval == 0 ? 10000 : pollingInterval;
             _logger = factory.CreateLogger<PollingConsulServiceDiscoveryProvider>();
-            _keyOfServiceInConsul = keyOfServiceInConsul;
-            _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
-            _services = new List<Service>();
-        
-            _timer = new Timer(async x =>
+
+            _config = config;
+            _consul = clientFactory.Get(_config);
+
+            Task.Factory.StartNew(async () =>
             {
-                    if(_polling)
-                    {
-                        return;
-                    }
-                    
-                    _polling = true;
-                    await Poll();
-                    _polling = false;
-                
-            }, null, pollingInterval, pollingInterval);
+                await Poll();
+            });
         }
 
-        public Task<List<Service>> Get()
-        {   
-            return Task.FromResult(_services);
+        public async Task<List<Service>> Get()
+        {
+            if (_services == null)
+            {
+                _services = await GetService();
+            }
+
+            return _services;
+        }
+
+        public async Task<List<Service>> GetService()
+        {
+            QueryResult<ServiceEntry[]> queryResult = null;
+            List<Service> services = new List<Service>();
+
+            if (_waitIndex == 0 || _pollingInterval == 0)
+            {
+                queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
+            }
+            else
+            {
+                // block queries
+                queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true,
+                    new QueryOptions() { WaitIndex = _waitIndex, WaitTime = TimeSpan.FromMilliseconds(_pollingInterval) });
+            }
+
+            _waitIndex = queryResult.LastIndex; // store waitIndex
+
+            foreach (var serviceEntry in queryResult.Response)
+            {
+                if (IsValid(serviceEntry))
+                {
+                    services.Add(BuildService(serviceEntry));
+                }
+                else
+                {
+                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                }
+            }
+
+            return services.ToList();
         }
 
         private async Task Poll()
         {
-            _services = await _consulServiceDiscoveryProvider.Get();
+            _logger.LogInformation("Started polling services from consul");
+
+            _services = await GetService();
+
+            _logger.LogInformation("Finished polling services from consul");
+
+            await Poll();
+        }
+
+        public async Task<List<Service>> GetWithBlockQueries(ulong waitIndex, int timeOut)
+        {
+            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true, new QueryOptions() { WaitIndex = waitIndex, WaitTime = TimeSpan.FromMilliseconds(timeOut) });
+
+            var services = new List<Service>();
+
+            foreach (var serviceEntry in queryResult.Response)
+            {
+                if (IsValid(serviceEntry))
+                {
+                    services.Add(BuildService(serviceEntry));
+                }
+                else
+                {
+                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                }
+            }
+
+            return services.ToList();
+        }
+
+        private Service BuildService(ServiceEntry serviceEntry)
+        {
+            return new Service(
+                serviceEntry.Service.Service,
+                new ServiceHostAndPort(serviceEntry.Service.Address, serviceEntry.Service.Port),
+                serviceEntry.Service.ID,
+                GetVersionFromStrings(serviceEntry.Service.Tags),
+                serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
+        }
+
+        private bool IsValid(ServiceEntry serviceEntry)
+        {
+            if (serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetVersionFromStrings(IEnumerable<string> strings)
+        {
+            return strings
+                ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
+                .TrimStart(VersionPrefix);
         }
     }
 }
