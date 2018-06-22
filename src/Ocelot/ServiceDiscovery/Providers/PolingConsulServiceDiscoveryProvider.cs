@@ -93,27 +93,6 @@ namespace Ocelot.ServiceDiscovery.Providers
             await Poll();
         }
 
-        public async Task<List<Service>> GetWithBlockQueries(ulong waitIndex, int timeOut)
-        {
-            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true, new QueryOptions() { WaitIndex = waitIndex, WaitTime = TimeSpan.FromMilliseconds(timeOut) });
-
-            var services = new List<Service>();
-
-            foreach (var serviceEntry in queryResult.Response)
-            {
-                if (IsValid(serviceEntry))
-                {
-                    services.Add(BuildService(serviceEntry));
-                }
-                else
-                {
-                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
-                }
-            }
-
-            return services.ToList();
-        }
-
         private Service BuildService(ServiceEntry serviceEntry)
         {
             return new Service(
