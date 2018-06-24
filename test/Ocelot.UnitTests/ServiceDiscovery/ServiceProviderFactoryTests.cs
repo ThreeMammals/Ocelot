@@ -14,6 +14,7 @@ using Xunit;
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
     using Pivotal.Discovery.Client;
+    using Steeltoe.Common.Discovery;
 
     public class ServiceProviderFactoryTests
     {
@@ -23,12 +24,16 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private DownstreamReRoute _reRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IDiscoveryClient> _discoveryClient;
+        private Mock<IOcelotLogger> _logger;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<PollingConsulServiceDiscoveryProvider>()).Returns(_logger.Object);
             _discoveryClient = new Mock<IDiscoveryClient>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
+            var consulClient = new Mock<IConsulClientFactory>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, consulClient.Object, _discoveryClient.Object);
         }
         
         [Fact]
@@ -80,6 +85,25 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_polling_consul_service_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("PollConsul")
+                .WithPollingInterval(100000)
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<PollingConsulServiceDiscoveryProvider>())
                 .BDDfy();
         }
 

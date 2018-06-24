@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -26,7 +27,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_load_balance_request()
+        public void should_load_balance_request_with_least_connection()
         {
             var downstreamServiceOneUrl = "http://localhost:50881";
             var downstreamServiceTwoUrl = "http://localhost:50892";
@@ -41,7 +42,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new FileHostAndPort
@@ -53,6 +54,55 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = 50892
+                                }
+                            }
+                        }
+                    },
+                    GlobalConfiguration = new FileGlobalConfiguration()
+                    {
+                    }
+            };
+
+            this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
+                .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+                .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+                .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_load_balance_request_with_round_robin()
+        {
+            var downstreamPortOne = 51881;
+            var downstreamPortTwo = 51892;
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
+            var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = downstreamPortOne
+                                },
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = downstreamPortTwo
                                 }
                             }
                         }

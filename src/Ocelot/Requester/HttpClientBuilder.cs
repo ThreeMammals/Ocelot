@@ -43,16 +43,11 @@ namespace Ocelot.Requester
                 return httpClient;
             }
 
-            var httpclientHandler = new HttpClientHandler
-            {
-                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                CookieContainer = new CookieContainer()
-            };
+            var handler = CreateHandler(context);
 
-            if(context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
             {
-                httpclientHandler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
+                handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");
@@ -62,7 +57,7 @@ namespace Ocelot.Requester
                 ? _defaultTimeout 
                 : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptions.TimeoutValue);
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(httpclientHandler, context.DownstreamReRoute))
+            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, context.DownstreamReRoute))
             {
                 Timeout = timeout
             };
@@ -70,6 +65,43 @@ namespace Ocelot.Requester
             _client = new HttpClientWrapper(_httpClient);
 
             return _client;
+        }
+
+        private HttpClientHandler CreateHandler(DownstreamContext context)
+        {
+            // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
+            // under .Net Full Framework
+            bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
+            
+            if (useCookies)
+            {
+                return UseCookiesHandler(context);
+            }
+            else
+            {
+                return UseNonCookiesHandler(context);
+            }
+        }
+
+        private HttpClientHandler UseNonCookiesHandler(DownstreamContext context)
+        {
+            return new HttpClientHandler
+            {
+                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy
+            };
+        }
+
+        private HttpClientHandler UseCookiesHandler(DownstreamContext context)
+        {
+            return new HttpClientHandler
+                {
+                    AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                    UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
+                    CookieContainer = new CookieContainer()
+                };
         }
 
         public void Save()

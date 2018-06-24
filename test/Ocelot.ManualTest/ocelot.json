@@ -114,7 +114,8 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": true
+        "UseTracing": true,
+        "UseProxy": true
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,

@@ -7,8 +7,8 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
-{
-    using Pivotal.Discovery.Client;
+{    
+    using Steeltoe.Common.Discovery;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
@@ -54,9 +54,17 @@ namespace Ocelot.ServiceDiscovery
             {
                 return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
             }
-
+            
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
-            return new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
+
+            var consulServiceDiscoveryProvider =  new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
+
+            if (serviceConfig.Type?.ToLower() == "pollconsul")
+            {
+                return new PollingConsulServiceDiscoveryProvider(serviceConfig.PollingInterval, consulRegistryConfiguration.KeyOfServiceInConsul, _factory, consulServiceDiscoveryProvider);
+            }
+
+            return consulServiceDiscoveryProvider;
         }
     }
 }

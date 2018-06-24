@@ -93,7 +93,7 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 Identity Server Bearer Tokens
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In order to use IdentityServer bearer tokens register your IdentityServer services as usual in ConfigureServices with a scheme (key). If you don't understand how to do this please consul the IdentityServer documentation.
+In order to use IdentityServer bearer tokens register your IdentityServer services as usual in ConfigureServices with a scheme (key). If you don't understand how to do this please consult the IdentityServer documentation.
 
 .. code-block:: csharp
 

@@ -27,6 +27,7 @@ using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using Ocelot.Requester;
 using Ocelot.Middleware.Multiplexer;
+using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -180,6 +181,11 @@ namespace Ocelot.AcceptanceTests
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        internal void GivenIWait(int wait)
+        {
+            Thread.Sleep(wait);
         }
 
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
@@ -383,6 +389,12 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheResponseHeaderIs(string key, string value)
         {
             var header = _response.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
+        public void ThenTheResponseBodyHeaderIs(string key, string value)
+        {
+            var header = _response.Content.Headers.GetValues(key);
             header.First().ShouldBe(value);
         }
 
@@ -673,6 +685,24 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
+        {
+            var result = WaitFor(2000).Until(() => {
+                try
+                {
+                    _response = _ocelotClient.GetAsync(url).Result;
+                    _response.EnsureSuccessStatusCode();
+                    return true;
+                }
+                catch(Exception)
+                {
+                    return false;
+                }
+            });
+
+            result.ShouldBeTrue();
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)

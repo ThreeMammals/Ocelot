@@ -18,7 +18,7 @@ will be used.
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 9500
+        "Port": 8500
     }
 
 In the future we can add a feature that allows ReRoute specfic configuration. 
@@ -35,11 +35,28 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         "UpstreamPathTemplate": "/posts/{postId}",
         "UpstreamHttpMethod": [ "Put" ],
         "ServiceName": "product",
-        "LoadBalancer": "LeastConnection",
+        "LoadBalancerOptions": {
+            "Type": "LeastConnection"
+        },
         "UseServiceDiscovery": true
     }
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
+
+A lot of people have asked me to implement a feature where Ocelot polls consul for latest service information rather than per request. If you want to poll consul for the latest services rather than per request (default behaviour) then you need to set the following configuration.
+
+.. code-block:: json
+
+    "ServiceDiscoveryProvider": {
+        "Host": "localhost",
+        "Port": 8500,
+        "Type": "PollConsul",
+        "PollingInterval": 100
+    }
+
+The polling interval is in milliseconds and tells Ocelot how often to call Consul for changes in service configuration.
+
+Please note there are tradeoffs here. If you poll Consul it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volitile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling consul per request (as sidecar agent). If you are calling a remote consul agent then polling will be a good performance improvement.
 
 ACL Token
 ---------
@@ -50,7 +67,7 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 9500,
+        "Port": 8500,
         "Token": "footoken"
     }
 

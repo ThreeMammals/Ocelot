@@ -45,8 +45,10 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure.Consul;
     using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
-    using Pivotal.Discovery.Client;
     using ServiceDiscovery.Providers;
+    using Steeltoe.Common.Discovery;
+    using Pivotal.Discovery.Client;
+    using Ocelot.Request.Creator;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -160,6 +162,8 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
             _services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
             _services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
+            _services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
+            _services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)

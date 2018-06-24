@@ -9,9 +9,9 @@
 
 # Ocelot
 
-Ocelot is a .NET Api Gateway. This project is aimed at people using .NET running 
+Ocelot is a .NET API Gateway. This project is aimed at people using .NET running 
 a micro services / service orientated architecture 
-that need a unified point of entry into their system. However it will work with anything that speaks HTTP and run on any platform that asp.net core supports.
+that need a unified point of entry into their system. However it will work with anything that speaks HTTP and run on any platform that ASP.NET Core supports.
 
 In particular I want easy integration with 
 IdentityServer reference and bearer tokens. 
@@ -61,6 +61,10 @@ Install Ocelot and it's dependencies using NuGet.
 
 `Install-Package Ocelot`
 
+Or via the .NET Core CLI:
+
+`dotnet add package ocelot`
+
 All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 ## Documentation
@@ -82,6 +86,12 @@ before doing any work incase this is something we are already doing or it might 
 advice on the easiest way to do things :)
 
 Finally we mark all existing issues as help wanted, small, medium and large effort. If you want to contriute for the first time I suggest looking at a help wanted & small effort issue :)
+
+## Donate
+
+If you think this project is worth supporting financially please make a contribution using the button below!
+
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.me/ThreeMammals/)
 
 ## Things that are currently annoying me
 

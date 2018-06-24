@@ -8,6 +8,8 @@ using Rafty.Log;
 
 namespace Ocelot.DependencyInjection
 {
+    using Rafty.Concensus.Node;
+
     public class OcelotAdministrationBuilder : IOcelotAdministrationBuilder
     {
         private readonly IServiceCollection _services;
@@ -21,7 +23,7 @@ namespace Ocelot.DependencyInjection
         
         public IOcelotAdministrationBuilder AddRafty()
         {
-            var settings = new InMemorySettings(4000, 5000, 100, 5000);
+            var settings = new InMemorySettings(4000, 6000, 100, 10000);
             _services.AddSingleton<ILog, SqlLiteLog>();
             _services.AddSingleton<IFiniteStateMachine, OcelotFiniteStateMachine>();
             _services.AddSingleton<ISettings>(settings);

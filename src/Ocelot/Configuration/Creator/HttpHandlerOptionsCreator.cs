@@ -18,7 +18,7 @@ namespace Ocelot.Configuration.Creator
             var useTracing = _tracer.GetType() != typeof(FakeServiceTracer) && options.UseTracing;
 
             return new HttpHandlerOptions(options.AllowAutoRedirect,
-                options.UseCookieContainer, useTracing);
+                options.UseCookieContainer, useTracing, options.UseProxy);
         }
     }
 }

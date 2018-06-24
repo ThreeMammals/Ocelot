@@ -199,7 +199,7 @@
                 .WithDownstreamScheme("http")
                 .WithUpstreamHttpMethod(new List<string>() {"Get"})
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("localhost", 51878)})
-                .WithLoadBalancerKey("/laura|Get")
+                .WithLoadBalancerKey("/laura|Get|localhost:51878")
                 .Build();
 
             var lauraReRoute = new ReRouteBuilder()
@@ -218,7 +218,7 @@
                 .WithDownstreamScheme("http")
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("localhost", 51878) })
-                .WithLoadBalancerKey("/tom|Get")
+                .WithLoadBalancerKey("/tom|Get|localhost:51880")
                 .Build();
 
             var tomReRoute = new ReRouteBuilder()
@@ -409,7 +409,7 @@
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|127.0.0.1:0")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -461,7 +461,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithDelegatingHandlers(handlers)
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -506,7 +506,7 @@
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(true)
                 .WithServiceName("ProductService")
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -557,7 +557,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(false)
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -600,7 +600,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -645,7 +645,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithRequestIdKey("blahhhh")
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
@@ -688,7 +688,7 @@
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .Build();
-            var httpHandlerOptions = new HttpHandlerOptions(true, true,false);
+            var httpHandlerOptions = new HttpHandlerOptions(true, true,false, true);
 
             this.Given(x => x.GivenTheConfigIs(new FileConfiguration
             {
@@ -740,7 +740,7 @@
                 {
                     new ClaimToThing("CustomerId", "CustomerId", "", 0),
                 })
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             var expected = new List<ReRoute>
@@ -783,7 +783,7 @@
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
-                .WithLoadBalancerKey("/api/products/{productId}|Get")
+                .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
             var expected = new List<ReRoute>
