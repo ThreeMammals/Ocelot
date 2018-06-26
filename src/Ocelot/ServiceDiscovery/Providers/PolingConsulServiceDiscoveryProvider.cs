@@ -27,7 +27,7 @@ namespace Ocelot.ServiceDiscovery.Providers
         public PollingConsulServiceDiscoveryProvider(int pollingInterval, ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
         {
             ;
-            _pollingInterval = pollingInterval == 0 ? 10000 : pollingInterval;
+            _pollingInterval = pollingInterval;
             _logger = factory.CreateLogger<PollingConsulServiceDiscoveryProvider>();
 
             _config = config;
@@ -49,7 +49,7 @@ namespace Ocelot.ServiceDiscovery.Providers
             return _services;
         }
 
-        public async Task<List<Service>> GetService()
+        private async Task<List<Service>> GetService()
         {
             QueryResult<ServiceEntry[]> queryResult = null;
             List<Service> services = new List<Service>();
@@ -86,7 +86,21 @@ namespace Ocelot.ServiceDiscovery.Providers
         {
             _logger.LogInformation("Started polling services from consul");
 
-            _services = await GetService();
+            try
+            {
+                _services = await GetService();
+            }
+            catch (AggregateException exs)
+            {
+                foreach (var ex in exs.InnerExceptions)
+                {
+                    _logger.LogError("AggregateException in polling services from consul", ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception in polling services from consul", ex);
+            }
 
             _logger.LogInformation("Finished polling services from consul");
 
