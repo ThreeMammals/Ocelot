@@ -18,7 +18,8 @@ will be used.
 
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
-        "Port": 8500
+        "Port": 8500,
+        "Type": "Consul"
     }
 
 In the future we can add a feature that allows ReRoute specfic configuration. 
@@ -137,7 +138,7 @@ The config might look something like
             "ServiceDiscoveryProvider": {
                 "Host": "localhost",
                 "Port": 8510,
-                "Type": null,
+                "Type": "Consul",
                 "Token": null,
                 "ConfigurationKey": null
             },
