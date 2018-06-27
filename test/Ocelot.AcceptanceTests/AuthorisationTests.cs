@@ -339,11 +339,11 @@ namespace Ocelot.AcceptanceTests
                     Username = "test",
                     Password = "test",
                     SubjectId = "registered|1231231",
-                    // Claims = new List<Claim>
-                    // {
-                    //     new Claim("Role", "AdminUser"), 
-                    //     new Claim("Role", "User")
-                    // },
+                    Claims = new List<Claim>
+                    {
+                        new Claim("role", "AdminUser"), 
+                        new Claim("role", "Contributor")
+                    },
                 }
             };
 
