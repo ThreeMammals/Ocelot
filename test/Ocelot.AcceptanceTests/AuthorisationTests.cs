@@ -332,22 +332,7 @@ namespace Ocelot.AcceptanceTests
                    }
            };
 
-            var users = new List<TestUser>
-            {
-                new TestUser
-                {
-                    Username = "test",
-                    Password = "test",
-                    SubjectId = "registered|1231231",
-                    Claims = new List<Claim>
-                    {
-                        new Claim("role", "AdminUser"), 
-                        new Claim("role", "Contributor")
-                    },
-                }
-            };
-
-           this.Given(x => x.GivenThereIsAnIdentityServerWithCustomProfileServiceOn("http://localhost:51888", "api", AccessTokenType.Jwt, users))
+           this.Given(x => x.GivenThereIsAnIdentityServerWithCustomProfileServiceOn("http://localhost:51888", "api", AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:56876", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -527,7 +512,7 @@ namespace Ocelot.AcceptanceTests
             _steps.VerifyIdentiryServerStarted(url);
         }
 
-        private void GivenThereIsAnIdentityServerWithCustomProfileServiceOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
+        private void GivenThereIsAnIdentityServerWithCustomProfileServiceOn(string url, string apiName, AccessTokenType tokenType)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -583,7 +568,6 @@ namespace Ocelot.AcceptanceTests
                                 RequireClientSecret = false,
                             }
                         });
-                        //.AddTestUsers(users);
                 })
                 .Configure(app =>
                 {
@@ -603,45 +587,36 @@ namespace Ocelot.AcceptanceTests
             _identityServerBuilder?.Dispose();
         }
 
-        public class ProfileService : DefaultProfileService, IProfileService
+        public class ProfileService : DefaultProfileService
         {
-            //UserManager<User> _userManager;
-
             public ProfileService(
-                //UserManager<User> userManager, 
                 ILogger<ProfileService> logger) 
                 : base(logger)
             {
-                //_userManager = userManager;
             }
 
-            override async public Task GetProfileDataAsync(ProfileDataRequestContext context)
+            public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
             {
                 await base.GetProfileDataAsync(context);
-
-                var user = new TestUser();
 
                 context.IssuedClaims.Add(new Claim("role", "Administrator"));
                 context.IssuedClaims.Add(new Claim("role", "Contributor"));
             }
 
-            override async public Task IsActiveAsync(IsActiveContext context)
+            public override async Task IsActiveAsync(IsActiveContext context)
             {
                 await base.IsActiveAsync(context);
 
-                var user = new TestUser();
-
-                context.IsActive = user != null;
+                context.IsActive = true;
             }
         }
 
         public class FakeResourceOwnerPasswordValidator : IResourceOwnerPasswordValidator
         {
-            public async Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
+            public Task ValidateAsync(ResourceOwnerPasswordValidationContext context)
             {
-                context.Result = new GrantValidationResult(
-                subject: "818727",
-                authenticationMethod: "custom");
+                context.Result = new GrantValidationResult("818727", "custom");
+                return Task.CompletedTask;
             }
         }
     }
