@@ -137,7 +137,7 @@ The config might look something like
             "RequestIdKey": null,
             "ServiceDiscoveryProvider": {
                 "Host": "localhost",
-                "Port": 8510,
+                "Port": 8500,
                 "Type": "Consul",
                 "Token": null,
                 "ConfigurationKey": null
