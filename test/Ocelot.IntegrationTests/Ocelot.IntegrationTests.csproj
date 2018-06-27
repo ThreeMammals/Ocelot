@@ -1,8 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>Ocelot.IntegrationTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.IntegrationTests</PackageId>
