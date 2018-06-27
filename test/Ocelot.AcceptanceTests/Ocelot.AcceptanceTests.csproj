@@ -33,7 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CacheManager.Serialization.Json" Version="1.1.2" />
-    <!--<PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.1" />-->
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
@@ -55,10 +55,5 @@
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /> 
     <PackageReference Include="Rafty" Version="0.4.4" />
-
-    <PackageReference Include="IdentityServer4" Version="2.2.0" />
-    <PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.1.0" />
-    <PackageReference Include="IdentityServer4.EntityFramework" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
   </ItemGroup>
 </Project>
