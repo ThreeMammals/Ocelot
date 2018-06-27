@@ -11,6 +11,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,8 @@ namespace Ocelot.IntegrationTests
         private IWebHostBuilder _webHostBuilderTwo;
         private IWebHost _builderTwo;
         private IWebHost _identityServerBuilder;
+        private IWebHost _fooServiceBuilder;
+        private IWebHost _barServiceBuilder;
 
         public AdministrationTests()
         {
@@ -273,6 +276,80 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_file_configuration_edit_and_post_updated_version_redirecting_reroute()
+        {
+            var fooPort = 47689;
+            var barPort = 47690;
+
+            var initialConfiguration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = fooPort,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        DownstreamPathTemplate = "/foo",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/foo"
+                    }
+                }
+            };
+
+             var updatedConfiguration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                },
+                ReRoutes = new List<FileReRoute>()
+                {
+                    new FileReRoute()
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = barPort,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        DownstreamPathTemplate = "/bar",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/foo"
+                    }
+                }
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
+                .And(x => GivenThereIsAFooServiceRunningOn($"http://localhost:{fooPort}"))
+                .And(x => GivenThereIsABarServiceRunningOn($"http://localhost:{barPort}"))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
+                .Then(x => ThenTheResponseBodyShouldBe("foo"))
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
+                .Then(x => ThenTheResponseBodyShouldBe("bar"))
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", initialConfiguration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseShouldBe(initialConfiguration))
+                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
+                .Then(x => ThenTheResponseBodyShouldBe("foo"))
                 .BDDfy();
         }
 
@@ -516,6 +593,12 @@ namespace Ocelot.IntegrationTests
             result.Value.ShouldBe(expected);
         }
 
+        private void ThenTheResponseBodyShouldBe(string expected)
+        {
+            var content = _response.Content.ReadAsStringAsync().Result;
+            content.ShouldBe(expected);
+        }
+
         private void ThenTheResponseShouldBe(FileConfiguration expecteds)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
@@ -722,6 +805,48 @@ namespace Ocelot.IntegrationTests
             _builder?.Dispose();
             _httpClient?.Dispose();
             _identityServerBuilder?.Dispose();
+        }
+
+        private void GivenThereIsAFooServiceRunningOn(string baseUrl)
+        {
+            _fooServiceBuilder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase("/foo");
+                    app.Run(async context =>
+                    {   
+                        context.Response.StatusCode = 200;
+                        await context.Response.WriteAsync("foo");
+                    });
+                })
+                .Build();
+
+            _fooServiceBuilder.Start();
+        }
+
+        private void GivenThereIsABarServiceRunningOn(string baseUrl)
+        {
+            _barServiceBuilder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase("/bar");
+                    app.Run(async context =>
+                    {   
+                        context.Response.StatusCode = 200;
+                        await context.Response.WriteAsync("bar");
+                    });
+                })
+                .Build();
+
+            _barServiceBuilder.Start();
         }
     }
 }

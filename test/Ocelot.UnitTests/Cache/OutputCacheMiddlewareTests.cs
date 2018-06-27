@@ -64,9 +64,25 @@
         }
 
         [Fact]
+        public void should_returned_cached_item_when_it_is_in_cache_expires_header()
+        {
+            var contentHeaders = new Dictionary<string, IEnumerable<string>>
+            {
+                { "Expires", new List<string> { "-1" } }
+            };
+
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", contentHeaders);
+            this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
+                .And(x => x.GivenTheDownstreamRouteIs())
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheCacheGetIsCalledCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_continue_with_pipeline_and_cache_response()
         {
-            this.Given(x => x.GivenResponseIsNotCached())
+            this.Given(x => x.GivenResponseIsNotCached(new HttpResponseMessage()))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheCacheAddIsCalledCorrectly())
@@ -87,9 +103,9 @@
               .Returns(_response);
         }
 
-        private void GivenResponseIsNotCached()
+        private void GivenResponseIsNotCached(HttpResponseMessage responseMessage)
         {
-            _downstreamContext.DownstreamResponse = new DownstreamResponse(new HttpResponseMessage());
+            _downstreamContext.DownstreamResponse = new DownstreamResponse(responseMessage);
         }
 
         private void GivenTheDownstreamRouteIs()
