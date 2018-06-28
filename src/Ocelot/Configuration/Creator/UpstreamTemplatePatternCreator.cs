@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Creator
 {
     public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
     {
-        private const string RegExMatchEverything = "[0-9a-zA-Z].*";
+        private const string RegExMatchOneOrMoreOfEverything = ".+";
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
         private const string RegExForwardSlashOnly = "^/$";
@@ -37,7 +37,7 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var placeholder in placeholders)
             {
-                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
+                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchOneOrMoreOfEverything);
             }
 
             if (upstreamTemplate == "/")
