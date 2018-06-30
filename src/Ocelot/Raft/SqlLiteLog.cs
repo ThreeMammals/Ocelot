@@ -99,6 +99,7 @@ namespace Ocelot.Raft
                     }
                 }
             }
+
             _sempaphore.Release();
             return result;
         }
@@ -120,6 +121,7 @@ namespace Ocelot.Raft
                     }
                 }
             }
+
             _sempaphore.Release();
             return result;
         }
@@ -135,6 +137,7 @@ namespace Ocelot.Raft
                     TypeNameHandling = TypeNameHandling.All
                 };
                 var data = JsonConvert.SerializeObject(log, jsonSerializerSettings);
+
                 //todo - sql injection dont copy this..
                 var sql = $"insert into logs (data) values ('{data}')";
                 _logger.LogInformation($"id: {_nodeId.Id}, sql: {sql}");
@@ -162,6 +165,7 @@ namespace Ocelot.Raft
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var sql = $"select data from logs where id = {index};";
                 _logger.LogInformation($"id: {_nodeId.Id} sql: {sql}");
@@ -188,6 +192,7 @@ namespace Ocelot.Raft
                     }
                 }
             }
+
             _sempaphore.Release();
         }
 
@@ -197,6 +202,7 @@ namespace Ocelot.Raft
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var sql = $"select data from logs where id = {index};";
                 using (var command = new SqliteCommand(sql, connection))
@@ -227,6 +233,7 @@ namespace Ocelot.Raft
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var sql = $"select data from logs where id = {index}";
                 using (var command = new SqliteCommand(sql, connection))
@@ -251,6 +258,7 @@ namespace Ocelot.Raft
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var sql = $"select id, data from logs where id >= {index}";
                 using (var command = new SqliteCommand(sql, connection))
@@ -267,10 +275,10 @@ namespace Ocelot.Raft
                             };
                             var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
                             logsToReturn.Add((id, log));
-
                         }
                     }
                 }
+
                 _sempaphore.Release();
                 return logsToReturn;
             }
@@ -283,6 +291,7 @@ namespace Ocelot.Raft
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var sql = $"select data from logs where id = {index}";
                 using (var command = new SqliteCommand(sql, connection))
@@ -299,15 +308,18 @@ namespace Ocelot.Raft
                     }
                 }
             }
+
             _sempaphore.Release();
             return result;
         }
+
         public async Task Remove(int indexOfCommand)
         {
             _sempaphore.Wait();
             using (var connection = new SqliteConnection($"Data Source={_path};"))
             {
                 connection.Open();
+
                 //todo - sql injection dont copy this..
                 var deleteSql = $"delete from logs where id >= {indexOfCommand};";
                 _logger.LogInformation($"id: {_nodeId.Id} Remove {deleteSql}");
@@ -316,6 +328,7 @@ namespace Ocelot.Raft
                     var result = await deleteCommand.ExecuteNonQueryAsync();
                 }
             }
+
             _sempaphore.Release();
         }
     }

@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Requester
         private HttpResponseMessage _response;
         private DownstreamContext _context;
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private int _count;
         private IWebHost _host;
         private IHttpClient _againHttpClient;
