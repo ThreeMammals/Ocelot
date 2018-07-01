@@ -20,7 +20,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
             var services = await _services();
-            //todo first or default could be null..
+
             if (services == null || services.Count == 0)
             {
                 return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError("There were no services in NoLoadBalancer"));

@@ -61,8 +61,8 @@
 
             downstreamRoute = new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
 
-            _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y)  => downstreamRoute);
-
+            _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y) => downstreamRoute);
+        
             return downstreamRoute;
         }
 

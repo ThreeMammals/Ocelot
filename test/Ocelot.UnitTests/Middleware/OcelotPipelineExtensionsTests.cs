@@ -45,7 +45,6 @@ namespace Ocelot.UnitTests.Middleware
             services.AddDiscoveryClient(new DiscoveryOptions 
             {
                 ClientType = DiscoveryClientType.EUREKA,
-                //options can not be null
                 ClientOptions = new EurekaClientOptions()
                 {
                     ShouldFetchRegistry = false,
