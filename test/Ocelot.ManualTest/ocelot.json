@@ -17,20 +17,15 @@
     },
     {
       "DownstreamPathTemplate": "/api/values",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "UpstreamPathTemplate": "/api/values",
       "UpstreamHttpMethod": [ "Get" ],
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5007
+          "Host": "testapivalues.azurewebsites.net",
+          "Port": 443
         }
-      ],
-      "HttpHandlerOptions": {
-        "AllowAutoRedirect": true,
-        "UseCookieContainer": true,
-        "UseTracing": true
-      }
+      ]
     },
     {
       "DownstreamPathTemplate": "/",
