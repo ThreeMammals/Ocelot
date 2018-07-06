@@ -16,6 +16,22 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/v1/todo/",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/v1/todo/",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lxtodo.azurewebsites.net",
+          "Port": 80
+        }
+    
+      ],
+      "DownstreamHeaderTransform": {
+        "Location": "{DownstreamBaseUrl}, {BaseUrl}"
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/values",
       "DownstreamScheme": "https",
       "UpstreamPathTemplate": "/api/values",
