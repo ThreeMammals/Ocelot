@@ -4,7 +4,7 @@
 
     public interface IHttpClientCache
     {
-        IHttpClient Get(string id);
-        void Set(string id, IHttpClient handler, TimeSpan expirationTime);
+        IHttpClient Get(string key);
+        void Set(string key, IHttpClient handler, TimeSpan expirationTime);
     }
 }
