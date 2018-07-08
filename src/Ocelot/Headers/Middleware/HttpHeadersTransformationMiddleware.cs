@@ -38,6 +38,11 @@ namespace Ocelot.Headers.Middleware
 
             await _next.Invoke(context);
 
+            if(context.IsError)
+            {
+                return;
+            }
+
             var postFAndRs = context.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
             _postReplacer.Replace(context.DownstreamResponse, postFAndRs, context.DownstreamRequest);
