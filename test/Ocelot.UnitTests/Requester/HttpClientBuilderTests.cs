@@ -23,15 +23,18 @@ namespace Ocelot.UnitTests.Requester
 {
     public class HttpClientBuilderTests : IDisposable
     {
-        private readonly HttpClientBuilder _builder;
+        private HttpClientBuilder _builder;
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
         private DownstreamContext _context;
         private readonly Mock<IHttpClientCache> _cacheHandlers;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private int _count;
         private IWebHost _host;
+        private IHttpClient _againHttpClient;
+        private IHttpClient _firstHttpClient;
+        private MemoryHttpClientCache _realCache;
 
         public HttpClientBuilderTests()
         {
@@ -59,6 +62,47 @@ namespace Ocelot.UnitTests.Requester
                 .When(x => WhenIBuild())
                 .Then(x => ThenTheHttpClientShouldNotBeNull())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_get_from_cache()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
+
+            this.Given(x => GivenARealCache())
+                .And(x => GivenTheFactoryReturns())
+                .And(x => GivenARequest(reRoute))
+                .And(x => WhenIBuildTheFirstTime())
+                .And(x => WhenISave())
+                .And(x => WhenIBuildAgain())
+                .And(x => WhenISave())
+                .When(x => WhenIBuildAgain())
+                .Then(x => ThenTheHttpClientIsFromTheCache())
+                .BDDfy();
+        }
+
+        private void GivenARealCache()
+        {
+            _realCache = new MemoryHttpClientCache();
+            _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
+        }
+
+        private void ThenTheHttpClientIsFromTheCache()
+        {
+            _againHttpClient.ShouldBe(_firstHttpClient);
+        }
+
+        private void WhenISave()
+        {
+            _builder.Save();
         }
 
         [Fact]
@@ -300,6 +344,17 @@ namespace Ocelot.UnitTests.Requester
         private void WhenIBuild()
         {
             _httpClient = _builder.Create(_context);
+        }
+
+        private void WhenIBuildTheFirstTime()
+        {
+            _firstHttpClient = _builder.Create(_context);
+        }
+
+        private void WhenIBuildAgain()
+        {
+            _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
+            _againHttpClient = _builder.Create(_context);
         }
 
         private void ThenTheHttpClientShouldNotBeNull()

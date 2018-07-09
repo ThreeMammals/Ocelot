@@ -16,21 +16,32 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/values",
+      "DownstreamPathTemplate": "/api/v1/todo/",
       "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/v1/todo/",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lxtodo.azurewebsites.net",
+          "Port": 80
+        }
+    
+      ],
+      "DownstreamHeaderTransform": {
+        "Location": "{DownstreamBaseUrl}, {BaseUrl}"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "https",
       "UpstreamPathTemplate": "/api/values",
       "UpstreamHttpMethod": [ "Get" ],
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5007
+          "Host": "testapivalues.azurewebsites.net",
+          "Port": 443
         }
-      ],
-      "HttpHandlerOptions": {
-        "AllowAutoRedirect": true,
-        "UseCookieContainer": true,
-        "UseTracing": true
-      }
+      ]
     },
     {
       "DownstreamPathTemplate": "/",
@@ -114,7 +125,8 @@
       "HttpHandlerOptions": {
         "AllowAutoRedirect": true,
         "UseCookieContainer": true,
-        "UseTracing": true
+        "UseTracing": true,
+        "UseProxy": true
       },
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,

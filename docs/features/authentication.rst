@@ -100,7 +100,7 @@ In order to use IdentityServer bearer tokens register your IdentityServer servic
     public void ConfigureServices(IServiceCollection services)
     {
         var authenticationProviderKey = "TestKey";
-        var options = o =>
+        Action<IdentityServerAuthenticationOptions> options = o =>
             {
                 o.Authority = "https://whereyouridentityserverlives.com";
                 o.ApiName = "api";
