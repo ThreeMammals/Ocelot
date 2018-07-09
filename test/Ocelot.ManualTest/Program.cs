@@ -9,6 +9,9 @@
     using Ocelot.Middleware;
     using System;
     using IdentityServer4.AccessTokenValidation;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using System.Threading;
 
     public class Program
     {
@@ -35,10 +38,11 @@
                         });
 
                     s.AddOcelot()
-                        .AddCacheManager(x =>
-                        {
-                            x.WithDictionaryHandle();
-                        })
+                        .AddDelegatingHandler<FakeHandler>(true)
+                        // .AddCacheManager(x =>
+                        // {
+                        //     x.WithDictionaryHandle();
+                        // })
                       /*.AddOpenTracing(option =>
                       {
                           option.CollectorUrl = "http://localhost:9618";
@@ -58,6 +62,17 @@
                 })
                 .Build()
                 .Run();                
+        }
+    }
+
+    public class FakeHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Console.WriteLine(request.RequestUri);
+
+            //do stuff and optionally call the base handler..
+            return await base.SendAsync(request, cancellationToken);
         }
     }
 }
