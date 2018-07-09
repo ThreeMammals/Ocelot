@@ -43,6 +43,6 @@
         /// <summary>
         /// This is an extension that will branch to different pipes
         /// </summary>
-        public List<MapWhenOptions> MapWhenOcelotPipeline { get; set; } = new List<MapWhenOptions>();
+        public List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>> MapWhenOcelotPipeline { get; } = new List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>>();
     }
 }
