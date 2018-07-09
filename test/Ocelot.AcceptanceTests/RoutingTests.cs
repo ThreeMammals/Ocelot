@@ -984,7 +984,7 @@ namespace Ocelot.AcceptanceTests
                     app.Run(async context =>
                     {   
                         _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
+                        
                         if(_downstreamPath != basePath)
                         {
                             context.Response.StatusCode = statusCode;
