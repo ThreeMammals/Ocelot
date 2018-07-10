@@ -5,8 +5,9 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
     public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFinder
     {
-        public Response<List<PlaceholderNameAndValue>> Find(string path, string pathTemplate)
+        public Response<List<PlaceholderNameAndValue>> Find(string path, string queryString, string pathTemplate)
         {
+            path = $"{path}{queryString}";
             var placeHolderNameAndValues = new List<PlaceholderNameAndValue>();
 
             int counterForPath = 0;

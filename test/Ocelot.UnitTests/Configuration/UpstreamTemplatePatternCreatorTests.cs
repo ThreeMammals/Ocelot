@@ -191,6 +191,38 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_create_template_pattern_that_has_query_string()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/api/products/{productId}?foo=1",
+                ReRouteIsCaseSensitive = true
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.+?foo=1$"))
+                .And(x => ThenThePriorityIs(1))
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_create_template_pattern_that_has_query_string_parameter()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/api/products/{productId}?foo={foo}",
+                ReRouteIsCaseSensitive = true
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^/api/products/.+?foo=.+$"))
+                .And(x => ThenThePriorityIs(1))
+                .BDDfy();
+        }
+
         private void GivenTheFollowingFileReRoute(FileReRoute fileReRoute)
         {
             _fileReRoute = fileReRoute;

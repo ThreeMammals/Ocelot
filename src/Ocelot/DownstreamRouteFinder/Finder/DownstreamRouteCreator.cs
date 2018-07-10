@@ -21,7 +21,7 @@
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRoute>>();
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string upstreamUrlPath, string queryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
         {            
             var serviceName = GetServiceName(upstreamUrlPath);
 

@@ -18,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> Get(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string path, string queryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
@@ -28,20 +28,22 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             foreach (var reRoute in applicableReRoutes)
             {
-                var urlMatch = _urlMatcher.Match(path, reRoute.UpstreamTemplatePattern.Template);
+                var urlMatch = _urlMatcher.Match(path, queryString, reRoute.UpstreamTemplatePattern.Template);
 
                 if (urlMatch.Data.Match)
                 {
-                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(path, reRoute));
+                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(path, queryString, reRoute));
                 }
             }
 
             if (downstreamRoutes.Any())
             {
-                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
-                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var noUpstreamHost = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var hasUpstreamHost = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
 
-                return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
+                return noUpstreamHost != null 
+                    ? new OkResponse<DownstreamRoute>(noUpstreamHost) 
+                    : new OkResponse<DownstreamRoute>(hasUpstreamHost);
             }
 
             return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(path, httpMethod));
@@ -53,9 +55,9 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                    (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost);
         }
 
-        private DownstreamRoute GetPlaceholderNamesAndValues(string path, ReRoute reRoute)
+        private DownstreamRoute GetPlaceholderNamesAndValues(string path, string queryString, ReRoute reRoute)
         {
-            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, reRoute.UpstreamPathTemplate.Value);
+            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, queryString, reRoute.UpstreamPathTemplate.Value);
 
             return new DownstreamRoute(templatePlaceholderNameAndValues.Data, reRoute);
         }

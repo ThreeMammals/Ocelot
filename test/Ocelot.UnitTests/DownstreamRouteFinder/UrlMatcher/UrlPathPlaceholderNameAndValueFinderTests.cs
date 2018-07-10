@@ -14,9 +14,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         private string _downstreamUrlPath;
         private string _downstreamPathTemplate;
         private Response<List<PlaceholderNameAndValue>> _result;
+        private string _downstreamQueryString;
 
         public UrlPathPlaceholderNameAndValueFinderTests()
         {
+            _downstreamQueryString = "";
             _finder = new UrlPathPlaceholderNameAndValueFinder();
         }
 
@@ -260,7 +262,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 
         private void WhenIFindTheUrlVariableNamesAndValues()
         {
-            _result = _finder.Find(_downstreamUrlPath, _downstreamPathTemplate);
+            _result = _finder.Find(_downstreamUrlPath, _downstreamQueryString, _downstreamPathTemplate);
         }
     }
 } 
