@@ -215,5 +215,4 @@ Ocelot allow's you to specify a querystring as part of the DownstreamPathTemplat
         }
     }
 
-In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a 
-query string parameter called unitId!
+In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a query string parameter called unitId! Please note you cannot use query string parameters to match routes in the UpstreamPathTemplate.
