@@ -68,6 +68,7 @@
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123"))
+                .And(x => ThenTheQueryStringIs("?q=123"))
                 .BDDfy();
         }
 
@@ -226,6 +227,11 @@
         private void ThenTheDownstreamRequestUriIs(string expectedUri)
         {
             _downstreamContext.DownstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString.ShouldBe(expectedUri);
+        }
+
+        private void ThenTheQueryStringIs(string queryString)
+        {
+            _downstreamContext.DownstreamRequest.Query.ShouldBe(queryString);
         }
     }
 }
