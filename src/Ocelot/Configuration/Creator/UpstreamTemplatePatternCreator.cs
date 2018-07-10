@@ -50,8 +50,6 @@ namespace Ocelot.Configuration.Creator
                 upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length -1, 1) + "(/|)";
             }
 
-            upstreamTemplate = upstreamTemplate.Replace("?", "\\?");
-
             var route = reRoute.ReRouteIsCaseSensitive 
                 ? $"^{upstreamTemplate}{RegExMatchEndString}" 
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";

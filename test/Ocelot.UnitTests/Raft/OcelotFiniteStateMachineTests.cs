@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Moq;
 using Ocelot.Configuration.Setter;
 using Ocelot.Raft;
@@ -33,9 +32,9 @@ namespace Ocelot.UnitTests.Raft
             _command = command;
         }
 
-        private async Task WhenTheCommandIsHandled()
+        private void WhenTheCommandIsHandled()
         {
-             await _fsm.Handle(new Rafty.Log.LogEntry(_command, _command.GetType(), 0));
+             _fsm.Handle(new Rafty.Log.LogEntry(_command, _command.GetType(), 0));
         }
 
         private void ThenTheStateIsUpdated()

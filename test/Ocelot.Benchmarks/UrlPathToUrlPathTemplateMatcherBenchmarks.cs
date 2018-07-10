@@ -33,7 +33,7 @@ namespace Ocelot.Benchmarks
         [Benchmark(Baseline = true)]
         public void Baseline()
         {
-            _urlPathMatcher.Match(_downstreamUrlPath, "", _downstreamUrlPathTemplate);
+            _urlPathMatcher.Match(_downstreamUrlPath, _downstreamUrlPathTemplate);
         }
 
         // * Summary *

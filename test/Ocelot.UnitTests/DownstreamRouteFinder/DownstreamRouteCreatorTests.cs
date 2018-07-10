@@ -28,11 +28,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private IInternalConfiguration _configuration;
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<DownstreamRoute> _resultTwo;
-        private string _upstreamUrlQueryString;
 
         public DownstreamRouteCreatorTests()
         {
-            _upstreamUrlQueryString = "";
             _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
             _qoSOptions = new QoSOptionsBuilder().Build();
             _handlerOptions = new HttpHandlerOptionsBuilder().Build();
@@ -249,12 +247,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICreate()
         {
-            _result = _creator.Get(_upstreamUrlPath, _upstreamUrlQueryString, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _result = _creator.Get(_upstreamUrlPath, _upstreamHttpMethod, _configuration, _upstreamHost);
         }
 
         private void WhenICreateAgain()
         {
-            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamUrlQueryString, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamHttpMethod, _configuration, _upstreamHost);
         }
 
         private void ThenTheDownstreamRoutesAreTheSameReference()
