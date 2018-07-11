@@ -185,3 +185,34 @@ Dynamic Routing
 This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. The idea is to enable dynamic routing 
 when using a service discovery provider so you don't have to provide the ReRoute config. See the docs :ref:`service-discovery` if 
 this sounds interesting to you.
+
+Query Strings
+^^^^^^^^^^^^^
+
+Ocelot allow's you to specify a querystring as part of the DownstreamPathTemplate like the example below.
+
+.. code-block:: json
+
+    {
+        "ReRoutes": [
+            {
+                "DownstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+                "UpstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
+                "UpstreamHttpMethod": [
+                    "Get"
+                ],
+                "DownstreamScheme": "http",
+                "DownstreamHostAndPorts": [
+                    {
+                        "Host": "localhost",
+                        "Port": 50110
+                    }
+                ]
+            }
+        ],
+        "GlobalConfiguration": {
+            "UseServiceDiscovery": false
+        }
+    }
+
+In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a query string parameter called unitId! Please note you cannot use query string parameters to match routes in the UpstreamPathTemplate.

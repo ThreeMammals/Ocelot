@@ -136,6 +136,11 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
             }
         }]
 
+Okta
+^^^^
+
+I have not had time to write this up but we have `Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
+
 Allowed Scopes
 ^^^^^^^^^^^^^
 
