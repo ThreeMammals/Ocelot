@@ -1,17 +1,15 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System;
-using System.Linq;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
+    using System.Text.RegularExpressions;
+
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
@@ -55,12 +53,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 {
                     context.DownstreamRequest.AbsolutePath = GetPath(dsPath);
                     context.DownstreamRequest.Query = GetQueryString(dsPath);
-
-                    // todo - do we need to add anything from the request query string onto the query from the
-                    // templae?
                 }
-                else 
+                else
                 {
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(context);
+
                     context.DownstreamRequest.AbsolutePath = dsPath.Value;
                 }
             }
@@ -70,14 +67,37 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             await _next.Invoke(context);
         }
 
+        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext context)
+        {
+            foreach (var nAndV in context.TemplatePlaceholderNameAndValues)
+            {
+                var name = nAndV.Name.Replace("{", "").Replace("}", "");
+
+                if (context.DownstreamRequest.Query.Contains(name) &&
+                    context.DownstreamRequest.Query.Contains(nAndV.Value))
+                {
+                    var questionMarkOrAmpersand = context.DownstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
+                    context.DownstreamRequest.Query = context.DownstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
+
+                    var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
+                    context.DownstreamRequest.Query = rgx.Replace(context.DownstreamRequest.Query, "");
+
+                    if (!string.IsNullOrEmpty(context.DownstreamRequest.Query))
+                    {
+                        context.DownstreamRequest.Query = '?' + context.DownstreamRequest.Query.Substring(1);
+                    }
+                }
+            }
+        }
+
         private string GetPath(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(0, dsPath.Value.IndexOf("?"));
+            return dsPath.Value.Substring(0, dsPath.Value.IndexOf("?", StringComparison.Ordinal));
         }
 
          private string GetQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(dsPath.Value.IndexOf("?"));
+            return dsPath.Value.Substring(dsPath.Value.IndexOf("?", StringComparison.Ordinal));
         }
 
         private bool ContainsQueryString(DownstreamPath dsPath)

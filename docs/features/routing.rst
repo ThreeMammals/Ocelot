@@ -215,4 +215,33 @@ Ocelot allow's you to specify a querystring as part of the DownstreamPathTemplat
         }
     }
 
-In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a query string parameter called unitId! Please note you cannot use query string parameters to match routes in the UpstreamPathTemplate.
+In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a query string parameter called unitId!
+
+Ocelot will also allow you to put query string parametrs in the UpstreamPathTemplate so you can match certain queries to certain services.
+
+.. code-block:: json
+
+    {
+        "ReRoutes": [
+            {
+                "DownstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
+                "UpstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+                "UpstreamHttpMethod": [
+                    "Get"
+                ],
+                "DownstreamScheme": "http",
+                "DownstreamHostAndPorts": [
+                    {
+                        "Host": "localhost",
+                        "Port": 50110
+                    }
+                ]
+            }
+        ],
+        "GlobalConfiguration": {
+            "UseServiceDiscovery": false
+        }
+    }
+
+In this example Ocelot will only match requests that have a matching url path and the querystring starts with unitId=something. You can have other queries after this
+but you must start with the matching parameter. Also in this example Ocelot will swap the unitId param from the query string and use it in the downstream request path. 
