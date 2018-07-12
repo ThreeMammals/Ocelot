@@ -25,6 +25,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private Response<UrlMatch> _match;
         private string _upstreamHttpMethod;
         private string _upstreamHost;
+        private string _upstreamQuery;
 
         public DownstreamRouteFinderTests()
         {
@@ -48,22 +49,22 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                         .Build(),
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -73,13 +74,13 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         new ReRouteBuilder()
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                                 .WithUpstreamHttpMethod(new List<string> { "Post" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                                 .Build())
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                             .Build()
                         )))
                 .BDDfy();
@@ -100,22 +101,22 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 0, false))
                         .Build(),
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -125,10 +126,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         new ReRouteBuilder()
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                                 .WithUpstreamHttpMethod(new List<string> { "Post" })
                                 .Build())
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("test", 1, false))
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
                             .Build()
                         )))
@@ -151,11 +152,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                 ))
@@ -169,10 +170,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                     .WithDownstreamPathTemplate("someDownstreamPath")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                     .Build())
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build()
                 )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
@@ -195,11 +196,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                 ))
@@ -213,10 +214,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                     .WithDownstreamPathTemplate("someDownstreamPath")
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                     .Build())
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build()
                 )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly("matchInUrlMatcher"))
@@ -240,11 +241,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                     ))
@@ -257,10 +258,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build()
                         )))
                 .BDDfy();
@@ -283,22 +284,22 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                         .Build(),
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPathForAPost")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                     ))
@@ -311,10 +312,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPathForAPost")
                                 .WithUpstreamHttpMethod(new List<string> { "Post" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build()
                         )))
                 .BDDfy();
@@ -333,11 +334,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("somPath")
                                 .WithUpstreamPathTemplate("somePath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1, false))
                                 .Build())
                         .WithUpstreamPathTemplate("somePath")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("somePath", 1, false))
                         .Build(),   
                      }, string.Empty, serviceProviderConfig
                  ))
@@ -367,11 +368,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                     ))
@@ -384,10 +385,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Post" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build()
                         )))
                 .BDDfy();
@@ -410,11 +411,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string>())
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string>())
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                     ))
@@ -427,10 +428,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Post" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Post" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build()
                         )))
                 .BDDfy();
@@ -453,11 +454,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamPathTemplate("someDownstreamPath")
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                             .Build())
                         .WithUpstreamPathTemplate("someUpstreamPath")
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("", 1, false))
                         .Build()
                 }, string.Empty, serviceProviderConfig
                     ))
@@ -486,12 +487,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
@@ -506,10 +507,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build()
                     )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
@@ -533,11 +534,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build()
                     }, string.Empty, serviceProviderConfig
                 ))
@@ -551,10 +552,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build()
                     )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly())
@@ -576,12 +577,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build(),
                         new ReRouteBuilder()
@@ -589,12 +590,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { }) // empty list of methods
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { }) // empty list of methods
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
@@ -622,12 +623,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string>())
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string>())
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
@@ -655,12 +656,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string>())
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string>())
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
@@ -689,23 +690,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .WithDownstreamPathTemplate("THENULLPATH")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build(),
                         new ReRouteBuilder()
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamPathTemplate("someUpstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .WithUpstreamHost("MATCH")
                                 .Build())
                             .WithUpstreamPathTemplate("someUpstreamPath")
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .WithUpstreamHost("MATCH")
                             .Build()
                     }, string.Empty, serviceProviderConfig
@@ -720,10 +721,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
                                 .WithUpstreamHttpMethod(new List<string> { "Get" })
-                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
-                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1))
+                            .WithUpstreamTemplatePattern(new UpstreamPathTemplate("someUpstreamPath", 1, false))
                             .Build()
                     )))
                 .And(x => x.ThenTheUrlMatcherIsCalledCorrectly(2))
@@ -738,7 +739,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<PlaceholderNameAndValue>> response)
         {
             _finder
-                .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(response);
         }
 
@@ -755,32 +756,32 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void ThenTheUrlMatcherIsCalledCorrectly()
         {
             _mockMatcher
-                .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Once);
+                .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _reRoutesConfig[0].UpstreamPathTemplate.Value, _reRoutesConfig[0].UpstreamTemplatePattern.ContainsQueryString), Times.Once);
         }
 
         private void ThenTheUrlMatcherIsCalledCorrectly(int times)
         {
             _mockMatcher
-                .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Exactly(times));
+                .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _reRoutesConfig[0].UpstreamPathTemplate.Value, _reRoutesConfig[0].UpstreamTemplatePattern.ContainsQueryString), Times.Exactly(times));
         }
 
         private void ThenTheUrlMatcherIsCalledCorrectly(string expectedUpstreamUrlPath)
         {
             _mockMatcher
-                .Verify(x => x.Match(expectedUpstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Once);
+                .Verify(x => x.Match(expectedUpstreamUrlPath, _upstreamQuery, _reRoutesConfig[0].UpstreamPathTemplate.Value, _reRoutesConfig[0].UpstreamTemplatePattern.ContainsQueryString), Times.Once);
         }
 
         private void ThenTheUrlMatcherIsNotCalled()
         {
             _mockMatcher
-                .Verify(x => x.Match(_upstreamUrlPath, _reRoutesConfig[0].UpstreamPathTemplate.Value), Times.Never);
+                .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _reRoutesConfig[0].UpstreamPathTemplate.Value, _reRoutesConfig[0].UpstreamTemplatePattern.ContainsQueryString), Times.Never);
         }
 
         private void GivenTheUrlMatcherReturns(Response<UrlMatch> match)
         {
             _match = match;
             _mockMatcher
-                .Setup(x => x.Match(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.Match(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
                 .Returns(_match);
         }
 
@@ -797,7 +798,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.Get(_upstreamUrlPath, _upstreamHttpMethod, _config, _upstreamHost);
+            _result = _downstreamRouteFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost);
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

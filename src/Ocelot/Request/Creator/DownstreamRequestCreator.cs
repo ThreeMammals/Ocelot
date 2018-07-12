@@ -2,13 +2,12 @@ namespace Ocelot.Request.Creator
 {
     using System.Net.Http;
     using Ocelot.Request.Middleware;
-    using System.Runtime.InteropServices;
     using Ocelot.Infrastructure;
 
     public class DownstreamRequestCreator : IDownstreamRequestCreator
     {
         private readonly IFrameworkDescription _framework;
-        private const string dotNetFramework = ".NET Framework";
+        private const string DotNetFramework = ".NET Framework";
 
         public DownstreamRequestCreator(IFrameworkDescription framework)
         {
@@ -24,8 +23,7 @@ namespace Ocelot.Request.Creator
                 * And MS HttpClient in Full Framework actually rejects it.
                 * see #366 issue 
             **/
-
-            if(_framework.Get().Contains(dotNetFramework))
+            if(_framework.Get().Contains(DotNetFramework))
             {
                 if (request.Method == HttpMethod.Get ||
                     request.Method == HttpMethod.Head ||

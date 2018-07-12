@@ -73,6 +73,103 @@
         }
 
         [Fact]
+        public void should_replace_query_string()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithDownstreamScheme("https")
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
+                            new PlaceholderNameAndValue("{unitId}", "2")
+                        },
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates"))
+                .And(x => ThenTheQueryStringIs(""))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_replace_query_string_but_leave_non_placeholder_queries()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithDownstreamScheme("https")
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
+                            new PlaceholderNameAndValue("{unitId}", "2")
+                        },
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2&productId=2"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2"))
+                .And(x => ThenTheQueryStringIs("?productId=2"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_replace_query_string_exact_match()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates/{unitIdIty}")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithDownstreamScheme("https")
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRoute(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
+                            new PlaceholderNameAndValue("{unitId}", "2"),
+                            new PlaceholderNameAndValue("{unitIdIty}", "3")
+                        },
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2?unitIdIty=3"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates/3"))
+                .And(x => ThenTheQueryStringIs(""))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_not_create_service_fabric_url()
         {
             var downstreamReRoute = new DownstreamReRouteBuilder()

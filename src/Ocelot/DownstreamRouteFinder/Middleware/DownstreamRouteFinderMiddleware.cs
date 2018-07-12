@@ -33,13 +33,15 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             var upstreamUrlPath = context.HttpContext.Request.Path.ToString();
 
+            var upstreamQueryString = context.HttpContext.Request.QueryString.ToString();
+
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
             var provider = _factory.Get(context.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
+            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
 
             if (downstreamRoute.IsError)
             {

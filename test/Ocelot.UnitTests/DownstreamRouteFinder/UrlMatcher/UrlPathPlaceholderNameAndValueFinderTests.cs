@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         private string _downstreamUrlPath;
         private string _downstreamPathTemplate;
         private Response<List<PlaceholderNameAndValue>> _result;
+        private string _query;
 
         public UrlPathPlaceholderNameAndValueFinderTests()
         {
@@ -111,6 +112,91 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products/"))
                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
                 .And(x => x.ThenTheTemplatesVariablesAre(new List<PlaceholderNameAndValue>()))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_find_query_string()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new PlaceholderNameAndValue("{productId}", "1")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products"))
+                .And(x => x.GivenIHaveAQuery("?productId=1"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products?productId={productId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_find_query_string_dont_include_hardcoded()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new PlaceholderNameAndValue("{productId}", "1")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products"))
+                .And(x => x.GivenIHaveAQuery("?productId=1&categoryId=2"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products?productId={productId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_find_multiple_query_string()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new PlaceholderNameAndValue("{productId}", "1"),
+                new PlaceholderNameAndValue("{categoryId}", "2")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products"))
+                .And(x => x.GivenIHaveAQuery("?productId=1&categoryId=2"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products?productId={productId}&categoryId={categoryId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_find_multiple_query_string_and_path()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new PlaceholderNameAndValue("{productId}", "1"),
+                new PlaceholderNameAndValue("{categoryId}", "2"),
+                new PlaceholderNameAndValue("{account}", "3")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products/3"))
+                .And(x => x.GivenIHaveAQuery("?productId=1&categoryId=2"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products/{account}?productId={productId}&categoryId={categoryId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_find_multiple_query_string_and_path_that_ends_with_slash()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new PlaceholderNameAndValue("{productId}", "1"),
+                new PlaceholderNameAndValue("{categoryId}", "2"),
+                new PlaceholderNameAndValue("{account}", "3")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/products/3/"))
+                .And(x => x.GivenIHaveAQuery("?productId=1&categoryId=2"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/products/{account}/?productId={productId}&categoryId={categoryId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
                 .BDDfy();
         }
 
@@ -260,7 +346,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 
         private void WhenIFindTheUrlVariableNamesAndValues()
         {
-            _result = _finder.Find(_downstreamUrlPath, _downstreamPathTemplate);
+            _result = _finder.Find(_downstreamUrlPath, _query, _downstreamPathTemplate);
+        }
+
+        private void GivenIHaveAQuery(string query)
+        {
+            _query = query;
         }
     }
 } 

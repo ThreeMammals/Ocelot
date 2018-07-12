@@ -28,6 +28,7 @@ namespace Ocelot.Request.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var downstreamRequest = await _requestMapper.Map(context.HttpContext.Request);
+
             if (downstreamRequest.IsError)
             {
                 SetPipelineError(context, downstreamRequest.Errors);

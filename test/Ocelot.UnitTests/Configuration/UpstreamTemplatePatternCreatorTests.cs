@@ -10,7 +10,7 @@ namespace Ocelot.UnitTests.Configuration
     public class UpstreamTemplatePatternCreatorTests
     {
         private FileReRoute _fileReRoute;
-        private UpstreamTemplatePatternCreator _creator;
+        private readonly UpstreamTemplatePatternCreator _creator;
         private UpstreamPathTemplate _result;
 
         public UpstreamTemplatePatternCreatorTests()
@@ -187,6 +187,36 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/.+/products/variants/.+(/|)$"))
+                .And(x => ThenThePriorityIs(1))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_template_pattern_that_matches_query_string()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/api/subscriptions/.+/updates\\?unitId=.+$"))
+                .And(x => ThenThePriorityIs(1))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_template_pattern_that_matches_query_string_with_multiple_params()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId={productId}"
+            };
+
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
+                .When(x => x.WhenICreateTheTemplatePattern())
+                .Then(x => x.ThenTheFollowingIsReturned("^(?i)/api/subscriptions/.+/updates\\?unitId=.+&productId=.+$"))
                 .And(x => ThenThePriorityIs(1))
                 .BDDfy();
         }

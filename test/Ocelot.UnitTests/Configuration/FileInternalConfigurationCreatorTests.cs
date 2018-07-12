@@ -599,7 +599,7 @@
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false))
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
@@ -628,7 +628,7 @@
                         .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamPathTemplate("/api/products/{productId}")
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1))
+                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false))
                         .Build()
                 }))
                 .BDDfy();
@@ -922,7 +922,7 @@
         {
             _upstreamTemplatePatternCreator
                 .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(new UpstreamPathTemplate(pattern, 1));
+                .Returns(new UpstreamPathTemplate(pattern, 1, false));
         }
 
         private void ThenTheRequestIdKeyCreatorIsCalledCorrectly()
