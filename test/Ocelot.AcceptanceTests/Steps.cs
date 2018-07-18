@@ -823,6 +823,11 @@ namespace Ocelot.AcceptanceTests
             _postContent = new StringContent(postcontent);
         }
 
+        public void GivenThePostHasContentType(string postcontent)
+        {
+            _postContent.Headers.ContentType = new MediaTypeHeaderValue(postcontent);
+        }
+
         public void GivenThePostHasGzipContent(object input)
         {
             var json = JsonConvert.SerializeObject(input);
