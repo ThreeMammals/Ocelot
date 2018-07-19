@@ -4,11 +4,15 @@ using System;
 using System.Net.Http;
 using IdentityServer4.AccessTokenValidation;
 using Ocelot.Middleware.Multiplexer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Ocelot.DependencyInjection
 {
     public interface IOcelotBuilder
     {
+        IServiceCollection Services { get; }
+        IConfiguration Configuration { get; }
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
 
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);

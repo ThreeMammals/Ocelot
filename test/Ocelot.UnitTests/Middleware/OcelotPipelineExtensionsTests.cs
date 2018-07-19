@@ -3,8 +3,13 @@ namespace Ocelot.UnitTests.Middleware
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.DependencyInjection;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.DownstreamUrlCreator.Middleware;
+    using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Pipeline;
+    using Ocelot.Request.Middleware;
+    using Ocelot.WebSockets.Middleware;
     using Pivotal.Discovery.Client;
     using Shouldly;
     using Steeltoe.Common.Discovery;
@@ -26,6 +31,16 @@ namespace Ocelot.UnitTests.Middleware
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_expand_pipeline()
+        {
+            this.Given(_ => GivenTheDepedenciesAreSetUp())
+                 .When(_ => WhenIExpandBuild())
+                 .Then(_ => ThenThePipelineIsBuilt())
+                 .BDDfy();
+        }
+
+
         private void ThenThePipelineIsBuilt()
         {
             _handlers.ShouldNotBeNull();
@@ -35,6 +50,23 @@ namespace Ocelot.UnitTests.Middleware
         {
             _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
         }
+
+        private void WhenIExpandBuild()
+        {
+            OcelotPipelineConfiguration configuration = new OcelotPipelineConfiguration();
+            configuration.MapWhenOcelotPipeline.Add((app) =>
+            {
+                app.UseDownstreamRouteFinderMiddleware();
+                app.UseDownstreamRequestInitialiser();
+                app.UseLoadBalancingMiddleware();
+                app.UseDownstreamUrlCreatorMiddleware();
+                app.UseWebSocketsProxyMiddleware();
+
+                return context => context.HttpContext.WebSockets.IsWebSocketRequest;
+            });
+            _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+        }
+
 
         private void GivenTheDepedenciesAreSetUp()
         {

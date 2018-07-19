@@ -79,6 +79,8 @@ namespace Ocelot.UnitTests.Middleware
             del.Invoke(_downstreamContext);
         }
 
+  
+
         private void ThenTheFuncIsInThePipeline()
         {
             _counter.ShouldBe(1);

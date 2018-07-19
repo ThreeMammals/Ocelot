@@ -55,6 +55,10 @@ namespace Ocelot.DependencyInjection
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configurationRoot;
 
+        public IServiceCollection Services => _services;
+
+        public IConfiguration Configuration => _configurationRoot;
+
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
