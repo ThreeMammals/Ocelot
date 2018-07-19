@@ -237,8 +237,8 @@ namespace Ocelot.AcceptanceTests
                 {
                     s.AddSingleton(_webHostBuilder);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>()
-                        .AddSingletonDelegatingHandler<TWo>();
+                        .AddDelegatingHandler<TOne>()
+                        .AddDelegatingHandler<TWo>();
                 })
                 .Configure(a =>
                 {
@@ -303,8 +303,39 @@ namespace Ocelot.AcceptanceTests
                 {
                     s.AddSingleton(_webHostBuilder);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>(true)
-                        .AddSingletonDelegatingHandler<TWo>(true);
+                        .AddDelegatingHandler<TOne>(true)
+                        .AddDelegatingHandler<TWo>(true);
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>() 
+            where TOne : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    config.AddJsonFile("ocelot.json");
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddOcelot()
+                        .AddDelegatingHandler<TOne>(true);
                 })
                 .Configure(a =>
                 {
@@ -336,7 +367,7 @@ namespace Ocelot.AcceptanceTests
                     s.AddSingleton(_webHostBuilder);
                     s.AddSingleton<FakeDependency>(dependency);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>(true);
+                        .AddDelegatingHandler<TOne>(true);
                 })
                 .Configure(a =>
                 {

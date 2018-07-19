@@ -86,7 +86,7 @@
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
             _finder
-                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
+                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
                 .Returns(_downstreamRoute);
         }
 

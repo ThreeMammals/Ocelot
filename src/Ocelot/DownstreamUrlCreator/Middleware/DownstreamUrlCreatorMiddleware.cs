@@ -1,17 +1,15 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System;
-using System.Linq;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
+    using System.Text.RegularExpressions;
+
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
@@ -28,14 +26,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         public async Task Invoke(DownstreamContext context)
         {
-            var dsPath = _replacer
+            var response = _replacer
                 .Replace(context.DownstreamReRoute.DownstreamPathTemplate, context.TemplatePlaceholderNameAndValues);
 
-            if (dsPath.IsError)
+            if (response.IsError)
             {
                 Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                SetPipelineError(context, dsPath.Errors);
+                SetPipelineError(context, response.Errors);
                 return;
             }
 
@@ -43,18 +41,68 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (ServiceFabricRequest(context))
             {
-                var pathAndQuery = CreateServiceFabricUri(context, dsPath);
+                var pathAndQuery = CreateServiceFabricUri(context, response);
                 context.DownstreamRequest.AbsolutePath = pathAndQuery.path;
                 context.DownstreamRequest.Query = pathAndQuery.query;
             }
             else
             {
-                context.DownstreamRequest.AbsolutePath = dsPath.Data.Value;
+                var dsPath = response.Data;
+
+                if(ContainsQueryString(dsPath))
+                {
+                    context.DownstreamRequest.AbsolutePath = GetPath(dsPath);
+                    context.DownstreamRequest.Query = GetQueryString(dsPath);
+                }
+                else
+                {
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(context);
+
+                    context.DownstreamRequest.AbsolutePath = dsPath.Value;
+                }
             }
 
             Logger.LogDebug($"Downstream url is {context.DownstreamRequest}");
 
             await _next.Invoke(context);
+        }
+
+        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext context)
+        {
+            foreach (var nAndV in context.TemplatePlaceholderNameAndValues)
+            {
+                var name = nAndV.Name.Replace("{", "").Replace("}", "");
+
+                if (context.DownstreamRequest.Query.Contains(name) &&
+                    context.DownstreamRequest.Query.Contains(nAndV.Value))
+                {
+                    var questionMarkOrAmpersand = context.DownstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
+                    context.DownstreamRequest.Query = context.DownstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
+
+                    var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
+                    context.DownstreamRequest.Query = rgx.Replace(context.DownstreamRequest.Query, "");
+
+                    if (!string.IsNullOrEmpty(context.DownstreamRequest.Query))
+                    {
+                        context.DownstreamRequest.Query = '?' + context.DownstreamRequest.Query.Substring(1);
+                    }
+                }
+            }
+        }
+
+        private string GetPath(DownstreamPath dsPath)
+        {
+            return dsPath.Value.Substring(0, dsPath.Value.IndexOf("?", StringComparison.Ordinal));
+        }
+
+         private string GetQueryString(DownstreamPath dsPath)
+        {
+            return dsPath.Value.Substring(dsPath.Value.IndexOf("?", StringComparison.Ordinal));
+        }
+
+        private bool ContainsQueryString(DownstreamPath dsPath)
+        {
+            return dsPath.Value.Contains("?");
         }
 
         private (string path, string query) CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)

@@ -4,7 +4,7 @@ Getting Started
 Ocelot is designed to work with .NET Core only and is currently 
 built to netstandard2.0 `this <https://docs.microsoft.com/en-us/dotnet/articles/standard/library>`_ documentation may prove helpful when working out if Ocelot would be suitable for you.
 
-.NET Core 2.0
+.NET Core 2.1
 ^^^^^^^^^^^^^
 
 **Install NuGet package**

@@ -21,7 +21,7 @@
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRoute>>();
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
         {            
             var serviceName = GetServiceName(upstreamUrlPath);
 
@@ -61,8 +61,8 @@
 
             downstreamRoute = new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
 
-            _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y)  => downstreamRoute);
-
+            _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y) => downstreamRoute);
+        
             return downstreamRoute;
         }
 

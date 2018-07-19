@@ -40,6 +40,7 @@ namespace Ocelot.Requester
 
             if (httpClient != null)
             {
+                _client = httpClient;
                 return httpClient;
             }
 

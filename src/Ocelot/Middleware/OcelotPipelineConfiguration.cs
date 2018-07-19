@@ -1,6 +1,8 @@
 ﻿namespace Ocelot.Middleware
 {
+    using Ocelot.Middleware.Pipeline;
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public class OcelotPipelineConfiguration
@@ -37,6 +39,10 @@
         /// <summary>
         /// This allows the user to implement there own query string manipulation logic
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }        
+        public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
+        /// <summary>
+        /// This is an extension that will branch to different pipes
+        /// </summary>
+        public List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>> MapWhenOcelotPipeline { get; } = new List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>>();
     }
 }

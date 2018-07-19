@@ -4,11 +4,15 @@ using System;
 using System.Net.Http;
 using IdentityServer4.AccessTokenValidation;
 using Ocelot.Middleware.Multiplexer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Ocelot.DependencyInjection
 {
     public interface IOcelotBuilder
     {
+        IServiceCollection Services { get; }
+        IConfiguration Configuration { get; }
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
 
         IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
@@ -19,10 +23,7 @@ namespace Ocelot.DependencyInjection
 
         IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configOptions);
 
-        IOcelotBuilder AddSingletonDelegatingHandler<T>(bool global = false)
-            where T : DelegatingHandler;
-
-        IOcelotBuilder AddTransientDelegatingHandler<T>(bool global = false)
+        IOcelotBuilder AddDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
 
         IOcelotBuilder AddSingletonDefinedAggregator<T>() 

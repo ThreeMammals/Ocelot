@@ -53,17 +53,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_add_specific_delegating_handler_singleton()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddSpecificDelegatingHandler<FakeDelegatingHandler>())
-                .And(x => AddSpecificDelegatingHandler<FakeDelegatingHandlerTwo>())
-                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-                .And(x => ThenTheSpecificHandlersAreSingleton())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_add_global_delegating_handlers_transient()
         {
             this.Given(x => WhenISetUpOcelotServices())
@@ -71,17 +60,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .And(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .And(x => ThenTheGlobalHandlersAreTransient())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_add_global_delegating_handlers_singleton()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddGlobalDelegatingHandler<FakeDelegatingHandler>())
-                .And(x => AddGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
-                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-                .And(x => ThenTheGlobalHandlersAreSingleton())
                 .BDDfy();
         }
 
@@ -231,15 +209,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             first.ShouldNotBe(second);
         }
 
-        private void ThenTheGlobalHandlersAreSingleton()
-        {
-            var handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
-            var first = handlers[0].DelegatingHandler;
-            handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
-            var second = handlers[0].DelegatingHandler;
-            first.ShouldBe(second);
-        }
-
         private void ThenTheGlobalHandlersAreTransient()
         {
             var handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
@@ -262,13 +231,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void AddTransientGlobalDelegatingHandler<T>()
             where T : DelegatingHandler
         {
-            _ocelotBuilder.AddTransientDelegatingHandler<T>(true);
+            _ocelotBuilder.AddDelegatingHandler<T>(true);
         }
 
         private void AddSpecificTransientDelegatingHandler<T>()
             where T : DelegatingHandler
         {
-            _ocelotBuilder.AddTransientDelegatingHandler<T>();
+            _ocelotBuilder.AddDelegatingHandler<T>();
         }
 
         private void ThenTheCorrectAdminPathIsRegitered()
@@ -365,13 +334,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void AddGlobalDelegatingHandler<T>()
             where T : DelegatingHandler
         {
-            _ocelotBuilder.AddSingletonDelegatingHandler<T>(true);
+            _ocelotBuilder.AddDelegatingHandler<T>(true);
         }
 
         private void AddSpecificDelegatingHandler<T>()
             where T : DelegatingHandler
         {
-            _ocelotBuilder.AddSingletonDelegatingHandler<T>();
+            _ocelotBuilder.AddDelegatingHandler<T>();
         }
 
         private void ThenAnOcelotBuilderIsReturned()

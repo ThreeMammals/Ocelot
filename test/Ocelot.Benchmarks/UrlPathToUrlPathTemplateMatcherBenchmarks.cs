@@ -14,6 +14,7 @@ namespace Ocelot.Benchmarks
         private RegExUrlMatcher _urlPathMatcher;
         private string _downstreamUrlPath;
         private string _downstreamUrlPathTemplate;
+        private string _upstreamQuery;
 
         public UrlPathToUrlPathTemplateMatcherBenchmarks()
         {
@@ -33,7 +34,7 @@ namespace Ocelot.Benchmarks
         [Benchmark(Baseline = true)]
         public void Baseline()
         {
-            _urlPathMatcher.Match(_downstreamUrlPath, _downstreamUrlPathTemplate);
+            _urlPathMatcher.Match(_downstreamUrlPath, _upstreamQuery, _downstreamUrlPathTemplate, false);
         }
 
         // * Summary *

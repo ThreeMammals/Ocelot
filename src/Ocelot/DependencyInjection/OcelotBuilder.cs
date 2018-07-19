@@ -55,6 +55,10 @@ namespace Ocelot.DependencyInjection
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configurationRoot;
 
+        public IServiceCollection Services => _services;
+
+        public IConfiguration Configuration => _configurationRoot;
+
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
@@ -212,26 +216,7 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-        public IOcelotBuilder AddSingletonDelegatingHandler<THandler>(bool global = false) 
-            where THandler : DelegatingHandler
-        {
-            if(global)
-            {
-                _services.AddSingleton<THandler>();
-                _services.AddSingleton<GlobalDelegatingHandler>(s => {
-                    var service = s.GetService<THandler>();
-                    return new GlobalDelegatingHandler(service);
-                });
-            }
-            else
-            {
-                _services.AddSingleton<DelegatingHandler, THandler>();
-            }
-
-            return this;
-        }
-
-        public IOcelotBuilder AddTransientDelegatingHandler<THandler>(bool global = false) 
+        public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false) 
             where THandler : DelegatingHandler 
         {
             if(global)
