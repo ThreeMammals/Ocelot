@@ -30,11 +30,16 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder)
         {
+            return builder.AddOcelot(".");
+        }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder)
+        {
             const string pattern = "(?i)ocelot\\.([a-zA-Z0-9]*)(\\.json)$";
 
             var reg = new Regex(pattern);
 
-            var files = Directory.GetFiles(".")
+            var files = Directory.GetFiles(folder)
                 .Where(path => reg.IsMatch(path))
                 .ToList();
 
@@ -43,7 +48,7 @@ namespace Ocelot.DependencyInjection
             foreach (var file in files)
             {
                 // windows and unix sigh...
-                if(files.Count > 1 && (file == "./ocelot.json" || file == ".\\ocelot.json"))
+                if(files.Count > 1 && (Path.GetFileName(file) == "ocelot.json"))
                 {
                     continue;
                 }
@@ -53,7 +58,7 @@ namespace Ocelot.DependencyInjection
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
                 // windows and unix sigh...
-                if (file == "./ocelot.global.json" || file == ".\\ocelot.global.json")
+                if (Path.GetFileName(file) == "ocelot.global.json")
                 {
                     fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
                 }

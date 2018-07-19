@@ -32,14 +32,29 @@
         [Fact]
         public void should_merge_files()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles())
+            this.Given(_ => GivenMultipleConfigurationFiles(""))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
                 .BDDfy();
         }
 
-        private void GivenMultipleConfigurationFiles()
+        [Fact]
+        public void should_merge_files_in_specific_folder()
         {
+            string configFolder = "ConfigFiles";
+            this.Given(_ => GivenMultipleConfigurationFiles(configFolder))
+                .When(_ => WhenIAddOcelotConfigurationWithSpecificFolder(configFolder))
+                .Then(_ => ThenTheConfigsAreMerged())
+                .BDDfy();
+        }
+
+        private void GivenMultipleConfigurationFiles(string folder)
+        {
+            if (!string.IsNullOrEmpty(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
             _globalConfig = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -159,16 +174,28 @@
                 }
             };
 
-            File.WriteAllText("ocelot.global.json", JsonConvert.SerializeObject(_globalConfig));
-            File.WriteAllText("ocelot.reRoutesA.json", JsonConvert.SerializeObject(_reRouteA));
-            File.WriteAllText("ocelot.reRoutesB.json", JsonConvert.SerializeObject(_reRouteB));
-            File.WriteAllText("ocelot.aggregates.json", JsonConvert.SerializeObject(_aggregate));
+            string globalFilename = Path.Combine(folder, "ocelot.global.json");
+            string reroutesAFilename = Path.Combine(folder, "ocelot.reRoutesA.json");
+            string reroutesBFilename = Path.Combine(folder, "ocelot.reRoutesB.json");
+            string aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
+
+            File.WriteAllText(globalFilename, JsonConvert.SerializeObject(_globalConfig));
+            File.WriteAllText(reroutesAFilename, JsonConvert.SerializeObject(_reRouteA));
+            File.WriteAllText(reroutesBFilename, JsonConvert.SerializeObject(_reRouteB));
+            File.WriteAllText(aggregatesFilename, JsonConvert.SerializeObject(_aggregate));
         }
 
         private void WhenIAddOcelotConfiguration()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder();
             builder.AddOcelot();
+            _configRoot = builder.Build();
+        }
+
+        private void WhenIAddOcelotConfigurationWithSpecificFolder(string folder)
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.AddOcelot(folder);
             _configRoot = builder.Build();
         }
 
