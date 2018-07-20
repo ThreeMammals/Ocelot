@@ -95,7 +95,7 @@ namespace Ocelot.UnitTests.Request
 
             _requestMapper
                 .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
-                .ReturnsAsync(_mappedRequest);
+                .Returns(_mappedRequest);
         }
 
         private void GivenTheMapperWillReturnAnError()
@@ -104,7 +104,7 @@ namespace Ocelot.UnitTests.Request
 
             _requestMapper
                 .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
-                .ReturnsAsync(_mappedRequest);
+                .Returns(_mappedRequest);
         }
 
         private void WhenTheMiddlewareIsInvoked()

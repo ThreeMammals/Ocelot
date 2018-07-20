@@ -15,13 +15,13 @@
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 
-        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request)
+        public Response<HttpRequestMessage> Map(HttpRequest request)
         {
             try
             {
                 var requestMessage = new HttpRequestMessage()
                 {
-                    Content = await MapContent(request),
+                    Content = MapContent(request),
                     Method = MapMethod(request),
                     RequestUri = MapUri(request)
                 };
@@ -36,17 +36,20 @@
             }
         }
 
-        private async Task<HttpContent> MapContent(HttpRequest request)
+        private HttpContent MapContent(HttpRequest request)
         {
-            if (request.Body == null)
+            if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0)) 
             {
                 return null;
             }
 
-            var content = new ByteArrayContent(await ToByteArray(request.Body));
+            var content = new StreamContent(request.Body);
 
-            content.Headers
-                .TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+            if(!string.IsNullOrEmpty(request.ContentType))
+            {
+                content.Headers
+                    .TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+            }
 
             AddHeaderIfExistsOnRequest("Content-Language", content, request);
             AddHeaderIfExistsOnRequest("Content-Location", content, request);
@@ -84,18 +87,6 @@
                 if (IsSupportedHeader(header))
                 {
                     requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-                }
-            }
-        }
-
-        private async Task<byte[]> ToByteArray(Stream stream)
-        {
-            using (stream)
-            {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
                 }
             }
         }
