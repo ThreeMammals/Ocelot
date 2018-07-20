@@ -38,7 +38,7 @@
 
         private HttpContent MapContent(HttpRequest request)
         {
-            if (request.Body == null || (request.Body.CanRead && request.Body.Length <= 0)) 
+            if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0)) 
             {
                 return null;
             }
