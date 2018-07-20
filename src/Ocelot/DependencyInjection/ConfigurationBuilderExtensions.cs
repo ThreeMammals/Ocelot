@@ -66,7 +66,7 @@ namespace Ocelot.DependencyInjection
 
             File.WriteAllText("ocelot.json", json);
 
-            builder.AddJsonFile("ocelot.json");
+            builder.AddJsonFile("ocelot.json", false, false);
 
             return builder;
         }
