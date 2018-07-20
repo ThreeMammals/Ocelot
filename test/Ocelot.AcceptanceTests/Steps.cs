@@ -746,7 +746,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenIAddAHeader(string key, string value)
         {
-            _ocelotClient.DefaultRequestHeaders.Add(key, value);
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
         }
 
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
