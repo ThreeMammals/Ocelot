@@ -52,7 +52,15 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 if(ContainsQueryString(dsPath))
                 {
                     context.DownstreamRequest.AbsolutePath = GetPath(dsPath);
-                    context.DownstreamRequest.Query = GetQueryString(dsPath);
+
+                    if (string.IsNullOrEmpty(context.DownstreamRequest.Query))
+                    {
+                        context.DownstreamRequest.Query = GetQueryString(dsPath);
+                    }
+                    else
+                    {
+                        context.DownstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
+                    }
                 }
                 else
                 {

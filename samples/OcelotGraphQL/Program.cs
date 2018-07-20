@@ -106,7 +106,7 @@ namespace OcelotGraphQL
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("ocelot.json")
+                        .AddJsonFile("ocelot.json", false, false)
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s => {

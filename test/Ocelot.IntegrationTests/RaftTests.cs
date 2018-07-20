@@ -446,10 +446,10 @@ namespace Ocelot.IntegrationTests
                     {
                         config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                         var env = hostingContext.HostingEnvironment;
-                        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                        config.AddJsonFile("ocelot.json");
-                        config.AddJsonFile("peers.json", optional: true, reloadOnChange: true);
+                        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                        config.AddJsonFile("ocelot.json", false, false);
+                        config.AddJsonFile("peers.json", optional: true, reloadOnChange: false);
                         #pragma warning disable CS0618
                         config.AddOcelotBaseUrl(url);
                         #pragma warning restore CS0618

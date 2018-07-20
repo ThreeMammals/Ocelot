@@ -5,7 +5,7 @@ Ocelot does not support...
 	
 * Chunked Encoding - Ocelot will always get the body size and return Content-Length header. Sorry if this doesn't work for your use case! 
 	
-* Fowarding a host header - The host header that you send to Ocelot will not be forwarded to the downstream service. Obviously this would break everything :(
+* Forwarding a host header - The host header that you send to Ocelot will not be forwarded to the downstream service. Obviously this would break everything :(
 
 * Swagger - I have looked multiple times at building swagger.json out of the Ocelot ocelot.json but it doesnt fit into the vision 
 I have for Ocelot. If you would like to have Swagger in Ocelot then you must roll your own swagger.json and do the following in your 
