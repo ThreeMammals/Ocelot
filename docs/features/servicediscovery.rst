@@ -59,6 +59,20 @@ The polling interval is in milliseconds and tells Ocelot how often to call Consu
 
 Please note there are tradeoffs here. If you poll Consul it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volitile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling consul per request (as sidecar agent). If you are calling a remote consul agent then polling will be a good performance improvement.
 
+You services need to be added to Consul something like below (c# style but hopefully this make sense)...The only important thing to note
+is not to add http or https to the Address field. I have been contacted before about not accepting scheme in Address and accepting scheme
+in address. After reading `this <https://www.consul.io/docs/agent/services.html>`_ I don't think the scheme should be in there.
+
+.. code-block: json
+
+    new AgentService()
+    {
+        Service = "some-service-name",
+        Address = "localhost",
+        Port = 8080,
+        ID = "some-id",
+    }
+
 ACL Token
 ---------
 
