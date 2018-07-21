@@ -1,33 +1,32 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Security.Claims;
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Security.Claims;
+    using IdentityServer4.AccessTokenValidation;
+    using IdentityServer4.Models;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
     using IdentityServer4.Test;
 
     public class AuthorisationTests : IDisposable
     {
-        private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
-        private Action<IdentityServerAuthenticationOptions> _options;
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
         private string _identityServerRootUrl = "http://localhost:51888";
+        private readonly ServiceHandler _serviceHandler;
 
         public AuthorisationTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _options = o =>
             {
@@ -42,8 +41,10 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_authorising_route()
         {
-           var configuration = new FileConfiguration
-           {
+            int port = 52875;
+
+            var configuration = new FileConfiguration
+            {
                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
@@ -54,7 +55,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 51876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -83,10 +84,10 @@ namespace Ocelot.AcceptanceTests
                            }
                        }
                    }
-           };
+            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -100,7 +101,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_authorising_route()
         {
-           var configuration = new FileConfiguration
+            int port = 59471;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -112,7 +115,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 51876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -143,7 +146,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -156,7 +159,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_using_identity_server_with_allowed_scope()
         {
-           var configuration = new FileConfiguration
+            int port = 63471;
+
+            var configuration = new FileConfiguration
            {   
                ReRoutes = new List<FileReRoute>
                    {
@@ -168,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 51876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -184,7 +189,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -197,7 +202,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_using_identity_server_with_scope_not_allowed()
         {
-           var configuration = new FileConfiguration
+            int port = 60571;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -209,7 +216,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 51876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -225,7 +232,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -238,7 +245,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_240()
         {
-           var configuration = new FileConfiguration
+            int port = 61071;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -250,7 +259,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 51876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -284,7 +293,7 @@ namespace Ocelot.AcceptanceTests
             };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt, users))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -297,23 +306,11 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
-            _servicebuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _servicebuilder.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
@@ -465,7 +462,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _servicebuilder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
             _identityServerBuilder?.Dispose();
         }

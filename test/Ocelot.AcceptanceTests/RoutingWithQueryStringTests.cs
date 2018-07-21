@@ -1,25 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class RoutingWithQueryStringTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
-        private string _downstreamPath;
+        private readonly ServiceHandler _serviceHandler;
 
         public RoutingWithQueryStringTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -208,41 +204,24 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string queryString, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                if (context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        if(context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString)
-                        {
-                            context.Response.StatusCode = 500;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _builder.Start();
-        }
-
-        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
-        {
-            _downstreamPath.ShouldBe(expectedDownstreamPath);
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

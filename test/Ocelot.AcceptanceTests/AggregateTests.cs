@@ -20,14 +20,14 @@ namespace Ocelot.AcceptanceTests
 {
     public class AggregateTests : IDisposable
     {
-        private IWebHost _serviceOneBuilder;
-        private IWebHost _serviceTwoBuilder;
         private readonly Steps _steps;
         private string _downstreamPathOne;
         private string _downstreamPathTwo;
+        private readonly ServiceHandler _serviceHandler;
 
         public AggregateTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -116,7 +116,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51885,
+                                    Port = 51875,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -157,7 +157,7 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51885", "/", 200, "{Hello from Laura}"))
+            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51875", "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51886", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
@@ -370,64 +370,40 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _serviceOneBuilder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPathOne != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPathOne != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _serviceOneBuilder.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _serviceTwoBuilder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPathTwo != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPathTwo != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _serviceTwoBuilder.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
@@ -438,8 +414,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _serviceOneBuilder?.Dispose();
-            _serviceTwoBuilder?.Dispose();
+            _serviceHandler.Dispose();
             _steps.Dispose();
         }
     }

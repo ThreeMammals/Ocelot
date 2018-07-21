@@ -1,27 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class QoSTests : IDisposable
     {
-        private IWebHost _brokenService;
         private readonly Steps _steps;
         private int _requestCount;
-        private IWebHost _workingService;
+        private readonly ServiceHandler _serviceHandler;
 
         public QoSTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -227,74 +224,48 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
         {
-            _brokenService = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                //circuit starts closed
+                if (_requestCount == 0)
                 {
-                    app.Run(async context =>
-                    {
-                        //circuit starts closed
-                        if (_requestCount == 0)
-                        {
-                            _requestCount++;
-                            context.Response.StatusCode = 200;
-                            await context.Response.WriteAsync(responseBody);
-                            return;
-                        }
+                    _requestCount++;
+                    context.Response.StatusCode = 200;
+                    await context.Response.WriteAsync(responseBody);
+                    return;
+                }
 
-                        //request one times out and polly throws exception, circuit opens
-                        if (_requestCount == 1)
-                        {
-                            _requestCount++;
-                            await Task.Delay(1000);
-                            context.Response.StatusCode = 200;
-                            return;
-                        }
+                //request one times out and polly throws exception, circuit opens
+                if (_requestCount == 1)
+                {
+                    _requestCount++;
+                    await Task.Delay(1000);
+                    context.Response.StatusCode = 200;
+                    return;
+                }
 
-                        //after break closes we return 200 OK
-                        if (_requestCount == 2)
-                        {
-                            context.Response.StatusCode = 200;
-                            await context.Response.WriteAsync(responseBody);
-                            return;
-                        }
-                    });
-                })
-                .Build();
-
-            _brokenService.Start();
+                //after break closes we return 200 OK
+                if (_requestCount == 2)
+                {
+                    context.Response.StatusCode = 200;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
         {
-            _workingService = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        Thread.Sleep(timeout);
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _workingService.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                Thread.Sleep(timeout);
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         public void Dispose()
         {
-            _workingService?.Dispose();
-            _brokenService?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }
