@@ -1,24 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Threading;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Threading;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class CachingTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
+        private readonly ServiceHandler _serviceHandler;
 
         public CachingTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -201,38 +199,26 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenTheServiceNowReturns(string url, int statusCode, string responseBody)
         {
-            _builder.Dispose();
+            _serviceHandler.Dispose();
             GivenThereIsAServiceRunningOn(url, statusCode, responseBody, null, null);
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, string key, string value)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(key))
                 {
-                    app.Run(async context =>
-                    {
-                        if(!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(key))
-                        {
-                            context.Response.Headers.Add(key, value);
-                        }
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                    context.Response.Headers.Add(key, value);
+                }
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

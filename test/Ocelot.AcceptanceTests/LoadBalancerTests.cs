@@ -1,36 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Ocelot.LoadBalancer.LoadBalancers;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class LoadBalancerTests : IDisposable
     {
-        private IWebHost _builderOne;
-        private IWebHost _builderTwo;
         private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
         private static readonly object _syncLock = new object();
+        private readonly ServiceHandler _serviceHandler;
 
         public LoadBalancerTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
         [Fact]
         public void should_load_balance_request_with_least_connection()
         {
-            var downstreamServiceOneUrl = "http://localhost:50881";
-            var downstreamServiceTwoUrl = "http://localhost:50892";
+            int portOne = 50591;
+            int portTwo = 51482;
+
+            var downstreamServiceOneUrl = $"http://localhost:{portOne}";
+            var downstreamServiceTwoUrl = $"http://localhost:{portTwo}";
 
             var configuration = new FileConfiguration
             {
@@ -48,12 +48,12 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 50881
+                                    Port = portOne
                                 },
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 50892
+                                    Port = portTwo
                                 }
                             }
                         }
@@ -76,8 +76,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_load_balance_request_with_round_robin()
         {
-            var downstreamPortOne = 51881;
-            var downstreamPortTwo = 51892;
+            var downstreamPortOne = 51701;
+            var downstreamPortTwo = 53802;
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 
@@ -136,77 +136,53 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenProductServiceOneIsRunning(string url, int statusCode)
         {
-            _builderOne = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    var response = string.Empty;
+                    lock (_syncLock)
                     {
-                        try
-                        {
-                            var response = string.Empty;
-                            lock (_syncLock)
-                            {
-                                _counterOne++;
-                                response = _counterOne.ToString();
-                            }
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                    });
-                })
-                .Build();
+                        _counterOne++;
+                        response = _counterOne.ToString();
+                    }
 
-            _builderOne.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         private void GivenProductServiceTwoIsRunning(string url, int statusCode)
         {
-            _builderTwo = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    var response = string.Empty;
+                    lock (_syncLock)
                     {
-                        try
-                        {
-                            var response = string.Empty;
-                            lock (_syncLock)
-                            {
-                                _counterTwo++;
-                                response = _counterTwo.ToString();
-                            }
-                            
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (System.Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }                   
-                    });
-                })
-                .Build();
+                        _counterTwo++;
+                        response = _counterTwo.ToString();
+                    }
 
-            _builderTwo.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builderOne?.Dispose();
-            _builderTwo?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

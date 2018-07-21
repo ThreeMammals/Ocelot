@@ -1,28 +1,22 @@
-using System.Linq;
-using Microsoft.Extensions.Primitives;
-
 namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Net;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
     public class ServiceFabricTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
         private string _downstreamPath;
+        private readonly ServiceHandler _serviceHandler;
 
         public ServiceFabricTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -102,46 +96,34 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expectedQueryString)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPath != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPath != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            if (context.Request.QueryString.Value.Contains(expectedQueryString))
-                            {
-                                context.Response.StatusCode = statusCode;
-                                await context.Response.WriteAsync(responseBody);
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = statusCode;
-                                await context.Response.WriteAsync("downstream path didnt match base path");
-                            }
-                        }
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    if (context.Request.QueryString.Value.Contains(expectedQueryString))
+                    {
+                        context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync(responseBody);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = statusCode;
+                        await context.Response.WriteAsync("downstream path didnt match base path");
+                    }
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

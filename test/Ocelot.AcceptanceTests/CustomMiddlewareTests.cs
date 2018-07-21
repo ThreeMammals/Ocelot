@@ -1,29 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Ocelot.Middleware;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Net;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Ocelot.Middleware;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class CustomMiddlewareTests : IDisposable
     {
         private readonly string _configurationPath;
-        private IWebHost _builder;
         private readonly Steps _steps;
         private int _counter;
+        private readonly ServiceHandler _serviceHandler;
 
         public CustomMiddlewareTests()
         {
+            _serviceHandler = new ServiceHandler();
             _counter = 0;
             _steps = new Steps();
             _configurationPath = "ocelot.json";
@@ -340,37 +338,24 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string basePath)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+            {
+                if (string.IsNullOrEmpty(basePath))
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(context =>
-                    {
-                        if(string.IsNullOrEmpty(basePath))
-                        {
-                            context.Response.StatusCode = statusCode;
-                        }
-                        else if(context.Request.Path.Value != basePath)
-                        {
-                            context.Response.StatusCode = 404;
-                        }
+                    context.Response.StatusCode = statusCode;
+                }
+                else if (context.Request.Path.Value != basePath)
+                {
+                    context.Response.StatusCode = 404;
+                }
 
-                        return Task.CompletedTask;
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                return Task.CompletedTask;
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
 
