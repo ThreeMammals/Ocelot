@@ -51,7 +51,7 @@
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "", new DynamicConfigurationBuilder().Build(), new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new RateLimitGlobalOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -86,8 +86,8 @@
         {
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
             _finder
-                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+                .Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(_downstreamRoute));
         }
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()

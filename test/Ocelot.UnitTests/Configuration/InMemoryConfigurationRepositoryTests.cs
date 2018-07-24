@@ -103,11 +103,12 @@ namespace Ocelot.UnitTests.Configuration
             public string AdministrationPath {get;}
 
             public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
-
+            public DynamicReRouteConfiguration DynamicReRouteConfiguration => throw new NotImplementedException();
             public string RequestId {get;}
             public LoadBalancerOptions LoadBalancerOptions { get; }
             public string DownstreamScheme { get; }
             public QoSOptions QoSOptions { get; }
+            public RateLimitGlobalOptions RateLimitOptions { get; }
             public HttpHandlerOptions HttpHandlerOptions { get; }
         }
     }

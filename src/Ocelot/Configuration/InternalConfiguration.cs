@@ -9,9 +9,11 @@ namespace Ocelot.Configuration
             string administrationPath, 
             ServiceProviderConfiguration serviceProviderConfiguration, 
             string requestId, 
+            DynamicReRouteConfiguration dynamicReRouteConfiguration,
             LoadBalancerOptions loadBalancerOptions, 
             string downstreamScheme, 
             QoSOptions qoSOptions, 
+            RateLimitGlobalOptions rateLimitOptions,
             HttpHandlerOptions httpHandlerOptions)
         {
             ReRoutes = reRoutes;
@@ -20,17 +22,23 @@ namespace Ocelot.Configuration
             RequestId = requestId;
             LoadBalancerOptions = loadBalancerOptions;
             DownstreamScheme = downstreamScheme;
+            DynamicReRouteConfiguration = dynamicReRouteConfiguration;
             QoSOptions = qoSOptions;
+            RateLimitOptions = rateLimitOptions;
             HttpHandlerOptions = httpHandlerOptions;
         }
 
         public List<ReRoute> ReRoutes { get; }
         public string AdministrationPath {get;}
         public ServiceProviderConfiguration ServiceProviderConfiguration {get;}
+
+        public DynamicReRouteConfiguration DynamicReRouteConfiguration { get; }
+
         public string RequestId {get;}
         public LoadBalancerOptions LoadBalancerOptions { get; }
         public string DownstreamScheme { get; }
         public QoSOptions QoSOptions { get; }
+        public RateLimitGlobalOptions RateLimitOptions { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
     }
 }

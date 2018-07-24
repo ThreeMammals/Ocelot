@@ -15,6 +15,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     using Xunit;
     using Ocelot.Configuration.Creator;
     using Ocelot.Logging;
+    using Ocelot.DynamicConfigurationProvider;
+    using Ocelot.Configuration.Repository;
+    using Ocelot.Configuration.File;
 
     public class DownstreamRouteProviderFactoryTests
     {
@@ -26,10 +29,23 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         public DownstreamRouteProviderFactoryTests()
         {
+            var fileConfig = new FileConfiguration();
+            var dynamicConfigurationProviderFactory = new Mock<IDynamicConfigurationProviderFactory>();
+            var fileConfigurationRepository = new Mock<IFileConfigurationRepository>();
+            var loggerFactoryForDownstreamCreator = new Mock<IOcelotLoggerFactory>();
+            var loggerForDownstreamCreator = new Mock<IOcelotLogger>();
+
+            loggerFactoryForDownstreamCreator.Setup(x => x.CreateLogger<DownstreamRouteCreator>()).Returns(loggerForDownstreamCreator.Object);
+            fileConfigurationRepository.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(fileConfig));
+            
             var services = new ServiceCollection();
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+            services.AddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
+            services.AddSingleton(typeof(IDynamicConfigurationProviderFactory), dynamicConfigurationProviderFactory.Object);
+            services.AddSingleton(typeof(IFileConfigurationRepository), fileConfigurationRepository.Object);
+            services.AddSingleton(typeof(IOcelotLoggerFactory), loggerFactoryForDownstreamCreator.Object);
             services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
             var provider = services.BuildServiceProvider();
@@ -113,12 +129,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheReRoutes(List<ReRoute> reRoutes)
         {
-            _config = new InternalConfiguration(reRoutes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            _config = new InternalConfiguration(reRoutes, "", null, "", null, new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new RateLimitGlobalOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
         }
 
         private void GivenTheReRoutes(List<ReRoute> reRoutes, ServiceProviderConfiguration config)
         {
-            _config = new InternalConfiguration(reRoutes, "", config, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            _config = new InternalConfiguration(reRoutes, "", config, "", null, new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new RateLimitGlobalOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
         }
     }
 }

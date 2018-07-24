@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Configuration
 
             _internalRepo
                 .Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "", new ServiceProviderConfigurationBuilder().Build(), "", It.IsAny<LoadBalancerOptions>(), It.IsAny<string>(), It.IsAny<QoSOptions>(), It.IsAny<HttpHandlerOptions>())));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "", new ServiceProviderConfigurationBuilder().Build(), "", new DynamicConfigurationBuilder().Build(), It.IsAny<LoadBalancerOptions>(), It.IsAny<string>(), It.IsAny<QoSOptions>(), It.IsAny<RateLimitGlobalOptions>(), It.IsAny<HttpHandlerOptions>())));
             
             _repo = new ConsulFileConfigurationRepository(_cache.Object, _internalRepo.Object, _factory.Object, _loggerFactory.Object);
         }
@@ -142,7 +142,9 @@ namespace Ocelot.UnitTests.Configuration
                 .Setup(x => x.Get())
                 .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "",
                     new ServiceProviderConfigurationBuilder().WithConfigurationKey(key).Build(), "",
+                    new DynamicConfigurationBuilder().Build(),
                     new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(),
+                    new RateLimitGlobalOptionsBuilder().Build(),
                     new HttpHandlerOptionsBuilder().Build())));
             
             _repo = new ConsulFileConfigurationRepository(_cache.Object, _internalRepo.Object, _factory.Object, _loggerFactory.Object);

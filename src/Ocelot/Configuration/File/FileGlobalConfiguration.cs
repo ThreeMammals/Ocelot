@@ -9,6 +9,7 @@
             LoadBalancerOptions = new FileLoadBalancerOptions();
             QoSOptions = new FileQoSOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
+            DynamicReRouteConfiguration = new FileDynamicReRouteConfiguration();
         }
 
         public string RequestIdKey { get; set; }
@@ -18,6 +19,8 @@
         public FileRateLimitOptions RateLimitOptions { get; set; }
 
         public FileQoSOptions QoSOptions { get; set; }
+
+        public FileDynamicReRouteConfiguration DynamicReRouteConfiguration { get; set; }
 
         public string BaseUrl { get ;set; }
 

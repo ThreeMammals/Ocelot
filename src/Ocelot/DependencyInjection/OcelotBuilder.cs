@@ -49,6 +49,8 @@ namespace Ocelot.DependencyInjection
     using Steeltoe.Common.Discovery;
     using Pivotal.Discovery.Client;
     using Ocelot.Request.Creator;
+    using Ocelot.DynamicConfigurationProvider;
+    using Ocelot.Infrastructure.Redis;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -86,6 +88,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
             _services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
             _services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+            _services.TryAddSingleton<IDynamicConfigurationCreator, DynamicConfigurationCreator>();
             _services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             _services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
             _services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
@@ -95,6 +98,11 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
             _services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             _services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
+
+            _services.TryAddSingleton<IDynamicConfigurationProviderFactory, DynamicConfigurationProviderFactory>();
+            _services.TryAddSingleton<DynamicConfigurationProvider, RedisDynamicConfigurationProvider>();
+            _services.TryAddSingleton<IRedisClientFactory, RedisClientFactory>();
+
             _services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             _services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
             _services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
@@ -106,6 +114,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             _services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
             _services.TryAddSingleton<IClaimsParser, ClaimsParser>();
+            _services.TryAddSingleton<IRedisDataConfigurationParser, RedisDataConfigurationParser>();
             _services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             _services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             _services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
