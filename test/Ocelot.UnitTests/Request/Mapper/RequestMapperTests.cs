@@ -16,6 +16,7 @@
     using System.IO;
     using System.Text;
     using System.Security.Cryptography;
+    using System.Threading.Tasks;
 
     public class RequestMapperTests
     {
@@ -378,9 +379,9 @@
             _inputRequest.Body = null;
         }
 
-        private void WhenMapped()
+        private async Task WhenMapped()
         {
-            _mappedRequest = _requestMapper.Map(_inputRequest);
+            _mappedRequest = await _requestMapper.Map(_inputRequest);
         }
 
         private void ThenNoErrorIsReturned()

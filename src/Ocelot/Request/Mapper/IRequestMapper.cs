@@ -7,6 +7,6 @@
 
     public interface IRequestMapper
     {
-        Response<HttpRequestMessage> Map(HttpRequest request);
+        Task<Response<HttpRequestMessage>> Map(HttpRequest request);
     }
 }
