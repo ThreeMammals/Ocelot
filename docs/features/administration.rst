@@ -62,7 +62,7 @@ will need to be changed if you are running Ocelot on a different url to http://l
 The scripts show you how to request a bearer token from ocelot and then use it to GET the existing configuration and POST 
 a configuration.
 
-If you are running multiple Ocelot's in a cluster then you need to use a certificate to sign the bearer tokens used to access the administration API.
+If you are running multiple Ocelot instances in a cluster then you need to use a certificate to sign the bearer tokens used to access the administration API.
 
 In order to do this you need to add two more environmental variables for each Ocelot in the cluster.
 
@@ -71,7 +71,7 @@ In order to do this you need to add two more environmental variables for each Oc
 ``OCELOT_CERTIFICATE_PASSWORD``
     The password for the certificate.
 
-Normally Ocelot just uses temporary signing credentials but if you set these environmental variables then it will use the certificate. If all the other Ocelots in the cluster have the same certificate then you are good!
+Normally Ocelot just uses temporary signing credentials but if you set these environmental variables then it will use the certificate. If all the other Ocelot instances in the cluster have the same certificate then you are good!
 
 
 Administration API

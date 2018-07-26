@@ -15,13 +15,13 @@
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 
-        public Response<HttpRequestMessage> Map(HttpRequest request)
+        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request)
         {
             try
             {
                 var requestMessage = new HttpRequestMessage()
                 {
-                    Content = MapContent(request),
+                    Content = await MapContent(request),
                     Method = MapMethod(request),
                     RequestUri = MapUri(request)
                 };
@@ -36,14 +36,15 @@
             }
         }
 
-        private HttpContent MapContent(HttpRequest request)
+        private async Task<HttpContent> MapContent(HttpRequest request)
         {
             if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0)) 
             {
                 return null;
             }
 
-            var content = new StreamContent(request.Body);
+            // Never change this to StreamContent again, I forgot it doesnt work in #464.
+            var content = new ByteArrayContent(await ToByteArray(request.Body));
 
             if(!string.IsNullOrEmpty(request.ContentType))
             {
@@ -94,6 +95,18 @@
         private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
         {
             return !_unsupportedHeaders.Contains(header.Key.ToLower());
+        }
+
+        private async Task<byte[]> ToByteArray(Stream stream)
+        {
+            using(stream)
+            {
+                using (var memStream = new MemoryStream())
+                {
+                    await stream.CopyToAsync(memStream);
+                    return memStream.ToArray();
+                }
+            }
         }
     }
 }
