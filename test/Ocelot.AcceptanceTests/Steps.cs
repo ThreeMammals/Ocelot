@@ -31,6 +31,7 @@ using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
+    using Configuration.Repository;
     using Microsoft.Net.Http.Headers;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
@@ -927,6 +928,36 @@ namespace Ocelot.AcceptanceTests
             var response = await _ocelotClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
             content.ShouldBe(expectedBody);
+        }
+
+        public void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<IFileConfigurationRepository>(fake);
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+
         }
     }
 }

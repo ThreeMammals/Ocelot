@@ -9,25 +9,30 @@ namespace Ocelot.UnitTests.Configuration
     using Xunit;
     using Newtonsoft.Json;
     using System.IO;
+    using System.Threading;
     using Microsoft.AspNetCore.Hosting;
     using Ocelot.Configuration.Repository;
 
-    public class DiskFileConfigurationRepositoryTests
+    public class DiskFileConfigurationRepositoryTests : IDisposable
     {
-        private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
+        private readonly Mock<IHostingEnvironment> _hostingEnvironment;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
+        private string _ocelotJsonPath;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
 
         // This is a bit dirty and it is dev.dev so that the ConfigurationBuilderExtensionsTests
-        // cant pick it up if they run in parralel..sigh these are not really unit 
-        // tests but whatever...
+        // cant pick it up if they run in parralel..and the semaphore stops them running at the same time...sigh
+        // these are not really unit tests but whatever...
         private string _environmentName = "DEV.DEV";
-        private string _ocelotJsonPath;
+        private static SemaphoreSlim _semaphore;
 
         public DiskFileConfigurationRepositoryTests()
         {
+            _semaphore = new SemaphoreSlim(1, 1);
+            _semaphore.Wait();
+            _hostingEnvironment = new Mock<IHostingEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
@@ -272,6 +277,11 @@ namespace Ocelot.UnitTests.Configuration
                 GlobalConfiguration = globalConfiguration,
                 ReRoutes = reRoutes
             };
+        }
+
+        public void Dispose()
+        {
+            _semaphore.Release();
         }
     }
 }

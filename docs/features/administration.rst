@@ -98,11 +98,13 @@ This gets the current Ocelot configuration. It is exactly the same JSON we use t
 
 **POST {adminPath}/configuration**
 
-
 This overrwrites the existing configuration (should probably be a put!). I reccomend getting your config from the GET endpoint, making any changes and posting it back...simples.
 
 The body of the request is JSON and it is the same format as the FileConfiguration.cs that we use to set up 
-Ocelot on a file system.
+Ocelot on a file system. 
+
+Please note that if you want to use this API then the process running Ocelot must have permission to write to the disk
+where your ocelot.json or ocelot.{environment}.json is located. This is because Ocelot will overwrite them on save. 
 
 **DELETE {adminPath}/outputcache/{region}**
 
