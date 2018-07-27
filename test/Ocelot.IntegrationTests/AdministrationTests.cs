@@ -276,7 +276,21 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .And(_ => ThenTheConfigurationIsSavedCorrectly(updatedConfiguration))
                 .BDDfy();
+        }
+
+        private void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)
+        {
+            var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
+            var resultText = File.ReadAllText(ocelotJsonPath);
+            var expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
+
+            var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
+            resultText = File.ReadAllText(environmentSpecificPath);
+            expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
         }
 
         [Fact]

@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Options;
     using System.Diagnostics;
+    using DependencyInjection;
     using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
@@ -115,20 +116,30 @@
             var internalConfigRepo = (IInternalConfigurationRepository)builder.ApplicationServices.GetService(typeof(IInternalConfigurationRepository));
             internalConfigRepo.AddOrReplace(internalConfig.Data);
 
-            var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
-
             var fileConfigRepo = (IFileConfigurationRepository)builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
+
+            var adminPath = (IAdministrationPath)builder.ApplicationServices.GetService(typeof(IAdministrationPath));
 
             if (UsingConsul(fileConfigRepo))
             {
+                //Lots of jazz happens in here..check it out if you are using consul to store your config.
                 await SetFileConfigInConsul(builder, fileConfigRepo, fileConfig, internalConfigCreator, internalConfigRepo);
             }
-            else
+            else if(AdministrationApiInUse(adminPath))
             {
+                //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the 
+                //admin api it works...boy this is getting a spit spags boll.
+                var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+
                 await SetFileConfig(fileConfigSetter, fileConfig);
             }
 
             return GetOcelotConfigAndReturn(internalConfigRepo);
+        }
+
+        private static bool AdministrationApiInUse(IAdministrationPath adminPath)
+        {
+            return adminPath.GetType() != typeof(NullAdministrationPath);
         }
 
         private static async Task SetFileConfigInConsul(IApplicationBuilder builder,
@@ -179,8 +190,7 @@
 
         private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptions<FileConfiguration> fileConfig)
         {
-            Response response;
-            response = await fileConfigSetter.Set(fileConfig.Value);
+            var response = await fileConfigSetter.Set(fileConfig.Value);
 
             if (IsError(response))
             {
