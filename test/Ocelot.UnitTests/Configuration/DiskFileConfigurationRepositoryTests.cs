@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
         private IFileConfigurationRepository _repo;
-        private string _configurationPath;
+        private string _environmentSpecificPath;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
 
@@ -24,6 +24,7 @@ namespace Ocelot.UnitTests.Configuration
         // cant pick it up if they run in parralel..sigh these are not really unit 
         // tests but whatever...
         private string _environmentName = "DEV.DEV";
+        private string _ocelotJsonPath;
 
         public DiskFileConfigurationRepositoryTests()
         {
@@ -79,6 +80,33 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_environment_file_configuration_and_ocelot_file_configuration()
+        {
+            var config = FakeFileConfigurationForSet();
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenTheConfigurationIs(config))
+                .And(_ => GivenTheUserAddedOcelotJson())
+                .When(_ => WhenISetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIsStoredAs(config))
+                .And(_ => ThenTheConfigurationJsonIsIndented(config))
+                .Then(_ => ThenTheOcelotJsonIsStoredAs(config))
+                .BDDfy();
+        }
+
+        private void GivenTheUserAddedOcelotJson()
+        {
+             _ocelotJsonPath = $"{AppContext.BaseDirectory}/ocelot.json";
+
+            if (File.Exists(_ocelotJsonPath))
+            {
+                File.Delete(_ocelotJsonPath);
+            }
+
+            File.WriteAllText(_ocelotJsonPath, "Doesnt matter");
+        }
+
         private void GivenTheEnvironmentNameIsUnavailable()
         {
             _environmentName = null;
@@ -119,25 +147,32 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
+        private void ThenTheOcelotJsonIsStoredAs(FileConfiguration expecteds)
+        {
+            var resultText = File.ReadAllText(_ocelotJsonPath);
+            var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
+        }
+
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
-            if (File.Exists(_configurationPath))
+            if (File.Exists(_environmentSpecificPath))
             {
-                File.Delete(_configurationPath);
+                File.Delete(_environmentSpecificPath);
             }
 
-            File.WriteAllText(_configurationPath, jsonConfiguration);
+            File.WriteAllText(_environmentSpecificPath, jsonConfiguration);
         }
 
         private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds)
         {
-            var path = !string.IsNullOrEmpty(_configurationPath) ? _configurationPath : _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            var path = !string.IsNullOrEmpty(_environmentSpecificPath) ? _environmentSpecificPath : _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
             
-            var resultText = File.ReadAllText(_configurationPath);
+            var resultText = File.ReadAllText(path);
             var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
             resultText.ShouldBe(expectedText);
         }
