@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -18,7 +19,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public async Task<Response<DownstreamRoute>> GetAsync(string upstreamUrlPath, string upstreamQueryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
@@ -41,10 +42,11 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
                 var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
 
-                return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
+                var result = notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
+                return await Task.FromResult(result);
             }
 
-            return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
+            return await Task.FromResult(new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod)));
         }
 
         private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)

@@ -35,6 +35,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IAdministrationPath _adminPath;
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
+        private readonly IDynamicConfigurationCreator _dynamicConfigurationCreator;
 
         public FileInternalConfigurationCreator(
             IConfigurationValidator configurationValidator,
@@ -51,7 +52,8 @@ namespace Ocelot.Configuration.Creator
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IAdministrationPath adminPath,
             IHeaderFindAndReplaceCreator headerFAndRCreator,
-            IDownstreamAddressesCreator downstreamAddressesCreator
+            IDownstreamAddressesCreator downstreamAddressesCreator,
+            IDynamicConfigurationCreator dynamicConfigurationCreator
             )
         {
             _downstreamAddressesCreator = downstreamAddressesCreator;
@@ -69,6 +71,7 @@ namespace Ocelot.Configuration.Creator
             _qosOptionsCreator = qosOptionsCreator;
             _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
+            _dynamicConfigurationCreator = dynamicConfigurationCreator;
         }
         
         public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
@@ -109,15 +112,21 @@ namespace Ocelot.Configuration.Creator
 
             var qosOptions = _qosOptionsCreator.Create(fileConfiguration.GlobalConfiguration.QoSOptions);
 
+            var rateLimitOptions = _rateLimitOptionsCreator.Create(fileConfiguration.GlobalConfiguration.RateLimitOptions);
+
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
+
+            var dynamicReRouteConfiguration = _dynamicConfigurationCreator.Create(fileConfiguration.GlobalConfiguration.DynamicReRouteConfiguration);
 
             var config = new InternalConfiguration(reRoutes, 
                 _adminPath.Path, 
                 serviceProviderConfiguration, 
                 fileConfiguration.GlobalConfiguration.RequestIdKey, 
+                dynamicReRouteConfiguration,
                 lbOptions, 
                 fileConfiguration.GlobalConfiguration.DownstreamScheme,
                 qosOptions,
+                rateLimitOptions,
                 httpHandlerOptions
                 );
 

@@ -10,6 +10,8 @@ namespace Ocelot.Configuration
 
         ServiceProviderConfiguration ServiceProviderConfiguration {get;}
 
+        DynamicReRouteConfiguration DynamicReRouteConfiguration { get; }
+
         string RequestId {get;}
 
         LoadBalancerOptions LoadBalancerOptions { get; }
@@ -17,6 +19,8 @@ namespace Ocelot.Configuration
         string DownstreamScheme { get; }
 
         QoSOptions QoSOptions { get; }
+
+        RateLimitGlobalOptions RateLimitOptions { get; }
 
         HttpHandlerOptions HttpHandlerOptions { get; }
     }

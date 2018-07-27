@@ -41,7 +41,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var provider = _factory.Get(context.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
+            var downstreamRoute = await provider.GetAsync(upstreamUrlPath, upstreamQueryString, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
 
             if (downstreamRoute.IsError)
             {

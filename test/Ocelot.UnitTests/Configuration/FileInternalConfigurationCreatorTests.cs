@@ -38,6 +38,7 @@
         private readonly Mock<IAdministrationPath> _adminPath;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
         private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
+        private readonly Mock<IDynamicConfigurationCreator> _dynamicConfigurationCreator;
 
         public FileInternalConfigurationCreatorTests()
         {
@@ -56,6 +57,7 @@
             _adminPath = new Mock<IAdministrationPath>();
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
+            _dynamicConfigurationCreator = new Mock<IDynamicConfigurationCreator>();
 
             _internalConfigurationCreator = new FileInternalConfigurationCreator( 
                 _validator.Object, 
@@ -72,7 +74,8 @@
                 _httpHandlerOptionsCreator.Object,
                 _adminPath.Object,
                 _headerFindAndReplaceCreator.Object,
-                _downstreamAddressesCreator.Object);
+                _downstreamAddressesCreator.Object,
+                _dynamicConfigurationCreator.Object);
         }
 
         [Fact]
@@ -396,6 +399,55 @@
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheQosOptionsAre(expected))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_call_dynamic_configuration_creator()
+        {
+            var expected = new DynamicConfigurationBuilder()
+                .WithServer("anything", 1234)
+                .WithStore("anystore")
+                .Build();
+
+            var serviceOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "127.0.0.1",
+                            }
+                        },
+                        UpstreamPathTemplate = "/api/products/{productId}",
+                        DownstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" }
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    DynamicReRouteConfiguration = new FileDynamicReRouteConfiguration
+                    {
+                        Host = "anything",
+                        Port = 1234,
+                        Store = "anystore"
+                    }
+                }
+            }))
+               .And(x => x.GivenTheConfigIsValid())
+               .And(x => GivenTheDownstreamAddresses())
+               .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+               .And(x => x.GivenTheFollowingOptionsAreReturned(serviceOptions))
+               .And(x => x.GivenTheDynamicConfigurationCreatorReturns(expected))
+               .When(x => x.WhenICreateTheConfig())
+               .Then(x => x.ThenTheDynamicConfigurationIs(expected))
+               .BDDfy();
         }
 
         [Fact]
@@ -945,11 +997,25 @@
                 .Returns(qosOptions);
         }
 
+        private void GivenTheDynamicConfigurationCreatorReturns(DynamicReRouteConfiguration options)
+        {
+            _dynamicConfigurationCreator
+                .Setup(x => x.Create(_fileConfiguration.GlobalConfiguration.DynamicReRouteConfiguration))
+                .Returns(options);
+        }
+
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
             _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
             _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
             _config.Data.ReRoutes[0].DownstreamReRoute[0].QosOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+        }
+
+        private void ThenTheDynamicConfigurationIs(DynamicReRouteConfiguration options)
+        {
+            _config.Data.DynamicReRouteConfiguration.Host.ShouldBe(options.Host);
+            _config.Data.DynamicReRouteConfiguration.Port.ShouldBe(options.Port);
+            _config.Data.DynamicReRouteConfiguration.Store.ShouldBe(options.Store);
         }
 
         private void ThenTheServiceProviderCreatorIsCalledCorrectly()
