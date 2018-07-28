@@ -16,6 +16,7 @@
     using System.IO;
     using System.Text;
     using System.Security.Cryptography;
+    using System.Threading.Tasks;
 
     public class RequestMapperTests
     {
@@ -121,13 +122,47 @@
         [Fact]
         public void Should_handle_no_content()
         {
-            this.Given(_ => GivenTheInputRequestHasNoContent())
+            this.Given(_ => GivenTheInputRequestHasNullContent())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasNoContent())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void Should_handle_no_content_type()
+        {
+            this.Given(_ => GivenTheInputRequestHasNoContentType())
+                .And(_ => GivenTheInputRequestHasMethod("GET"))
+                .And(_ => GivenTheInputRequestHasAValidUri())
+                .When(_ => WhenMapped())
+                .Then(_ => ThenNoErrorIsReturned())
+                .And(_ => ThenTheMappedRequestHasNoContent())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_handle_no_content_length()
+        {
+            this.Given(_ => GivenTheInputRequestHasNoContentLength())
+                .And(_ => GivenTheInputRequestHasMethod("GET"))
+                .And(_ => GivenTheInputRequestHasAValidUri())
+                .When(_ => WhenMapped())
+                .Then(_ => ThenNoErrorIsReturned())
+                .And(_ => ThenTheMappedRequestHasNoContent())
+                .BDDfy();
+        }
+
+        private void GivenTheInputRequestHasNoContentLength()
+        {
+            _inputRequest.ContentLength = null;
+        }
+
+        private void GivenTheInputRequestHasNoContentType()
+        {
+            _inputRequest.ContentType = null;
         }
 
         [Fact]
@@ -339,14 +374,14 @@
             _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(content));
         }
 
-        private void GivenTheInputRequestHasNoContent()
+        private void GivenTheInputRequestHasNullContent()
         {
             _inputRequest.Body = null;
         }
 
-        private void WhenMapped()
+        private async Task WhenMapped()
         {
-            _mappedRequest = _requestMapper.Map(_inputRequest).GetAwaiter().GetResult();
+            _mappedRequest = await _requestMapper.Map(_inputRequest);
         }
 
         private void ThenNoErrorIsReturned()

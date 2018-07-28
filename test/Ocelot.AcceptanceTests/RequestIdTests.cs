@@ -1,26 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class RequestIdTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
+        private readonly ServiceHandler _serviceHandler;
 
         public RequestIdTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -171,30 +166,17 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(context =>
-                    {
-                        StringValues requestId;
-                        context.Request.Headers.TryGetValue(_steps.RequestIdKey, out requestId);
-                        context.Response.Headers.Add(_steps.RequestIdKey, requestId.First());
-                        return Task.CompletedTask;
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+            {
+                context.Request.Headers.TryGetValue(_steps.RequestIdKey, out var requestId);
+                context.Response.Headers.Add(_steps.RequestIdKey, requestId.First());
+                return Task.CompletedTask;
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

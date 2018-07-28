@@ -1,35 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
+﻿using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4;
     using IdentityServer4.Test;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Security.Claims;
+    using IdentityServer4.AccessTokenValidation;
+    using IdentityServer4.Models;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
 
     public class ClaimsToHeadersForwardingTests : IDisposable
     {
-        private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private Action<IdentityServerAuthenticationOptions> _options;
         private string _identityServerRootUrl = "http://localhost:52888";
+        private readonly ServiceHandler _serviceHandler;
 
         public ClaimsToHeadersForwardingTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _options = o =>
             {
@@ -107,29 +107,17 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
         {
-            _servicebuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        var customerId = context.Request.Headers.First(x => x.Key == "CustomerId").Value.First();
-                        var locationId = context.Request.Headers.First(x => x.Key == "LocationId").Value.First();
-                        var userType = context.Request.Headers.First(x => x.Key == "UserType").Value.First();
-                        var userId = context.Request.Headers.First(x => x.Key == "UserId").Value.First();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                var customerId = context.Request.Headers.First(x => x.Key == "CustomerId").Value.First();
+                var locationId = context.Request.Headers.First(x => x.Key == "LocationId").Value.First();
+                var userType = context.Request.Headers.First(x => x.Key == "UserType").Value.First();
+                var userId = context.Request.Headers.First(x => x.Key == "UserId").Value.First();
 
-                        var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _servicebuilder.Start();
+                var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
@@ -203,7 +191,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _servicebuilder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
             _identityServerBuilder?.Dispose();
         }

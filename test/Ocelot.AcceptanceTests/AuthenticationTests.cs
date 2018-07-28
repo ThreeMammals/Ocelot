@@ -1,37 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Security.Claims;
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
     using IdentityServer4.Test;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Security.Claims;
+    using IdentityServer4.AccessTokenValidation;
+    using IdentityServer4.Models;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class AuthenticationTests : IDisposable
     {
-        private IWebHost _servicebuilder;
         private readonly Steps _steps;
         private IWebHost _identityServerBuilder;
         private string _identityServerRootUrl = "http://localhost:51888";
         private string _downstreamServicePath = "/";
         private string _downstreamServiceHost = "localhost";
-        private int _downstreamServicePort = 51876;
         private string _downstreamServiceScheme = "http";
-        private string _downstreamServiceUrl = "http://localhost:51876";
+        private string _downstreamServiceUrl = "http://localhost:";
         private readonly Action<IdentityServerAuthenticationOptions> _options;
+        private readonly ServiceHandler _serviceHandler;
 
         public AuthenticationTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _options = o =>
             {
@@ -46,6 +45,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_401_using_identity_server_access_token()
         {
+            int port = 54329;
+
            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
@@ -58,7 +59,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host =_downstreamServiceHost,
-                                   Port = _downstreamServicePort,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = _downstreamServiceScheme,
@@ -73,7 +74,7 @@ namespace Ocelot.AcceptanceTests
            };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -85,7 +86,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_using_identity_server()
         {
-           var configuration = new FileConfiguration
+            int port = 54099;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -97,7 +100,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host =_downstreamServiceHost,
-                                   Port = _downstreamServicePort,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = _downstreamServiceScheme,
@@ -112,7 +115,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -126,7 +129,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_401_using_identity_server_with_token_requested_for_other_api()
         {
-           var configuration = new FileConfiguration
+            int port = 54196;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -138,7 +143,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host =_downstreamServiceHost,
-                                   Port = _downstreamServicePort,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = _downstreamServiceScheme,
@@ -153,7 +158,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 200, "Hello from Laura"))
+               .And(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 200, "Hello from Laura"))
                .And(x => _steps.GivenIHaveATokenForApi2(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -166,7 +171,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_201_using_identity_server_access_token()
         {
-           var configuration = new FileConfiguration
+            int port = 52226;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -178,7 +185,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host =_downstreamServiceHost,
-                                   Port = _downstreamServicePort,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = _downstreamServiceScheme,
@@ -193,7 +200,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
-               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -207,7 +214,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_201_using_identity_server_reference_token()
         {
-           var configuration = new FileConfiguration
+            int port = 52222;
+
+            var configuration = new FileConfiguration
            {
                ReRoutes = new List<FileReRoute>
                    {
@@ -219,7 +228,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host =_downstreamServiceHost,
-                                   Port = _downstreamServicePort,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = _downstreamServiceScheme,
@@ -234,7 +243,7 @@ namespace Ocelot.AcceptanceTests
            };
 
            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
-               .And(x => x.GivenThereIsAServiceRunningOn(_downstreamServiceUrl, 201, string.Empty))
+               .And(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                .And(x => _steps.GivenThereIsAConfiguration(configuration))
                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
@@ -247,23 +256,11 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
         {
-            _servicebuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
-                .Build();
-
-            _servicebuilder.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName, string api2Name, AccessTokenType tokenType)
@@ -371,7 +368,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _servicebuilder?.Dispose();
+            _serviceHandler.Dispose();
             _steps.Dispose();
             _identityServerBuilder?.Dispose();
         }

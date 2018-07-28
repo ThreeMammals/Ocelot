@@ -1,30 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using Consul;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class TwoDownstreamServicesTests : IDisposable
     {
-        private IWebHost _builderOne;
-        private IWebHost _builderTwo;
-        private IWebHost _fakeConsulBuilder;
         private readonly Steps _steps;
         private readonly List<ServiceEntry> _serviceEntries;
         private string _downstreamPathOne;
         private string _downstreamPathTwo;
+        private readonly ServiceHandler _serviceHandler;
 
         public TwoDownstreamServicesTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _serviceEntries = new List<ServiceEntry>();
         }
@@ -98,93 +93,58 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                            .UseUrls(url)
-                            .UseKestrel()
-                            .UseContentRoot(Directory.GetCurrentDirectory())
-                            .UseIISIntegration()
-                            .UseUrls(url)
-                            .Configure(app =>
-                            {
-                                app.Run(async context =>
-                                {
-                                    if(context.Request.Path.Value == "/v1/health/service/product")
-                                    {
-                                        await context.Response.WriteJsonAsync(_serviceEntries);
-                                    }
-                                });
-                            })
-                            .Build();
-
-            _fakeConsulBuilder.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                if (context.Request.Path.Value == "/v1/health/service/product")
+                {
+                    await context.Response.WriteJsonAsync(_serviceEntries);
+                }
+            });
         }
 
         private void GivenProductServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _builderOne = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                    ? context.Request.PathBase.Value
+                    : context.Request.Path.Value;
+
+                if (_downstreamPathOne != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPathOne != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _builderOne.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         private void GivenProductServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _builderTwo = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPathTwo != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPathTwo != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _builderTwo.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builderOne?.Dispose();
-            _builderTwo?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

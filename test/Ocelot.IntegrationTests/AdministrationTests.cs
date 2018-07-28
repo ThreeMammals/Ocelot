@@ -276,7 +276,21 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
+                .And(_ => ThenTheConfigurationIsSavedCorrectly(updatedConfiguration))
                 .BDDfy();
+        }
+
+        private void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)
+        {
+            var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
+            var resultText = File.ReadAllText(ocelotJsonPath);
+            var expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
+
+            var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
+            resultText = File.ReadAllText(environmentSpecificPath);
+            expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
         }
 
         [Fact]
@@ -536,9 +550,9 @@ namespace Ocelot.IntegrationTests
                {
                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                    var env = hostingContext.HostingEnvironment;
-                   config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                       .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                   config.AddJsonFile("ocelot.json");
+                   config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                       .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                   config.AddJsonFile("ocelot.json", false, false);
                    config.AddEnvironmentVariables();
                })
                .ConfigureServices(x =>
@@ -660,9 +674,9 @@ namespace Ocelot.IntegrationTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x => {
@@ -693,9 +707,9 @@ namespace Ocelot.IntegrationTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
@@ -733,9 +747,9 @@ namespace Ocelot.IntegrationTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x => {

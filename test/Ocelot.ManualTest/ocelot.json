@@ -8,7 +8,7 @@
         "DownstreamHostAndPorts": [
           {
             "Host": "localhost",
-            "Port": 3000
+            "Port": 5001
           }
         ],
         "QoSOptions": {

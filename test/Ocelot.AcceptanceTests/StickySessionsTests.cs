@@ -1,34 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class StickySessionsTests : IDisposable
     {
-        private IWebHost _builderOne;
-        private IWebHost _builderTwo;
         private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
-        private static readonly object _syncLock = new object();
+        private static readonly object SyncLock = new object();
+        private readonly ServiceHandler _serviceHandler;
 
         public StickySessionsTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
         [Fact]
         public void should_use_same_downstream_host()
         {
-            var downstreamPortOne = 51881;
+            var downstreamPortOne = 51375;
             var downstreamPortTwo = 51892;
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
@@ -244,77 +241,52 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenProductServiceOneIsRunning(string url, int statusCode)
         {
-            _builderOne = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    var response = string.Empty;
+                    lock (SyncLock)
                     {
-                        try
-                        {
-                            var response = string.Empty;
-                            lock (_syncLock)
-                            {
-                                _counterOne++;
-                                response = _counterOne.ToString();
-                            }
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                    });
-                })
-                .Build();
-
-            _builderOne.Start();
+                        _counterOne++;
+                        response = _counterOne.ToString();
+                    }
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         private void GivenProductServiceTwoIsRunning(string url, int statusCode)
         {
-            _builderTwo = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    var response = string.Empty;
+                    lock (SyncLock)
                     {
-                        try
-                        {
-                            var response = string.Empty;
-                            lock (_syncLock)
-                            {
-                                _counterTwo++;
-                                response = _counterTwo.ToString();
-                            }
-                            
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (System.Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }                   
-                    });
-                })
-                .Build();
+                        _counterTwo++;
+                        response = _counterTwo.ToString();
+                    }
 
-            _builderTwo.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builderOne?.Dispose();
-            _builderTwo?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

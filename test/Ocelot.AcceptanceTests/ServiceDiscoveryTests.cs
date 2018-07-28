@@ -2,12 +2,9 @@ namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Net;
     using Consul;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
     using Shouldly;
@@ -18,21 +15,19 @@ namespace Ocelot.AcceptanceTests
 
     public class ServiceDiscoveryTests : IDisposable
     {
-        private IWebHost _builderOne;
-        private IWebHost _builderTwo;
-        private IWebHost _fakeConsulBuilder;
         private readonly Steps _steps;
         private readonly List<ServiceEntry> _consulServices;
         private readonly List<IServiceInstance> _eurekaInstances;
         private int _counterOne;
         private int _counterTwo;
         private static readonly object SyncLock = new object();
-        private IWebHost _builder;
         private string _downstreamPath;
         private string _receivedToken;
+        private readonly ServiceHandler _serviceHandler;
 
         public ServiceDiscoveryTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _consulServices = new List<ServiceEntry>();
             _eurekaInstances = new List<IServiceInstance>();
@@ -74,7 +69,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
+            this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl))
                 .And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -568,26 +563,18 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAFakeEurekaServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                if (context.Request.Path.Value == "/eureka/apps/")
                 {
-                    app.Run(async context =>
-                    {
-                        if (context.Request.Path.Value == "/eureka/apps/")
-                        {
-                            var apps = new List<Application>();
+                    var apps = new List<Application>();
 
-                            foreach (var serviceInstance in _eurekaInstances)
-                            {
-                                var a = new Application
-                                {
-                                    name = serviceName,
-                                    instance = new List<Instance>
+                    foreach (var serviceInstance in _eurekaInstances)
+                    {
+                        var a = new Application
+                        {
+                            name = serviceName,
+                            instance = new List<Instance>
                                     {
                                         new Instance
                                         {
@@ -624,190 +611,126 @@ namespace Ocelot.AcceptanceTests
                                             actionType = "ADDED"
                                         }
                                     }
-                                };
+                        };
 
-                                apps.Add(a);
-                            }
+                        apps.Add(a);
+                    }
 
-                            var applications = new EurekaApplications
-                            {
-                                applications = new Applications
-                                {
-                                    application = apps,
-                                    apps__hashcode = "UP_1_",
-                                    versions__delta = "1"
-                                }
-                            };
-
-                            await context.Response.WriteJsonAsync(applications);
+                    var applications = new EurekaApplications
+                    {
+                        applications = new Applications
+                        {
+                            application = apps,
+                            apps__hashcode = "UP_1_",
+                            versions__delta = "1"
                         }
-                    });
-                })
-                .Build();
+                    };
 
-            _fakeConsulBuilder.Start();
+                    await context.Response.WriteJsonAsync(applications);
+                }
+            });
         }
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                            .UseUrls(url)
-                            .UseKestrel()
-                            .UseContentRoot(Directory.GetCurrentDirectory())
-                            .UseIISIntegration()
-                            .UseUrls(url)
-                            .Configure(app =>
-                            {
-                                app.Run(async context =>
-                                {
-                                    if(context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                                    {
-                                        if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
-                                        {
-                                            _receivedToken = values.First();
-                                        }
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+                {
+                    if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
+                    {
+                        _receivedToken = values.First();
+                    }
 
-                                        await context.Response.WriteJsonAsync(_consulServices);
-                                    }
-                                });
-                            })
-                            .Build();
-
-            _fakeConsulBuilder.Start();
+                    await context.Response.WriteJsonAsync(_consulServices);
+                }
+            });
         }
 
         private void GivenProductServiceOneIsRunning(string url, int statusCode)
         {
-            _builderOne = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    string response;
+                    lock (SyncLock)
                     {
-                        try
-                        {
-                            string response;
-                            lock (SyncLock)
-                            {
-                                _counterOne++;
-                                response = _counterOne.ToString();
-                            }
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                    });
-                })
-                .Build();
+                        _counterOne++;
+                        response = _counterOne.ToString();
+                    }
 
-            _builderOne.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         private void GivenProductServiceTwoIsRunning(string url, int statusCode)
         {
-            _builderTwo = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
+                    string response;
+                    lock (SyncLock)
                     {
-                        try
-                        {
-                            string response;
-                            lock (SyncLock)
-                            {
-                                _counterTwo++;
-                                response = _counterTwo.ToString();
-                            }
-                            
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(response);
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }                  
-                    });
-                })
-                .Build();
+                        _counterTwo++;
+                        response = _counterTwo.ToString();
+                    }
 
-            _builderTwo.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
-        private void GivenEurekaProductServiceOneIsRunning(string url, int statusCode)
+        private void GivenEurekaProductServiceOneIsRunning(string url)
         {
-            _builderOne = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                try
                 {
-                    app.Run(async context =>
-                    {
-                        try
-                        {
-                            context.Response.StatusCode = 200;
-                            await context.Response.WriteAsync(nameof(ServiceDiscoveryTests));
-                        }
-                        catch (Exception exception)
-                        {
-                            await context.Response.WriteAsync(exception.StackTrace);
-                        }
-                    });
-                })
-                .Build();
-
-            _builderOne.Start();
+                    context.Response.StatusCode = 200;
+                    await context.Response.WriteAsync(nameof(ServiceDiscoveryTests));
+                }
+                catch (Exception exception)
+                {
+                    await context.Response.WriteAsync(exception.StackTrace);
+                }
+            });
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPath != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if(_downstreamPath != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builderOne?.Dispose();
-            _builderTwo?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }
