@@ -160,7 +160,7 @@ namespace Ocelot.DependencyInjection
 
             // We add this here so that we can always inject something into the factory for IoC..
             _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
-            _services.TryAddSingleton<IConsulPollerConfiguration, InMemoryConsulPollerConfiguration>();
+            _services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
             _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             _services.TryAddSingleton<IPlaceholders, Placeholders>();
             _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
@@ -245,7 +245,7 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
         {
-            _services.AddSingleton<ConsulFileConfigurationPoller>();
+            _services.AddHostedService<FileConfigurationPoller>();
             _services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
             return this;
         }

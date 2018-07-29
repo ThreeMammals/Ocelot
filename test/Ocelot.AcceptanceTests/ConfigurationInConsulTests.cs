@@ -122,6 +122,7 @@ namespace Ocelot.AcceptanceTests
         public void should_load_configuration_out_of_consul()
         {
             var consulPort = 8500;
+            
             var configuration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration()

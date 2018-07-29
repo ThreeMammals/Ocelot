@@ -8,7 +8,7 @@ namespace Ocelot.Configuration.Setter
 {
     public class FileAndInternalConfigurationSetter : IFileConfigurationSetter
     {
-        private readonly IInternalConfigurationRepository _configRepo;
+        private readonly IInternalConfigurationRepository internalConfigRepo;
         private readonly IInternalConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
 
@@ -17,7 +17,7 @@ namespace Ocelot.Configuration.Setter
             IInternalConfigurationCreator configCreator, 
             IFileConfigurationRepository repo)
         {
-            _configRepo = configRepo;
+            internalConfigRepo = configRepo;
             _configCreator = configCreator;
             _repo = repo;
         }
@@ -35,7 +35,7 @@ namespace Ocelot.Configuration.Setter
 
             if(!config.IsError)
             {
-                _configRepo.AddOrReplace(config.Data);
+                internalConfigRepo.AddOrReplace(config.Data);
             }
 
             return new ErrorResponse(config.Errors);
