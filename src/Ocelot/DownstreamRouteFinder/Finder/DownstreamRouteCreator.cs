@@ -2,6 +2,7 @@
 {
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
     using Configuration;
     using Configuration.Builder;
     using Configuration.Creator;
@@ -43,7 +44,7 @@
 
             var qosOptions = _qoSOptionsCreator.Create(configuration.QoSOptions, downstreamPathForKeys, new []{ upstreamHttpMethod });
 
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamReRouteBuilder = new DownstreamReRouteBuilder()
                 .WithServiceName(serviceName)
                 .WithLoadBalancerKey(loadBalancerKey)
                 .WithDownstreamPathTemplate(downstreamPath)
@@ -51,8 +52,22 @@
                 .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
                 .WithQosOptions(qosOptions)
                 .WithDownstreamScheme(configuration.DownstreamScheme)
-                .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
-                .Build();
+                .WithLoadBalancerOptions(configuration.LoadBalancerOptions);
+
+                var rateLimitOptions = configuration.ReRoutes != null 
+                    ? configuration.ReRoutes
+                        .SelectMany(x => x.DownstreamReRoute)
+                        .FirstOrDefault(x => x.ServiceName == serviceName) 
+                    : null;
+
+                if(rateLimitOptions != null)
+                {
+                    downstreamReRouteBuilder
+                        .WithRateLimitOptions(rateLimitOptions.RateLimitOptions)
+                        .WithEnableRateLimiting(true);
+                }
+                
+                var downstreamReRoute = downstreamReRouteBuilder.Build();
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamReRoute(downstreamReRoute)
