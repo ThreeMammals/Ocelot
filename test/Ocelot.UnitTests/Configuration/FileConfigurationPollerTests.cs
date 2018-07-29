@@ -143,12 +143,11 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
         {
-            var result = WaitFor(2000).Until(() => {
+            var result = WaitFor(4000).Until(() => {
                 try
                 {
                     _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.Exactly(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.Exactly(times));
-                    //_setter.Verify(x => x.Set(fileConfig), Times.Exactly(times));
                     return true;
                 }
                 catch(Exception)
@@ -161,12 +160,11 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
         {
-            var result = WaitFor(2000).Until(() => {
+            var result = WaitFor(4000).Until(() => {
                 try
                 {
                     _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.AtLeast(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.AtLeast(times));
-                    //_setter.Verify(x => x.Set(fileConfig), Times.AtLeast(times));
                     return true;
                 }
                 catch(Exception)
