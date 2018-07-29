@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_fileReRoute, _fileGlobalConfig, _enabled);
+            _result = _creator.Create(_fileReRoute.RateLimitOptions, _fileGlobalConfig);
         }
 
         private void ThenTheFollowingIsReturned(RateLimitOptions expected)

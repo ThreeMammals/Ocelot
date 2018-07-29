@@ -20,7 +20,9 @@
 
         public IDownstreamRouteProvider Get(IInternalConfiguration config)
         {
-            if(!config.ReRoutes.Any() && IsServiceDiscovery(config.ServiceProviderConfiguration))
+            //todo - this is a bit hacky we are saying there are no reRoutes or there are reRoutes but none of them have
+            //an upstream path template which means they are dyanmic and service discovery is on...
+            if((!config.ReRoutes.Any() || config.ReRoutes.All(x => string.IsNullOrEmpty(x.UpstreamPathTemplate.Value))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
             {
                 _logger.LogInformation($"Selected {nameof(DownstreamRouteCreator)} as DownstreamRouteProvider for this request");
                 return _providers[nameof(DownstreamRouteCreator)];

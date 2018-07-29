@@ -125,20 +125,14 @@ is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them 
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 
-This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. The idea is to enable dynamic routing when using 
-a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segmentof the upstream path to lookup the
-downstream service with the service discovery provider. 
+This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
 
 An example of this would be calling ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
-the path which is product and use it as a key to look up the service in consul. If consul returns a service Ocelot will request it on whatever host and
-port comes back from consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. 
-Ocelot will apprend any query string to the downstream url as normal.
+the path which is product and use it as a key to look up the service in consul. If consul returns a service Ocelot will request it on whatever host and port comes back from consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. Ocelot will apprend any query string to the downstream url as normal.
 
-In order to enable dynamic routing you need to have 0 ReRoutes in your config. At the moment you cannot mix dynamic and configuration ReRoutes. In addition to this you
-need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
+In order to enable dynamic routing you need to have 0 ReRoutes in your config. At the moment you cannot mix dynamic and configuration ReRoutes. In addition to this you need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
 
-In addition to that you can set RateLimitOptions, QoSOptions, LoadBalancerOptions and HttpHandlerOptions, DownstreamScheme (You might want to call Ocelot on https but 
-talk to private services over http) that will be applied to all of the dynamic ReRoutes.
+In addition to that you can set RateLimitOptions, QoSOptions, LoadBalancerOptions and HttpHandlerOptions, DownstreamScheme (You might want to call Ocelot on https but talk to private services over http) that will be applied to all of the dynamic ReRoutes.
 
 The config might look something like 
 
@@ -182,5 +176,41 @@ The config might look something like
             }
         }
     }
+
+Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting rules per downstream service. This is useful if you have for example a product and search service and you want to rate limit one more than the other. An example of this would be as follows.
+
+.. code-block:: json
+
+    {
+        "DynamicReRoutes": [
+            {
+            "ServiceName": "product",
+            "RateLimitRule": {
+                    "ClientWhitelist": [],
+                    "EnableRateLimiting": true,
+                    "Period": "1s",
+                    "PeriodTimespan": 1000.0,
+                    "Limit": 3
+                }
+            }
+        ],
+        "GlobalConfiguration": {
+            "RequestIdKey": null,
+            "ServiceDiscoveryProvider": {
+                "Host": "localhost",
+                "Port": 8523,
+            },
+            "RateLimitOptions": {
+                "ClientIdHeader": "ClientId",
+                "QuotaExceededMessage": "",
+                "RateLimitCounterPrefix": "",
+                "DisableRateLimitHeaders": false,
+                "HttpStatusCode": 428
+            }
+            "DownstreamScheme": "http",
+        }
+    }
+
+This configuration means that if you have a request come into Ocelot on /product/* then dynamic routing will kick in and ocelot will use the rate limiting set against the product service in the DynamicReRoutes section.
 
 Please take a look through all of the docs to understand these options.

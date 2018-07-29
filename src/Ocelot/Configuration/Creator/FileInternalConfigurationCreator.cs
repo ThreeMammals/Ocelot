@@ -103,6 +103,12 @@ namespace Ocelot.Configuration.Creator
                 reRoutes.Add(ocelotReRoute);
             }
 
+            foreach(var fileDynamicReRoute in fileConfiguration.DynamicReRoutes)
+            {
+                var reRoute = SetUpDynamicReRoute(fileDynamicReRoute, fileConfiguration.GlobalConfiguration);
+                reRoutes.Add(reRoute);
+            }
+
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
 
             var lbOptions = CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
@@ -124,7 +130,24 @@ namespace Ocelot.Configuration.Creator
             return new OkResponse<IInternalConfiguration>(config);
         }
 
-        public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
+        private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithEnableRateLimiting(true)
+                .WithRateLimitOptions(rateLimitOption)
+                .WithServiceName(fileDynamicReRoute.ServiceName)
+                .Build();
+
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
+                .Build();
+
+            return reRoute;
+        }
+
+        private ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var applicableReRoutes = reRoutes
                 .SelectMany(x => x.DownstreamReRoute)
@@ -186,7 +209,7 @@ namespace Ocelot.Configuration.Creator
 
             var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod.ToArray());
 
-            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute.RateLimitOptions, globalConfiguration);
 
             var region = _regionCreator.Create(fileReRoute);
 

@@ -17,6 +17,7 @@
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
     using Ocelot.Values;
+    using System;
 
     public class FileInternalConfigurationCreatorTests
     {
@@ -821,6 +822,54 @@
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_up_dynamic_re_routes()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithEnableRateLimiting(true)
+                .WithRateLimitOptions(new RateLimitOptionsBuilder().Build())
+                .Build();
+
+            var rateLimitOptions = new RateLimitOptionsBuilder()
+                .WithRateLimitRule(new RateLimitRule("1s", 1, 1))
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                                        {
+                                            DynamicReRoutes = new List<FileDynamicReRoute>
+                                            {
+                                                new FileDynamicReRoute
+                                                {
+                                                    ServiceName = "test",
+                                                    RateLimitRule = new FileRateLimitRule
+                                                    {
+                                                        Period = "1s",
+                                                        PeriodTimespan = 1,
+                                                        Limit = 1
+                                                    }
+                                                }
+                                            },
+                                        }))
+                                            .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => GivenTheRateLimitCreatorReturns(rateLimitOptions))
+                                            .And(x => GivenTheDownstreamAddresses())
+                                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+                                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                                            .When(x => x.WhenICreateTheConfig())
+                                            .Then(x => x.ThenTheDynamicReRouteIsSetUp("test", rateLimitOptions.RateLimitRule))
+                                .BDDfy();
+        }
+
+        private void GivenTheRateLimitCreatorReturns(RateLimitOptions rateLimitOptions)
+        {
+             _rateLimitOptions
+                .Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()))
+                .Returns(rateLimitOptions);
+        }
+
         private void GivenTheConfigIsInvalid(List<Error> errors)
         {
             _validator
@@ -844,7 +893,7 @@
         private void ThenTheRateLimitOptionsCreatorIsCalledCorrectly()
         {
             _rateLimitOptions
-                .Verify(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<bool>()), Times.Once);
+                .Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Once);
         }
 
         private void GivenTheConfigIsValid()
@@ -862,6 +911,16 @@
         private void WhenICreateTheConfig()
         {
             _config = _internalConfigurationCreator.Create(_fileConfiguration).Result;
+        }
+
+        private void ThenTheDynamicReRouteIsSetUp(string serviceName, RateLimitRule rateLimitOptions)
+        {
+            var dynamic = _config.Data.ReRoutes[0].DownstreamReRoute[0];
+            dynamic.ServiceName.ShouldBe(serviceName);
+            dynamic.EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+            dynamic.RateLimitOptions.RateLimitRule.Period.ShouldBe(rateLimitOptions.Period);
+            dynamic.RateLimitOptions.RateLimitRule.Limit.ShouldBe(rateLimitOptions.Limit);
+            dynamic.RateLimitOptions.RateLimitRule.PeriodTimespan.ShouldBe(rateLimitOptions.PeriodTimespan);
         }
 
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)

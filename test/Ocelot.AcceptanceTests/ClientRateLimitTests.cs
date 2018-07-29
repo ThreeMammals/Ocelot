@@ -42,7 +42,6 @@
                             UpstreamPathTemplate = "/api/ClientRateLimit",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
-                             
                             RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,

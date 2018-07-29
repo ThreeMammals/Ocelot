@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -22,9 +23,11 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
         private IWebHost _fakeConsulBuilder;
         private FileConfiguration _config;
+        private List<ServiceEntry> _consulServices;
 
         public ConfigurationInConsulTests()
         {
+            _consulServices = new List<ServiceEntry>();
             _steps = new Steps();
         }
 
@@ -63,7 +66,7 @@ namespace Ocelot.AcceptanceTests
 
             var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -108,7 +111,7 @@ namespace Ocelot.AcceptanceTests
 
             var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
@@ -168,7 +171,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -257,7 +260,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51780", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -267,6 +270,89 @@ namespace Ocelot.AcceptanceTests
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
                 .Then(x => ThenTheConfigIsUpdatedInOcelot())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
+        {
+            const int consulPort = 8523;
+            const string serviceName = "web";
+            const int downstreamServicePort = 8187;
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = serviceName,
+                    Address = "localhost",
+                    Port = downstreamServicePort,
+                    ID = "web_90_0_2_224_8080",
+                    Tags = new[] {"version-v1"}
+                },
+            };
+
+            var consulConfig = new FileConfiguration
+            {
+                    DynamicReRoutes = new List<FileDynamicReRoute>
+                    {
+                        new FileDynamicReRoute
+                        {
+                            ServiceName = serviceName,
+                            RateLimitRule = new FileRateLimitRule()
+                            {
+                                EnableRateLimiting = true,
+                                ClientWhitelist = new List<string>(),
+                                Limit = 3,
+                                Period = "1s",
+                                PeriodTimespan = 1000
+                            }
+                        }
+                    },
+                    GlobalConfiguration = new FileGlobalConfiguration
+                    {
+                        ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                        {
+                            Host = "localhost",
+                            Port = consulPort
+                        },
+                        RateLimitOptions = new FileRateLimitOptions()
+                        {
+                            ClientIdHeader = "ClientId",
+                            DisableRateLimitHeaders = false,
+                            QuotaExceededMessage = "",
+                            RateLimitCounterPrefix = "",
+                            HttpStatusCode = 428
+                        },
+                        DownstreamScheme = "http",
+                    }
+            };
+
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Port = consulPort
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))    
+            .And(x => GivenTheConsulConfigurationIs(consulConfig))            
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something",1))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something",1))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
+            .BDDfy();
         }
 
         private void ThenTheConfigIsUpdatedInOcelot()
@@ -292,7 +378,15 @@ namespace Ocelot.AcceptanceTests
             _config = config;
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
+        private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries)
+        {
+            foreach(var serviceEntry in serviceEntries)
+            {
+                _consulServices.Add(serviceEntry);
+            }
+        }
+
+        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
             _fakeConsulBuilder = new WebHostBuilder()
                             .UseUrls(url)
@@ -335,6 +429,10 @@ namespace Ocelot.AcceptanceTests
                                             Console.WriteLine(e);
                                             throw;
                                         }
+                                    }
+                                    else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+                                    {
+                                        await context.Response.WriteJsonAsync(_consulServices);
                                     }
                                 });
                             })
