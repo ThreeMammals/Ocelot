@@ -1,6 +1,6 @@
 namespace Ocelot.Configuration.Repository
 {
-    public class InMemoryConsulPollerConfiguration : IConsulPollerConfiguration
+    public class InMemoryFileConfigurationPollerOptions : IFileConfigurationPollerOptions
     {
         public int Delay => 1000;
     }

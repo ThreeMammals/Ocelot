@@ -183,9 +183,6 @@
                     ThrowToStopOcelotStarting(internalConfig);
                 }
             }
-
-            //todo - this starts the poller if it has been registered...please this is so bad.
-            var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
         }
 
         private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptions<FileConfiguration> fileConfig)
