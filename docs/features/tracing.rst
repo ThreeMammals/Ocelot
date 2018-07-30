@@ -1,7 +1,7 @@
 Tracing
 =======
 
-Ocelot providers tracing functionality from the excellent `Butterfly <https://github.com/ButterflyAPM>`_ project. 
+Ocelot providers tracing functionality from the excellent `Butterfly <https://github.com/liuhaoyang/butterfly>`_ project. 
 
 In order to use the tracing please read the Butterfly documentation.
 
