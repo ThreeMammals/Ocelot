@@ -235,8 +235,6 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            // Earlier we add FakeServiceTracer and need to remove it here before we add butterfly
-            //_services.RemoveAll<IServiceTracer>();
             _services.AddButterfly(settings);   
             return this;
         }
