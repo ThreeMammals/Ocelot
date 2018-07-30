@@ -1,6 +1,7 @@
 ﻿using System;
 using Butterfly.Client.Tracing;
 using Butterfly.OpenTracing;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -16,12 +17,14 @@ namespace Ocelot.UnitTests.Configuration
         private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private FileReRoute _fileReRoute;
         private HttpHandlerOptions _httpHandlerOptions;
-        private IServiceTracer _serviceTracer;
+        private IServiceProvider _serviceProvider;
+        private IServiceCollection _serviceCollection;
 
         public HttpHandlerOptionsCreatorTests()
         {
-            _serviceTracer = new FakeServiceTracer();
-            _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceTracer);
+            _serviceCollection = new ServiceCollection();
+            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 
         [Fact]
@@ -153,7 +156,9 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenARealTracer()
         {
             var tracer = new RealTracer();
-            _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(tracer);
+            _serviceCollection.AddSingleton<IServiceTracer, RealTracer>();
+            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 
         class RealTracer : IServiceTracer

@@ -158,8 +158,6 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
 
-            // We add this here so that we can always inject something into the factory for IoC..
-            _services.AddSingleton<IServiceTracer, FakeServiceTracer>();
             _services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
             _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             _services.TryAddSingleton<IPlaceholders, Placeholders>();
@@ -237,8 +235,6 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
         {
-            // Earlier we add FakeServiceTracer and need to remove it here before we add butterfly
-            _services.RemoveAll<IServiceTracer>();
             _services.AddButterfly(settings);   
             return this;
         }

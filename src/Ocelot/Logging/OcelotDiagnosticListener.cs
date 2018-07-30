@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DiagnosticAdapter;
+using Microsoft.Extensions.DependencyInjection;
 using Butterfly.Client.AspNetCore;
 using Butterfly.OpenTracing;
 using Ocelot.Middleware;
@@ -17,9 +18,9 @@ namespace Ocelot.Logging
         private readonly IServiceTracer _tracer;
         private readonly IOcelotLogger _logger;
 
-        public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceTracer tracer)
+        public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceProvider services)
         {
-            _tracer = tracer;
+            _tracer = services.GetService<IServiceTracer>();
             _logger = factory.CreateLogger<OcelotDiagnosticListener>();
         }
 
@@ -67,10 +68,8 @@ namespace Ocelot.Logging
         private void Event(HttpContext httpContext, string @event)
         {  
             // todo - if the user isnt using tracing the code gets here and will blow up on 
-            // _tracer.Tracer.TryExtract. We already use the fake tracer for another scenario
-            // so sticking it here as well..I guess we need a factory for this but cba to do it at
-            // the moment
-            if(_tracer.GetType() == typeof(FakeServiceTracer))
+            // _tracer.Tracer.TryExtract..
+            if(_tracer == null)
             {
                 return;
             }
