@@ -172,7 +172,7 @@ namespace Ocelot.Middleware.Pipeline
                 throw new ArgumentNullException(nameof(pipelineBuilderFunc));
             }
             var branchBuilder = app.New();
-            var predicate = pipelineBuilderFunc.Invoke(app);
+            var predicate = pipelineBuilderFunc.Invoke(branchBuilder);
             var branch = branchBuilder.Build();
 
             var options = new MapWhenOptions
