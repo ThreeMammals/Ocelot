@@ -139,7 +139,7 @@
 
         private static bool AdministrationApiInUse(IAdministrationPath adminPath)
         {
-            return adminPath.GetType() != typeof(NullAdministrationPath);
+            return adminPath != null;
         }
 
         private static async Task SetFileConfigInConsul(IApplicationBuilder builder,

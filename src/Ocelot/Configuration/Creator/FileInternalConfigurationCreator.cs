@@ -10,6 +10,7 @@ using Ocelot.Configuration.Validator;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -49,14 +50,14 @@ namespace Ocelot.Configuration.Creator
             IRateLimitOptionsCreator rateLimitOptionsCreator,
             IRegionCreator regionCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-            IAdministrationPath adminPath,
+            IServiceProvider serviceProvider,
             IHeaderFindAndReplaceCreator headerFAndRCreator,
             IDownstreamAddressesCreator downstreamAddressesCreator
             )
         {
             _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
-            _adminPath = adminPath;
+            _adminPath = serviceProvider.GetService<IAdministrationPath>();
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -117,8 +118,10 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
 
+            var adminPath = _adminPath != null ? _adminPath.Path : null;
+
             var config = new InternalConfiguration(reRoutes, 
-                _adminPath.Path, 
+                adminPath, 
                 serviceProviderConfiguration, 
                 fileConfiguration.GlobalConfiguration.RequestIdKey, 
                 lbOptions, 
