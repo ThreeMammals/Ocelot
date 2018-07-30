@@ -36,7 +36,7 @@
         private readonly Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private readonly Mock<IRegionCreator> _regionCreator;
         private readonly Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
-        private readonly Mock<IAdministrationPath> _adminPath;
+        private readonly Mock<IServiceProvider> _serviceProvider;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
         private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
 
@@ -54,7 +54,7 @@
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
-            _adminPath = new Mock<IAdministrationPath>();
+            _serviceProvider = new Mock<IServiceProvider>();
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
 
@@ -71,7 +71,7 @@
                 _rateLimitOptions.Object,
                 _regionCreator.Object,
                 _httpHandlerOptionsCreator.Object,
-                _adminPath.Object,
+                _serviceProvider.Object,
                 _headerFindAndReplaceCreator.Object,
                 _downstreamAddressesCreator.Object);
         }

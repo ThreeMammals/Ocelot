@@ -152,12 +152,10 @@ namespace Ocelot.DependencyInjection
             _services.AddLogging();
             _services.AddMiddlewareAnalysis();
             _services.AddWebEncoders();
-            _services.AddSingleton<IAdministrationPath>(new NullAdministrationPath());
 
             _services.TryAddSingleton<IMultiplexer, Multiplexer>();
             _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
-
             _services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
             _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             _services.TryAddSingleton<IPlaceholders, Placeholders>();
@@ -180,8 +178,7 @@ namespace Ocelot.DependencyInjection
                 AddIdentityServer(identityServerConfiguration, administrationPath);
             }
 
-            var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
-            _services.Replace(descriptor);
+            _services.AddSingleton<IAdministrationPath>(administrationPath);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
@@ -194,9 +191,7 @@ namespace Ocelot.DependencyInjection
                 AddIdentityServer(configureOptions);
             }
 
-            //todo - hack because we add this earlier so it always exists for some reason...investigate..
-            var descriptor = new ServiceDescriptor(typeof(IAdministrationPath), administrationPath);
-            _services.Replace(descriptor);
+            _services.AddSingleton<IAdministrationPath>(administrationPath);
             return new OcelotAdministrationBuilder(_services, _configurationRoot);
         }
 
