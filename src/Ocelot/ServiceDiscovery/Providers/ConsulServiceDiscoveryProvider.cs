@@ -59,7 +59,7 @@ namespace Ocelot.ServiceDiscovery.Providers
 
         private bool IsValid(ServiceEntry serviceEntry)
         {
-            if (serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
+            if (string.IsNullOrEmpty(serviceEntry.Service.Address) || serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
             {
                 return false;
             }

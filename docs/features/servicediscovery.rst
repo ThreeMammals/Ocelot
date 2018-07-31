@@ -63,7 +63,7 @@ You services need to be added to Consul something like below (c# style but hopef
 is not to add http or https to the Address field. I have been contacted before about not accepting scheme in Address and accepting scheme
 in address. After reading `this <https://www.consul.io/docs/agent/services.html>`_ I don't think the scheme should be in there.
 
-.. code-block: json
+.. code-block: csharp
 
     new AgentService()
     {
@@ -72,6 +72,17 @@ in address. After reading `this <https://www.consul.io/docs/agent/services.html>
         Port = 8080,
         ID = "some-id",
     }
+
+Or 
+
+.. code-block:: json
+
+     "Service": {
+            "ID": "some-id",
+            "Service": "some-service-name",
+            "Address": "localhost",
+            "Port": 8080
+        }
 
 ACL Token
 ---------

@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
         private string _receivedToken;
-        private IConsulClientFactory _clientFactory;
+        private readonly IConsulClientFactory _clientFactory;
 
         public ConsulServiceDiscoveryProviderTests()
         {
@@ -135,6 +135,41 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
+        public void should_not_return_services_with_empty_address()
+        {
+            var serviceEntryOne = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = _serviceName,
+                    Address = "",
+                    Port = 50881,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+
+            var serviceEntryTwo = new ServiceEntry()
+            {
+                Service = new AgentService()
+                {
+                    Service = _serviceName,
+                    Address = null,
+                    Port = 50888,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = new string[0]
+                },
+            };
+
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
+                .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+                .When(x => WhenIGetTheServices())
+                .Then(x => ThenTheCountIs(0))
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_not_return_services_with_invalid_port()
         {
             var serviceEntryOne = new ServiceEntry()
@@ -179,6 +214,19 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _logger.Verify(
                 x => x.LogWarning(
                     "Unable to use service Address: http://localhost and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
+                Times.Once);
+        }
+
+        private void ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress()
+        {
+            _logger.Verify(
+                x => x.LogWarning(
+                    "Unable to use service Address:  and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
+                Times.Once);
+
+            _logger.Verify(
+                x => x.LogWarning(
+                    "Unable to use service Address:  and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
                 Times.Once);
         }
 
