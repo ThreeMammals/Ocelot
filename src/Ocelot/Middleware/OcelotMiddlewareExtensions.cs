@@ -20,13 +20,13 @@
     using Ocelot.Middleware.Pipeline;
     using Pivotal.Discovery.Client;
     using Rafty.Concensus.Node;
+    using Microsoft.Extensions.DependencyInjection;
 
     public static class OcelotMiddlewareExtensions
     {
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
             await builder.UseOcelot(new OcelotPipelineConfiguration());
-
             return builder;
         }
 
@@ -36,6 +36,7 @@
             pipelineConfiguration?.Invoke(config);
             return await builder.UseOcelot(config);
         }
+
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
         {
             var configuration = await CreateConfiguration(builder);
@@ -54,6 +55,12 @@
 
             ConfigureDiagnosticListener(builder);
 
+            return CreateOcelotPipeline(builder, pipelineConfiguration);
+            
+        }
+
+        private static IApplicationBuilder CreateOcelotPipeline(IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
+        {
             var pipelineBuilder = new OcelotPipelineBuilder(builder.ApplicationServices);
 
             pipelineBuilder.BuildOcelotPipeline(pipelineConfiguration);
@@ -84,8 +91,8 @@
 
         private static bool UsingRafty(IApplicationBuilder builder)
         {
-            var possible = builder.ApplicationServices.GetService(typeof(INode)) as INode;
-            if (possible != null)
+            var node = builder.ApplicationServices.GetService<INode>();
+            if (node != null)
             {
                 return true;
             }
@@ -95,10 +102,10 @@
 
         private static void SetUpRafty(IApplicationBuilder builder)
         {
-            var applicationLifetime = (IApplicationLifetime)builder.ApplicationServices.GetService(typeof(IApplicationLifetime));
+            var applicationLifetime = builder.ApplicationServices.GetService<IApplicationLifetime>();
             applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
-            var node = (INode)builder.ApplicationServices.GetService(typeof(INode));
-            var nodeId = (NodeId)builder.ApplicationServices.GetService(typeof(NodeId));
+            var node = builder.ApplicationServices.GetService<INode>();
+            var nodeId = builder.ApplicationServices.GetService<NodeId>();
             node.Start(nodeId);
         }
 
@@ -106,19 +113,19 @@
         {
             // make configuration from file system?
             // earlier user needed to add ocelot files in startup configuration stuff, asp.net will map it to this
-            var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
+            var fileConfig = builder.ApplicationServices.GetService<IOptions<FileConfiguration>>();
 
             // now create the config
-            var internalConfigCreator = (IInternalConfigurationCreator)builder.ApplicationServices.GetService(typeof(IInternalConfigurationCreator));
+            var internalConfigCreator = builder.ApplicationServices.GetService<IInternalConfigurationCreator>();
             var internalConfig = await internalConfigCreator.Create(fileConfig.Value);
 
             // now save it in memory
-            var internalConfigRepo = (IInternalConfigurationRepository)builder.ApplicationServices.GetService(typeof(IInternalConfigurationRepository));
+            var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
             internalConfigRepo.AddOrReplace(internalConfig.Data);
 
-            var fileConfigRepo = (IFileConfigurationRepository)builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
+            var fileConfigRepo = builder.ApplicationServices.GetService<IFileConfigurationRepository>();
 
-            var adminPath = (IAdministrationPath)builder.ApplicationServices.GetService(typeof(IAdministrationPath));
+            var adminPath = builder.ApplicationServices.GetService<IAdministrationPath>();
 
             if (UsingConsul(fileConfigRepo))
             {
@@ -129,7 +136,7 @@
             {
                 //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the 
                 //admin api it works...boy this is getting a spit spags boll.
-                var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+                var fileConfigSetter = builder.ApplicationServices.GetService<IFileConfigurationSetter>();
 
                 await SetFileConfig(fileConfigSetter, fileConfig);
             }
@@ -234,7 +241,7 @@
                 builder.Map(configuration.AdministrationPath, app =>
                 {
                     //todo - hack so we know that we are using internal identity server
-                    var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
+                    var identityServerConfiguration = builder.ApplicationServices.GetService<IIdentityServerConfiguration>();
                     if (identityServerConfiguration != null)
                     {
                         app.UseIdentityServer();
@@ -248,15 +255,15 @@
 
         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
         {
-            var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-            var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
-            var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+            var env = builder.ApplicationServices.GetService<IHostingEnvironment>();
+            var listener = builder.ApplicationServices.GetService<OcelotDiagnosticListener>();
+            var diagnosticListener = builder.ApplicationServices.GetService<DiagnosticListener>();
             diagnosticListener.SubscribeWithAdapter(listener);
         }
 
         private static void OnShutdown(IApplicationBuilder app)
         {
-            var node = (INode)app.ApplicationServices.GetService(typeof(INode));
+            var node = app.ApplicationServices.GetService<INode>();
             node.Stop();
         }
     }
