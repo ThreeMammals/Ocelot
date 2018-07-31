@@ -40,10 +40,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Configuration;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using System.Net.Http;
-    using Butterfly.Client.AspNetCore;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Consul;
-    using Butterfly.Client.Tracing;
     using Ocelot.Middleware.Multiplexer;
     using ServiceDiscovery.Providers;
     using Steeltoe.Common.Discovery;
@@ -225,12 +223,6 @@ namespace Ocelot.DependencyInjection
                 _services.AddTransient<DelegatingHandler, THandler>();
             }
 
-            return this;
-        }
-
-        public IOcelotBuilder AddOpenTracing(Action<ButterflyOptions> settings)
-        {
-            _services.AddButterfly(settings);   
             return this;
         }
 

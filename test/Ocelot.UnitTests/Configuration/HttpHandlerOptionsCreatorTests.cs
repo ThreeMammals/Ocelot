@@ -1,6 +1,4 @@
 ﻿using System;
-using Butterfly.Client.Tracing;
-using Butterfly.OpenTracing;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
@@ -12,6 +10,12 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Logging;
+
     public class HttpHandlerOptionsCreatorTests
     {
         private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
@@ -155,23 +159,21 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenARealTracer()
         {
-            var tracer = new RealTracer();
-            _serviceCollection.AddSingleton<IServiceTracer, RealTracer>();
+            var tracer = new FakeTracer();
+            _serviceCollection.AddSingleton<ITracer, FakeTracer>();
             _serviceProvider = _serviceCollection.BuildServiceProvider();
             _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 
-        class RealTracer : IServiceTracer
+        class FakeTracer : ITracer
         {
-            public ITracer Tracer => throw new NotImplementedException();
+            public void Event(HttpContext httpContext, string @event)
+            {
+                throw new NotImplementedException();
+            }
 
-            public string ServiceName => throw new NotImplementedException();
-
-            public string Environment => throw new NotImplementedException();
-
-            public string Identity => throw new NotImplementedException();
-
-            public ISpan Start(ISpanBuilder spanBuilder)
+            public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken, Action<string> addTraceIdToRepo,
+                Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
             {
                 throw new NotImplementedException();
             }

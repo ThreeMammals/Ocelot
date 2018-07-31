@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Ocelot.Butterfly\Ocelot.Butterfly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
 

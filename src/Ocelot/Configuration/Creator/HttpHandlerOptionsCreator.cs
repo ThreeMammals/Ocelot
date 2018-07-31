@@ -1,18 +1,17 @@
 ﻿namespace Ocelot.Configuration.Creator
 {
     using System;
-    using Butterfly.Client.Tracing;
+    using Logging;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Configuration.File;
-    using Ocelot.Requester;
 
     public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {
-        private readonly IServiceTracer _tracer;
+        private readonly ITracer _tracer;
 
         public HttpHandlerOptionsCreator(IServiceProvider services)
         {
-            _tracer = services.GetService<IServiceTracer>();
+            _tracer = services.GetService<ITracer>();
         }
 
         public HttpHandlerOptions Create(FileHttpHandlerOptions options)

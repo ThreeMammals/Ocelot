@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <Description>This package provides methods to integrate Butterfly tracing with Ocelot.</Description>
+    <AssemblyTitle>Ocelot.Butterfly</AssemblyTitle>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <AssemblyName>Ocelot.Butterfly</AssemblyName>
+    <PackageId>Ocelot.Butterfly</PackageId>
+    <PackageTags>API Gateway;.NET core; Butterfly; ButterflyAPM</PackageTags>
+    <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+    <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Authors>Tom Pallister</Authors>
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Butterfly.Client" Version="0.0.8" />
+    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+
+</Project>

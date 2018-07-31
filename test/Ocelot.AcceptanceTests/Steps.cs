@@ -31,6 +31,7 @@ using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
+    using Butterfly;
     using Configuration.Repository;
     using Microsoft.Net.Http.Headers;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
@@ -163,7 +164,7 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(s =>
                 {
                     s.AddOcelot()
-                    .AddOpenTracing(option =>
+                    .AddButterfly(option =>
                     {
                         //this is the url that the butterfly collector server is running on...
                         option.CollectorUrl = butterflyUrl;

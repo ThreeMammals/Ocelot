@@ -23,6 +23,8 @@ using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
+    using Butterfly;
+
     public class OcelotBuilderTests
     {
         private readonly IServiceCollection _services;
@@ -391,7 +393,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _ocelotBuilder.AddOpenTracing(
+                _ocelotBuilder.AddButterfly(
                     option =>
                     {
                         option.CollectorUrl = "http://localhost:9618";

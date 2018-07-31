@@ -1,27 +1,27 @@
-using System;
-using Butterfly.Client.Tracing;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Requester;
-using Shouldly;
-using Xunit;
-
 namespace Ocelot.UnitTests.Requester
 {
+    using System;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Requester;
+    using Shouldly;
+    using Xunit;
+    using Ocelot.Logging;
+
     public class TracingHandlerFactoryTests
     {
-        private TracingHandlerFactory _factory;
-        private Mock<IServiceTracer> _tracer;
+        private readonly TracingHandlerFactory _factory;
+        private Mock<ITracer> _tracer;
         private IServiceCollection _serviceCollection;
         private IServiceProvider _serviceProvider;
         private Mock<IRequestScopedDataRepository> _repo;
 
         public TracingHandlerFactoryTests()
         {
-            _tracer = new Mock<IServiceTracer>();
+            _tracer = new Mock<ITracer>();
             _serviceCollection = new ServiceCollection();
-            _serviceCollection.AddSingleton<IServiceTracer>(_tracer.Object);
+            _serviceCollection.AddSingleton<ITracer>(_tracer.Object);
             _serviceProvider = _serviceCollection.BuildServiceProvider();
             _repo = new Mock<IRequestScopedDataRepository>();
             _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
