@@ -55,9 +55,29 @@ The secret is the client secret that Ocelot's internal IdentityServer will use t
             .AddAdministration("/administration", "secret");
     }
 
+In order for the administration API to work, Ocelot / IdentityServer must be able to call itself for validation. This means that you need to add the base url of Ocelot 
+to global configuration if it is not default (http://localhost:5000). This can be done as follows..
+
+If you want to run on a different host and port locally..
+
+.. code-block:: json
+
+ "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:55580"
+  }
+
+or if Ocelot is exposed via dns
+
+.. code-block:: json
+
+ "GlobalConfiguration": {
+    "BaseUrl": "http://mydns.com"
+  }
+
 Now if you went with the configuration options above and want to access the API you can use the postman scripts
 called ocelot.postman_collection.json in the solution to change the Ocelot configuration. Obviously these 
 will need to be changed if you are running Ocelot on a different url to http://localhost:5000.
+
 
 The scripts show you how to request a bearer token from ocelot and then use it to GET the existing configuration and POST 
 a configuration.
