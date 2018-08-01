@@ -118,6 +118,11 @@
             // now create the config
             var internalConfigCreator = builder.ApplicationServices.GetService<IInternalConfigurationCreator>();
             var internalConfig = await internalConfigCreator.Create(fileConfig.Value);
+           //Configuration error, throw error message
+            if (internalConfig.IsError)
+            {
+                ThrowToStopOcelotStarting(internalConfig);
+            }
 
             // now save it in memory
             var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
