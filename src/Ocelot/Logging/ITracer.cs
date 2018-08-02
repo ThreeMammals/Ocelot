@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Logging
+namespace Ocelot.Logging
 {
     using System;
     using System.Net.Http;
