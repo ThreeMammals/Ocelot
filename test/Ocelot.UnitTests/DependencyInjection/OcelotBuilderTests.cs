@@ -143,15 +143,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_set_up_tracing()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpOpentracing())
-                .When(x => WhenIAccessOcelotHttpTracingHandler())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_set_up_without_passing_in_config()
         {
             this.When(x => WhenISetUpOcelotServicesWithoutConfig())
@@ -382,24 +373,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                     x.WithMaxRetries(_maxRetries);
                     x.WithDictionaryHandle();
                 });
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpOpentracing()
-        {
-            try
-            {
-                _ocelotBuilder.AddButterfly(
-                    option =>
-                    {
-                        option.CollectorUrl = "http://localhost:9618";
-                        option.Service = "Ocelot.ManualTest";
-                    }
-               );
             }
             catch (Exception e)
             {

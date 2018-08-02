@@ -147,44 +147,6 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot()
-                    .AddButterfly(option =>
-                    {
-                        //this is the url that the butterfly collector server is running on...
-                        option.CollectorUrl = butterflyUrl;
-                        option.Service = "Ocelot";
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        await next.Invoke();
-                    });
-                    app.UseOcelot().Wait();
-                });
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            _ocelotClient = _ocelotServer.CreateClient();
-        }
-
         internal void GivenIWait(int wait)
         {
             Thread.Sleep(wait);
