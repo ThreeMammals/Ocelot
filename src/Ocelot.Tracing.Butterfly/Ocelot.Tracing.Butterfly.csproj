@@ -8,7 +8,7 @@
     <Description>This package provides methods to integrate Butterfly tracing with Ocelot.</Description>
     <AssemblyTitle>Ocelot.Butterfly</AssemblyTitle>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyName>Ocelot.Butterfly</AssemblyName>
+    <AssemblyName>Ocelot.Tracing.Butterfly</AssemblyName>
     <PackageId>Ocelot.Butterfly</PackageId>
     <PackageTags>API Gateway;.NET core; Butterfly; ButterflyAPM</PackageTags>
     <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
@@ -20,15 +20,13 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <Authors>Tom Pallister</Authors>
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <RootNamespace>Ocelot.Tracing.Butterfly</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Butterfly.Client" Version="0.0.8" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+    <PackageReference Include="Ocelot" Version="8.1.0-unstable0027" />
   </ItemGroup>
 
 </Project>

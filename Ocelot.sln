@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Benchmarks", "test\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.csproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Butterfly", "src\Ocelot.Butterfly\Ocelot.Butterfly.csproj", "{6EF2DA7D-ADB2-487A-8518-B6984EAF8ABB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6EF2DA7D-ADB2-487A-8518-B6984EAF8ABB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
