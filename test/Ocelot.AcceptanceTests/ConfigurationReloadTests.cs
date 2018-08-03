@@ -12,19 +12,15 @@ namespace Ocelot.AcceptanceTests
 {
     public class ConfigurationReloadTests : IDisposable
     {
-        private int _counter;
+        private FileConfiguration _initialConfig;
+        private FileConfiguration _anotherConfig;
         private Steps _steps;
 
         public ConfigurationReloadTests()
         {
-            _counter = 0;
             _steps = new Steps();
-        }
 
-        [Fact]
-        public void should_reload_config_on_change()
-        {
-            var initialConfig = new FileConfiguration
+            _initialConfig = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -32,25 +28,36 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            var anotherConfig = new FileConfiguration
+            _anotherConfig = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     RequestIdKey = "someOtherKey"
                 }
             };
+        }
 
-            this.Given(x => _steps.GivenThereIsAConfiguration(initialConfig))
+        [Fact]
+        public void should_reload_config_on_change()
+        {           
+            this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
-                .And(x => _steps.GivenThereIsAConfiguration(anotherConfig))
-                .And(x => _steps.GivenIWait(5000))
-                .And(x => _steps.ThenConfigShouldBe(anotherConfig))
+                .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+                .And(x => _steps.GivenIWait(2500))
+                .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
                 .BDDfy();
         }
 
-        private void ThenTheCounterIs(int expected)
+        [Fact]
+        public void should_not_reload_config_on_change()
         {
-            _counter.ShouldBe(expected);
+           
+            this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
+                .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
+                .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+                .And(x => _steps.GivenIWait(2500))
+                .And(x => _steps.ThenConfigShouldBe(_initialConfig))
+                .BDDfy();
         }
 
         public void Dispose()
