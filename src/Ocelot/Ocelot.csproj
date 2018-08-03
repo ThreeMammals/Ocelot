@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
@@ -25,10 +25,6 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Butterfly.Client" Version="0.0.8" />
-    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
     <PackageReference Include="FluentValidation" Version="7.6.104" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />

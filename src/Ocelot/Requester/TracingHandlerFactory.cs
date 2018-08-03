@@ -1,13 +1,13 @@
 namespace Ocelot.Requester
 {
     using System;
-    using Butterfly.Client.Tracing;
+    using Logging;
     using Ocelot.Infrastructure.RequestData;
     using Microsoft.Extensions.DependencyInjection;
 
     public class TracingHandlerFactory : ITracingHandlerFactory
     {
-        private readonly IServiceTracer _tracer;
+        private readonly ITracer _tracer;
         private readonly IRequestScopedDataRepository _repo;
 
         public TracingHandlerFactory(
@@ -15,7 +15,7 @@ namespace Ocelot.Requester
             IRequestScopedDataRepository repo)
         {
             _repo = repo;
-            _tracer = services.GetService<IServiceTracer>();
+            _tracer = services.GetService<ITracer>();
         }
 
         public ITracingHandler Get()

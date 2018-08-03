@@ -23,6 +23,8 @@ using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
+    using Butterfly;
+
     public class OcelotBuilderTests
     {
         private readonly IServiceCollection _services;
@@ -137,15 +139,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => WhenIValidateScopes())
                 .When(x => WhenIAccessLoggerFactory())
                 .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_tracing()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpOpentracing())
-                .When(x => WhenIAccessOcelotHttpTracingHandler())
                 .BDDfy();
         }
 
@@ -380,24 +373,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                     x.WithMaxRetries(_maxRetries);
                     x.WithDictionaryHandle();
                 });
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpOpentracing()
-        {
-            try
-            {
-                _ocelotBuilder.AddOpenTracing(
-                    option =>
-                    {
-                        option.CollectorUrl = "http://localhost:9618";
-                        option.Service = "Ocelot.ManualTest";
-                    }
-               );
             }
             catch (Exception e)
             {
