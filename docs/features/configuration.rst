@@ -150,7 +150,7 @@ Reload JSON config on change
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ocelot supports reloading the json configuration file on change. e.g. the following will recreate Ocelots internal configuration when the ocelot.json file is updated
-manully.
+manually.
 
 .. code-block:: json
 
