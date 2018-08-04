@@ -34,6 +34,7 @@ namespace Ocelot.AcceptanceTests
     using Butterfly;
     using Configuration.Repository;
     using Microsoft.Net.Http.Headers;
+    using Ocelot.Configuration.Creator;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
     public class Steps : IDisposable
@@ -53,6 +54,18 @@ namespace Ocelot.AcceptanceTests
         public Steps()
         {
             _random = new Random();
+        }
+
+        public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
+        {
+            var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+
+            var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+            var internalConfig = internalConfigRepo.Get();
+
+            var config = await internalConfigCreator.Create(fileConfig);
+
+            internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
         }
 
         public async Task StartFakeOcelotWithWebSockets()
@@ -114,6 +127,34 @@ namespace Ocelot.AcceptanceTests
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
+        }
+
+        public void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: shouldReload);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();                    
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
         }
 
         /// <summary>
