@@ -1,4 +1,3 @@
-using CacheManager.Core;
 using System;
 using System.Net.Http;
 using IdentityServer4.AccessTokenValidation;
@@ -13,8 +12,6 @@ namespace Ocelot.DependencyInjection
         IServiceCollection Services { get; }
         IConfiguration Configuration { get; }
         IOcelotBuilder AddStoreOcelotConfigurationInConsul();
-
-        IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings);
 
         IOcelotAdministrationBuilder AddAdministration(string path, string secret);
 

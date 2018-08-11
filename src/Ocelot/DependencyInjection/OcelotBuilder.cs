@@ -1,6 +1,5 @@
 namespace Ocelot.DependencyInjection
 {
-    using CacheManager.Core;
     using IdentityServer4.Models;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
@@ -50,118 +49,110 @@ namespace Ocelot.DependencyInjection
 
     public class OcelotBuilder : IOcelotBuilder
     {
-        private readonly IServiceCollection _services;
-        private readonly IConfiguration _configurationRoot;
-
-        public IServiceCollection Services => _services;
-
-        public IConfiguration Configuration => _configurationRoot;
+        public IServiceCollection Services { get; }
+        public IConfiguration Configuration { get; }
 
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
-            _configurationRoot = configurationRoot;
-            _services = services;    
-           
-            //add default cache settings...
-            Action<ConfigurationBuilderCachePart> defaultCachingSettings = x =>
-            {
-                x.WithDictionaryHandle();
-            };
+            Configuration = configurationRoot;
+            Services = services;
 
-            AddCacheManager(defaultCachingSettings);
+            Services.Configure<FileConfiguration>(configurationRoot);
+            
+            //default no caches...
+            Services.TryAddSingleton<IOcelotCache<FileConfiguration>, NoCache<FileConfiguration>>();
+            Services.TryAddSingleton<IOcelotCache<CachedResponse>, NoCache<CachedResponse>>();
 
-            //add ocelot services...
-            _services.Configure<FileConfiguration>(configurationRoot);
-            _services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
-            _services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
-            _services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
-            _services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
-            _services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
-            _services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
-            _services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
-            _services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
-            _services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
-            _services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
-            _services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
-            _services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
-            _services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
-            _services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
-            _services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-            _services.TryAddSingleton<IRegionCreator, RegionCreator>();
-            _services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
-            _services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
-            _services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
-            _services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
-            _services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
-            _services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
-            _services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-            _services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-            _services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
-            _services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
-            _services.TryAddSingleton<IClaimsAuthoriser, ClaimsAuthoriser>();
-            _services.TryAddSingleton<IScopesAuthoriser, ScopesAuthoriser>();
-            _services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
-            _services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
-            _services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
-            _services.TryAddSingleton<IClaimsParser, ClaimsParser>();
-            _services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
-            _services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
-            _services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
-            _services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
-            _services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
-            _services.TryAddSingleton<IDownstreamRouteProviderFactory, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteProviderFactory>();
-            _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
-            _services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
-            _services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            _services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
-            _services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
-            _services.TryAddSingleton<IRequestMapper, RequestMapper>();
-            _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
-            _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
-            _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+            Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
+            Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
+            Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
+            Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
+            Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
+            Services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
+            Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
+            Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
+            Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
+            Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
+            Services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
+            Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+            Services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
+            Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
+            Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
+            Services.TryAddSingleton<IRegionCreator, RegionCreator>();
+            Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
+            Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
+            Services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
+            Services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
+            Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
+            Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
+            Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
+            Services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
+            Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
+            Services.TryAddSingleton<IClaimsAuthoriser, ClaimsAuthoriser>();
+            Services.TryAddSingleton<IScopesAuthoriser, ScopesAuthoriser>();
+            Services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
+            Services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
+            Services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
+            Services.TryAddSingleton<IClaimsParser, ClaimsParser>();
+            Services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
+            Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
+            Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
+            Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
+            Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
+            Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
+            Services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
+            Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
+            Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
+            Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            Services.TryAddSingleton<IHttpClientCache, MemoryHttpClientCache>();
+            Services.TryAddSingleton<IRequestMapper, RequestMapper>();
+            Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
+            Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
+            Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
 
             if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
             {
-                _services.AddDiscoveryClient(configurationRoot);
+                Services.AddDiscoveryClient(configurationRoot);
             }
             else
             {
-                _services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
+                Services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
             }
 
-            _services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
+            Services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
-            _services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            _services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
-            _services.AddMemoryCache();
-            _services.TryAddSingleton<OcelotDiagnosticListener>();
+            Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
+            Services.AddMemoryCache();
+            Services.TryAddSingleton<OcelotDiagnosticListener>();
 
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            _services.AddMvcCore()
+            Services.AddMvcCore()
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
                 .AddJsonFormatters();
 
-            _services.AddLogging();
-            _services.AddMiddlewareAnalysis();
-            _services.AddWebEncoders();
+            Services.AddLogging();
+            Services.AddMiddlewareAnalysis();
+            Services.AddWebEncoders();
 
-            _services.TryAddSingleton<IMultiplexer, Multiplexer>();
-            _services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
-            _services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
-            _services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
-            _services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
-            _services.TryAddSingleton<IPlaceholders, Placeholders>();
-            _services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
-            _services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
-            _services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
-            _services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
-            _services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
+            Services.TryAddSingleton<IMultiplexer, Multiplexer>();
+            Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
+            Services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
+            Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
+            Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
+            Services.TryAddSingleton<IPlaceholders, Placeholders>();
+            Services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
+            Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
+            Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
+            Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
+            Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
@@ -176,8 +167,8 @@ namespace Ocelot.DependencyInjection
                 AddIdentityServer(identityServerConfiguration, administrationPath);
             }
 
-            _services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(_services, _configurationRoot);
+            Services.AddSingleton<IAdministrationPath>(administrationPath);
+            return new OcelotAdministrationBuilder(Services, Configuration);
         }
 
         public IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configureOptions)
@@ -189,21 +180,21 @@ namespace Ocelot.DependencyInjection
                 AddIdentityServer(configureOptions);
             }
 
-            _services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(_services, _configurationRoot);
+            Services.AddSingleton<IAdministrationPath>(administrationPath);
+            return new OcelotAdministrationBuilder(Services, Configuration);
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
             where T : class, IDefinedAggregator
         {
-            _services.AddSingleton<IDefinedAggregator, T>();
+            Services.AddSingleton<IDefinedAggregator, T>();
             return this;
         }
 
         public IOcelotBuilder AddTransientDefinedAggregator<T>() 
             where T : class, IDefinedAggregator
         {
-            _services.AddTransient<IDefinedAggregator, T>();
+            Services.AddTransient<IDefinedAggregator, T>();
             return this;
         }
 
@@ -212,15 +203,15 @@ namespace Ocelot.DependencyInjection
         {
             if(global)
             {
-                _services.AddTransient<THandler>();
-                _services.AddTransient<GlobalDelegatingHandler>(s => {
+                Services.AddTransient<THandler>();
+                Services.AddTransient<GlobalDelegatingHandler>(s => {
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });
             }
             else
             {
-                _services.AddTransient<DelegatingHandler, THandler>();
+                Services.AddTransient<DelegatingHandler, THandler>();
             }
 
             return this;
@@ -228,59 +219,33 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
         {
-            _services.AddHostedService<FileConfigurationPoller>();
-            _services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
-            return this;
-        }
-
-        public IOcelotBuilder AddCacheManager(Action<ConfigurationBuilderCachePart> settings)
-        {
-            var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", settings);
-            var ocelotOutputCacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
-
-            _services.RemoveAll(typeof(ICacheManager<CachedResponse>));
-            _services.RemoveAll(typeof(IOcelotCache<CachedResponse>));
-            _services.AddSingleton<ICacheManager<CachedResponse>>(cacheManagerOutputCache);
-            _services.AddSingleton<IOcelotCache<CachedResponse>>(ocelotOutputCacheManager);
-
-            var ocelotConfigCacheManagerOutputCache = CacheFactory.Build<IInternalConfiguration>("OcelotConfigurationCache", settings);
-            var ocelotConfigCacheManager = new OcelotCacheManagerCache<IInternalConfiguration>(ocelotConfigCacheManagerOutputCache);
-            _services.RemoveAll(typeof(ICacheManager<IInternalConfiguration>));
-            _services.RemoveAll(typeof(IOcelotCache<IInternalConfiguration>));
-            _services.AddSingleton<ICacheManager<IInternalConfiguration>>(ocelotConfigCacheManagerOutputCache);
-            _services.AddSingleton<IOcelotCache<IInternalConfiguration>>(ocelotConfigCacheManager);
-
-            var fileConfigCacheManagerOutputCache = CacheFactory.Build<FileConfiguration>("FileConfigurationCache", settings);
-            var fileConfigCacheManager = new OcelotCacheManagerCache<FileConfiguration>(fileConfigCacheManagerOutputCache);
-            _services.RemoveAll(typeof(ICacheManager<FileConfiguration>));
-            _services.RemoveAll(typeof(IOcelotCache<FileConfiguration>));
-            _services.AddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
-            _services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
+            Services.AddHostedService<FileConfigurationPoller>();
+            Services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
             return this;
         }
 
         private void AddIdentityServer(Action<IdentityServerAuthenticationOptions> configOptions)
         {
-            _services
+            Services
                 .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(configOptions);
         }
 
         private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
         {
-            _services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-            var identityServerBuilder = _services
+            Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            var identityServerBuilder = Services
                 .AddIdentityServer(o => {
                     o.IssuerUri = "Ocelot";
                 })
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration));
 
-            var urlFinder = new BaseUrlFinder(_configurationRoot);
+            var urlFinder = new BaseUrlFinder(Configuration);
             var baseSchemeUrlAndPort = urlFinder.Find();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();            
 
-            _services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            Services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>
                 {
                     o.Authority = baseSchemeUrlAndPort + adminPath.Path;

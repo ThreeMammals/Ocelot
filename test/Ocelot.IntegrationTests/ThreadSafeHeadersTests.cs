@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Shouldly;
@@ -13,7 +12,6 @@ using Xunit;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using CacheManager.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
@@ -113,17 +111,7 @@ namespace Ocelot.IntegrationTests
                 })
                 .ConfigureServices(x =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (s) =>
-                    {
-                        s.WithMicrosoftLogging(log =>
-                            {
-                                log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithDictionaryHandle();
-                    };
-
                     x.AddOcelot()
-                        .AddCacheManager(settings)
                         .AddAdministration("/administration", "secret");
                 })
                 .Configure(app =>

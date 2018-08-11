@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Ocelot.Cache
 {
@@ -9,5 +8,25 @@ namespace Ocelot.Cache
         void AddAndDelete(string key, T value, TimeSpan ttl, string region);
         T Get(string key, string region);
         void ClearRegion(string region);
+    }
+
+    public class NoCache<T> : IOcelotCache<T>
+    {
+        public void Add(string key, T value, TimeSpan ttl, string region)
+        {
+        }
+
+        public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
+        {
+        }
+
+        public void ClearRegion(string region)
+        {
+        }
+
+        public T Get(string key, string region)
+        {
+            return default(T);
+        }
     }
 }

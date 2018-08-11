@@ -1,5 +1,6 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Middleware;
+﻿using Xunit;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.UnitTests.Authentication
 {
@@ -15,14 +16,16 @@ namespace Ocelot.UnitTests.Authentication
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Configuration;
+    using Ocelot.Middleware;
 
     public class AuthenticationMiddlewareTests
     {
         private AuthenticationMiddleware _middleware;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private Mock<IOcelotLogger> _logger;
         private OcelotRequestDelegate _next;
-        private DownstreamContext _downstreamContext;
+        private readonly DownstreamContext _downstreamContext;
 
         public AuthenticationMiddlewareTests()
         {
