@@ -17,6 +17,8 @@ using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.AcceptanceTests
 {
+    using Cache;
+
     public class ConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
@@ -70,51 +72,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                    {
-                        new FileReRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51779,
-                                }
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    },
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
-                    {
-                        Host = "localhost",
-                        Port = 9502
-                    }
-                }
-            };
-
-            var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
-
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -484,6 +441,29 @@ namespace Ocelot.AcceptanceTests
         {
             _builder?.Dispose();
             _steps.Dispose();
+        }
+
+        class FakeCache : IOcelotCache<FileConfiguration>
+        {
+            public void Add(string key, FileConfiguration value, TimeSpan ttl, string region)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region)
+            {
+                throw new NotImplementedException();
+            }
+
+            public FileConfiguration Get(string key, string region)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ClearRegion(string region)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

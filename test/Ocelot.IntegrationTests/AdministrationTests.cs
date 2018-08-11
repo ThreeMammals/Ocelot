@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using CacheManager.Core;
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
@@ -557,17 +556,7 @@ namespace Ocelot.IntegrationTests
                })
                .ConfigureServices(x =>
                {
-                   Action<ConfigurationBuilderCachePart> settings = (s) =>
-                   {
-                       s.WithMicrosoftLogging(log =>
-                       {
-                           log.AddConsole(LogLevel.Debug);
-                       })
-                           .WithDictionaryHandle();
-                   };
-
                    x.AddOcelot()
-                       .AddCacheManager(settings)
                        .AddAdministration("/administration", "secret");
                })
                .Configure(app =>
@@ -682,10 +671,6 @@ namespace Ocelot.IntegrationTests
                 .ConfigureServices(x => {
                     x.AddSingleton(_webHostBuilder);
                     x.AddOcelot()
-                    .AddCacheManager(c =>
-                    {
-                        c.WithDictionaryHandle();
-                    })
                     .AddAdministration("/administration", configOptions);
                     })
                     .Configure(app => {
@@ -714,17 +699,7 @@ namespace Ocelot.IntegrationTests
                 })
                 .ConfigureServices(x =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (s) =>
-                    {
-                        s.WithMicrosoftLogging(log =>
-                            {
-                                log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithDictionaryHandle();
-                    };
-
                     x.AddOcelot()
-                        .AddCacheManager(settings)
                         .AddAdministration("/administration", "secret");
                 })
                 .Configure(app =>
@@ -755,10 +730,6 @@ namespace Ocelot.IntegrationTests
                 .ConfigureServices(x => {
                     x.AddSingleton(_webHostBuilder);
                     x.AddOcelot()
-                        .AddCacheManager(c =>
-                        {
-                            c.WithDictionaryHandle();
-                        })
                         .AddAdministration("/administration", "secret");
                 })
                 .Configure(app => {

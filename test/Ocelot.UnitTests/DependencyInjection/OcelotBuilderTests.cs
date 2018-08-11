@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
@@ -78,16 +77,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             this.When(x => WhenISetUpOcelotServices())
                 .Then(x => ThenAnOcelotBuilderIsReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_cache_manager()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpCacheManager())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .And(x => OnlyOneVersionOfEachCacheIsRegistered())
                 .BDDfy();
         }
 
@@ -282,24 +271,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             first.ShouldBe(second);
         }
 
-        private void OnlyOneVersionOfEachCacheIsRegistered()
-        {
-            var outputCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<CachedResponse>));
-            var outputCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<CachedResponse>));
-            var instance = (ICacheManager<CachedResponse>)outputCacheManager.ImplementationInstance;
-            var ocelotConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<IInternalConfiguration>));
-            var ocelotConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<IInternalConfiguration>));
-            var fileConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<FileConfiguration>));
-            var fileConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<FileConfiguration>));
-
-            instance.Configuration.MaxRetries.ShouldBe(_maxRetries);
-            outputCache.ShouldNotBeNull();
-            ocelotConfigCache.ShouldNotBeNull();
-            ocelotConfigCacheManager.ShouldNotBeNull();
-            fileConfigCache.ShouldNotBeNull();
-            fileConfigCacheManager.ShouldNotBeNull();
-        }
-
         private void WhenISetUpConsul()
         {
             try
@@ -358,21 +329,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             try
             {
                 _ocelotBuilder = _services.AddOcelot();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpCacheManager()
-        {
-            try
-            {
-                _ocelotBuilder.AddCacheManager(x => {
-                    x.WithMaxRetries(_maxRetries);
-                    x.WithDictionaryHandle();
-                });
             }
             catch (Exception e)
             {

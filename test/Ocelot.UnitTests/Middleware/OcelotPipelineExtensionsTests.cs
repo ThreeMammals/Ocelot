@@ -1,7 +1,9 @@
 namespace Ocelot.UnitTests.Middleware
 {
+    using System;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Cache;
     using Ocelot.DependencyInjection;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamUrlCreator.Middleware;
@@ -40,7 +42,6 @@ namespace Ocelot.UnitTests.Middleware
                  .BDDfy();
         }
 
-
         private void ThenThePipelineIsBuilt()
         {
             _handlers.ShouldNotBeNull();
@@ -66,7 +67,6 @@ namespace Ocelot.UnitTests.Middleware
             });
             _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
         }
-
 
         private void GivenTheDepedenciesAreSetUp()
         {
