@@ -117,7 +117,18 @@ This feature was requested as part of `Issue 262 <https://github.com/TomPalliste
 Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something
 to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
 
-In order to get this working add the following to ocelot.json..
+The first thing you need to do is install the NuGet package that provides Eureka support in Ocelot.
+
+``Install-Package Ocelot.Provider.Eureka``
+
+Then add the following to your ConfigureServices method.
+
+.. code-block:: csharp
+
+    s.AddOcelot()
+        .AddEureka();
+
+Then in order to get this working add the following to ocelot.json..
 
 .. code-block:: json
 
