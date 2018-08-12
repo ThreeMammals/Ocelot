@@ -11,6 +11,17 @@ you specify a ServiceName for at ReRoute level.
 Consul
 ^^^^^^
 
+The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
+
+``Install-Package Ocelot.Provider.Consul``
+
+Then add the following to your ConfigureServices method.
+
+.. code-block:: csharp
+
+    s.AddOcelot()
+        .AddConsul();
+
 The following is required in the GlobalConfiguration. The Provider is required and if you do not specify a host and port the Consul default
 will be used.
 

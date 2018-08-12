@@ -134,16 +134,17 @@
                 internalConfigRepo.AddOrReplace(newInternalConfig.Data);
             });
 
-            var fileConfigRepo = builder.ApplicationServices.GetService<IFileConfigurationRepository>();
-
             var adminPath = builder.ApplicationServices.GetService<IAdministrationPath>();
 
-            if (UsingConsul(fileConfigRepo))
+            var configurations = builder.ApplicationServices.GetServices<OcelotMiddlewareConfigurationDelegate>();
+
+            // Todo - this has just been added for consul so far...will there be an ordering problem in the future? Should refactor all config into this pattern?
+            foreach (var configuration in configurations)
             {
-                //Lots of jazz happens in here..check it out if you are using consul to store your config.
-                await SetFileConfigInConsul(builder, fileConfigRepo, fileConfig, internalConfigCreator, internalConfigRepo);
+                await configuration(builder);
             }
-            else if(AdministrationApiInUse(adminPath))
+
+            if(AdministrationApiInUse(adminPath))
             {
                 //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the 
                 //admin api it works...boy this is getting a spit spags boll.
@@ -160,49 +161,6 @@
             return adminPath != null;
         }
 
-        private static async Task SetFileConfigInConsul(IApplicationBuilder builder,
-            IFileConfigurationRepository fileConfigRepo, IOptionsMonitor<FileConfiguration> fileConfig,
-            IInternalConfigurationCreator internalConfigCreator, IInternalConfigurationRepository internalConfigRepo)
-        {
-            // get the config from consul.
-            var fileConfigFromConsul = await fileConfigRepo.Get();
-
-            if (IsError(fileConfigFromConsul))
-            {
-                ThrowToStopOcelotStarting(fileConfigFromConsul);
-            }
-            else if (ConfigNotStoredInConsul(fileConfigFromConsul))
-            {
-                //there was no config in consul set the file in config in consul
-                await fileConfigRepo.Set(fileConfig.CurrentValue);
-            }
-            else
-            {
-                // create the internal config from consul data
-                var internalConfig = await internalConfigCreator.Create(fileConfigFromConsul.Data);
-
-                if (IsError(internalConfig))
-                {
-                    ThrowToStopOcelotStarting(internalConfig);
-                }
-                else
-                {
-                    // add the internal config to the internal repo
-                    var response = internalConfigRepo.AddOrReplace(internalConfig.Data);
-
-                    if (IsError(response))
-                    {
-                        ThrowToStopOcelotStarting(response);
-                    }
-                }
-
-                if (IsError(internalConfig))
-                {
-                    ThrowToStopOcelotStarting(internalConfig);
-                }
-            }
-        }
-
         private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptionsMonitor<FileConfiguration> fileConfig)
         {
             var response = await fileConfigSetter.Set(fileConfig.CurrentValue);
@@ -211,11 +169,6 @@
             {
                 ThrowToStopOcelotStarting(response);
             }
-        }
-
-        private static bool ConfigNotStoredInConsul(Responses.Response<FileConfiguration> fileConfigFromConsul)
-        {
-            return fileConfigFromConsul.Data == null;
         }
 
         private static bool IsError(Response response)
@@ -238,12 +191,6 @@
         private static void ThrowToStopOcelotStarting(Response config)
         {
             throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.Select(x => x.ToString()))}");
-        }
-
-        private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
-        {
-            //todo - remove coupling by string
-            return fileConfigRepo.GetType().Name == "ConsulFileConfigurationRepository";
         }
 
         private static void CreateAdministrationArea(IApplicationBuilder builder, IInternalConfiguration configuration)
