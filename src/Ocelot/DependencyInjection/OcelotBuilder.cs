@@ -42,8 +42,6 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
     using ServiceDiscovery.Providers;
-    using Steeltoe.Common.Discovery;
-    using Pivotal.Discovery.Client;
     using Ocelot.Request.Creator;
 
     public class OcelotBuilder : IOcelotBuilder
@@ -109,16 +107,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-
-            if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
-            {
-                Services.AddDiscoveryClient(configurationRoot);
-            }
-            else
-            {
-                Services.TryAddSingleton<IDiscoveryClient, FakeEurekaDiscoveryClient>();
-            }
-
             Services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
