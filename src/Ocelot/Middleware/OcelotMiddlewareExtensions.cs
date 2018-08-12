@@ -18,7 +18,6 @@
     using Rafty.Concensus;
     using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
-    using Pivotal.Discovery.Client;
     using Rafty.Concensus.Node;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -48,15 +47,9 @@
                 SetUpRafty(builder);
             }
 
-            if (UsingEurekaServiceDiscoveryProvider(configuration))
-            {
-                builder.UseDiscoveryClient();
-            }
-
             ConfigureDiagnosticListener(builder);
 
             return CreateOcelotPipeline(builder, pipelineConfiguration);
-            
         }
 
         private static IApplicationBuilder CreateOcelotPipeline(IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
@@ -82,11 +75,6 @@
             });
 
             return builder;
-        }
-
-        private static bool UsingEurekaServiceDiscoveryProvider(IInternalConfiguration configuration)
-        {
-            return configuration?.ServiceProviderConfiguration != null && configuration.ServiceProviderConfiguration.Type?.ToLower() == "eureka";
         }
 
         private static bool UsingRafty(IApplicationBuilder builder)

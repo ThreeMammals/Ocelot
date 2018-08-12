@@ -9,19 +9,16 @@ namespace Ocelot.ServiceDiscovery
     using System;
     using System.Linq;
     using Microsoft.Extensions.DependencyInjection;
-    using Steeltoe.Common.Discovery;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
-        private readonly IDiscoveryClient _eurekaClient;
         private readonly List<ServiceDiscoveryFinderDelegate> _delegates;
         private readonly IServiceProvider _provider;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IDiscoveryClient eurekaClient, IServiceProvider provider)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
         {
             _factory = factory;
-            _eurekaClient = eurekaClient;
             _provider = provider;
             _delegates = provider
                 .GetServices<ServiceDiscoveryFinderDelegate>()
@@ -53,11 +50,6 @@ namespace Ocelot.ServiceDiscovery
             {
                 var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, key);
                 return new ServiceFabricServiceDiscoveryProvider(sfConfig);
-            }
-
-            if (config.Type?.ToLower() == "eureka")
-            {
-                return new EurekaServiceDiscoveryProvider(key, _eurekaClient);
             }
 
             foreach (var serviceDiscoveryFinderDelegate in _delegates)

@@ -3,7 +3,6 @@ namespace Ocelot.UnitTests.ServiceDiscovery
     using System;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
-    using Steeltoe.Common.Discovery;
     using Values;
     using System.Collections.Generic;
     using Moq;
@@ -22,20 +21,18 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private IServiceDiscoveryProvider _result;
         private ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IDiscoveryClient> _discoveryClient;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private IServiceProvider _provider;
-        private IServiceCollection _collection;
+        private readonly IServiceCollection _collection;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _discoveryClient = new Mock<IDiscoveryClient>();
             _collection = new ServiceCollection();
             _provider = _collection.BuildServiceProvider();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _discoveryClient.Object, _provider);
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
         
         [Fact]
@@ -109,30 +106,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_eureka_provider()
-        {
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithServiceName("product")
-                .WithUseServiceDiscovery(true)
-                .Build();
-
-            var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithType("Eureka")
-                .Build();
-
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
-                .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<EurekaServiceDiscoveryProvider>())
-                .BDDfy();
-        }
-
         private void GivenAFakeDelegate()
         {
             ServiceDiscoveryFinderDelegate fake = (provider, config, name) => new Fake();
             _collection.AddSingleton(fake);
             _provider = _collection.BuildServiceProvider();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _discoveryClient.Object, _provider);
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
 
         class Fake : IServiceDiscoveryProvider

@@ -159,15 +159,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ocelotBuilder.AddTransientDefinedAggregator<T>();
         }
 
-        private void ThenTheSpecificHandlersAreSingleton()
-        {
-            var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
-            var first = handlers[0];
-            handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
-            var second = handlers[0];
-            first.ShouldBe(second);
-        }
-
         private void ThenTheSpecificHandlersAreTransient()
         {
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
@@ -269,18 +260,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             }       
         }
 
-        private void AddGlobalDelegatingHandler<T>()
-            where T : DelegatingHandler
-        {
-            _ocelotBuilder.AddDelegatingHandler<T>(true);
-        }
-
-        private void AddSpecificDelegatingHandler<T>()
-            where T : DelegatingHandler
-        {
-            _ocelotBuilder.AddDelegatingHandler<T>();
-        }
-
         private void ThenAnOcelotBuilderIsReturned()
         {
             _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
@@ -317,19 +296,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _serviceProvider = _services.BuildServiceProvider();
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
                 logger.ShouldNotBeNull();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenIAccessOcelotHttpTracingHandler()
-        {
-            try
-            {
-                var tracingHandler = _serviceProvider.GetService<OcelotHttpTracingHandler>();
-                tracingHandler.ShouldNotBeNull();
             }
             catch (Exception e)
             {
