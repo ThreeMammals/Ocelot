@@ -6,8 +6,6 @@ namespace Ocelot.AcceptanceTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Consul;
-    using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
     using Shouldly;
     using TestStack.BDDfy;
@@ -17,7 +15,6 @@ namespace Ocelot.AcceptanceTests
     {
         private readonly List<string> _secondRecieved;
         private readonly List<string> _firstRecieved;
-        private readonly List<ServiceEntry> _serviceEntries;
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
 
@@ -27,7 +24,6 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
             _firstRecieved = new List<string>();
             _secondRecieved = new List<string>();
-            _serviceEntries = new List<ServiceEntry>();
         }
 
         [Fact]
@@ -109,77 +105,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
-        {
-            var downstreamPort = 5007;
-            var downstreamHost = "localhost";
-
-            var secondDownstreamPort = 5008;
-            var secondDownstreamHost = "localhost";
-
-            var serviceName = "websockets";
-            var consulPort = 8509;
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry()
-            {
-                Service = new AgentService()
-                {
-                    Service = serviceName,
-                    Address = downstreamHost,
-                    Port = downstreamPort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
-                },
-            };
-            var serviceEntryTwo = new ServiceEntry()
-            {
-                Service = new AgentService()
-                {
-                    Service = serviceName,
-                    Address = secondDownstreamHost,
-                    Port = secondDownstreamPort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
-                },
-            };
-
-            var config = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        UpstreamPathTemplate = "/",
-                        DownstreamPathTemplate = "/ws",
-                        DownstreamScheme = "ws",
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
-                        ServiceName = serviceName,
-                        UseServiceDiscovery = true
-                    }
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Host = "localhost",
-                        Port = consulPort,
-                        Type = "consul"
-                    }
-                }
-            };
-            
-            this.Given(_ => _steps.GivenThereIsAConfiguration(config))
-                .And(_ => _steps.StartFakeOcelotWithWebSockets())
-                .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
-                .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-                .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
-                .And(_ => StartSecondFakeDownstreamService($"http://{secondDownstreamHost}:{secondDownstreamPort}", "/ws"))
-                .When(_ => WhenIStartTheClients())
-                .Then(_ => ThenBothDownstreamServicesAreCalled())
-                .BDDfy();
-        }
-
         private void ThenBothDownstreamServicesAreCalled()
         {
             _firstRecieved.Count.ShouldBe(10);
@@ -192,25 +117,6 @@ namespace Ocelot.AcceptanceTests
             _secondRecieved.ForEach(x =>
             {
                 x.ShouldBe("chocolate");
-            });
-        }
-
-        private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries)
-        {
-            foreach (var serviceEntry in serviceEntries)
-            {
-                _serviceEntries.Add(serviceEntry);
-            }
-        }
-
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-            {
-                if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                {
-                    await context.Response.WriteJsonAsync(_serviceEntries);
-                }
             });
         }
 

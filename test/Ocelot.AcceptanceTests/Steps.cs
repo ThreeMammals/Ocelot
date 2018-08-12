@@ -422,34 +422,6 @@
             header.First().ShouldBe(value);
         }
 
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig()
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot().AddStoreOcelotConfigurationInConsul();
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                });
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            _ocelotClient = _ocelotServer.CreateClient();
-        }
-
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
@@ -574,24 +546,6 @@
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
-        }
-
-        public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
-        {
-            var result = WaitFor(2000).Until(() => {
-                try
-                {
-                    _response = _ocelotClient.GetAsync(url).Result;
-                    _response.EnsureSuccessStatusCode();
-                    return true;
-                }
-                catch(Exception)
-                {
-                    return false;
-                }
-            });
-
-            result.ShouldBeTrue();
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)

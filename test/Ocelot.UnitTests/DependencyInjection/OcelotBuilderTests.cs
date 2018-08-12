@@ -1,28 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Cache;
-using Ocelot.Configuration;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
-using Ocelot.DependencyInjection;
-using Ocelot.Requester;
-using Ocelot.UnitTests.Requester;
-using Shouldly;
-using IdentityServer4.AccessTokenValidation;
-using TestStack.BDDfy;
-using Xunit;
-using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
-using Ocelot.Middleware.Multiplexer;
-
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    using Butterfly;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Hosting.Internal;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.Setter;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Requester;
+    using Ocelot.UnitTests.Requester;
+    using Shouldly;
+    using IdentityServer4.AccessTokenValidation;
+    using TestStack.BDDfy;
+    using Xunit;
+    using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
+    using Ocelot.Middleware.Multiplexer;
 
     public class OcelotBuilderTests
     {
@@ -77,15 +72,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             this.When(x => WhenISetUpOcelotServices())
                 .Then(x => ThenAnOcelotBuilderIsReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_consul()
-        {            
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpConsul())
-                .Then(x => ThenAnExceptionIsntThrown())
                 .BDDfy();
         }
 
@@ -269,18 +255,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             var second = aggregators[0];
             first.ShouldBe(second);
-        }
-
-        private void WhenISetUpConsul()
-        {
-            try
-            {
-                _ocelotBuilder.AddStoreOcelotConfigurationInConsul();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }       
         }
 
         private void WhenISetUpRafty()

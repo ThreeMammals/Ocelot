@@ -242,7 +242,8 @@
 
         private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
         {
-            return fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository);
+            //todo - remove coupling by string
+            return fileConfigRepo.GetType().Name == "ConsulFileConfigurationRepository";
         }
 
         private static void CreateAdministrationArea(IApplicationBuilder builder, IInternalConfiguration configuration)

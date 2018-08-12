@@ -10,8 +10,8 @@ namespace Ocelot.DependencyInjection
     public interface IOcelotBuilder
     {
         IServiceCollection Services { get; }
+
         IConfiguration Configuration { get; }
-        IOcelotBuilder AddStoreOcelotConfigurationInConsul();
 
         IOcelotAdministrationBuilder AddAdministration(string path, string secret);
 
@@ -22,6 +22,7 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddSingletonDefinedAggregator<T>() 
             where T : class, IDefinedAggregator;
+
         IOcelotBuilder AddTransientDefinedAggregator<T>() 
             where T : class, IDefinedAggregator;
     }

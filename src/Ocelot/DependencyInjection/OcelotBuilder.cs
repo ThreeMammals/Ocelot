@@ -40,7 +40,6 @@ namespace Ocelot.DependencyInjection
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using System.Net.Http;
     using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.Consul;
     using Ocelot.Middleware.Multiplexer;
     using ServiceDiscovery.Providers;
     using Steeltoe.Common.Discovery;
@@ -148,7 +147,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
             Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
             Services.TryAddSingleton<IPlaceholders, Placeholders>();
-            Services.TryAddSingleton<IConsulClientFactory, ConsulClientFactory>();
             Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
             Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
@@ -214,13 +212,6 @@ namespace Ocelot.DependencyInjection
                 Services.AddTransient<DelegatingHandler, THandler>();
             }
 
-            return this;
-        }
-
-        public IOcelotBuilder AddStoreOcelotConfigurationInConsul()
-        {
-            Services.AddHostedService<FileConfigurationPoller>();
-            Services.AddSingleton<IFileConfigurationRepository, ConsulFileConfigurationRepository>();
             return this;
         }
 
