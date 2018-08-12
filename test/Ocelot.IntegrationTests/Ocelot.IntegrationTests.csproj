@@ -42,7 +42,6 @@
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
     <PackageReference Include="Shouldly" Version="3.0.0" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
-    <PackageReference Include="Consul" Version="0.7.2.5" />
     <PackageReference Include="Rafty" Version="0.4.4" />
     <PackageReference Include="Microsoft.Data.SQLite" Version="2.1.0" />
   </ItemGroup>

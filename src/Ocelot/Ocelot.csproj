@@ -46,7 +46,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
-    <PackageReference Include="Consul" Version="0.7.2.5" />
     <PackageReference Include="Polly" Version="6.0.1" />
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
     <PackageReference Include="Pivotal.Discovery.ClientCore" Version="2.0.1" />
