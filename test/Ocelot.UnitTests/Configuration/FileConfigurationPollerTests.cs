@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 0))
+            this.Given(x => WhenTheConfigIsChanged(newConfig, 0))
                 .Then(x => ThenTheSetterIsCalledAtLeast(newConfig, 1))
                 .BDDfy();
         }
@@ -96,13 +96,13 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenTheConfigIsChangedInConsul(newConfig, 10))
+            this.Given(x => WhenTheConfigIsChanged(newConfig, 10))
                 .Then(x => ThenTheSetterIsCalled(newConfig, 1))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_do_nothing_if_call_to_consul_fails()
+        public void should_do_nothing_if_call_to_provider_fails()
         {
             var newConfig = new FileConfiguration
             {
@@ -121,19 +121,19 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenConsulErrors())
+            this.Given(x => WhenProviderErrors())
                 .Then(x => ThenTheSetterIsCalled(newConfig, 0))
                 .BDDfy();
         }
 
-        private void WhenConsulErrors()
+        private void WhenProviderErrors()
         {
             _repo
                 .Setup(x => x.Get())
                 .ReturnsAsync(new ErrorResponse<FileConfiguration>(new AnyError()));
         }
 
-        private void WhenTheConfigIsChangedInConsul(FileConfiguration newConfig, int delay)
+        private void WhenTheConfigIsChanged(FileConfiguration newConfig, int delay)
         {
             _repo
                 .Setup(x => x.Get())

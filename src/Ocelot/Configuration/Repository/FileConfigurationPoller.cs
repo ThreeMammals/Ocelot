@@ -67,7 +67,7 @@ namespace Ocelot.Configuration.Repository
 
         private async Task Poll()
         {
-            _logger.LogInformation("Started polling consul");
+            _logger.LogInformation("Started polling");
 
             var fileConfig = await _repo.Get();
 
@@ -91,7 +91,7 @@ namespace Ocelot.Configuration.Repository
                 _previousAsJson = asJson;
             }
 
-            _logger.LogInformation("Finished polling consul");
+            _logger.LogInformation("Finished polling");
         }
 
         /// <summary>

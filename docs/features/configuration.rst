@@ -121,13 +121,18 @@ At the moment there is no validation at this stage it only happens when Ocelot v
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in consul KV store.
+The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
+
+``Install-Package Ocelot.Provider.Consul``
+
+Then you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in consul KV store.
 
 .. code-block:: csharp
 
  services
     .AddOcelot()
-    .AddStoreOcelotConfigurationInConsul();
+    .AddConsul()
+    .AddConfigStoredInConsul();
 
 You also need to add the following to your ocelot.json. This is how Ocelot
 finds your Consul agent and interacts to load and store the configuration from Consul.

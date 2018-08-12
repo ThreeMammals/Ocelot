@@ -60,14 +60,16 @@ namespace Ocelot.ServiceDiscovery
                 return new EurekaServiceDiscoveryProvider(key, _eurekaClient);
             }
 
-            // Todo - dont just hardcode this...only expect Consul at the momement so works.
-            var finderDelegate = _delegates.FirstOrDefault();
+            foreach (var serviceDiscoveryFinderDelegate in _delegates)
+            {
+                var provider = serviceDiscoveryFinderDelegate?.Invoke(_provider, config, key);
+                if (provider != null)
+                {
+                    return provider;
+                }
+            }
 
-            var provider = finderDelegate?.Invoke(_provider, config, key);
-
-            return provider;
+            return null;
         }
     }
-
-    public delegate IServiceDiscoveryProvider ServiceDiscoveryFinderDelegate(IServiceProvider provider, ServiceProviderConfiguration config, string key);
 }
