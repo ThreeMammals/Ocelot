@@ -5,8 +5,8 @@ namespace Ocelot.DependencyInjection
 {
     public class OcelotAdministrationBuilder : IOcelotAdministrationBuilder
     {
-        private IServiceCollection Services { get; }
-        private IConfiguration ConfigurationRoot { get; }
+        public IServiceCollection Services { get; }
+        public IConfiguration ConfigurationRoot { get; }
 
         public OcelotAdministrationBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
