@@ -76,16 +76,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_set_up_rafty()
-        {            
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpRafty())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_set_up_administration_with_identity_server_options()
         {
             Action<IdentityServerAuthenticationOptions> options = o => {};
@@ -246,18 +236,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             var second = aggregators[0];
             first.ShouldBe(second);
-        }
-
-        private void WhenISetUpRafty()
-        {
-            try
-            {
-                _ocelotBuilder.AddAdministration("/administration", "secret").AddRafty();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }       
         }
 
         private void ThenAnOcelotBuilderIsReturned()

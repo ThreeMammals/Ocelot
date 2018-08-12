@@ -48,6 +48,5 @@
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
     <PackageReference Include="Polly" Version="6.0.1" />
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
-    <PackageReference Include="Rafty" Version="0.4.4" />
   </ItemGroup>
 </Project>

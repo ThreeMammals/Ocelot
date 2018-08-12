@@ -4,11 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
-using Ocelot.Raft;
 
 namespace Ocelot.Configuration
 {
-    using Rafty.Concensus.Node;
     using Repository;
 
     [Authorize]
@@ -44,20 +42,6 @@ namespace Ocelot.Configuration
         {
             try
             {
-                //todo - this code is a bit shit sort it out..
-                var test = _provider.GetService(typeof(INode));
-                if (test != null)
-                {
-                    var node = (INode)test;
-                    var result = await node.Accept(new UpdateFileConfiguration(fileConfiguration));
-                    if (result.GetType() == typeof(Rafty.Infrastructure.ErrorResponse<UpdateFileConfiguration>))
-                    {
-                        return new BadRequestObjectResult("There was a problem. This error message sucks raise an issue in GitHub.");
-                    }
-
-                    return new OkObjectResult(result.Command.Configuration);
-                }
-
                 var response = await _setter.Set(fileConfiguration);
 
                 if (response.IsError)
