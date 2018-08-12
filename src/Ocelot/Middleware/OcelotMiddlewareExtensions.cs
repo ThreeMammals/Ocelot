@@ -15,10 +15,7 @@
     using Ocelot.Configuration.Setter;
     using Ocelot.Responses;
     using Ocelot.Logging;
-    using Rafty.Concensus;
-    using Rafty.Infrastructure;
     using Ocelot.Middleware.Pipeline;
-    using Rafty.Concensus.Node;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class OcelotMiddlewareExtensions
@@ -41,11 +38,6 @@
             var configuration = await CreateConfiguration(builder);
 
             CreateAdministrationArea(builder, configuration);
-
-            if (UsingRafty(builder))
-            {
-                SetUpRafty(builder);
-            }
 
             ConfigureDiagnosticListener(builder);
 
@@ -75,26 +67,6 @@
             });
 
             return builder;
-        }
-
-        private static bool UsingRafty(IApplicationBuilder builder)
-        {
-            var node = builder.ApplicationServices.GetService<INode>();
-            if (node != null)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private static void SetUpRafty(IApplicationBuilder builder)
-        {
-            var applicationLifetime = builder.ApplicationServices.GetService<IApplicationLifetime>();
-            applicationLifetime.ApplicationStopping.Register(() => OnShutdown(builder));
-            var node = builder.ApplicationServices.GetService<INode>();
-            var nodeId = builder.ApplicationServices.GetService<NodeId>();
-            node.Start(nodeId);
         }
 
         private static async Task<IInternalConfiguration> CreateConfiguration(IApplicationBuilder builder)
@@ -206,12 +178,6 @@
             var listener = builder.ApplicationServices.GetService<OcelotDiagnosticListener>();
             var diagnosticListener = builder.ApplicationServices.GetService<DiagnosticListener>();
             diagnosticListener.SubscribeWithAdapter(listener);
-        }
-
-        private static void OnShutdown(IApplicationBuilder app)
-        {
-            var node = app.ApplicationServices.GetService<INode>();
-            node.Stop();
         }
     }
 }
