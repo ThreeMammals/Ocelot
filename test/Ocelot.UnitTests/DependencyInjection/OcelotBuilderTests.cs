@@ -13,7 +13,6 @@ namespace Ocelot.UnitTests.DependencyInjection
     using Ocelot.Requester;
     using Ocelot.UnitTests.Requester;
     using Shouldly;
-    using IdentityServer4.AccessTokenValidation;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
@@ -72,28 +71,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             this.When(x => WhenISetUpOcelotServices())
                 .Then(x => ThenAnOcelotBuilderIsReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_administration_with_identity_server_options()
-        {
-            Action<IdentityServerAuthenticationOptions> options = o => {};
-
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpAdministration(options))
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_administration()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpAdministration())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
                 .BDDfy();
         }
 
@@ -167,16 +144,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             first.ShouldNotBe(second);
         }
 
-        private void WhenISetUpAdministration()
-        {
-            _ocelotBuilder.AddAdministration("/administration", "secret");
-        }
-
-        private void WhenISetUpAdministration(Action<IdentityServerAuthenticationOptions> options)
-        {
-            _ocelotBuilder.AddAdministration("/administration", options);
-        }
-
         private void AddTransientGlobalDelegatingHandler<T>()
             where T : DelegatingHandler
         {
@@ -187,13 +154,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : DelegatingHandler
         {
             _ocelotBuilder.AddDelegatingHandler<T>();
-        }
-
-        private void ThenTheCorrectAdminPathIsRegitered()
-        {
-            _serviceProvider = _services.BuildServiceProvider();
-            var path = _serviceProvider.GetService<IAdministrationPath>();
-            path.Path.ShouldBe("/administration");
         }
 
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()

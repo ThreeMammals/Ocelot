@@ -27,7 +27,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="7.6.104" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.1" />
@@ -47,6 +46,5 @@
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
     <PackageReference Include="Polly" Version="6.0.1" />
-    <PackageReference Include="IdentityServer4" Version="2.2.0" />
   </ItemGroup>
 </Project>

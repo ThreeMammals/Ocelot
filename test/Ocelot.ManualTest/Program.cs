@@ -8,7 +8,6 @@
     using Ocelot.DependencyInjection;
     using Ocelot.Middleware;
     using System;
-    using IdentityServer4.AccessTokenValidation;
     using System.Net.Http;
     using System.Threading.Tasks;
     using System.Threading;
@@ -38,17 +37,17 @@
                         });
 
                     s.AddOcelot()
-                        .AddDelegatingHandler<FakeHandler>(true)
+                        .AddDelegatingHandler<FakeHandler>(true);
                         // .AddCacheManager(x =>
                         // {
                         //     x.WithDictionaryHandle();
                         // })
-                      /*.AddOpenTracing(option =>
-                      {
-                          option.CollectorUrl = "http://localhost:9618";
-                          option.Service = "Ocelot.ManualTest";
-                      })*/
-                    .AddAdministration("/administration", "secret");
+                        // .AddOpenTracing(option =>
+                        // {
+                        //     option.CollectorUrl = "http://localhost:9618";
+                        //     option.Service = "Ocelot.ManualTest";
+                        // })
+                        // .AddAdministration("/administration", "secret");
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

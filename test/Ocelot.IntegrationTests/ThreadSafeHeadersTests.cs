@@ -111,8 +111,7 @@ namespace Ocelot.IntegrationTests
                 })
                 .ConfigureServices(x =>
                 {
-                    x.AddOcelot()
-                        .AddAdministration("/administration", "secret");
+                    x.AddOcelot();
                 })
                 .Configure(app =>
                 {
