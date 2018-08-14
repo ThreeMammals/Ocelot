@@ -37,8 +37,6 @@
         {
             var configuration = await CreateConfiguration(builder);
 
-            CreateAdministrationArea(builder, configuration);
-
             ConfigureDiagnosticListener(builder);
 
             return CreateOcelotPipeline(builder, pipelineConfiguration);
@@ -151,25 +149,6 @@
         private static void ThrowToStopOcelotStarting(Response config)
         {
             throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.Select(x => x.ToString()))}");
-        }
-
-        private static void CreateAdministrationArea(IApplicationBuilder builder, IInternalConfiguration configuration)
-        {
-            if (!string.IsNullOrEmpty(configuration.AdministrationPath))
-            {
-                builder.Map(configuration.AdministrationPath, app =>
-                {
-                    //todo - hack so we know that we are using internal identity server
-                    var identityServerConfiguration = builder.ApplicationServices.GetService<IIdentityServerConfiguration>();
-                    if (identityServerConfiguration != null)
-                    {
-                        app.UseIdentityServer();
-                    }
-
-                    app.UseAuthentication();
-                    app.UseMvc();
-                });
-            }
         }
 
         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)

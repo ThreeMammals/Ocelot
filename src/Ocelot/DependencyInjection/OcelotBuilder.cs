@@ -1,6 +1,5 @@
 namespace Ocelot.DependencyInjection
 {
-    using IdentityServer4.Models;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -31,10 +30,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.ServiceDiscovery;
     using System;
     using System.Collections.Generic;
-    using System.IdentityModel.Tokens.Jwt;
     using System.Reflection;
     using System.Security.Cryptography.X509Certificates;
-    using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
     using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -141,35 +138,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         }
 
-        public IOcelotAdministrationBuilder AddAdministration(string path, string secret)
-        {
-            var administrationPath = new AdministrationPath(path);
-
-            //add identity server for admin area
-            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
-
-            if (identityServerConfiguration != null)
-            {
-                AddIdentityServer(identityServerConfiguration, administrationPath);
-            }
-
-            Services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(Services, Configuration);
-        }
-
-        public IOcelotAdministrationBuilder AddAdministration(string path, Action<IdentityServerAuthenticationOptions> configureOptions)
-        {
-            var administrationPath = new AdministrationPath(path);
-
-            if (configureOptions != null)
-            {
-                AddIdentityServer(configureOptions);
-            }
-
-            Services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(Services, Configuration);
-        }
-
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
             where T : class, IDefinedAggregator
         {
@@ -201,89 +169,6 @@ namespace Ocelot.DependencyInjection
             }
 
             return this;
-        }
-
-        private void AddIdentityServer(Action<IdentityServerAuthenticationOptions> configOptions)
-        {
-            Services
-                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(configOptions);
-        }
-
-        private void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath) 
-        {
-            Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
-            var identityServerBuilder = Services
-                .AddIdentityServer(o => {
-                    o.IssuerUri = "Ocelot";
-                })
-                .AddInMemoryApiResources(Resources(identityServerConfiguration))
-                .AddInMemoryClients(Client(identityServerConfiguration));
-
-            var urlFinder = new BaseUrlFinder(Configuration);
-            var baseSchemeUrlAndPort = urlFinder.Find();
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();            
-
-            Services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(o =>
-                {
-                    o.Authority = baseSchemeUrlAndPort + adminPath.Path;
-                    o.ApiName = identityServerConfiguration.ApiName;
-                    o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-                    o.SupportedTokens = SupportedTokens.Both;
-                    o.ApiSecret = identityServerConfiguration.ApiSecret;
-                });
-
-                //todo - refactor naming..
-                if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
-                {
-                    identityServerBuilder.AddDeveloperSigningCredential();
-                }
-                else
-                {
-                    //todo - refactor so calls method?
-                    var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
-                    identityServerBuilder.AddSigningCredential(cert);
-                }
-        }
-
-        private List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
-        {
-            return new List<ApiResource>
-            {
-                new ApiResource(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
-                {
-                    ApiSecrets = new List<Secret>
-                    {
-                        new Secret
-                        {
-                            Value = identityServerConfiguration.ApiSecret.Sha256()
-                        }
-                    }
-                },
-            };
-        }
-
-        private List<Client> Client(IIdentityServerConfiguration identityServerConfiguration) 
-        {
-            return new List<Client>
-            {
-                new Client
-                {
-                    ClientId = identityServerConfiguration.ApiName,
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
-                    AllowedScopes = { identityServerConfiguration.ApiName }
-                }
-            };
-        }
-
-        private static bool UsingEurekaServiceDiscoveryProvider(IConfiguration configurationRoot)
-        {
-            var type = configurationRoot.GetValue<string>("GlobalConfiguration:ServiceDiscoveryProvider:Type",
-                string.Empty);
-
-            return type.ToLower() == "eureka";
         }
     }
 }
