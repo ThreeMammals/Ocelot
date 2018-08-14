@@ -5,6 +5,12 @@ Ocelot supports changing configuration during runtime via an authenticated HTTP 
 internal IdentityServer (for authenticating requests to the administration API only) or hooking the administration API authentication into your own 
 IdentityServer.
 
+The first thing you need to do if you want to use the administration API is bring in the relavent NuGet package..
+
+``Install-Package Ocelot.Administration``
+
+This will bring down everything needed by the admin API.
+
 Providing your own IdentityServer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
