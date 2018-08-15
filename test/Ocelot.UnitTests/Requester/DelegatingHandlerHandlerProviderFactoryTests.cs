@@ -26,9 +26,14 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<ITracingHandlerFactory> _tracingFactory;
         private IServiceProvider _serviceProvider;
         private readonly IServiceCollection _services;
+        private readonly LastDelegatingHandlerDelegate _lastDelegate;
 
         public DelegatingHandlerHandlerProviderFactoryTests()
         {
+             _lastDelegate = (a, b) => {
+                return new PollyCircuitBreakingDelegatingHandler(a,b);
+            };
+
             _tracingFactory = new Mock<ITracingHandlerFactory>();
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -406,7 +411,7 @@ namespace Ocelot.UnitTests.Requester
         private void WhenIGet()
         {
             _serviceProvider = _services.BuildServiceProvider();
-            _factory = new DelegatingHandlerHandlerFactory(_loggerFactory.Object, _tracingFactory.Object, _qosProviderHouse.Object, _serviceProvider);
+            _factory = new DelegatingHandlerHandlerFactory(_loggerFactory.Object, _tracingFactory.Object, _qosProviderHouse.Object, _serviceProvider, _lastDelegate);
             _result = _factory.Get(_request);
         }
 
