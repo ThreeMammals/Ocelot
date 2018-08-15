@@ -16,12 +16,15 @@ namespace Ocelot.Requester
         private readonly IOcelotLoggerFactory _loggerFactory;
         private readonly IQosProviderHouse _qosProviderHouse;
         private readonly IServiceProvider _serviceProvider;
+        private readonly LastDelegatingHandlerDelegate _lastDelegatingHandler;
 
         public DelegatingHandlerHandlerFactory(IOcelotLoggerFactory loggerFactory, 
             ITracingHandlerFactory factory,
             IQosProviderHouse qosProviderHouse,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            LastDelegatingHandlerDelegate lastDelegatingHandler)
         {
+            _lastDelegatingHandler = lastDelegatingHandler;
             _serviceProvider = serviceProvider;
             _factory = factory;
             _loggerFactory = loggerFactory;
@@ -76,7 +79,7 @@ namespace Ocelot.Requester
                     return new ErrorResponse<List<Func<DelegatingHandler>>>(qosProvider.Errors);
                 }
 
-                handlers.Add(() => new PollyCircuitBreakingDelegatingHandler(qosProvider.Data, _loggerFactory));
+                handlers.Add(() => _lastDelegatingHandler(qosProvider.Data, _loggerFactory));
             }
 
             return new OkResponse<List<Func<DelegatingHandler>>>(handlers);

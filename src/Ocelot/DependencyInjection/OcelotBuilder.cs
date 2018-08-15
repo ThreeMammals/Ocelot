@@ -40,6 +40,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Middleware.Multiplexer;
     using ServiceDiscovery.Providers;
     using Ocelot.Request.Creator;
+    using static Ocelot.Requester.DelegatingHandlerHandlerFactory;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -136,6 +137,13 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
+            
+            //todo - list this into polly package
+            LastDelegatingHandlerDelegate lastDelegatingHandler = (a, b) => {
+                return new PollyCircuitBreakingDelegatingHandler(a,b);
+            };
+
+            Services.AddSingleton<LastDelegatingHandlerDelegate>(lastDelegatingHandler);
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
