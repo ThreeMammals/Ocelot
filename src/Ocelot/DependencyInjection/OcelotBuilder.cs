@@ -137,13 +137,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
-            
-            //todo - list this into polly package
-            LastDelegatingHandlerDelegate lastDelegatingHandler = (a, b) => {
-                return new PollyCircuitBreakingDelegatingHandler(a,b);
-            };
-
-            Services.AddSingleton<LastDelegatingHandlerDelegate>(lastDelegatingHandler);
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 

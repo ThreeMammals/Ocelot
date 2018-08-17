@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
-using Polly.CircuitBreaker;
-using Polly.Timeout;
 
 namespace Ocelot.Requester
 {
@@ -34,18 +32,6 @@ namespace Ocelot.Requester
             {
                 var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
                 return new OkResponse<HttpResponseMessage>(response);
-            }
-            catch (TimeoutRejectedException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-            }
-            catch (TaskCanceledException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-            }
-            catch (BrokenCircuitException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
             }
             catch (Exception exception)
             {

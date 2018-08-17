@@ -1,6 +1,3 @@
-﻿using Polly.CircuitBreaker;
-using Polly.Timeout;
-
 namespace Ocelot.Requester.QoS
 {
     public class CircuitBreaker
