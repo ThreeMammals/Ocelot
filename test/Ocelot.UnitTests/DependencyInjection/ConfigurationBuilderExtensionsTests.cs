@@ -9,6 +9,8 @@
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Moq;
+    using Microsoft.AspNetCore.Hosting;
 
     public class ConfigurationBuilderExtensionsTests
     {
@@ -19,6 +21,18 @@
         private FileConfiguration _reRouteA;
         private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
+        private FileConfiguration _envSpecific;
+
+        public ConfigurationBuilderExtensionsTests()
+        {
+            // Clean up config files before each test
+            var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
+
+            foreach(var config in subConfigFiles)
+            {
+                config.Delete();
+            }
+        }
 
         [Fact]
         public void should_add_base_url_to_config()
@@ -32,13 +46,23 @@
         [Fact]
         public void should_merge_files()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles())
-                .When(_ => WhenIAddOcelotConfiguration())
+            this.Given(_ => GivenMultipleConfigurationFiles(false))
+                .When(_ => WhenIAddOcelotConfiguration(false))
                 .Then(_ => ThenTheConfigsAreMerged())
                 .BDDfy();
         }
 
-        private void GivenMultipleConfigurationFiles()
+        [Fact]
+        public void should_merge_files_except_env()
+        {
+            this.Given(_ => GivenMultipleConfigurationFiles(true))
+                .When(_ => WhenIAddOcelotConfiguration(true))
+                .Then(_ => ThenTheConfigsAreMerged())
+                .And(_ => NotContainsEnvSpecificConfig())
+                .BDDfy();
+        }
+
+        private void GivenMultipleConfigurationFiles(bool addEnvSpecificConfig)
         {
             _globalConfig = new FileConfiguration
             {
@@ -140,7 +164,7 @@
                 {
                     new FileAggregateReRoute
                     {
-                        ReRouteKeys = new List<string> 
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -149,7 +173,7 @@
                     },
                     new FileAggregateReRoute
                     {
-                        ReRouteKeys = new List<string> 
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -159,16 +183,52 @@
                 }
             };
 
+            _envSpecific = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamScheme = "DownstreamSchemeSpec",
+                            DownstreamPathTemplate = "DownstreamPathTemplateSpec",
+                            Key = "KeySpec",
+                            UpstreamHost = "UpstreamHostSpec",
+                            UpstreamHttpMethod = new List<string>
+                            {
+                                "UpstreamHttpMethodSpec"
+                            },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "HostSpec",
+                                    Port = 80
+                                }
+                            }
+                        }
+                    }
+            };
+
             File.WriteAllText("ocelot.global.json", JsonConvert.SerializeObject(_globalConfig));
             File.WriteAllText("ocelot.reRoutesA.json", JsonConvert.SerializeObject(_reRouteA));
             File.WriteAllText("ocelot.reRoutesB.json", JsonConvert.SerializeObject(_reRouteB));
             File.WriteAllText("ocelot.aggregates.json", JsonConvert.SerializeObject(_aggregate));
+
+            if (addEnvSpecificConfig)
+            {
+                File.WriteAllText("ocelot.Env.json", JsonConvert.SerializeObject(_envSpecific));
+            }
         }
 
-        private void WhenIAddOcelotConfiguration()
+        private void WhenIAddOcelotConfiguration(bool addEnv)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.AddOcelot();
+
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment.SetupGet(x => x.EnvironmentName).Returns(addEnv ? "Env" : null);
+
+            builder.AddOcelot(hostingEnvironment.Object);
+
             _configRoot = builder.Build();
         }
 
@@ -206,6 +266,14 @@
             fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteB.ReRoutes[1].UpstreamHost);
 
             fc.Aggregates.Count.ShouldBe(_aggregate.Aggregates.Count);
+        }
+
+        private void NotContainsEnvSpecificConfig()
+        {
+            var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldNotContain(x => x.Key == _envSpecific.ReRoutes[0].Key);
         }
 
         private void GivenTheBaseUrl(string baseUrl)
