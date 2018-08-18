@@ -7,13 +7,13 @@ parameters and other claims. This is only available once a user has been authent
 After the user is authenticated we run the claims to claims transformation middleware.
 This allows the user to transform claims before the authorisation middleware is called.
 After the user is authorised first we call the claims to headers middleware and Finally
-the claims to query strig parameters middleware.
+the claims to query string parameters middleware.
 
-The syntax for performing the transforms is the same for each proces. In the ReRoute
+The syntax for performing the transforms is the same for each process. In the ReRoute
 configuration a json dictionary is added with a specific name either AddClaimsToRequest,
 AddHeadersToRequest, AddQueriesToRequest. 
 
-Note I'm not a hotshot programmer so have no idea if this syntax is good..
+Note: I'm not a hotshot programmer so have no idea if this syntax is good...
 
 Within this dictionary the entries specify how Ocelot should transform things! 
 The key to the dictionary is going to become the key of either a claim, header 
@@ -23,12 +23,12 @@ The value of the entry is parsed to logic that will perform the transform. First
 all a dictionary accessor is specified e.g. Claims[CustomerId]. This means we want
 to access the claims and get the CustomerId claim type. Next is a greater than (>)
 symbol which is just used to split the string. The next entry is either value or value with
-and indexer. If value is specifed Ocelot will just take the value and add it to the 
+and indexer. If value is specified Ocelot will just take the value and add it to the 
 transform. If the value has an indexer Ocelot will look for a delimiter which is provided
 after another greater than symbol. Ocelot will then split the value on the delimiter 
 and add whatever was at the index requested to the transform.
 
-Claims to Claims Tranformation
+Claims to Claims Transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to claims
@@ -54,10 +54,10 @@ Below is an example configuration that will transforms claims to headers
         "CustomerId": "Claims[sub] > value[1] > |"
     }
 
-This shows a transform where Ocelot looks at the users sub claim and trasnforms it into a 
+This shows a transform where Ocelot looks at the users sub claim and transforms it into a 
 CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
 
-Claims to Query String Parameters Tranformation
+Claims to Query String Parameters Transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to query string parameters
@@ -68,5 +68,5 @@ Below is an example configuration that will transforms claims to query string pa
         "LocationId": "Claims[LocationId] > value",
     }
 
-This shows a transform where Ocelot looks at the users LocationId claim and add its as
+This shows a transform where Ocelot looks at the users LocationId claim and add it as
 a query string parameter to be forwarded onto the downstream service.

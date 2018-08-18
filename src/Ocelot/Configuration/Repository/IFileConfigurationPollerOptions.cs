@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Configuration.Repository
 {
-    public interface IConsulPollerConfiguration
+    public interface IFileConfigurationPollerOptions
     {
         int Delay { get; }
     }

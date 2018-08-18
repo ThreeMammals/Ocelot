@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Shouldly;
@@ -13,7 +12,6 @@ using Xunit;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using CacheManager.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
@@ -106,25 +104,14 @@ namespace Ocelot.IntegrationTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (s) =>
-                    {
-                        s.WithMicrosoftLogging(log =>
-                            {
-                                log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithDictionaryHandle();
-                    };
-
-                    x.AddOcelot()
-                        .AddCacheManager(settings)
-                        .AddAdministration("/administration", "secret");
+                    x.AddOcelot();
                 })
                 .Configure(app =>
                 {

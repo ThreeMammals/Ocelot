@@ -1,34 +1,23 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ClientRateLimitTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
-         private int _counterOne;
+        private int _counterOne;
+        private readonly ServiceHandler _serviceHandler;
 
         public ClientRateLimitTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
-        }
-
-        public void Dispose()
-        {
-            _builder?.Dispose();
-            _steps.Dispose();
         }
 
         [Fact]
@@ -53,7 +42,6 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/api/ClientRateLimit",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
-                             
                             RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
@@ -158,6 +146,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
+            int port = 61876;
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -170,7 +160,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51876,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -201,7 +191,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", "/api/ClientRateLimit"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
@@ -211,26 +201,18 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(baseUrl)
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(context =>
-                    {
-                        _counterOne++;
-                        context.Response.StatusCode = 200;
-                        context.Response.WriteAsync(_counterOne.ToString());
-                        return Task.CompletedTask;
-                    });
-                })
-                .Build();
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+            {
+                _counterOne++;
+                context.Response.StatusCode = 200;
+                context.Response.WriteAsync(_counterOne.ToString());
+                return Task.CompletedTask;
+            });
+        }
 
-            _builder.Start();
+        public void Dispose()
+        {
+            _steps.Dispose();
         }
     }
 }

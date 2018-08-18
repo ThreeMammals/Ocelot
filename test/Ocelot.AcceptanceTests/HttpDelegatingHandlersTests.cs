@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
-    public class HttpDelegatingHandlersTests
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
+    public class HttpDelegatingHandlersTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
         private string _downstreamPath;
+        private readonly ServiceHandler _serviceHandler;
 
         public HttpDelegatingHandlersTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -249,6 +247,7 @@ namespace Ocelot.AcceptanceTests
                 return base.SendAsync(request, cancellationToken);
             }
         }
+
         // ReSharper disable once ClassNeverInstantiated.Local
         private class FakeHandlerAgain : DelegatingHandler
         {
@@ -263,33 +262,27 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+                if (_downstreamPath != basePath)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {
-                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
+        }
 
-                        if (_downstreamPath != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+        public void Dispose()
+        {
+            _steps?.Dispose();
+            _serviceHandler?.Dispose();
         }
     }
 }

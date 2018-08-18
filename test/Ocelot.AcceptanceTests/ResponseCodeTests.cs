@@ -1,25 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ResponseCodeTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
-        private string _downstreamPath;
+        private readonly ServiceHandler _serviceHandler;
 
         public ResponseCodeTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -58,26 +53,15 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                            context.Response.StatusCode = statusCode;
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                context.Response.StatusCode = statusCode;
+            });
         }
+
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

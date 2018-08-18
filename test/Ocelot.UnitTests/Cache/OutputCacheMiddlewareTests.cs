@@ -16,24 +16,22 @@
     using TestStack.BDDfy;
     using Xunit;
     using System.Net;
+    using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
 
     public class OutputCacheMiddlewareTests
     {
-        private readonly Mock<IOcelotCache<CachedResponse>> _cacheManager;    
+        private readonly Mock<IOcelotCache<CachedResponse>> _cache;    
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
         private readonly OcelotRequestDelegate _next;
         private CachedResponse _response;
-        private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddlewareTests()
         {
-            _cacheManager = new Mock<IOcelotCache<CachedResponse>>();
-            _regionCreator = new RegionCreator();
+            _cache = new Mock<IOcelotCache<CachedResponse>>();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
@@ -91,14 +89,14 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager.Object, _regionCreator);
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object);
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsACachedResponse(CachedResponse response)
         {
             _response = response;
-            _cacheManager
+            _cache
               .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>()))
               .Returns(_response);
         }
@@ -127,13 +125,13 @@
 
         private void ThenTheCacheGetIsCalledCorrectly()
         {
-            _cacheManager
+            _cache
                 .Verify(x => x.Get(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         private void ThenTheCacheAddIsCalledCorrectly()
         {
-            _cacheManager
+            _cache
                 .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<CachedResponse>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
         }
     }

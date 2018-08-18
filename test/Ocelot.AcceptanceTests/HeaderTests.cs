@@ -1,26 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class HeaderTests : IDisposable
     {
-        private IWebHost _builder;
         private int _count;
         private readonly Steps _steps;
+        private readonly ServiceHandler _serviceHandler;
 
         public HeaderTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -313,99 +311,135 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void issue_474_should_not_put_spaces_in_header()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51879,
+                                }
+                            },
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Accept"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("text/html,application/xhtml+xml,application/xml;"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void issue_474_should_put_spaces_in_header()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51879,
+                                }
+                            },
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Accept"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenIAddAHeader("Accept", "text/html"))
+                .And(x => _steps.GivenIAddAHeader("Accept", "application/xhtml+xml"))
+                .And(x => _steps.GivenIAddAHeader("Accept", "application/xml"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("text/html, application/xhtml+xml, application/xml"))
+                .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+            {
+                if (_count == 0)
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(context =>
+                    context.Response.Cookies.Append("test", "0");
+                    _count++;
+                    context.Response.StatusCode = statusCode;
+                    return Task.CompletedTask;
+                }
+
+                if (context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
+                {
+                    if (cookieValue == "0" || headerValue == "test=1; path=/")
                     {
-                        if (_count == 0)
-                        {
-                            context.Response.Cookies.Append("test", "0");
-                            _count++;
-                            context.Response.StatusCode = statusCode;
-                            return Task.CompletedTask;
-                        }
-
-                        if (context.Request.Cookies.TryGetValue("test", out var cookieValue) || context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
-                        {
-                            if (cookieValue == "0" || headerValue == "test=1; path=/")
-                            {
-                                context.Response.StatusCode = statusCode;
-                                return Task.CompletedTask;
-                            }
-                        }
-
-                        context.Response.StatusCode = 500;
+                        context.Response.StatusCode = statusCode;
                         return Task.CompletedTask;
-                    });
-                })
-                .Build();
+                    }
+                }
 
-            _builder.Start();
+                context.Response.StatusCode = 500;
+                return Task.CompletedTask;
+            });
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                if (context.Request.Headers.TryGetValue(headerKey, out var values))
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {
-                        if (context.Request.Headers.TryGetValue(headerKey, out var values))
-                        {
-                            var result = values.First();
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(result);
-                        }
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                    var result = values.First();
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(result);
+                }
+            });
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey, string headerValue)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+            {
+                context.Response.OnStarting(() =>
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(context =>
-                    {
-                        context.Response.OnStarting(() =>
-                        {
-                            context.Response.Headers.Add(headerKey, headerValue);
-                            context.Response.StatusCode = statusCode;
-                            return Task.CompletedTask;
-                        });
+                    context.Response.Headers.Add(headerKey, headerValue);
+                    context.Response.StatusCode = statusCode;
+                    return Task.CompletedTask;
+                });
 
-                        return Task.CompletedTask;
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                return Task.CompletedTask;
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

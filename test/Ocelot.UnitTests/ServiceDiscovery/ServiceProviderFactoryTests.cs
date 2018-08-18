@@ -1,39 +1,38 @@
-using System;
-using System.Collections.Generic;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Infrastructure.Consul;
-using Ocelot.Logging;
-using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using Pivotal.Discovery.Client;
-    using Steeltoe.Common.Discovery;
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.DependencyInjection;
+    using Values;
+    using System.Collections.Generic;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Logging;
+    using Ocelot.ServiceDiscovery;
+    using Ocelot.ServiceDiscovery.Providers;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class ServiceProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
         private IServiceDiscoveryProvider _result;
-        private readonly ServiceDiscoveryProviderFactory _factory;
+        private ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IDiscoveryClient> _discoveryClient;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
+        private IServiceProvider _provider;
+        private readonly IServiceCollection _collection;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _loggerFactory.Setup(x => x.CreateLogger<PollingConsulServiceDiscoveryProvider>()).Returns(_logger.Object);
-            _discoveryClient = new Mock<IDiscoveryClient>();
-            var consulClient = new Mock<IConsulClientFactory>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, consulClient.Object, _discoveryClient.Object);
+            _collection = new ServiceCollection();
+            _provider = _collection.BuildServiceProvider();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
         
         [Fact]
@@ -72,7 +71,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_return_consul_service_provider()
+        public void should_call_delegate()
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithServiceName("product")
@@ -83,27 +82,9 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .And(x => GivenAFakeDelegate())
                 .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_polling_consul_service_provider()
-        {
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithServiceName("product")
-                .WithUseServiceDiscovery(true)
-                .Build();
-
-            var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithType("PollConsul")
-                .WithPollingInterval(100000)
-                .Build();
-
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
-                .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<PollingConsulServiceDiscoveryProvider>())
+                .Then(x => x.ThenTheDelegateIsCalled())
                 .BDDfy();
         }
 
@@ -125,22 +106,25 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_eureka_provider()
+        private void GivenAFakeDelegate()
         {
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithServiceName("product")
-                .WithUseServiceDiscovery(true)
-                .Build();
+            ServiceDiscoveryFinderDelegate fake = (provider, config, name) => new Fake();
+            _collection.AddSingleton(fake);
+            _provider = _collection.BuildServiceProvider();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+        }
 
-            var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .WithType("Eureka")
-                .Build();
+        class Fake : IServiceDiscoveryProvider
+        {
+            public Task<List<Service>> Get()
+            {
+                return null;
+            }
+        }
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
-                .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<EurekaServiceDiscoveryProvider>())
-                .BDDfy();
+        private void ThenTheDelegateIsCalled()
+        {
+            _result.GetType().Name.ShouldBe("Fake");
         }
 
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)

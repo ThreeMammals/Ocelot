@@ -1,39 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net.WebSockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class WebSocketTests : IDisposable
     {
-        private IWebHost _firstDownstreamHost;
-        private IWebHost _secondDownstreamHost;
         private readonly List<string> _secondRecieved;
         private readonly List<string> _firstRecieved;
-        private readonly List<ServiceEntry> _serviceEntries;
         private readonly Steps _steps;
-        private IWebHost _fakeConsulBuilder;
+        private readonly ServiceHandler _serviceHandler;
 
         public WebSocketTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
             _firstRecieved = new List<string>();
             _secondRecieved = new List<string>();
-            _serviceEntries = new List<ServiceEntry>();
         }
 
         [Fact]
@@ -115,77 +105,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
-        {
-            var downstreamPort = 5007;
-            var downstreamHost = "localhost";
-
-            var secondDownstreamPort = 5008;
-            var secondDownstreamHost = "localhost";
-
-            var serviceName = "websockets";
-            var consulPort = 8509;
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry()
-            {
-                Service = new AgentService()
-                {
-                    Service = serviceName,
-                    Address = downstreamHost,
-                    Port = downstreamPort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
-                },
-            };
-            var serviceEntryTwo = new ServiceEntry()
-            {
-                Service = new AgentService()
-                {
-                    Service = serviceName,
-                    Address = secondDownstreamHost,
-                    Port = secondDownstreamPort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
-                },
-            };
-
-            var config = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        UpstreamPathTemplate = "/",
-                        DownstreamPathTemplate = "/ws",
-                        DownstreamScheme = "ws",
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
-                        ServiceName = serviceName,
-                        UseServiceDiscovery = true
-                    }
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Host = "localhost",
-                        Port = consulPort,
-                        Type = "consul"
-                    }
-                }
-            };
-            
-            this.Given(_ => _steps.GivenThereIsAConfiguration(config))
-                .And(_ => _steps.StartFakeOcelotWithWebSockets())
-                .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
-                .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-                .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
-                .And(_ => StartSecondFakeDownstreamService($"http://{secondDownstreamHost}:{secondDownstreamPort}", "/ws"))
-                .When(_ => WhenIStartTheClients())
-                .Then(_ => ThenBothDownstreamServicesAreCalled())
-                .BDDfy();
-        }
-
         private void ThenBothDownstreamServicesAreCalled()
         {
             _firstRecieved.Count.ShouldBe(10);
@@ -199,37 +118,6 @@ namespace Ocelot.AcceptanceTests
             {
                 x.ShouldBe("chocolate");
             });
-        }
-
-        private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries)
-        {
-            foreach (var serviceEntry in serviceEntries)
-            {
-                _serviceEntries.Add(serviceEntry);
-            }
-        }
-
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
-        {
-            _fakeConsulBuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                        {
-                            await context.Response.WriteJsonAsync(_serviceEntries);
-                        }
-                    });
-                })
-                .Build();
-
-            _fakeConsulBuilder.Start();
         }
 
         private async Task WhenIStartTheClients()
@@ -333,94 +221,48 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartFakeDownstreamService(string url, string path)
         {
-            _firstDownstreamHost = new WebHostBuilder()
-                .ConfigureServices(s => { }).UseKestrel()
-                .UseUrls(url)
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            await _serviceHandler.StartFakeDownstreamService(url, path, async(context, next) =>
+            {
+                if (context.Request.Path == path)
                 {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                })
-                .Configure(app =>
-                {
-                    app.UseWebSockets();
-                    app.Use(async (context, next) =>
+                    if (context.WebSockets.IsWebSocketRequest)
                     {
-                        if (context.Request.Path == path)
-                        {
-                            if (context.WebSockets.IsWebSocketRequest)
-                            {
-                                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                await Echo(webSocket);
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = 400;
-                            }
-                        }
-                        else
-                        {
-                            await next();
-                        }
-                    });
-                })
-                .UseIISIntegration().Build();
-            await _firstDownstreamHost.StartAsync();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await Echo(webSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
         }
 
         private async Task StartSecondFakeDownstreamService(string url, string path)
         {
-            _secondDownstreamHost = new WebHostBuilder()
-                .ConfigureServices(s => { }).UseKestrel()
-                .UseUrls(url)
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
+            {
+                if (context.Request.Path == path)
                 {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                })
-                .Configure(app =>
-                {
-                    app.UseWebSockets();
-                    app.Use(async (context, next) =>
+                    if (context.WebSockets.IsWebSocketRequest)
                     {
-                        if (context.Request.Path == path)
-                        {
-                            if (context.WebSockets.IsWebSocketRequest)
-                            {
-                                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                await Message(webSocket);
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = 400;
-                            }
-                        }
-                        else
-                        {
-                            await next();
-                        }
-                    });
-                })
-                .UseIISIntegration().Build();
-            await _secondDownstreamHost.StartAsync();
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await Message(webSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
         }
 
         private async Task Echo(WebSocket webSocket)
@@ -473,10 +315,8 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
+            _serviceHandler?.Dispose();
             _steps.Dispose();
-            _firstDownstreamHost?.Dispose();
-            _secondDownstreamHost?.Dispose();
-            _fakeConsulBuilder?.Dispose();
         }
     }
 }

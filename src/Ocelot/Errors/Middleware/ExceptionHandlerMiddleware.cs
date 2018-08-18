@@ -1,16 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Ocelot.Configuration.Repository;
-using Ocelot.Infrastructure.Extensions;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-
 namespace Ocelot.Errors.Middleware
 {
     using Configuration;
-
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Ocelot.Configuration.Repository;
+    using Ocelot.Infrastructure.Extensions;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>

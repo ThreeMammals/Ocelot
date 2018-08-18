@@ -31,6 +31,11 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IHostingEnvironment env = null)
         {
+            return builder.AddOcelot(".", env);
+        }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IHostingEnvironment env = null)
+        {
             const string primaryConfigFile = "ocelot.json";
 
             const string globalConfigFile = "ocelot.global.json";
@@ -41,7 +46,7 @@ namespace Ocelot.DependencyInjection
 
             var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-            var files = new DirectoryInfo(".")
+            var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
                 .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
                 .ToList();
@@ -72,7 +77,7 @@ namespace Ocelot.DependencyInjection
 
             File.WriteAllText(primaryConfigFile, json);
 
-            builder.AddJsonFile(primaryConfigFile);
+            builder.AddJsonFile(primaryConfigFile, false, false);
 
             return builder;
         }

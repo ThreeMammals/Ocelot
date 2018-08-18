@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
@@ -12,6 +12,7 @@
     <PackageTags>API Gateway;.NET core</PackageTags>
     <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
     <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+    <PackageIconUrl>http://threemammals.com/images/ocelot_logo.png</PackageIconUrl>
     <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -25,12 +26,7 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Butterfly.Client" Version="0.0.8" />
-    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
     <PackageReference Include="FluentValidation" Version="7.6.104" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.1" />
@@ -49,13 +45,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
-    <PackageReference Include="CacheManager.Core" Version="1.1.2" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.1.2" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.2" />
-    <PackageReference Include="Consul" Version="0.7.2.5" />
     <PackageReference Include="Polly" Version="6.0.1" />
-    <PackageReference Include="IdentityServer4" Version="2.2.0" />
-    <PackageReference Include="Pivotal.Discovery.ClientCore" Version="2.0.1" />
-    <PackageReference Include="Rafty" Version="0.4.4" />
   </ItemGroup>
 </Project>

@@ -38,15 +38,19 @@
 
         private async Task<HttpContent> MapContent(HttpRequest request)
         {
-            if (request.Body == null)
+            if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0)) 
             {
                 return null;
             }
 
+            // Never change this to StreamContent again, I forgot it doesnt work in #464.
             var content = new ByteArrayContent(await ToByteArray(request.Body));
 
-            content.Headers
-                .TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+            if(!string.IsNullOrEmpty(request.ContentType))
+            {
+                content.Headers
+                    .TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+            }
 
             AddHeaderIfExistsOnRequest("Content-Language", content, request);
             AddHeaderIfExistsOnRequest("Content-Location", content, request);
@@ -88,9 +92,14 @@
             }
         }
 
+        private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
+        {
+            return !_unsupportedHeaders.Contains(header.Key.ToLower());
+        }
+
         private async Task<byte[]> ToByteArray(Stream stream)
         {
-            using (stream)
+            using(stream)
             {
                 using (var memStream = new MemoryStream())
                 {
@@ -98,11 +107,6 @@
                     return memStream.ToArray();
                 }
             }
-        }
-
-        private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
-        {
-            return !_unsupportedHeaders.Contains(header.Key.ToLower());
         }
     }
 }

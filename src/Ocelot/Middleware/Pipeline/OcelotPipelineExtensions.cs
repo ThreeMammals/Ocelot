@@ -48,6 +48,15 @@ namespace Ocelot.Middleware.Pipeline
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
 
+            //Expand other branch pipes
+            if (pipelineConfiguration.MapWhenOcelotPipeline != null)
+            {
+                foreach (var pipeline in pipelineConfiguration.MapWhenOcelotPipeline)
+                {
+                    builder.MapWhen(pipeline);
+                }
+            }
+
             // Now we have the ds route we can transform headers and stuff?
             builder.UseHttpHeadersTransformationMiddleware();
 

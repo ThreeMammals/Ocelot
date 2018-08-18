@@ -14,7 +14,7 @@ namespace Ocelot.WebSockets.Middleware
 
         public WebSocketsProxyMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory)
-                :base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
         }
@@ -29,6 +29,17 @@ namespace Ocelot.WebSockets.Middleware
             var wsToUpstreamClient = await context.WebSockets.AcceptWebSocketAsync();
 
             var wsToDownstreamService = new ClientWebSocket();
+
+            foreach (var requestHeader in context.Request.Headers)
+            {
+                // Do not copy the Sec-Websocket headers because it is specified by the own connection it will fail when you copy this one.
+                if (requestHeader.Key.StartsWith("Sec-WebSocket"))
+                {
+                    continue;
+                }
+                wsToDownstreamService.Options.SetRequestHeader(requestHeader.Key, requestHeader.Value);
+            }
+
             var uri = new Uri(serverEndpoint);
             await wsToDownstreamService.ConnectAsync(uri, CancellationToken.None);
 

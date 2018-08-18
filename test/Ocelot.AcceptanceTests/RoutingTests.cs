@@ -1,25 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class RoutingTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
         private string _downstreamPath;
+        private readonly ServiceHandler _serviceHandler;
 
         public RoutingTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -973,33 +971,21 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-                        
-                        if(_downstreamPath != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
-            _builder.Start();
+                if (_downstreamPath != basePath)
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+            });
         }
 
         internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
@@ -1009,7 +995,7 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler.Dispose();
             _steps.Dispose();
         }
     }

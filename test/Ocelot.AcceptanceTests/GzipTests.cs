@@ -1,29 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class GzipTests : IDisposable
     {
-        private IWebHost _builder;
         private readonly Steps _steps;
+        private readonly ServiceHandler _serviceHandler;
 
         public GzipTests()
         {
+            _serviceHandler = new ServiceHandler();
             _steps = new Steps();
         }
 
@@ -66,51 +62,40 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expected)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                if (context.Request.Headers.TryGetValue("Content-Encoding", out var contentEncoding))
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {   
-                        if(context.Request.Headers.TryGetValue("Content-Encoding", out var contentEncoding))
-                        {
-                            contentEncoding.First().ShouldBe("gzip");
-                            
-                            string text = null;
-                            using (var decompress = new GZipStream(context.Request.Body, CompressionMode.Decompress))
-                            {
-                                using (var sr = new StreamReader(decompress)) {
-                                    text = sr.ReadToEnd();
-                                }
-                            }
+                    contentEncoding.First().ShouldBe("gzip");
 
-                            if(text != expected)
-                            {
-                                throw new Exception("not gzipped");
-                            }
-                            
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                        else
+                    string text = null;
+                    using (var decompress = new GZipStream(context.Request.Body, CompressionMode.Decompress))
+                    {
+                        using (var sr = new StreamReader(decompress))
                         {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
+                            text = sr.ReadToEnd();
                         }
-                    });
-                })
-                .Build();
+                    }
 
-            _builder.Start();
+                    if (text != expected)
+                    {
+                        throw new Exception("not gzipped");
+                    }
+
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync(responseBody);
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    await context.Response.WriteAsync("downstream path didnt match base path");
+                }
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
     }

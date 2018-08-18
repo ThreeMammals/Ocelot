@@ -5,6 +5,12 @@ Ocelot supports changing configuration during runtime via an authenticated HTTP 
 internal IdentityServer (for authenticating requests to the administration API only) or hooking the administration API authentication into your own 
 IdentityServer.
 
+The first thing you need to do if you want to use the administration API is bring in the relavent NuGet package..
+
+``Install-Package Ocelot.Administration``
+
+This will bring down everything needed by the admin API.
+
 Providing your own IdentityServer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -55,14 +61,34 @@ The secret is the client secret that Ocelot's internal IdentityServer will use t
             .AddAdministration("/administration", "secret");
     }
 
+In order for the administration API to work, Ocelot / IdentityServer must be able to call itself for validation. This means that you need to add the base url of Ocelot 
+to global configuration if it is not default (http://localhost:5000). This can be done as follows..
+
+If you want to run on a different host and port locally..
+
+.. code-block:: json
+
+ "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:55580"
+  }
+
+or if Ocelot is exposed via dns
+
+.. code-block:: json
+
+ "GlobalConfiguration": {
+    "BaseUrl": "http://mydns.com"
+  }
+
 Now if you went with the configuration options above and want to access the API you can use the postman scripts
 called ocelot.postman_collection.json in the solution to change the Ocelot configuration. Obviously these 
 will need to be changed if you are running Ocelot on a different url to http://localhost:5000.
 
+
 The scripts show you how to request a bearer token from ocelot and then use it to GET the existing configuration and POST 
 a configuration.
 
-If you are running multiple Ocelot's in a cluster then you need to use a certificate to sign the bearer tokens used to access the administration API.
+If you are running multiple Ocelot instances in a cluster then you need to use a certificate to sign the bearer tokens used to access the administration API.
 
 In order to do this you need to add two more environmental variables for each Ocelot in the cluster.
 
@@ -71,7 +97,7 @@ In order to do this you need to add two more environmental variables for each Oc
 ``OCELOT_CERTIFICATE_PASSWORD``
     The password for the certificate.
 
-Normally Ocelot just uses temporary signing credentials but if you set these environmental variables then it will use the certificate. If all the other Ocelots in the cluster have the same certificate then you are good!
+Normally Ocelot just uses temporary signing credentials but if you set these environmental variables then it will use the certificate. If all the other Ocelot instances in the cluster have the same certificate then you are good!
 
 
 Administration API
@@ -98,11 +124,13 @@ This gets the current Ocelot configuration. It is exactly the same JSON we use t
 
 **POST {adminPath}/configuration**
 
-
 This overrwrites the existing configuration (should probably be a put!). I reccomend getting your config from the GET endpoint, making any changes and posting it back...simples.
 
 The body of the request is JSON and it is the same format as the FileConfiguration.cs that we use to set up 
-Ocelot on a file system.
+Ocelot on a file system. 
+
+Please note that if you want to use this API then the process running Ocelot must have permission to write to the disk
+where your ocelot.json or ocelot.{environment}.json is located. This is because Ocelot will overwrite them on save. 
 
 **DELETE {adminPath}/outputcache/{region}**
 
