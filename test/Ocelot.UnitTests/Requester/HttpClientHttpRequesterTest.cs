@@ -144,7 +144,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheErrorIsTimeout()
         {
-            _response.Errors[0].ShouldBeOfType<RequestTimedOutError>();
+            _response.Errors[0].ShouldBeOfType<UnableToCompleteRequestError>();
         }
 
         private void GivenTheHouseReturnsOkHandler()

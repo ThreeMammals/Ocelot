@@ -132,7 +132,7 @@ namespace Ocelot.Requester
         {
             var cacheKey = $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.OriginalString}";
 
-            this._logger.LogDebug($"Cache key for request is {cacheKey}");
+            _logger.LogDebug($"Cache key for request is {cacheKey}");
 
             return cacheKey;
         }

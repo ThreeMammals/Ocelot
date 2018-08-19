@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿/*
+using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Requester.QoS;
@@ -176,12 +177,19 @@ namespace Ocelot.UnitTests.Requester
 
         class FakeQoSProvider : IQoSProvider
         {
-            public CircuitBreaker CircuitBreaker { get; }
+            T IQoSProvider.CircuitBreaker<T>()
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
         class FakePollyQoSProvider : IQoSProvider
         {
-            public CircuitBreaker CircuitBreaker { get; }
+            T IQoSProvider.CircuitBreaker<T>()
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }
+*/

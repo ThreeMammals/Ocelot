@@ -831,7 +831,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_fix_145()
+        public void should_not_set_trailing_slash_on_url_template()
         {
             var configuration = new FileConfiguration
             {
@@ -851,11 +851,6 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/platform/{url}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            QoSOptions = new FileQoSOptions {
-                                ExceptionsAllowedBeforeBreaking = 3,
-                                DurationOfBreak = 10,
-                                TimeoutValue = 5000
-                            }
                         }
                     }
             };
