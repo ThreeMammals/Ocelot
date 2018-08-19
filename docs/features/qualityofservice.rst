@@ -5,7 +5,22 @@ Ocelot supports one QoS capability at the current time. You can set on a per ReR
 want to use a circuit breaker when making requests to a downstream service. This uses the an awesome
 .NET library called Polly check them out `here <https://github.com/App-vNext/Polly>`_.
 
-Add the following section to a ReRoute configuration. 
+The first thing you need to do if you want to use the administration API is bring in the relavent NuGet package..
+
+``Install-Package Ocelot.Provider.Polly``
+
+Then in your ConfigureServices method
+
+.. code-block:: csharp
+
+    public virtual void ConfigureServices(IServiceCollection services)
+    {
+        services
+            .AddOcelot()
+            .AddPolly();
+    }
+
+Then add the following section to a ReRoute configuration. 
 
 .. code-block:: json
 

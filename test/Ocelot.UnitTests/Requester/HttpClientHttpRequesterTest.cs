@@ -27,6 +27,7 @@ namespace Ocelot.UnitTests.Requester
         private DownstreamContext _request;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
+        private Mock<IExceptionToErrorMapper> _mapper;
 
         public HttpClientHttpRequesterTest()
         {
@@ -38,10 +39,12 @@ namespace Ocelot.UnitTests.Requester
                 .Setup(x => x.CreateLogger<HttpClientHttpRequester>())
                 .Returns(_logger.Object);
             _cacheHandlers = new Mock<IHttpClientCache>();
+            _mapper = new Mock<IExceptionToErrorMapper>();
             _httpClientRequester = new HttpClientHttpRequester(
                 _loggerFactory.Object, 
                 _cacheHandlers.Object, 
-                _factory.Object);            
+                _factory.Object,
+                _mapper.Object);            
         }
 
         [Fact]
@@ -144,6 +147,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheErrorIsTimeout()
         {
+            _mapper.Verify(x => x.Map(It.IsAny<Exception>()), Times.Once);
             _response.Errors[0].ShouldBeOfType<UnableToCompleteRequestError>();
         }
 
@@ -165,6 +169,8 @@ namespace Ocelot.UnitTests.Requester
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+
+            _mapper.Setup(x => x.Map(It.IsAny<Exception>())).Returns(new UnableToCompleteRequestError(new Exception()));
         }
 
         class OkDelegatingHandler : DelegatingHandler
