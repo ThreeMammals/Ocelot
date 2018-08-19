@@ -148,7 +148,6 @@ namespace Ocelot.UnitTests.Requester
         private void ThenTheErrorIsTimeout()
         {
             _mapper.Verify(x => x.Map(It.IsAny<Exception>()), Times.Once);
-
             _response.Errors[0].ShouldBeOfType<UnableToCompleteRequestError>();
         }
 
