@@ -12,14 +12,17 @@ namespace Ocelot.Requester
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
         private readonly IDelegatingHandlerHandlerFactory _factory;
+        private readonly IExceptionToErrorMapper _mapper;
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
             IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerFactory house)
+            IDelegatingHandlerHandlerFactory factory, 
+            IExceptionToErrorMapper mapper)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
-            _factory = house;
+            _factory = factory;
+            _mapper = mapper;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context)
@@ -35,7 +38,8 @@ namespace Ocelot.Requester
             }
             catch (Exception exception)
             {
-                return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
+                var error = _mapper.Map(exception);
+                return new ErrorResponse<HttpResponseMessage>(error);
             }
             finally
             {

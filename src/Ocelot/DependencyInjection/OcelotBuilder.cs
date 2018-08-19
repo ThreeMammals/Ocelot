@@ -130,6 +130,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
+            Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 

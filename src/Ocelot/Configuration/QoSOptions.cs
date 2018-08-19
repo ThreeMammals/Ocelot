@@ -7,8 +7,6 @@
             int durationofBreak, 
             int timeoutValue, 
             string key,
-            //todo - this is never set in Ocelot so always Pessimistic...I guess it doesn't
-            //matter to much.
             string timeoutStrategy = "Pessimistic")
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
