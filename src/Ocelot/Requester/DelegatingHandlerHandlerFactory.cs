@@ -1,31 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration;
-using Ocelot.Logging;
-using Ocelot.Requester.QoS;
-using Ocelot.Responses;
-
 namespace Ocelot.Requester
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration;
+    using Ocelot.Responses;
+    using QoS;
+
     public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {
-        private readonly ITracingHandlerFactory _factory;
-        private readonly IOcelotLoggerFactory _loggerFactory;
-        private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly ITracingHandlerFactory _tracingFactory;
+        private readonly IQoSFactory _qoSFactory;
         private readonly IServiceProvider _serviceProvider;
 
-        public DelegatingHandlerHandlerFactory(IOcelotLoggerFactory loggerFactory, 
-            ITracingHandlerFactory factory,
-            IQosProviderHouse qosProviderHouse,
+        public DelegatingHandlerHandlerFactory(
+            ITracingHandlerFactory tracingFactory,
+            IQoSFactory qoSFactory,
             IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _factory = factory;
-            _loggerFactory = loggerFactory;
-            _qosProviderHouse = qosProviderHouse;
+            _tracingFactory = tracingFactory;
+            _qoSFactory = qoSFactory;
         }
 
         public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute request)
@@ -64,19 +61,21 @@ namespace Ocelot.Requester
 
             if (request.HttpHandlerOptions.UseTracing)
             {
-                handlers.Add(() => (DelegatingHandler)_factory.Get());
+                handlers.Add(() => (DelegatingHandler)_tracingFactory.Get());
             }
 
             if (request.QosOptions.UseQos)
             {
-                var qosProvider = _qosProviderHouse.Get(request);
+                var handler = _qoSFactory.Get(request);
 
-                if (qosProvider.IsError)
+                if (handler != null && !handler.IsError)
                 {
-                    return new ErrorResponse<List<Func<DelegatingHandler>>>(qosProvider.Errors);
+                    handlers.Add(() => handler.Data);
                 }
-
-                handlers.Add(() => new PollyCircuitBreakingDelegatingHandler(qosProvider.Data, _loggerFactory));
+                else
+                {
+                    return new ErrorResponse<List<Func<DelegatingHandler>>>(handler?.Errors);
+                }
             }
 
             return new OkResponse<List<Func<DelegatingHandler>>>(handlers);

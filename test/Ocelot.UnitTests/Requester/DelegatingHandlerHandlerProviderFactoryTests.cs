@@ -16,23 +16,28 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Requester
 {
+    using Responder;
+
     public class DelegatingHandlerHandlerProviderFactoryTests
     {
         private DelegatingHandlerHandlerFactory _factory;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private DownstreamReRoute _request;
         private Response<List<Func<DelegatingHandler>>> _result;
-        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly Mock<IQoSFactory> _qosFactory;
         private readonly Mock<ITracingHandlerFactory> _tracingFactory;
         private IServiceProvider _serviceProvider;
         private readonly IServiceCollection _services;
+        private readonly QosDelegatingHandlerDelegate _qosDelegate;
 
         public DelegatingHandlerHandlerProviderFactoryTests()
         {
+             _qosDelegate = (a, b) => new FakeQoSHandler();
             _tracingFactory = new Mock<ITracingHandlerFactory>();
-            _qosProviderHouse = new Mock<IQosProviderHouse>();
+            _qosFactory = new Mock<IQoSFactory>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _services = new ServiceCollection();
+            _services.AddSingleton(_qosDelegate);
         }
 
         [Fact]
@@ -56,8 +61,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheTracingFactoryReturns())
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
@@ -67,7 +72,7 @@ namespace Ocelot.UnitTests.Requester
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2))
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(3))
                 .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-                .And(x => ThenHandlerAtPositionIs<PollyCircuitBreakingDelegatingHandler>(5))
+                .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
                 .BDDfy();
         }
 
@@ -93,8 +98,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheTracingFactoryReturns())
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerFour, FakeDelegatingHandlerThree>())
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
@@ -104,7 +109,7 @@ namespace Ocelot.UnitTests.Requester
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2)) //second from config
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(3)) //third from config (global)
                 .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-                .And(x => ThenHandlerAtPositionIs<PollyCircuitBreakingDelegatingHandler>(5))
+                .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
                 .BDDfy();
         }
 
@@ -129,8 +134,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheTracingFactoryReturns())
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
@@ -140,7 +145,7 @@ namespace Ocelot.UnitTests.Requester
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(2))
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(3))
                 .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-                .And(x => ThenHandlerAtPositionIs<PollyCircuitBreakingDelegatingHandler>(5))
+                .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
                 .BDDfy();
         }
 
@@ -164,8 +169,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheTracingFactoryReturns())
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
@@ -174,7 +179,7 @@ namespace Ocelot.UnitTests.Requester
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1))
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2))
                 .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(3))
-                .And(x => ThenHandlerAtPositionIs<PollyCircuitBreakingDelegatingHandler>(4))
+                .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(4))
                 .BDDfy();
         }
 
@@ -194,8 +199,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheTracingFactoryReturns())
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
@@ -203,7 +208,7 @@ namespace Ocelot.UnitTests.Requester
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
                 .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
                 .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
-                .And(x => ThenHandlerAtPositionIs<PollyCircuitBreakingDelegatingHandler>(3))
+                .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(3))
                 .BDDfy();
         }
 
@@ -225,7 +230,6 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
                 .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(2))
@@ -247,12 +251,12 @@ namespace Ocelot.UnitTests.Requester
                 .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true)).WithLoadBalancerKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(3))
                 .And(x => ThenTheDelegatesAreAddedCorrectly())
-                .And(x => ThenItIsPolly(2))
+                .And(x => ThenItIsQosHandler(2))
                 .BDDfy(); 
         }
 
@@ -287,11 +291,11 @@ namespace Ocelot.UnitTests.Requester
                 .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true)).WithLoadBalancerKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
-                .And(x => GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(It.IsAny<PollyQoSProvider>())))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
                 .And(x => GivenTheServiceProviderReturnsNothing())
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(1))
-                .And(x => ThenItIsPolly(0))
+                .And(x => ThenItIsQosHandler(0))
                 .BDDfy();
         }
 
@@ -309,7 +313,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true)).WithLoadBalancerKey("").Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
-                .And(x => GivenTheQosProviderHouseReturns(new ErrorResponse<IQoSProvider>(It.IsAny<Error>())))
+                .And(x => GivenTheQosFactoryReturnsError())
                 .And(x => GivenTheServiceProviderReturnsNothing())
                 .When(x => WhenIGet())
                 .Then(x => ThenAnErrorIsReturned())
@@ -378,18 +382,25 @@ namespace Ocelot.UnitTests.Requester
             handlerTwo.Order.ShouldBe(2);
         }
 
-        private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
+        private void GivenTheQosFactoryReturns(DelegatingHandler handler)
         {
-            _qosProviderHouse
+            _qosFactory
                 .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
-                .Returns(qosProvider);
+                .Returns(new OkResponse<DelegatingHandler>(handler));
         }
 
-        private void ThenItIsPolly(int i)
+        private void GivenTheQosFactoryReturnsError()
+        {
+            _qosFactory
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
+                .Returns(new ErrorResponse<DelegatingHandler>(new AnyError()));
+        }
+
+        private void ThenItIsQosHandler(int i)
         {
             var delegates = _result.Data;
             var del = delegates[i].Invoke();
-            del.ShouldBeOfType<PollyCircuitBreakingDelegatingHandler>();
+            del.ShouldBeOfType<FakeQoSHandler>();
         }
 
         private void ThenThereIsDelegatesInProvider(int count)
@@ -406,7 +417,7 @@ namespace Ocelot.UnitTests.Requester
         private void WhenIGet()
         {
             _serviceProvider = _services.BuildServiceProvider();
-            _factory = new DelegatingHandlerHandlerFactory(_loggerFactory.Object, _tracingFactory.Object, _qosProviderHouse.Object, _serviceProvider);
+            _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider);
             _result = _factory.Get(_request);
         }
 
@@ -418,6 +429,10 @@ namespace Ocelot.UnitTests.Requester
     }
 
     internal class FakeTracingHandler : DelegatingHandler, ITracingHandler
+    {
+    }
+
+    internal class FakeQoSHandler : DelegatingHandler
     {
     }
 }

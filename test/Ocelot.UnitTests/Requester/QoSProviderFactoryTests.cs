@@ -1,15 +1,17 @@
-﻿using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Logging;
-using Ocelot.Requester.QoS;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
-
+﻿/*
 namespace Ocelot.UnitTests.Requester
 {
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Logging;
+    using Ocelot.Requester.QoS;
+    using Shouldly;
+    using System.Collections.Generic;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class QoSProviderFactoryTests
     {
         private readonly IQoSProviderFactory _factory;
@@ -22,10 +24,9 @@ namespace Ocelot.UnitTests.Requester
         {
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _loggerFactory
-                .Setup(x => x.CreateLogger<PollyQoSProvider>())
-                .Returns(_logger.Object);
-            _factory = new QoSProviderFactory(_loggerFactory.Object);
+            var services = new ServiceCollection();
+            var provider = services.BuildServiceProvider();
+            _factory = new QoSProviderFactory(_loggerFactory.Object, provider);
         }
 
         [Fact]
@@ -46,7 +47,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_polly_qos_provider()
+        public void should_return_delegate_provider()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(100)
@@ -55,13 +56,13 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var reRoute = new DownstreamReRouteBuilder()
-               .WithUpstreamHttpMethod(new List<string> { "get" })
-               .WithQosOptions(qosOptions)
-               .Build();
+                .WithUpstreamHttpMethod(new List<string> { "get" })
+                .WithQosOptions(qosOptions)
+                .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
                 .When(x => x.WhenIGetTheQoSProvider())
-                .Then(x => x.ThenTheQoSProviderIsReturned<PollyQoSProvider>())
+                .Then(x => x.ThenTheQoSProviderIsReturned<FakeProvider>())
                 .BDDfy();
         }
 
@@ -80,4 +81,13 @@ namespace Ocelot.UnitTests.Requester
             _result.ShouldBeOfType<T>();
         }
     }
+
+    internal class FakeProvider : IQoSProvider
+    {
+        public T CircuitBreaker<T>()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }
+*/

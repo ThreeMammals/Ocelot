@@ -28,17 +28,12 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Requester.QoS;
     using Ocelot.Responder;
     using Ocelot.ServiceDiscovery;
-    using System;
-    using System.Collections.Generic;
     using System.Reflection;
-    using System.Security.Cryptography.X509Certificates;
-    using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using System.Net.Http;
     using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
-    using ServiceDiscovery.Providers;
     using Ocelot.Request.Creator;
 
     public class OcelotBuilder : IOcelotBuilder
@@ -75,8 +70,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRegionCreator, RegionCreator>();
             Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
             Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
-            Services.TryAddSingleton<IQosProviderHouse, QosProviderHouse>();
-            Services.TryAddSingleton<IQoSProviderFactory, QoSProviderFactory>();
             Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
             Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
@@ -136,6 +129,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
+            Services.TryAddSingleton<IQoSFactory, QoSFactory>();
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
