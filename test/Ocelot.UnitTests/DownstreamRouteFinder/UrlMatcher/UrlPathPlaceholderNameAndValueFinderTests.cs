@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
-        public void should_match_everything_in_path()
+        public void should_match_everything_in_path_with_query()
         {
             var expectedTemplates = new List<PlaceholderNameAndValue> 
             {
@@ -71,6 +71,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 
             this.Given(x => x.GivenIHaveAUpstreamPath("/test/toot"))
                 .And(x => GivenIHaveAQuery("?$filter=Name%20eq%20'Sam'"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{everything}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_match_everything_in_path()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            {
+                new PlaceholderNameAndValue("{everything}", "test/toot")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/test/toot"))
                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{everything}"))
                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))

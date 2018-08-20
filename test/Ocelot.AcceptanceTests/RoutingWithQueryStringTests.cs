@@ -85,7 +85,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/odata/customers", $"?$filter=Name eq 'Sam", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/odata/customers", "?$filter=Name%20eq%20'Sam'", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/odata/customers?$filter=Name eq 'Sam' "))
@@ -244,7 +244,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                if ((context.Request.PathBase.Value != basePath || context.Request.Path.Value != basePath) || context.Request.QueryString.Value != queryString)
+                if ((context.Request.PathBase.Value != basePath) || context.Request.QueryString.Value != queryString)
                 {
                     context.Response.StatusCode = 500;
                     await context.Response.WriteAsync("downstream path didnt match base path");
