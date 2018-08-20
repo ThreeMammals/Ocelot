@@ -38,7 +38,10 @@ namespace Ocelot.Responder
 
             var content = await response.Content.ReadAsStreamAsync();
 
-            AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ content.Length.ToString() }) );
+            if(response.Content.Headers.ContentLength != null)
+            {
+                AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ response.Content.Headers.ContentLength.ToString() }) );
+            }
 
             context.Response.OnStarting(state =>
             {

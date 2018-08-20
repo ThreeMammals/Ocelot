@@ -62,6 +62,37 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        public void should_match_everything_in_path_with_query()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            {
+                new PlaceholderNameAndValue("{everything}", "test/toot")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/test/toot"))
+                .And(x => GivenIHaveAQuery("?$filter=Name%20eq%20'Sam'"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{everything}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_match_everything_in_path()
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            {
+                new PlaceholderNameAndValue("{everything}", "test/toot")
+            };
+
+            this.Given(x => x.GivenIHaveAUpstreamPath("/test/toot"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/{everything}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Fact]
         public void can_match_down_stream_url_with_forward_slash_then_placeholder_no_value_is_blank()
         {
             var expectedTemplates = new List<PlaceholderNameAndValue> 
