@@ -85,10 +85,10 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "cmd=instance"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
