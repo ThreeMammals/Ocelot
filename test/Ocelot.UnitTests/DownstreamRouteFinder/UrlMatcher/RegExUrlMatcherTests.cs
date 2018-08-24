@@ -21,6 +21,26 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        public void should_not_match()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/api/v1/aaaaaaaaa/cards"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)/api/v[^/]+/cards$"))
+              .When(x => x.WhenIMatchThePaths())
+              .And(x => x.ThenTheResultIsFalse())
+              .BDDfy();
+        }
+
+        [Fact]
+        public void should_match()
+        {
+            this.Given(x => x.GivenIHaveAUpstreamPath("/api/v1/cards"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)/api/v[^/]+/cards$"))
+              .When(x => x.WhenIMatchThePaths())
+              .And(x => x.ThenTheResultIsTrue())
+              .BDDfy();
+        }
+
+        [Fact]
         public void should_match_path_with_no_query_string()
         {
             const string regExForwardSlashAndOnePlaceHolder = "^(?i)/newThing$";
@@ -36,7 +56,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void should_match_query_string()
         {
-            const string regExForwardSlashAndOnePlaceHolder = "^(?i)/api/subscriptions/.+/updates\\?unitId=.+$";
+            const string regExForwardSlashAndOnePlaceHolder = "^(?i)/api/subscriptions/[^/]+/updates\\?unitId=.+$";
 
             this.Given(x => x.GivenIHaveAUpstreamPath("/api/subscriptions/1/updates"))
                 .And(_ => GivenIHaveAQueryString("?unitId=2"))
@@ -50,7 +70,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void should_match_query_string_with_multiple_params()
         {
-            const string regExForwardSlashAndOnePlaceHolder = "^(?i)/api/subscriptions/.+/updates\\?unitId=.+&productId=.+$";
+            const string regExForwardSlashAndOnePlaceHolder = "^(?i)/api/subscriptions/[^/]+/updates\\?unitId=.+&productId=.+$";
 
             this.Given(x => x.GivenIHaveAUpstreamPath("/api/subscriptions/1/updates?unitId=2"))
                 .And(_ => GivenIHaveAQueryString("?unitId=2&productId=2"))
@@ -87,7 +107,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void should_not_match_issue_134()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("/api/vacancy/1/"))
-              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)/vacancy/.+/$"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)/vacancy/[^/]+/$"))
               .When(x => x.WhenIMatchThePaths())
               .And(x => x.ThenTheResultIsFalse())
               .BDDfy();
@@ -177,7 +197,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void can_match_down_stream_url_with_downstream_template_with_two_place_holders()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/2"))
-                 .Given(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/.+/.+$"))
+                 .Given(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/[^/]+/.+$"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .BDDfy();
@@ -187,7 +207,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void can_match_down_stream_url_with_downstream_template_with_two_place_holders_seperated_by_something()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2"))
-                .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/.+/categories/.+$"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/[^/]+/categories/.+$"))
                 .When(x => x.WhenIMatchThePaths())
                 .Then(x => x.ThenTheResultIsTrue())
                 .BDDfy();
@@ -197,7 +217,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void can_match_down_stream_url_with_downstream_template_with_three_place_holders_seperated_by_something()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2/variant/123"))
-                .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/.+/categories/.+/variant/.+$"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/[^/]+/categories/[^/]+/variant/.+$"))
                 .When(x => x.WhenIMatchThePaths())
                 .Then(x => x.ThenTheResultIsTrue())
                 .BDDfy();
@@ -207,7 +227,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void can_match_down_stream_url_with_downstream_template_with_three_place_holders()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/1/categories/2/variant/"))
-                 .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/.+/categories/.+/variant/$"))
+                 .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/[^/]+/categories/[^/]+/variant/$"))
                  .When(x => x.WhenIMatchThePaths())
                  .Then(x => x.ThenTheResultIsTrue())
                  .BDDfy();
@@ -217,7 +237,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void should_ignore_case_sensitivity()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("API/product/products/1/categories/2/variant/"))
-               .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)api/product/products/.+/categories/.+/variant/$"))
+               .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^(?i)api/product/products/[^/]+/categories/[^/]+/variant/$"))
                .When(x => x.WhenIMatchThePaths())
                .Then(x => x.ThenTheResultIsTrue())
                .BDDfy();
@@ -227,7 +247,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         public void should_respect_case_sensitivity()
         {
             this.Given(x => x.GivenIHaveAUpstreamPath("API/product/products/1/categories/2/variant/"))
-              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/.+/categories/.+/variant/$"))
+              .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^api/product/products/[^/]+/categories/[^/]+/variant/$"))
               .When(x => x.WhenIMatchThePaths())
               .Then(x => x.ThenTheResultIsFalse())
               .BDDfy();
@@ -268,4 +288,4 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
             _containsQueryString = true;
         }
     }
-} 
+}
