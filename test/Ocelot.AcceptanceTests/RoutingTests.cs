@@ -22,6 +22,41 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_not_match_forward_slash_in_pattern_before_next_forward_slash()
+        {
+            var port = 31879;
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/v{apiVersion}/cards",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/api/v{apiVersion}/cards",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                }
+                            },
+                            Priority = 1
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/aaaaaaaaa/cards", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/aaaaaaaaa/cards"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_404_when_no_configuration_at_all()
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(new FileConfiguration()))
