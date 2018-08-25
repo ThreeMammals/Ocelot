@@ -225,7 +225,7 @@
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081"))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?cmd=instance"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1"))
                 .BDDfy();
         }
 
@@ -255,7 +255,7 @@
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?Tom=test&laura=1"))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1&cmd=instance"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1"))
                 .BDDfy();
         }
 

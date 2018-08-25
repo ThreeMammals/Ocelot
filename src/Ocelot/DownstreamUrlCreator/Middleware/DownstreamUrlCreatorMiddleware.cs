@@ -117,24 +117,12 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             var query = context.DownstreamRequest.Query;           
             var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
-
-            if (RequestForStatefullService(query))
-            {
-                return (serviceFabricPath, query);
-            }
-
-            var split = string.IsNullOrEmpty(query) ? "?" : "&";
-            return (serviceFabricPath, $"{query}{split}cmd=instance");
+            return (serviceFabricPath, query);
         }
 
         private static bool ServiceFabricRequest(DownstreamContext context)
         {
             return context.Configuration.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery;
-        }
-
-        private static bool RequestForStatefullService(string query)
-        {
-            return query.Contains("PartitionKind") && query.Contains("PartitionKey");
         }
     }
 }
