@@ -523,13 +523,7 @@ namespace Ocelot.AcceptanceTests
                             }
                         },
                         UpstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions()
-                        {
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak = 5,
-                            TimeoutValue = 5000
-                        }
+                        UpstreamHttpMethod = new List<string> { "Get" }
                     }
                 }
             };

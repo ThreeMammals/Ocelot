@@ -9,13 +9,18 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Validator
 {
+    using System;
+
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider)
+        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider serviceProvider)
         {
             RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider));
-                
+                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, serviceProvider));
+
+            RuleFor(configuration => configuration.GlobalConfiguration)
+                .SetValidator(new FileGlobalConfigurationFluentValidator(serviceProvider));
+
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");

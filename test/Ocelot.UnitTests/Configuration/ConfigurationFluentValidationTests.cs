@@ -15,6 +15,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using Microsoft.Extensions.DependencyInjection;
+
     public class ConfigurationFluentValidationTests
     {
         private readonly IConfigurationValidator _configurationValidator;
@@ -25,7 +27,9 @@ namespace Ocelot.UnitTests.Configuration
         public ConfigurationFluentValidationTests()
         {
             _provider = new Mock<IAuthenticationSchemeProvider>();
-            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object);
+            var provider = new ServiceCollection()
+                .BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object, provider);
         }
 
         [Fact]

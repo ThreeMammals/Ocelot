@@ -4,6 +4,7 @@ namespace Ocelot.Requester
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using Logging;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Configuration;
     using Ocelot.Responses;
@@ -14,18 +15,21 @@ namespace Ocelot.Requester
         private readonly ITracingHandlerFactory _tracingFactory;
         private readonly IQoSFactory _qoSFactory;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IOcelotLogger _logger;
 
         public DelegatingHandlerHandlerFactory(
             ITracingHandlerFactory tracingFactory,
             IQoSFactory qoSFactory,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IOcelotLoggerFactory loggerFactory)
         {
+            _logger = loggerFactory.CreateLogger<DelegatingHandlerHandlerFactory>();
             _serviceProvider = serviceProvider;
             _tracingFactory = tracingFactory;
             _qoSFactory = qoSFactory;
         }
 
-        public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute request)
+        public Response<List<Func<DelegatingHandler>>> Get(DownstreamReRoute downstreamReRoute)
         {
             var globalDelegatingHandlers = _serviceProvider
                 .GetServices<GlobalDelegatingHandler>()
@@ -39,7 +43,7 @@ namespace Ocelot.Requester
 
             foreach (var handler in globalDelegatingHandlers)
             {
-                if (GlobalIsInHandlersConfig(request, handler))
+                if (GlobalIsInHandlersConfig(downstreamReRoute, handler))
                 {
                     reRouteSpecificHandlers.Add(handler.DelegatingHandler);
                 }
@@ -49,9 +53,9 @@ namespace Ocelot.Requester
                 }
             }
 
-            if (request.DelegatingHandlers.Any())
+            if (downstreamReRoute.DelegatingHandlers.Any())
             {
-                var sorted = SortByConfigOrder(request, reRouteSpecificHandlers);
+                var sorted = SortByConfigOrder(downstreamReRoute, reRouteSpecificHandlers);
 
                 foreach (var handler in sorted)
                 {
@@ -59,14 +63,14 @@ namespace Ocelot.Requester
                 }
             }
 
-            if (request.HttpHandlerOptions.UseTracing)
+            if (downstreamReRoute.HttpHandlerOptions.UseTracing)
             {
                 handlers.Add(() => (DelegatingHandler)_tracingFactory.Get());
             }
 
-            if (request.QosOptions.UseQos)
+            if (downstreamReRoute.QosOptions.UseQos)
             {
-                var handler = _qoSFactory.Get(request);
+                var handler = _qoSFactory.Get(downstreamReRoute);
 
                 if (handler != null && !handler.IsError)
                 {
@@ -74,7 +78,8 @@ namespace Ocelot.Requester
                 }
                 else
                 {
-                    return new ErrorResponse<List<Func<DelegatingHandler>>>(handler?.Errors);
+                    _logger.LogWarning($"ReRoute {downstreamReRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
+                    handlers.Add(() => new NoQosDelegatingHandler());
                 }
             }
 

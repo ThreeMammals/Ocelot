@@ -22,7 +22,8 @@ namespace Ocelot.UnitTests.Requester
     {
         private DelegatingHandlerHandlerFactory _factory;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private DownstreamReRoute _request;
+        private readonly Mock<IOcelotLogger> _logger;
+        private DownstreamReRoute _downstreamReRoute;
         private Response<List<Func<DelegatingHandler>>> _result;
         private readonly Mock<IQoSFactory> _qosFactory;
         private readonly Mock<ITracingHandlerFactory> _tracingFactory;
@@ -36,6 +37,8 @@ namespace Ocelot.UnitTests.Requester
             _tracingFactory = new Mock<ITracingHandlerFactory>();
             _qosFactory = new Mock<IQoSFactory>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
+            _logger = new Mock<IOcelotLogger>();
+            _loggerFactory.Setup(x => x.CreateLogger<DelegatingHandlerHandlerFactory>()).Returns(_logger.Object);
             _services = new ServiceCollection();
             _services.AddSingleton(_qosDelegate);
         }
@@ -300,7 +303,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_error()
+        public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -310,14 +313,58 @@ namespace Ocelot.UnitTests.Requester
 
             var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true)).WithLoadBalancerKey("").Build();
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true))
+                .WithLoadBalancerKey("")
+                .Build();
 
             this.Given(x => GivenTheFollowingRequest(reRoute))
                 .And(x => GivenTheQosFactoryReturnsError())
-                .And(x => GivenTheServiceProviderReturnsNothing())
+                .And(x => GivenTheTracingFactoryReturns())
+                .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
                 .When(x => WhenIGet())
-                .Then(x => ThenAnErrorIsReturned())
+                .Then(x => ThenThereIsDelegatesInProvider(4))
+                .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
+                .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
+                .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
+                .And(x => ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3))
+                .And(_ => ThenTheWarningIsLogged())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .WithTimeoutValue(1)
+                .WithDurationOfBreak(1)
+                .WithExceptionsAllowedBeforeBreaking(1)
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true))
+                .WithLoadBalancerKey("")
+                .Build();
+
+            this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturnsNull())
+                .And(x => GivenTheTracingFactoryReturns())
+                .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .When(x => WhenIGet())
+                .Then(x => ThenThereIsDelegatesInProvider(4))
+                .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
+                .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
+                .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
+                .And(x => ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3))
+                .And(_ => ThenTheWarningIsLogged())
+                .BDDfy();
+        }
+
+        private void ThenTheWarningIsLogged()
+        {
+            _logger.Verify(x => x.LogWarning($"ReRoute {_downstreamReRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!"), Times.Once);
         }
 
         private void ThenHandlerAtPositionIs<T>(int pos)
@@ -396,6 +443,13 @@ namespace Ocelot.UnitTests.Requester
                 .Returns(new ErrorResponse<DelegatingHandler>(new AnyError()));
         }
 
+        private void GivenTheQosFactoryReturnsNull()
+        {
+            _qosFactory
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
+                .Returns((ErrorResponse<DelegatingHandler>)null);
+        }
+
         private void ThenItIsQosHandler(int i)
         {
             var delegates = _result.Data;
@@ -411,14 +465,14 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheFollowingRequest(DownstreamReRoute request)
         {
-            _request = request;
+            _downstreamReRoute = request;
         }
 
         private void WhenIGet()
         {
             _serviceProvider = _services.BuildServiceProvider();
-            _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider);
-            _result = _factory.Get(_request);
+            _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
+            _result = _factory.Get(_downstreamReRoute);
         }
 
         private void ThenNoDelegatesAreInTheProvider()
