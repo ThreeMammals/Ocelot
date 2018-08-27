@@ -89,22 +89,6 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
-        private void GivenARealCache()
-        {
-            _realCache = new MemoryHttpClientCache();
-            _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
-        }
-
-        private void ThenTheHttpClientIsFromTheCache()
-        {
-            _againHttpClient.ShouldBe(_firstHttpClient);
-        }
-
-        private void WhenISave()
-        {
-            _builder.Save();
-        }
-
         [Fact]
         public void should_log_if_ignoring_ssl_errors()
         {
@@ -214,9 +198,25 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        private void GivenARealCache()
+        {
+            _realCache = new MemoryHttpClientCache();
+            _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
+        }
+
+        private void ThenTheHttpClientIsFromTheCache()
+        {
+            _againHttpClient.ShouldBe(_firstHttpClient);
+        }
+
+        private void WhenISave()
+        {
+            _builder.Save();
+        }
+
         private void GivenCacheIsCalledWithExpectedKey(string expectedKey)
         {
-            this._cacheHandlers.Verify(x => x.Get(It.Is<string>(p => p.Equals(expectedKey, StringComparison.OrdinalIgnoreCase))), Times.Once);
+            _cacheHandlers.Verify(x => x.Get(It.Is<string>(p => p.Equals(expectedKey, StringComparison.OrdinalIgnoreCase))), Times.Once);
         }
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()

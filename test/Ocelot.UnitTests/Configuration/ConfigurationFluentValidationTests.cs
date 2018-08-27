@@ -1,23 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Moq;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Validator;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.Configuration
+﻿namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Text.Encodings.Web;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
+    using Moq;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Validator;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Requester;
+    using Requester;
+
     public class ConfigurationFluentValidationTests
     {
-        private readonly IConfigurationValidator _configurationValidator;
+        private IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
         private readonly Mock<IAuthenticationSchemeProvider> _provider;
@@ -25,7 +28,9 @@ namespace Ocelot.UnitTests.Configuration
         public ConfigurationFluentValidationTests()
         {
             _provider = new Mock<IAuthenticationSchemeProvider>();
-            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object);
+            var provider = new ServiceCollection()
+                .BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object, provider);
         }
 
         [Fact]
@@ -1044,6 +1049,15 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new AuthenticationScheme(name, name, typeof(TestHandler))
             });
+        }
+
+        private void GivenAQosDelegate()
+        {
+            var services = new ServiceCollection();
+            QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
+            services.AddSingleton<QosDelegatingHandlerDelegate>(del);
+            var provider = services.BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider.Object, provider);
         }
 
         private class TestOptions : AuthenticationSchemeOptions
