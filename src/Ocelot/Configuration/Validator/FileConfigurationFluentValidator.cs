@@ -10,16 +10,18 @@ using System.Threading.Tasks;
 namespace Ocelot.Configuration.Validator
 {
     using System;
+    using Microsoft.Extensions.DependencyInjection;
+    using Requester;
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider serviceProvider)
-        {
-            RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, serviceProvider));
+        private readonly IServiceProvider _provider;
 
-            RuleFor(configuration => configuration.GlobalConfiguration)
-                .SetValidator(new FileGlobalConfigurationFluentValidator(serviceProvider));
+        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider provider)
+        {
+            _provider = provider;
+            RuleFor(configuration => configuration.ReRoutes)
+                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, provider));
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))

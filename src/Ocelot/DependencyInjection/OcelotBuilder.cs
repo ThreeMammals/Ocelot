@@ -45,13 +45,10 @@ namespace Ocelot.DependencyInjection
         {
             Configuration = configurationRoot;
             Services = services;
-
             Services.Configure<FileConfiguration>(configurationRoot);
-            
-            //default no caches...
-            Services.TryAddSingleton<IOcelotCache<FileConfiguration>, NoCache<FileConfiguration>>();
-            Services.TryAddSingleton<IOcelotCache<CachedResponse>, NoCache<CachedResponse>>();
 
+            Services.TryAddSingleton<IOcelotCache<FileConfiguration>, InMemoryCache<FileConfiguration>>();
+            Services.TryAddSingleton<IOcelotCache<CachedResponse>, InMemoryCache<CachedResponse>>();
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
             Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
             Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
@@ -105,6 +102,18 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
+            Services.TryAddSingleton<IMultiplexer, Multiplexer>();
+            Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
+            Services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
+            Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
+            Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
+            Services.TryAddSingleton<IPlaceholders, Placeholders>();
+            Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
+            Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
+            Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
+            Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
+            Services.TryAddSingleton<IQoSFactory, QoSFactory>();
+            Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
 
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
@@ -118,19 +127,6 @@ namespace Ocelot.DependencyInjection
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
             Services.AddWebEncoders();
-
-            Services.TryAddSingleton<IMultiplexer, Multiplexer>();
-            Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
-            Services.AddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
-            Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
-            Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
-            Services.TryAddSingleton<IPlaceholders, Placeholders>();
-            Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
-            Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
-            Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
-            Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
-            Services.TryAddSingleton<IQoSFactory, QoSFactory>();
-            Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>() 

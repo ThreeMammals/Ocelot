@@ -7,14 +7,18 @@
     using System.Threading;
     using System.Threading.Tasks;
     using System;
+    using Microsoft.Extensions.DependencyInjection;
+    using Requester;
 
     public class ReRouteFluentValidator : AbstractValidator<FileReRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider serviceProvider)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
+            _serviceProvider = serviceProvider;
 
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
                 .Must(path => path.StartsWith("/"))
@@ -62,9 +66,6 @@
                 RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
                     .SetCollectionValidator(new HostAndPortValidator());
             });
-
-            RuleFor(configuration => configuration.QoSOptions)
-                .SetValidator(new FileQoSOptionsFluentValidator(serviceProvider));
         }
 
         private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions, CancellationToken cancellationToken)
