@@ -11,6 +11,12 @@ namespace Ocelot.Configuration.Validator
             Errors = new List<Error>();
         }
 
+        public ConfigurationValidationResult(bool isError, Error error)
+        {
+            IsError = isError;
+            Errors = new List<Error> { error };
+        }
+
         public ConfigurationValidationResult(bool isError, List<Error> errors)
         {
             IsError = isError;
