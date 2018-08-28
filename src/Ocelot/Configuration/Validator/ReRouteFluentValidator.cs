@@ -13,12 +13,15 @@
     public class ReRouteFluentValidator : AbstractValidator<FileReRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
 
-        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider serviceProvider)
+        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, QosDelegatingHandlerDelegate qosDelegatingHandlerDelegate)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
-            _serviceProvider = serviceProvider;
+            _qosDelegatingHandlerDelegate = qosDelegatingHandlerDelegate;
+
+            RuleFor(reRoute => reRoute.QoSOptions)
+                .SetValidator(new FileQoSOptionsFluentValidator(_qosDelegatingHandlerDelegate));
 
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
                 .Must(path => path.StartsWith("/"))

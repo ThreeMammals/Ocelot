@@ -22,7 +22,10 @@ namespace Ocelot.Configuration.Validator
             _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
 
             RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, provider));
+                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, _qosDelegatingHandlerDelegate));
+
+            RuleFor(configuration => configuration.GlobalConfiguration)
+                .SetValidator(new FileGlobalConfigurationFluentValidator(_qosDelegatingHandlerDelegate));
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
@@ -47,11 +50,6 @@ namespace Ocelot.Configuration.Validator
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
         {
-            if (HasQos(configuration) && _qosDelegatingHandlerDelegate == null)
-            {
-                return new OkResponse<ConfigurationValidationResult>(new ConfigurationValidationResult(true, new FileValidationFailedError("Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container.")));
-            }
-
             var validateResult = await ValidateAsync(configuration);
 
             if (validateResult.IsValid)
@@ -64,11 +62,6 @@ namespace Ocelot.Configuration.Validator
             var result = new ConfigurationValidationResult(true, errors.Cast<Error>().ToList());
 
             return new OkResponse<ConfigurationValidationResult>(result);
-        }
-
-        private bool HasQos(FileConfiguration configuration)
-        {
-            return configuration.ReRoutes.Any(x => x.QoSOptions.TimeoutValue > 0 && x.QoSOptions.ExceptionsAllowedBeforeBreaking > 0) || (configuration.GlobalConfiguration.QoSOptions.TimeoutValue > 0 && configuration.GlobalConfiguration.QoSOptions.ExceptionsAllowedBeforeBreaking > 0);
         }
 
         private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)

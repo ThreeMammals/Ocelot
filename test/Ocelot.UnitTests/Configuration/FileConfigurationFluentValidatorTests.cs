@@ -147,7 +147,7 @@
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?"))
                 .BDDfy();
         }
 
@@ -189,7 +189,7 @@
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?"))
                 .BDDfy();
         }
 
