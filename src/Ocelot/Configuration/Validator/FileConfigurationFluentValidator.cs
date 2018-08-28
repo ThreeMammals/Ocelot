@@ -15,13 +15,17 @@ namespace Ocelot.Configuration.Validator
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        private readonly IServiceProvider _provider;
+        private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
 
         public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider provider)
         {
-            _provider = provider;
+            _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+
             RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, provider));
+                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, _qosDelegatingHandlerDelegate));
+
+            RuleFor(configuration => configuration.GlobalConfiguration)
+                .SetValidator(new FileGlobalConfigurationFluentValidator(_qosDelegatingHandlerDelegate));
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
@@ -44,13 +48,6 @@ namespace Ocelot.Configuration.Validator
                 .WithMessage((config, aggregateReRoute) => $"{nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} contains ReRoute with specific RequestIdKey, this is not possible with Aggregates");
         }
 
-        private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)
-        {
-            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
-
-            return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
-        }
-
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
         {
             var validateResult = await ValidateAsync(configuration);
@@ -67,7 +64,14 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
-        private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute, 
+        private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)
+        {
+            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
+
+            return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
+        }
+
+        private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute,
             List<FileReRoute> reRoutes)
         {
             var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
@@ -75,15 +79,15 @@ namespace Ocelot.Configuration.Validator
             return reRoutesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }
 
-        private static bool IsNotDuplicateIn(FileReRoute reRoute, 
+        private static bool IsNotDuplicateIn(FileReRoute reRoute,
             List<FileReRoute> reRoutes)
         {
             var matchingReRoutes = reRoutes
-                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate 
+                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
                             && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null))
                 .ToList();
 
-            if(matchingReRoutes.Count == 1)
+            if (matchingReRoutes.Count == 1)
             {
                 return true;
             }
