@@ -336,7 +336,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
@@ -353,7 +352,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
@@ -828,7 +826,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
@@ -845,7 +842,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
