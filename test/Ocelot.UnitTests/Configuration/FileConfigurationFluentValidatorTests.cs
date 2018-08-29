@@ -37,6 +37,40 @@
         }
 
         [Fact]
+        public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UseServiceDiscovery = true,
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "ServiceFabric",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
         public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_discovery_handler()
         {
             var configuration = new FileConfiguration
@@ -58,7 +92,7 @@
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
-                        Type = "consul",
+                        Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
                     }
                 }
@@ -81,7 +115,7 @@
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
-                        Type = "consul",
+                        Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
                     }
                 }
@@ -116,7 +150,7 @@
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
-                        Type = "consul",
+                        Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
                     }
                 }
@@ -140,6 +174,42 @@
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
+                        Type = "FakeServiceDiscoveryProvider",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler_with_matching_name()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UseServiceDiscovery = true,
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
                         Type = "consul",
                         Port = 8500
                     }
@@ -148,6 +218,7 @@
 
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
+                .And(x => x.GivenAServiceDiscoveryHandler())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
@@ -1126,6 +1197,15 @@
                         UseServiceDiscovery = true,
                         ServiceName = serviceName
                     }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Type = "serviefabric",
+                        Host = "localhost",
+                        Port = 1234
+                    }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -1148,6 +1228,15 @@
                         UpstreamHttpMethod = new List<string> {"Get"},
                         UseServiceDiscovery = true,
                         ServiceName = "Test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Type = "servicefabric",
+                        Host = "localhost",
+                        Port = 1234
                     }
                 }
             }))
