@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
-using Ocelot.Configuration;
-
-namespace Ocelot.LoadBalancer.LoadBalancers
+﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
+    using System.Threading.Tasks;
+    using Ocelot.Configuration;
+    using Ocelot.Responses;
+
     public interface ILoadBalancerFactory
     {
-        Task<ILoadBalancer> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config);
+        Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config);
     }
 }

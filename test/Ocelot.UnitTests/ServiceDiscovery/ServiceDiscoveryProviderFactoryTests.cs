@@ -14,11 +14,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Responses;
 
-    public class ServiceProviderFactoryTests
+    public class ServiceDiscoveryProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
-        private IServiceDiscoveryProvider _result;
+        private Response<IServiceDiscoveryProvider> _result;
         private ServiceDiscoveryProviderFactory _factory;
         private DownstreamReRoute _reRoute;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
@@ -26,7 +27,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private IServiceProvider _provider;
         private readonly IServiceCollection _collection;
 
-        public ServiceProviderFactoryTests()
+        public ServiceDiscoveryProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
@@ -71,7 +72,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_call_delegate()
+        public void should_return_provider_because_type_matches_reflected_type_from_delegate()
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithServiceName("product")
@@ -79,12 +80,32 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType(nameof(Fake))
                 .Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .And(x => GivenAFakeDelegate())
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheDelegateIsCalled())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_return_provider_because_type_doesnt_match_reflected_type_from_delegate()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("Wookie")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .And(x => GivenAFakeDelegate())
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheResultIsError())
                 .BDDfy();
         }
 
@@ -124,12 +145,17 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private void ThenTheDelegateIsCalled()
         {
-            _result.GetType().Name.ShouldBe("Fake");
+            _result.Data.GetType().Name.ShouldBe("Fake");
+        }
+
+        private void ThenTheResultIsError()
+        {
+            _result.IsError.ShouldBeTrue();
         }
 
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
-            var result = (ConfigurationServiceProvider)_result;
+            var result = (ConfigurationServiceProvider)_result.Data;
             var services = result.Get().Result;
             
             for (int i = 0; i < services.Count; i++)
@@ -155,7 +181,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private void ThenTheServiceProviderIs<T>()
         {
-            _result.ShouldBeOfType<T>();
+            _result.Data.ShouldBeOfType<T>();
         }
     }
 }

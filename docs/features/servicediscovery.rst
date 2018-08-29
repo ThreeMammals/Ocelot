@@ -105,7 +105,8 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
         "Port": 8500,
-        "Token": "footoken"
+        "Token": "footoken",
+        "Type": "Consul"
     }
 
 Ocelot will add this token to the consul client that it uses to make requests and that is then used for every request.
@@ -232,6 +233,7 @@ Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting r
             "ServiceDiscoveryProvider": {
                 "Host": "localhost",
                 "Port": 8523,
+                "Type": "Consul"
             },
             "RateLimitOptions": {
                 "ClientIdHeader": "ClientId",
