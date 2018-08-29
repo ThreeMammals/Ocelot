@@ -13,16 +13,14 @@ namespace Ocelot.ServiceDiscovery
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
-        private readonly List<ServiceDiscoveryFinderDelegate> _delegates;
+        private readonly ServiceDiscoveryFinderDelegate _delegates;
         private readonly IServiceProvider _provider;
 
         public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
         {
             _factory = factory;
             _provider = provider;
-            _delegates = provider
-                .GetServices<ServiceDiscoveryFinderDelegate>()
-                .ToList();
+            _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
         }
 
         public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
@@ -37,7 +35,7 @@ namespace Ocelot.ServiceDiscovery
             foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
                 var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
-                
+
                 services.Add(service);
             }
 
@@ -52,13 +50,9 @@ namespace Ocelot.ServiceDiscovery
                 return new ServiceFabricServiceDiscoveryProvider(sfConfig);
             }
 
-            foreach (var serviceDiscoveryFinderDelegate in _delegates)
+            if (_delegates != null)
             {
-                var provider = serviceDiscoveryFinderDelegate?.Invoke(_provider, config, key);
-                if (provider != null)
-                {
-                    return provider;
-                }
+                return _delegates?.Invoke(_provider, config, key);
             }
 
             return null;
