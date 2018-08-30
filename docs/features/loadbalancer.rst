@@ -18,7 +18,7 @@ You must choose in your configuration which load balancer to use.
 Configuration
 ^^^^^^^^^^^^^
 
-The following shows how to set up multiple downstream services for a ReRoute using ocelot.json and then select the LeadConnection load balancer. This is the simplest way to get load balancing set up.
+The following shows how to set up multiple downstream services for a ReRoute using ocelot.json and then select the LeastConnection load balancer. This is the simplest way to get load balancing set up.
 
 .. code-block:: json
 
@@ -46,7 +46,7 @@ The following shows how to set up multiple downstream services for a ReRoute usi
 Service Discovery
 ^^^^^^^^^^^^^^^^^
 
-The following shows how to set up a ReRoute using service discovery then select the LeadConnection load balancer.
+The following shows how to set up a ReRoute using service discovery then select the LeastConnection load balancer.
 
 .. code-block:: json
 
