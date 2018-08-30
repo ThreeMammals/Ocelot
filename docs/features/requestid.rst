@@ -8,7 +8,7 @@ Ocelot will also forward the request id with the specified header to the downstr
 You can still get the asp.net core request id in the logs if you set 
 IncludeScopes true in your logging config.
 
-In order to use the reques tid feature you have two options.
+In order to use the request id feature you have two options.
 
 *Global*
 
