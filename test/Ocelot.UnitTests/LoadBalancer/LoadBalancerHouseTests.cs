@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void WhenIGetTheReRouteWithTheSameKeyButDifferentLoadBalancer(DownstreamReRoute reRoute)
         {
             _reRoute = reRoute;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new LeastConnection(null, null));
+            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new OkResponse<ILoadBalancer>(new LeastConnection(null, null)));
             _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig).Result;
         }
 
@@ -138,7 +138,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _reRoute = reRoute;
             _loadBalancer = loadBalancer;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(loadBalancer);
+            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new OkResponse<ILoadBalancer>(loadBalancer));
             _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig).Result;
         }
 

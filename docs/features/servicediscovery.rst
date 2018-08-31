@@ -36,7 +36,7 @@ will be used.
 In the future we can add a feature that allows ReRoute specfic configuration. 
 
 In order to tell Ocelot a ReRoute is to use the service discovery provider for its host and port you must add the 
-ServiceName, UseServiceDiscovery and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin
+ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin
 and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
 
 .. code-block:: json
@@ -50,7 +50,6 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
         "LoadBalancerOptions": {
             "Type": "LeastConnection"
         },
-        "UseServiceDiscovery": true
     }
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
@@ -105,7 +104,8 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
     "ServiceDiscoveryProvider": {
         "Host": "localhost",
         "Port": 8500,
-        "Token": "footoken"
+        "Token": "footoken",
+        "Type": "Consul"
     }
 
 Ocelot will add this token to the consul client that it uses to make requests and that is then used for every request.
@@ -232,6 +232,7 @@ Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting r
             "ServiceDiscoveryProvider": {
                 "Host": "localhost",
                 "Port": 8523,
+                "Type": "Consul"
             },
             "RateLimitOptions": {
                 "ClientIdHeader": "ClientId",

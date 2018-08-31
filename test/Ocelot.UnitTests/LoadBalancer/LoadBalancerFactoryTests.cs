@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Ocelot.ServiceDiscovery.Providers;
 using TestStack.BDDfy;
 using Xunit;
+using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
@@ -15,7 +16,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private DownstreamReRoute _reRoute;
         private readonly LoadBalancerFactory _factory;
-        private ILoadBalancer _result;
+        private Response<ILoadBalancer> _result;
         private readonly Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private ServiceProviderConfiguration _serviceProviderConfig;
@@ -115,7 +116,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _serviceProviderFactory
                 .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()))
-                .Returns(_serviceProvider.Object);
+                .Returns(new OkResponse<IServiceDiscoveryProvider>(_serviceProvider.Object));
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()
@@ -136,7 +137,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenTheLoadBalancerIsReturned<T>()
         {
-            _result.ShouldBeOfType<T>();
+            _result.Data.ShouldBeOfType<T>();
         }
     }
 }

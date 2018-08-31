@@ -11,15 +11,19 @@ namespace Ocelot.Configuration.Validator
 {
     using System;
     using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.ServiceDiscovery;
     using Requester;
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
         private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
-
+        private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
         public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider provider)
         {
             _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+            _serviceDiscoveryFinderDelegates = provider
+                .GetServices<ServiceDiscoveryFinderDelegate>()
+                .ToList();
 
             RuleFor(configuration => configuration.ReRoutes)
                 .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, _qosDelegatingHandlerDelegate));
@@ -30,6 +34,14 @@ namespace Ocelot.Configuration.Validator
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
+
+            RuleForEach(configuration => configuration.ReRoutes)
+                .Must((config, reRoute) => HaveServiceDiscoveryProviderRegitered(reRoute, config.GlobalConfiguration.ServiceDiscoveryProvider))
+                .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
+
+            RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
+                .Must((config) => HaveServiceDiscoveryProviderRegitered(config))
+                .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.Aggregates))
@@ -46,6 +58,41 @@ namespace Ocelot.Configuration.Validator
             RuleForEach(configuration => configuration.Aggregates)
                 .Must((config, aggregateReRoute) => DoesNotContainReRoutesWithSpecificRequestIdKeys(aggregateReRoute, config.ReRoutes))
                 .WithMessage((config, aggregateReRoute) => $"{nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} contains ReRoute with specific RequestIdKey, this is not possible with Aggregates");
+        }
+
+        private bool HaveServiceDiscoveryProviderRegitered(FileReRoute reRoute, FileServiceDiscoveryProvider serviceDiscoveryProvider)
+        {
+            if (string.IsNullOrEmpty(reRoute.ServiceName))
+            {
+                return true;
+            }
+
+            if (serviceDiscoveryProvider?.Type?.ToLower() == "servicefabric")
+            {
+                return true;
+            }
+
+            return _serviceDiscoveryFinderDelegates.Any();
+        }
+
+        private bool HaveServiceDiscoveryProviderRegitered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
+        {
+            if(serviceDiscoveryProvider == null)
+            {
+                return true;
+            }
+            
+            if (serviceDiscoveryProvider?.Type?.ToLower() == "servicefabric")
+            {
+                return true;
+            }
+
+            if(string.IsNullOrEmpty(serviceDiscoveryProvider.Type))
+            {
+                return true;
+            }
+
+            return _serviceDiscoveryFinderDelegates.Any();
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)

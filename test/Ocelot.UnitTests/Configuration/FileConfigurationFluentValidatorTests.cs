@@ -17,6 +17,9 @@
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Requester;
     using Requester;
+    using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Values;
+    using Ocelot.ServiceDiscovery;
 
     public class FileConfigurationFluentValidatorTests
     {
@@ -31,6 +34,191 @@
             var provider = new ServiceCollection()
                 .BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "ServiceFabric",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_discovery_handler()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "FakeServiceDiscoveryProvider",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .And(x => x.GivenAServiceDiscoveryHandler())
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_service_discovery_options_specified_dynamically_and_has_service_discovery_handler()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "FakeServiceDiscoveryProvider",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .And(x => x.GivenAServiceDiscoveryHandler())
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "FakeServiceDiscoveryProvider",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_service_discovery_options_specified_dynamically_but_service_discovery_handler()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "FakeServiceDiscoveryProvider",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler_with_matching_name()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ServiceName = "test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Host = "localhost",
+                        Type = "consul",
+                        Port = 8500
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .And(x => x.GivenAServiceDiscoveryHandler())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
+                .BDDfy();
         }
 
         [Fact]
@@ -151,7 +339,7 @@
                 .BDDfy();
         }
 
-         [Fact]
+        [Fact]
         public void configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
         {
             var configuration = new FileConfiguration
@@ -988,31 +1176,6 @@
                 .BDDfy();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void configuration_is_invalid_with_using_service_discovery_and_no_service_name(string serviceName)
-        {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = true,
-                        ServiceName = serviceName
-                    }
-                }
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!"))
-                .BDDfy();
-        }
-
         [Fact]
         public void configuration_is_valid_with_using_service_discovery_and_service_name()
         {
@@ -1025,8 +1188,16 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = true,
                         ServiceName = "Test"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Type = "servicefabric",
+                        Host = "localhost",
+                        Port = 1234
                     }
                 }
             }))
@@ -1049,7 +1220,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1078,7 +1248,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1106,7 +1275,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1134,7 +1302,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                         }
@@ -1159,7 +1326,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort()
@@ -1218,6 +1384,23 @@
             collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+        }
+
+        private void GivenAServiceDiscoveryHandler()
+        {
+            var collection = new ServiceCollection();
+            ServiceDiscoveryFinderDelegate del = (a,b,c) => new FakeServiceDiscoveryProvider();
+            collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
+            var provider = collection.BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+        }
+
+        private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
+        {
+            public Task<List<Service>> Get()
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
         private class TestOptions : AuthenticationSchemeOptions

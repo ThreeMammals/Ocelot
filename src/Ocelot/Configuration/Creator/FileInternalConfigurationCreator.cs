@@ -224,6 +224,8 @@ namespace Ocelot.Configuration.Creator
 
             var lbOptions = CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
 
+            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
+
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
@@ -249,7 +251,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRateLimitOptions(rateLimitOption)
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
-                .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
+                .WithUseServiceDiscovery(useServiceDiscovery)
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
