@@ -43,7 +43,6 @@ namespace Ocelot.Configuration.File
         public FileRateLimitRule RateLimitOptions { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
-        public bool UseServiceDiscovery { get;set; }
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
         public string UpstreamHost { get; set; }
         public string Key { get;set; }

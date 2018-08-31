@@ -55,17 +55,12 @@
                 .MustAsync(IsSupportedAuthenticationProviders)
                 .WithMessage("{PropertyValue} is unsupported authentication provider");
 
-            When(reRoute => reRoute.UseServiceDiscovery, () => {
-                RuleFor(r => r.ServiceName).NotEmpty()
-                    .WithMessage("ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!");
-                });
-
-            When(reRoute => !reRoute.UseServiceDiscovery, () => {
+            When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
                     .WithMessage("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!");
             });
 
-            When(reRoute => !reRoute.UseServiceDiscovery, () => {
+            When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
                     .SetCollectionValidator(new HostAndPortValidator());
             });

@@ -59,7 +59,6 @@ The following shows how to set up a ReRoute using service discovery then select 
         "LoadBalancerOptions": {
             "Type": "LeastConnection"
         },
-        "UseServiceDiscovery": true
     }
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services. If you add and remove services from the 

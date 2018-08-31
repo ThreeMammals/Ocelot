@@ -64,7 +64,6 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
                 "UseCookieContainer": true,
                 "UseTracing": true
             },
-            "UseServiceDiscovery": false,
             "DangerousAcceptAnyServerCertificateValidator": false
         }
 

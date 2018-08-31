@@ -62,8 +62,7 @@ namespace Ocelot.Configuration.Validator
 
         private bool HaveServiceDiscoveryProviderRegitered(FileReRoute reRoute, FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
-            if (reRoute.UseServiceDiscovery == false
-                && string.IsNullOrEmpty(reRoute.ServiceName))
+            if (string.IsNullOrEmpty(reRoute.ServiceName))
             {
                 return true;
             }

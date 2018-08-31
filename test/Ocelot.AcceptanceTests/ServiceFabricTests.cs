@@ -33,7 +33,6 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/{everything}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            UseServiceDiscovery = true,
                             ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                         }
                     },
@@ -70,7 +69,6 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/EquipmentInterfaces",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            UseServiceDiscovery = true,
                             ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                         }
                     },
@@ -107,7 +105,6 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/EquipmentInterfaces",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                     }
                 },

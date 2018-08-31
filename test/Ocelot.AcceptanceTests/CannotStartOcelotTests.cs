@@ -59,7 +59,6 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "test"
                     }
                 },

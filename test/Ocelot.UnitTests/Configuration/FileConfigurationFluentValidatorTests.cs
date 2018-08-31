@@ -49,7 +49,6 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "test"
                     }
                 },
@@ -83,7 +82,6 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "test"
                     }
                 },
@@ -141,7 +139,6 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "test"
                     }
                 },
@@ -201,7 +198,6 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "test"
                     }
                 },
@@ -1180,40 +1176,6 @@
                 .BDDfy();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void configuration_is_invalid_with_using_service_discovery_and_no_service_name(string serviceName)
-        {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = true,
-                        ServiceName = serviceName
-                    }
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Type = "serviefabric",
-                        Host = "localhost",
-                        Port = 1234
-                    }
-                }
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!"))
-                .BDDfy();
-        }
-
         [Fact]
         public void configuration_is_valid_with_using_service_discovery_and_service_name()
         {
@@ -1226,7 +1188,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = true,
                         ServiceName = "Test"
                     }
                 },
@@ -1259,7 +1220,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1288,7 +1248,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1316,7 +1275,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort
@@ -1344,7 +1302,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                         }
@@ -1369,7 +1326,6 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        UseServiceDiscovery = false,
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new FileHostAndPort()
