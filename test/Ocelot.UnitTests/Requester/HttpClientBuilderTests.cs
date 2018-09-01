@@ -124,7 +124,15 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var reRoute = new DownstreamReRouteBuilder()
+            var reRouteA = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithContainsQueryString(true).WithOriginalValue("").Build())
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
+
+            var reRouteB = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
@@ -134,11 +142,11 @@ namespace Ocelot.UnitTests.Requester
 
             this.Given(x => GivenARealCache())
                 .And(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=1"))
+                .And(x => GivenARequest(reRouteA, "http://wwww.someawesomewebsite.com/woot?badman=1"))
                 .And(x => WhenIBuildTheFirstTime())
                 .And(x => WhenISave())
                 .And(x => WhenIBuildAgain())
-                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=2"))
+                .And(x => GivenARequest(reRouteB, "http://wwww.someawesomewebsite.com/woot?badman=2"))
                 .And(x => WhenISave())
                 .When(x => WhenIBuildAgain())
                 .Then(x => ThenTheHttpClientIsNotFromTheCache())
@@ -281,7 +289,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenCacheIsCalledWithExpectedKey(string expectedKey)
         {
-            _cacheHandlers.Verify(x => x.Get(It.Is<string>(p => p.Equals(expectedKey, StringComparison.OrdinalIgnoreCase))), Times.Once);
+            _cacheHandlers.Verify(x => x.Get(It.IsAny<DownstreamReRoute>()), Times.Once);
         }
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
@@ -291,7 +299,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheClientIsCached()
         {
-            _cacheHandlers.Setup(x => x.Get(It.IsAny<string>())).Returns(_httpClient);
+            _cacheHandlers.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(_httpClient);
         }
 
         private void ThenTheCookieIsSet()

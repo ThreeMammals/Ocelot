@@ -13,7 +13,7 @@ namespace Ocelot.Requester
         private readonly IDelegatingHandlerHandlerFactory _factory;
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
-        private string _cacheKey;
+        private DownstreamReRoute _cacheKey;
         private HttpClient _httpClient;
         private IHttpClient _client;
         private readonly TimeSpan _defaultTimeout;
@@ -34,7 +34,7 @@ namespace Ocelot.Requester
 
         public IHttpClient Create(DownstreamContext context)
         {
-            _cacheKey = GetCacheKey(context);
+            _cacheKey = context.DownstreamReRoute;
 
             var httpClient = _cacheHandlers.Get(_cacheKey);
 
