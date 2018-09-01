@@ -29,6 +29,7 @@
     using static Ocelot.Infrastructure.Wait;
     using Configuration.Repository;
     using Ocelot.Configuration.Creator;
+    using Requester;
     using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
@@ -170,6 +171,35 @@
                 })
                 .ConfigureServices(s =>
                 {
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithFakeHttpClientCache(IHttpClientCache cache)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<IHttpClientCache>(cache);
                     s.AddOcelot();
                 })
                 .Configure(app =>

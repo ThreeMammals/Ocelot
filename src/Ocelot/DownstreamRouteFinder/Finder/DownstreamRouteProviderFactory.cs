@@ -10,7 +10,7 @@
     public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
     {
         private readonly Dictionary<string, IDownstreamRouteProvider> _providers;
-        private IOcelotLogger _logger;
+        private readonly IOcelotLogger _logger;
         
         public DownstreamRouteProviderFactory(IServiceProvider provider, IOcelotLoggerFactory factory)
         {
@@ -22,7 +22,7 @@
         {
             //todo - this is a bit hacky we are saying there are no reRoutes or there are reRoutes but none of them have
             //an upstream path template which means they are dyanmic and service discovery is on...
-            if((!config.ReRoutes.Any() || config.ReRoutes.All(x => string.IsNullOrEmpty(x.UpstreamPathTemplate.Value))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
+            if((!config.ReRoutes.Any() || config.ReRoutes.All(x => string.IsNullOrEmpty(x.UpstreamTemplatePattern?.OriginalValue))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
             {
                 _logger.LogInformation($"Selected {nameof(DownstreamRouteCreator)} as DownstreamRouteProvider for this request");
                 return _providers[nameof(DownstreamRouteCreator)];

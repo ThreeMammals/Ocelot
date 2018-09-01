@@ -50,14 +50,21 @@ namespace Ocelot.UnitTests.RateLimit
         [Fact]
         public void should_call_middleware_and_ratelimiting()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
-                 new ReRouteBuilder()
-                     .WithDownstreamReRoute(new DownstreamReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
-                             new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
-                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                         .Build())
-                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                     .Build());
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithEnableRateLimiting(true)
+                .WithRateLimitOptions(new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamTemplatePattern(upstreamTemplate)
+                .Build();
+
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
+                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .Build();
+
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(), reRoute);
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .When(x => x.WhenICallTheMiddlewareMultipleTime(2))

@@ -11,7 +11,6 @@ namespace Ocelot.Configuration.Builder
         private AuthenticationOptions _authenticationOptions;
         private string _loadBalancerKey;
         private string _downstreamPathTemplate;
-        private string _upstreamTemplate;
         private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private bool _isAuthenticated;
@@ -76,12 +75,6 @@ namespace Ocelot.Configuration.Builder
         public DownstreamReRouteBuilder WithDownstreamPathTemplate(string input)
         {
             _downstreamPathTemplate = input;
-            return this;
-        }
-
-        public DownstreamReRouteBuilder WithUpstreamPathTemplate(string input)
-        {
-            _upstreamTemplate = input;
             return this;
         }
 
@@ -245,7 +238,7 @@ namespace Ocelot.Configuration.Builder
         {
             return new DownstreamReRoute(
                 _key,
-                new PathTemplate(_upstreamTemplate),
+                _upstreamTemplatePattern,
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace, 
                 _downstreamAddresses,
@@ -267,7 +260,7 @@ namespace Ocelot.Configuration.Builder
                 _isAuthenticated, 
                 _isAuthorised, 
                 _authenticationOptions, 
-                new PathTemplate(_downstreamPathTemplate),
+                new DownstreamPathTemplate(_downstreamPathTemplate),
                 _loadBalancerKey,
                 _delegatingHandlers,
                 _addHeadersToDownstream,

@@ -50,6 +50,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
@@ -57,6 +59,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -76,6 +79,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
@@ -83,6 +88,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -101,6 +107,8 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void http_client_request_times_out()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
@@ -108,6 +116,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 
@@ -132,7 +141,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIGetResponse()
         {
-            _response = _httpClientRequester.GetResponse(_request).Result;
+            _response = _httpClientRequester.GetResponse(_request).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseIsCalledCorrectly()

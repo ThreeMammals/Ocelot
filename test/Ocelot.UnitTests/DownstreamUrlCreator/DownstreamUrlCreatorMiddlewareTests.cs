@@ -296,7 +296,7 @@
                 .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
                 .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                 .WithDownstreamScheme("http")
-                .WithUpstreamPathTemplate("/uc/Authorized/{server}/{action}")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -350,7 +350,7 @@
         {
             _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(path));
             _downstreamUrlTemplateVariableReplacer
-                .Setup(x => x.Replace(It.IsAny<PathTemplate>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+                .Setup(x => x.Replace(It.IsAny<DownstreamPathTemplate>(), It.IsAny<List<PlaceholderNameAndValue>>()))
                 .Returns(_downstreamPath);
         }
 

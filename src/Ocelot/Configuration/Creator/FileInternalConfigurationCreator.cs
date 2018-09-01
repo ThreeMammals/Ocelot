@@ -166,7 +166,6 @@ namespace Ocelot.Configuration.Creator
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateReRoute);
 
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate(aggregateReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
@@ -182,7 +181,6 @@ namespace Ocelot.Configuration.Creator
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoute(downstreamReRoutes)
@@ -229,7 +227,6 @@ namespace Ocelot.Configuration.Creator
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
-                .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithIsAuthenticated(fileReRouteOptions.IsAuthenticated)
