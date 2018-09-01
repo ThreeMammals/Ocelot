@@ -127,26 +127,5 @@ namespace Ocelot.Requester
                 });
             return httpMessageHandler;
         }
-
-        private string GetCacheKey(DownstreamContext request)
-        {
-            if (request.DownstreamReRoute.UpstreamPathTemplate.ContainsQueryString)
-            {
-                var cacheKey = $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.OriginalString}";
-
-                _logger.LogDebug($"Cache key for request is {cacheKey}");
-
-                return cacheKey;
-            }
-            else
-            {
-                var cacheKey =
-                    $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.Scheme}://{request.DownstreamRequest.Host}:{request.DownstreamRequest.Port}{request.DownstreamRequest.AbsolutePath}";
-
-                _logger.LogDebug($"Cache key for request is {cacheKey}");
-
-                return cacheKey;
-            }
-        }
     }
 }
