@@ -51,7 +51,7 @@ namespace Ocelot.Requester
                 handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
-                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");
+                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamDownstreamPathTemplate: {context.DownstreamReRoute.DownstreamDownstreamPathTemplate}");
             }
 
             var timeout = context.DownstreamReRoute.QosOptions.TimeoutValue == 0
@@ -130,11 +130,23 @@ namespace Ocelot.Requester
 
         private string GetCacheKey(DownstreamContext request)
         {
-            var cacheKey = $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.OriginalString}";
+            if (request.DownstreamReRoute.UpstreamPathTemplate.ContainsQueryString)
+            {
+                var cacheKey = $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.OriginalString}";
 
-            _logger.LogDebug($"Cache key for request is {cacheKey}");
+                _logger.LogDebug($"Cache key for request is {cacheKey}");
 
-            return cacheKey;
+                return cacheKey;
+            }
+            else
+            {
+                var cacheKey =
+                    $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.Scheme}://{request.DownstreamRequest.Host}:{request.DownstreamRequest.Port}{request.DownstreamRequest.AbsolutePath}";
+
+                _logger.LogDebug($"Cache key for request is {cacheKey}");
+
+                return cacheKey;
+            }
         }
     }
 }

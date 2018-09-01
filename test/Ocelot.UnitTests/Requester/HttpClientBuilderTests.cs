@@ -54,6 +54,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -74,6 +75,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -90,6 +92,60 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
+        public void should_get_from_cache_with_different_query_string()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
+
+            this.Given(x => GivenARealCache())
+                .And(x => GivenTheFactoryReturns())
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=1"))
+                .And(x => WhenIBuildTheFirstTime())
+                .And(x => WhenISave())
+                .And(x => WhenIBuildAgain())
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=2"))
+                .And(x => WhenISave())
+                .When(x => WhenIBuildAgain())
+                .Then(x => ThenTheHttpClientIsFromTheCache())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_get_from_cache_with_different_query_string()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithContainsQueryString(true).WithOriginalValue("").Build())
+                .WithQosOptions(new QoSOptionsBuilder().Build())
+                .Build();
+
+            this.Given(x => GivenARealCache())
+                .And(x => GivenTheFactoryReturns())
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=1"))
+                .And(x => WhenIBuildTheFirstTime())
+                .And(x => WhenISave())
+                .And(x => WhenIBuildAgain())
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=2"))
+                .And(x => WhenISave())
+                .When(x => WhenIBuildAgain())
+                .Then(x => ThenTheHttpClientIsNotFromTheCache())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_log_if_ignoring_ssl_errors()
         {
             var qosOptions = new QoSOptionsBuilder()
@@ -99,6 +155,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .WithDangerousAcceptAnyServerCertificateValidator(true)
                 .Build();
@@ -121,6 +178,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -152,6 +210,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -176,9 +235,9 @@ namespace Ocelot.UnitTests.Requester
         [InlineData("PATCH")]
         public void should_add_verb_to_cache_key(string verb)
         {
-            var client = "http://localhost:5012";
+            var downstreamUrl = "http://localhost:5012/";
 
-            HttpMethod method = new HttpMethod(verb);
+            var method = new HttpMethod(verb);
 
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -187,14 +246,15 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
+                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(_ => GivenADownstreamService())
-                .And(_ => GivenARequestWithAUrlAndMethod(reRoute, client, method))
+                .And(_ => GivenARequestWithAUrlAndMethod(reRoute, downstreamUrl, method))
                 .And(_ => GivenTheFactoryReturnsNothing())
                 .And(_ => WhenIBuild())
-                .And(_ => GivenCacheIsCalledWithExpectedKey($"{method.ToString()}:{client}"))
+                .And(_ => GivenCacheIsCalledWithExpectedKey($"{method.ToString()}:{downstreamUrl}"))
                 .BDDfy();
         }
 
@@ -209,6 +269,11 @@ namespace Ocelot.UnitTests.Requester
             _againHttpClient.ShouldBe(_firstHttpClient);
         }
 
+        private void ThenTheHttpClientIsNotFromTheCache()
+        {
+            _againHttpClient.ShouldNotBe(_firstHttpClient);
+        }
+
         private void WhenISave()
         {
             _builder.Save();
@@ -221,7 +286,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamPathTemplate}"), Times.Once);
+            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamDownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamDownstreamPathTemplate}"), Times.Once);
         }
 
         private void GivenTheClientIsCached()
@@ -287,7 +352,12 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequest(DownstreamReRoute downstream)
         {
-            GivenARequestWithAUrlAndMethod(downstream, "http://localhost:5003", HttpMethod.Get);
+            GivenARequest(downstream, "http://localhost:5003");
+        }
+
+        private void GivenARequest(DownstreamReRoute downstream, string downstreamUrl)
+        {
+            GivenARequestWithAUrlAndMethod(downstream, downstreamUrl, HttpMethod.Get);
         }
 
         private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)

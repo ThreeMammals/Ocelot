@@ -211,7 +211,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheDownstreamRouteIsCreated()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.UpstreamHttpMethod[0].ShouldBe(HttpMethod.Get);
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
@@ -226,21 +226,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheDownstreamPathIsForwardSlash()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/|GET");
         }
 
         private void ThenThePathDoesNotHaveTrailingSlash()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
         }
 
         private void ThenTheQueryStringIsRemoved()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
         }

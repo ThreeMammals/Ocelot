@@ -50,7 +50,7 @@
                     Logger.LogWarning("user scopes is not authorised setting pipeline error");
 
                     SetPipelineError(context, new UnauthorisedError(
-                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}"));
+                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
 
@@ -70,19 +70,19 @@
 
                 if (IsAuthorised(authorised))
                 {
-                    Logger.LogInformation($"{context.HttpContext.User.Identity.Name} has succesfully been authorised for {context.DownstreamReRoute.UpstreamPathTemplate.Value}.");
+                    Logger.LogInformation($"{context.HttpContext.User.Identity.Name} has succesfully been authorised for {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}.");
                     await _next.Invoke(context);
                 }
                 else
                 {
-                    Logger.LogWarning($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}. Setting pipeline error");
+                    Logger.LogWarning($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
 
-                    SetPipelineError(context, new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.Value}"));
+                    SetPipelineError(context, new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
             else
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamDownstreamPathTemplate.Value} route does not require user to be authorised");
                 await _next.Invoke(context);
             }
         }

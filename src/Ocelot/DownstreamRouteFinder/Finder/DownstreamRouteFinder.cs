@@ -55,7 +55,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, string query, ReRoute reRoute)
         {
-            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, reRoute.UpstreamPathTemplate.Value);
+            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, reRoute.UpstreamTemplatePattern.OriginalValue);
 
             return new DownstreamRoute(templatePlaceholderNameAndValues.Data, reRoute);
         }
