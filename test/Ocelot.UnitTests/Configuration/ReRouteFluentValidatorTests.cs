@@ -1,5 +1,6 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation.Results;
@@ -18,13 +19,16 @@
         private readonly ReRouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
         private QosDelegatingHandlerDelegate _qosDelegatingHandler;
+        private Mock<IServiceProvider> _serviceProvider;
         private FileReRoute _reRoute;
         private ValidationResult _result;
 
         public ReRouteFluentValidatorTests()
         {
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
-            _validator = new ReRouteFluentValidator(_authProvider.Object, _qosDelegatingHandler);
+            _serviceProvider = new Mock<IServiceProvider>();
+            // Todo - replace with mocks
+            _validator = new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
         }
 
         [Fact]

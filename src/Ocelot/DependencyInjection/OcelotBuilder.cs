@@ -55,6 +55,10 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
             Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
             Services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
+            Services.AddSingleton<HostAndPortValidator>();
+            Services.AddSingleton<ReRouteFluentValidator>();
+            Services.AddSingleton<FileGlobalConfigurationFluentValidator>();
+            Services.AddSingleton<FileQoSOptionsFluentValidator>();
             Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();

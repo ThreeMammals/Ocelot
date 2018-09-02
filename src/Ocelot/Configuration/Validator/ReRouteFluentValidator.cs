@@ -1,5 +1,6 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
+    using System;
     using FluentValidation;
     using Microsoft.AspNetCore.Authentication;
     using File;
@@ -7,18 +8,17 @@
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using Requester;
 
     public class ReRouteFluentValidator : AbstractValidator<FileReRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, QosDelegatingHandlerDelegate qosDelegatingHandlerDelegate)
+        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
 
             RuleFor(reRoute => reRoute.QoSOptions)
-                .SetValidator(new FileQoSOptionsFluentValidator(qosDelegatingHandlerDelegate));
+                .SetValidator(fileQoSOptionsFluentValidator);
 
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
                 .NotEmpty()
@@ -80,7 +80,7 @@
 
             When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
-                    .SetCollectionValidator(new HostAndPortValidator());
+                    .SetCollectionValidator(hostAndPortValidator);
             });
         }
 

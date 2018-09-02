@@ -1,7 +1,6 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
     using FluentValidation;
-    using Microsoft.AspNetCore.Authentication;
     using File;
     using Errors;
     using Responses;
@@ -11,25 +10,22 @@
     using System;
     using Microsoft.Extensions.DependencyInjection;
     using ServiceDiscovery;
-    using Requester;
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
-        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider provider)
+        public FileConfigurationFluentValidator(IServiceProvider provider, ReRouteFluentValidator reRouteFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
         {
-            var qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
-
             _serviceDiscoveryFinderDelegates = provider
                 .GetServices<ServiceDiscoveryFinderDelegate>()
                 .ToList();
 
             RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, qosDelegatingHandlerDelegate));
+                .SetCollectionValidator(reRouteFluentValidator);
 
             RuleFor(configuration => configuration.GlobalConfiguration)
-                .SetValidator(new FileGlobalConfigurationFluentValidator(qosDelegatingHandlerDelegate));
+                .SetValidator(fileGlobalConfigurationFluentValidator);
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
