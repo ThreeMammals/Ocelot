@@ -1,20 +1,14 @@
-﻿using System.Collections.Generic;
-using Ocelot.Errors;
-
-namespace Ocelot.Configuration.Validator
+﻿namespace Ocelot.Configuration.Validator
 {
+    using System.Collections.Generic;
+    using Ocelot.Errors;
+
     public class ConfigurationValidationResult
     {
         public ConfigurationValidationResult(bool isError)
         {
             IsError = isError;
             Errors = new List<Error>();
-        }
-
-        public ConfigurationValidationResult(bool isError, Error error)
-        {
-            IsError = isError;
-            Errors = new List<Error> { error };
         }
 
         public ConfigurationValidationResult(bool isError, List<Error> errors)

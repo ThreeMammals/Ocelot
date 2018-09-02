@@ -1,46 +1,46 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
-using Ocelot.Configuration.File;
-using Ocelot.Errors;
-using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Ocelot.Configuration.Validator
+﻿namespace Ocelot.Configuration.Validator
 {
+    using FluentValidation;
+    using Microsoft.AspNetCore.Authentication;
+    using File;
+    using Errors;
+    using Responses;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
     using System;
     using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.ServiceDiscovery;
+    using ServiceDiscovery;
     using Requester;
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
+
         public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, IServiceProvider provider)
         {
-            _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+            var qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+
             _serviceDiscoveryFinderDelegates = provider
                 .GetServices<ServiceDiscoveryFinderDelegate>()
                 .ToList();
 
             RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, _qosDelegatingHandlerDelegate));
+                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider, qosDelegatingHandlerDelegate));
 
             RuleFor(configuration => configuration.GlobalConfiguration)
-                .SetValidator(new FileGlobalConfigurationFluentValidator(_qosDelegatingHandlerDelegate));
+                .SetValidator(new FileGlobalConfigurationFluentValidator(qosDelegatingHandlerDelegate));
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
 
             RuleForEach(configuration => configuration.ReRoutes)
-                .Must((config, reRoute) => HaveServiceDiscoveryProviderRegitered(reRoute, config.GlobalConfiguration.ServiceDiscoveryProvider))
+                .Must((config, reRoute) => HaveServiceDiscoveryProviderRegistered(reRoute, config.GlobalConfiguration.ServiceDiscoveryProvider))
                 .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
 
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
-                .Must((config) => HaveServiceDiscoveryProviderRegitered(config))
+                .Must(HaveServiceDiscoveryProviderRegistered)
                 .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
 
             RuleForEach(configuration => configuration.ReRoutes)
@@ -60,7 +60,7 @@ namespace Ocelot.Configuration.Validator
                 .WithMessage((config, aggregateReRoute) => $"{nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} contains ReRoute with specific RequestIdKey, this is not possible with Aggregates");
         }
 
-        private bool HaveServiceDiscoveryProviderRegitered(FileReRoute reRoute, FileServiceDiscoveryProvider serviceDiscoveryProvider)
+        private bool HaveServiceDiscoveryProviderRegistered(FileReRoute reRoute, FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             if (string.IsNullOrEmpty(reRoute.ServiceName))
             {
@@ -75,7 +75,7 @@ namespace Ocelot.Configuration.Validator
             return _serviceDiscoveryFinderDelegates.Any();
         }
 
-        private bool HaveServiceDiscoveryProviderRegitered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
+        private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             if(serviceDiscoveryProvider == null)
             {
@@ -87,12 +87,7 @@ namespace Ocelot.Configuration.Validator
                 return true;
             }
 
-            if(string.IsNullOrEmpty(serviceDiscoveryProvider.Type))
-            {
-                return true;
-            }
-
-            return _serviceDiscoveryFinderDelegates.Any();
+            return string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)

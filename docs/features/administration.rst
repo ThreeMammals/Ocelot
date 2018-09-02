@@ -62,7 +62,8 @@ The secret is the client secret that Ocelot's internal IdentityServer will use t
     }
 
 In order for the administration API to work, Ocelot / IdentityServer must be able to call itself for validation. This means that you need to add the base url of Ocelot 
-to global configuration if it is not default (http://localhost:5000). This can be done as follows..
+to global configuration if it is not default (http://localhost:5000). Please note if you are using something like docker to host Ocelot it might not be able to 
+call back to localhost etc and you need to know what you are doing with docker networking in this scenario. Anyway this can be done as follows..
 
 If you want to run on a different host and port locally..
 
