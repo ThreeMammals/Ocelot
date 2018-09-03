@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
             var reRoutes = new List<ReRoute>
             {
-                new ReRouteBuilder().WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
+                new ReRouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
             };
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))

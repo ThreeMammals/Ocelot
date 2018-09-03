@@ -82,7 +82,7 @@
                 .Build();
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("127.0.0.1", 80) })
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -124,7 +124,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -206,7 +206,7 @@
             var lauraReRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithUpstreamHost("localhost")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/laura").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/laura").Build())
                 .WithDownstreamReRoute(lauraDownstreamReRoute)
                 .Build();
 
@@ -225,14 +225,14 @@
             var tomReRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithUpstreamHost("localhost")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/tom").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/tom").Build())
                 .WithDownstreamReRoute(tomDownstreamReRoute)
                 .Build();
 
             expected.Add(tomReRoute);
 
             var aggregateReReRoute = new ReRouteBuilder()
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/").Build())
                 .WithUpstreamHost("localhost")
                 .WithDownstreamReRoute(lauraDownstreamReRoute)
                 .WithDownstreamReRoute(tomDownstreamReRoute)
@@ -417,7 +417,7 @@
                 .Build();
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("127.0.0.1", 80)})
                 .WithDownstreamPathTemplate("/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
@@ -453,7 +453,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -471,7 +471,7 @@
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamScheme("https")
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithDelegatingHandlers(handlers)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -501,7 +501,7 @@
                                             {
                                                 new ReRouteBuilder()
                                                     .WithDownstreamReRoute(downstreamReRoute)
-                                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                                     .Build()
                                             }))
@@ -516,7 +516,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(true)
                 .WithServiceName("ProductService")
@@ -554,7 +554,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -569,7 +569,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(false)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -598,7 +598,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -613,9 +613,9 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
+                .WithUpstreamPathTemplate(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
@@ -642,9 +642,9 @@
                 {
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
                         .Build()
                 }))
                 .BDDfy();
@@ -658,7 +658,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithRequestIdKey("blahhhh")
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -692,7 +692,7 @@
                 {
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build()
                 }))
@@ -750,7 +750,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
                 .WithClaimsToHeaders(new List<ClaimToThing>
@@ -764,7 +764,7 @@
             {
                 new ReRouteBuilder()
                     .WithDownstreamReRoute(downstreamReRoute)
-                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()
             };
@@ -798,7 +798,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -808,7 +808,7 @@
             {
                 new ReRouteBuilder()
                     .WithDownstreamReRoute(downstreamReRoute)
-                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()
             };

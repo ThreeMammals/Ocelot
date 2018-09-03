@@ -45,7 +45,7 @@ namespace Ocelot.UnitTests.Authorization
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(), 
                 new DownstreamReRouteBuilder()
-                    .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().Build())
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()))

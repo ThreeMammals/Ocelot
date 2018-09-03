@@ -296,7 +296,7 @@
                 .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
                 .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                 .WithDownstreamScheme("http")
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()

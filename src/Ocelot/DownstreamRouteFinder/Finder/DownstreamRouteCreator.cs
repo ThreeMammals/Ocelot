@@ -44,6 +44,8 @@
 
             var qosOptions = _qoSOptionsCreator.Create(configuration.QoSOptions, downstreamPathForKeys, new []{ upstreamHttpMethod });
 
+            var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
+
             var downstreamReRouteBuilder = new DownstreamReRouteBuilder()
                 .WithServiceName(serviceName)
                 .WithLoadBalancerKey(loadBalancerKey)
@@ -52,7 +54,8 @@
                 .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
                 .WithQosOptions(qosOptions)
                 .WithDownstreamScheme(configuration.DownstreamScheme)
-                .WithLoadBalancerOptions(configuration.LoadBalancerOptions);
+                .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
+                .WithUpstreamPathTemplate(upstreamPathTemplate);
 
                 var rateLimitOptions = configuration.ReRoutes != null 
                     ? configuration.ReRoutes
@@ -72,6 +75,7 @@
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamReRoute(downstreamReRoute)
                 .WithUpstreamHttpMethod(new List<string>(){ upstreamHttpMethod })
+                .WithUpstreamPathTemplate(upstreamPathTemplate)
                 .Build();
 
             downstreamRoute = new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
