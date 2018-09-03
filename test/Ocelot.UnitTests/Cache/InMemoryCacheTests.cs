@@ -26,6 +26,18 @@
         }
 
         [Fact]
+        public void should_add_and_delete()
+        {
+            var fake = new Fake(1);
+            _cache.Add("1", fake, TimeSpan.FromSeconds(100), "region");
+            var newFake = new Fake(1);
+            _cache.AddAndDelete("1", newFake, TimeSpan.FromSeconds(100), "region");
+            var result = _cache.Get("1", "region");
+            result.ShouldBe(newFake);
+            newFake.Value.ShouldBe(1);
+        }
+
+        [Fact]
         public void should_clear_region()
         {
             var fake = new Fake(1);
