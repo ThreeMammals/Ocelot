@@ -39,6 +39,16 @@
             }
         }
 
+        public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
+        {
+            if (_cache.ContainsKey(key))
+            {
+                _cache.Remove(key);
+            }
+
+            Add(key, value, ttl, region);
+        }
+
         public void ClearRegion(string region)
         {
             if (_regions.ContainsKey(region))
