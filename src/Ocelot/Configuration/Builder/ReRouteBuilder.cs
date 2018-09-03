@@ -36,7 +36,7 @@
             return this;
         }
 
-        public ReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
+        public ReRouteBuilder WithUpstreamPathTemplate(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
             return this;

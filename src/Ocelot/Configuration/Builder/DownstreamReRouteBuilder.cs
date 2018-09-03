@@ -78,7 +78,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
+        public DownstreamReRouteBuilder WithUpstreamPathTemplate(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
             return this;

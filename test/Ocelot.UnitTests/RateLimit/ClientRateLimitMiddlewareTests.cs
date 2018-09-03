@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.RateLimit
                 .WithEnableRateLimiting(true)
                 .WithRateLimitOptions(new RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithUpstreamTemplatePattern(upstreamTemplate)
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .Build();
 
             var reRoute = new ReRouteBuilder()

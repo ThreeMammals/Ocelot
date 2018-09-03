@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
-                .WithUpstreamTemplatePattern(upstreamTemplate)
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
-                .WithUpstreamTemplatePattern(upstreamTemplate)
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -116,7 +116,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
-                .WithUpstreamTemplatePattern(upstreamTemplate)
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 

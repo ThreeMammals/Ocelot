@@ -222,6 +222,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(NoLoadBalancer));
             _result.Data.ReRoute.DownstreamReRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
             _result.Data.ReRoute.DownstreamReRoute[0].QosOptions.ShouldBe(_qoSOptions);
+            _result.Data.ReRoute.UpstreamTemplatePattern.ShouldNotBeNull();
+            _result.Data.ReRoute.DownstreamReRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
+
         }
 
         private void ThenTheDownstreamPathIsForwardSlash()
