@@ -16,6 +16,7 @@ namespace Ocelot.UnitTests.Authorization
     using Xunit;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;
+    using Values;
 
     public class AuthorisationMiddlewareTests
     {
@@ -44,6 +45,7 @@ namespace Ocelot.UnitTests.Authorization
         {
             this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(), 
                 new DownstreamReRouteBuilder()
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()))

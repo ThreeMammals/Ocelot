@@ -57,6 +57,44 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_return_response_200_with_odata_query_string()
+        {
+            var subscriptionId = Guid.NewGuid().ToString();
+            var unitId = Guid.NewGuid().ToString();
+            var port = 57359;
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/{everything}",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                }
+                            },
+                            UpstreamPathTemplate = "/{everything}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/odata/customers", "?$filter=Name%20eq%20'Sam'", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/odata/customers?$filter=Name eq 'Sam' "))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_200_with_query_string_upstream_template()
         {
             var subscriptionId = Guid.NewGuid().ToString();
@@ -206,7 +244,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                if (context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString)
+                if ((context.Request.PathBase.Value != basePath) || context.Request.QueryString.Value != queryString)
                 {
                     context.Response.StatusCode = 500;
                     await context.Response.WriteAsync("downstream path didnt match base path");

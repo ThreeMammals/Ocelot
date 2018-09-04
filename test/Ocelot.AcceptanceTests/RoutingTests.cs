@@ -22,6 +22,41 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_not_match_forward_slash_in_pattern_before_next_forward_slash()
+        {
+            var port = 31879;
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/v{apiVersion}/cards",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/api/v{apiVersion}/cards",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                }
+                            },
+                            Priority = 1
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/aaaaaaaaa/cards", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/aaaaaaaaa/cards"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_404_when_no_configuration_at_all()
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(new FileConfiguration()))
@@ -301,7 +336,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
@@ -318,7 +352,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
@@ -488,13 +521,7 @@ namespace Ocelot.AcceptanceTests
                             }
                         },
                         UpstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions()
-                        {
-                            ExceptionsAllowedBeforeBreaking = 3,
-                            DurationOfBreak = 5,
-                            TimeoutValue = 5000
-                        }
+                        UpstreamHttpMethod = new List<string> { "Get" }
                     }
                 }
             };
@@ -799,7 +826,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
@@ -816,7 +842,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        ServiceName = "botCore",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
@@ -831,7 +856,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_fix_145()
+        public void should_not_set_trailing_slash_on_url_template()
         {
             var configuration = new FileConfiguration
             {
@@ -851,11 +876,6 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/platform/{url}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            QoSOptions = new FileQoSOptions {
-                                ExceptionsAllowedBeforeBreaking = 3,
-                                DurationOfBreak = 10,
-                                TimeoutValue = 5000
-                            }
                         }
                     }
             };
@@ -915,6 +935,41 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/goods/delete"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_match_multiple_paths_with_catch_all()
+        {
+            var port = 61999;
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/{everything}",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/{everything}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                }
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/test/toot", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test/toot"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();

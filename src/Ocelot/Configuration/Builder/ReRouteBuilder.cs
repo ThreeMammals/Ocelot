@@ -1,15 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using Ocelot.Values;
-using System.Linq;
-using Ocelot.Configuration.Creator;
-using System;
-
-namespace Ocelot.Configuration.Builder
+﻿namespace Ocelot.Configuration.Builder
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Ocelot.Values;
+    using System.Linq;
+
     public class ReRouteBuilder
     {
-        private string _upstreamTemplate;
         private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private string _upstreamHost;
@@ -39,13 +36,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ReRouteBuilder WithUpstreamPathTemplate(string input)
-        {
-            _upstreamTemplate = input;
-            return this;
-        }
-
-        public ReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
+        public ReRouteBuilder WithUpstreamPathTemplate(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
             return this;
@@ -67,7 +58,6 @@ namespace Ocelot.Configuration.Builder
         {
             return new ReRoute(
                 _downstreamReRoutes, 
-                new PathTemplate(_upstreamTemplate), 
                 _upstreamHttpMethod, 
                 _upstreamTemplatePattern, 
                 _upstreamHost,

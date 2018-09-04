@@ -13,10 +13,10 @@
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.UnitTests.TestData;
     using Ocelot.Values;
+    using System;
 
     public class FileInternalConfigurationCreatorTests
     {
@@ -35,7 +35,7 @@
         private readonly Mock<IRateLimitOptionsCreator> _rateLimitOptions;
         private readonly Mock<IRegionCreator> _regionCreator;
         private readonly Mock<IHttpHandlerOptionsCreator> _httpHandlerOptionsCreator;
-        private readonly Mock<IAdministrationPath> _adminPath;
+        private readonly Mock<IServiceProvider> _serviceProvider;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
         private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
 
@@ -53,7 +53,7 @@
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
             _regionCreator = new Mock<IRegionCreator>();
             _httpHandlerOptionsCreator = new Mock<IHttpHandlerOptionsCreator>();
-            _adminPath = new Mock<IAdministrationPath>();
+            _serviceProvider = new Mock<IServiceProvider>();
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
 
@@ -70,7 +70,7 @@
                 _rateLimitOptions.Object,
                 _regionCreator.Object,
                 _httpHandlerOptionsCreator.Object,
-                _adminPath.Object,
+                _serviceProvider.Object,
                 _headerFindAndReplaceCreator.Object,
                 _downstreamAddressesCreator.Object);
         }
@@ -82,9 +82,9 @@
                 .Build();
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() { new DownstreamHostAndPort("127.0.0.1", 80) })
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithLoadBalancerKey("CookieStickySessions:sessionid")
                 .Build();
@@ -115,6 +115,7 @@
                             },
             }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                             .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -123,7 +124,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -205,7 +206,7 @@
             var lauraReRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithUpstreamHost("localhost")
-                .WithUpstreamPathTemplate("/laura")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/laura").Build())
                 .WithDownstreamReRoute(lauraDownstreamReRoute)
                 .Build();
 
@@ -224,14 +225,14 @@
             var tomReRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string>() { "Get" })
                 .WithUpstreamHost("localhost")
-                .WithUpstreamPathTemplate("/tom")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/tom").Build())
                 .WithDownstreamReRoute(tomDownstreamReRoute)
                 .Build();
 
             expected.Add(tomReRoute);
 
             var aggregateReReRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate("/")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/").Build())
                 .WithUpstreamHost("localhost")
                 .WithDownstreamReRoute(lauraDownstreamReRoute)
                 .WithDownstreamReRoute(tomDownstreamReRoute)
@@ -240,7 +241,18 @@
 
             expected.Add(aggregateReReRoute);
 
+            var tupleList = new List<(string, string)>
+            {
+                ("woop", "/laura"),
+                ("woop", "/laura"),
+                ("woop", "/tom"),
+                ("woop", "/tom"),
+                ("woop", "/"),
+                ("woop", "/")
+            };
+
             this.Given(x => x.GivenTheConfigIs(configuration))
+                .And(x => GivenTheUpstreamTemplatePatternCreatorReturns(tupleList.ToArray()))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(new ReRouteOptionsBuilder().Build()))
                 .And(x => x.GivenTheFollowingIsReturned(serviceProviderConfig))
                 .And(x => GivenTheDownstreamAddresses())
@@ -248,7 +260,7 @@
                 .And(x => x.GivenTheConfigIsValid())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheServiceProviderCreatorIsCalledCorrectly())
-                .Then(x => x.ThenTheReRoutesAre(expected))
+                .Then(x => x.ThenTheAggregateReRoutesAre(expected))
                 .BDDfy();
         }
 
@@ -405,9 +417,9 @@
                 .Build();
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithDownstreamAddresses(new List<DownstreamHostAndPort>() {new DownstreamHostAndPort("127.0.0.1", 80)})
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithLoadBalancerKey("/api/products/{productId}|Get|127.0.0.1:0")
                 .Build();
@@ -432,6 +444,7 @@
                             },
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                             .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -440,7 +453,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -458,7 +471,7 @@
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamScheme("https")
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithDelegatingHandlers(handlers)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -479,6 +492,7 @@
                                             },
                                         }))
                                             .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                                             .And(x => GivenTheDownstreamAddresses())
                                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -487,7 +501,7 @@
                                             {
                                                 new ReRouteBuilder()
                                                     .WithDownstreamReRoute(downstreamReRoute)
-                                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                                     .Build()
                                             }))
@@ -502,7 +516,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(true)
                 .WithServiceName("ProductService")
@@ -531,6 +545,7 @@
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                             .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -539,7 +554,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -554,7 +569,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithUseServiceDiscovery(false)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -574,6 +589,7 @@
                             }
                         }))
                             .And(x => x.GivenTheConfigIsValid())
+                            .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                             .And(x => GivenTheDownstreamAddresses())
                             .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                             .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -582,7 +598,7 @@
                             {
                                 new ReRouteBuilder()
                                     .WithDownstreamReRoute(downstreamReRoute)
-                                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
@@ -597,9 +613,9 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
-                .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false))
+                .WithUpstreamPathTemplate(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
                 .Build();
 
@@ -620,15 +636,15 @@
                 .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-                .And(x => x.GivenTheUpstreamTemplatePatternCreatorReturns("(?i)/api/products/.*/$"))
+                .And(x => x.GivenTheUpstreamTemplatePatternCreatorReturns("(?i)/api/products/.*/$", "/api/products/{productId}"))
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(new List<ReRoute>
                 {
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
-                        .WithUpstreamPathTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/api/products/{productId}").Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .WithUpstreamTemplatePattern(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false))
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplate("(?i)/api/products/.*/$", 1, false, "/api/products/{productId}"))
                         .Build()
                 }))
                 .BDDfy();
@@ -642,7 +658,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithRequestIdKey("blahhhh")
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -666,6 +682,7 @@
                 }
             }))
                 .And(x => x.GivenTheConfigIsValid())    
+                .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                 .And(x => GivenTheDownstreamAddresses())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
@@ -675,7 +692,7 @@
                 {
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
-                        .WithUpstreamPathTemplate("/api/products/{productId}")
+                        .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build()
                 }))
@@ -733,7 +750,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
                 .WithClaimsToHeaders(new List<ClaimToThing>
@@ -747,12 +764,13 @@
             {
                 new ReRouteBuilder()
                     .WithDownstreamReRoute(downstreamReRoute)
-                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()
             };
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                 .And(x => GivenTheDownstreamAddresses())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
@@ -780,7 +798,7 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("/products/{productId}")
-                .WithUpstreamPathTemplate("/api/products/{productId}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                 .WithUpstreamHttpMethod(new List<string> {"Get"})
                 .WithAuthenticationOptions(authenticationOptions)
                 .WithLoadBalancerKey("/api/products/{productId}|Get|")
@@ -790,12 +808,13 @@
             {
                 new ReRouteBuilder()
                     .WithDownstreamReRoute(downstreamReRoute)
-                    .WithUpstreamPathTemplate("/api/products/{productId}")
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithTemplate("woop").WithOriginalValue("/api/products/{productId}").Build())
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()
             };
 
             this.Given(x => x.GivenTheConfigIs(fileConfig))
+                .And(x => GivenTheUpstreamTemplatePatternCreatorReturns("woop", "/api/products/{productId}"))
                 .And(x => GivenTheDownstreamAddresses())
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
@@ -821,6 +840,49 @@
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_up_dynamic_re_routes()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+
+            var rateLimitOptions = new RateLimitOptionsBuilder()
+                .WithRateLimitRule(new RateLimitRule("1s", 1, 1))
+                .Build();
+
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+                                        {
+                                            DynamicReRoutes = new List<FileDynamicReRoute>
+                                            {
+                                                new FileDynamicReRoute
+                                                {
+                                                    ServiceName = "test",
+                                                    RateLimitRule = new FileRateLimitRule
+                                                    {
+                                                        Period = "1s",
+                                                        PeriodTimespan = 1,
+                                                        Limit = 1
+                                                    }
+                                                }
+                                            },
+                                        }))
+                                            .And(x => x.GivenTheConfigIsValid())
+                                            .And(x => GivenTheRateLimitCreatorReturns(rateLimitOptions))
+                                            .And(x => GivenTheDownstreamAddresses())
+                                            .And(x => GivenTheHeaderFindAndReplaceCreatorReturns())
+                                            .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                                            .When(x => x.WhenICreateTheConfig())
+                                            .Then(x => x.ThenTheDynamicReRouteIsSetUp("test", rateLimitOptions.RateLimitRule))
+                                .BDDfy();
+        }
+
+        private void GivenTheRateLimitCreatorReturns(RateLimitOptions rateLimitOptions)
+        {
+             _rateLimitOptions
+                .Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()))
+                .Returns(rateLimitOptions);
+        }
+
         private void GivenTheConfigIsInvalid(List<Error> errors)
         {
             _validator
@@ -844,7 +906,7 @@
         private void ThenTheRateLimitOptionsCreatorIsCalledCorrectly()
         {
             _rateLimitOptions
-                .Verify(x => x.Create(It.IsAny<FileReRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<bool>()), Times.Once);
+                .Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Once);
         }
 
         private void GivenTheConfigIsValid()
@@ -864,6 +926,41 @@
             _config = _internalConfigurationCreator.Create(_fileConfiguration).Result;
         }
 
+        private void ThenTheDynamicReRouteIsSetUp(string serviceName, RateLimitRule rateLimitOptions)
+        {
+            var dynamic = _config.Data.ReRoutes[0].DownstreamReRoute[0];
+            dynamic.ServiceName.ShouldBe(serviceName);
+            dynamic.EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+            dynamic.RateLimitOptions.RateLimitRule.Period.ShouldBe(rateLimitOptions.Period);
+            dynamic.RateLimitOptions.RateLimitRule.Limit.ShouldBe(rateLimitOptions.Limit);
+            dynamic.RateLimitOptions.RateLimitRule.PeriodTimespan.ShouldBe(rateLimitOptions.PeriodTimespan);
+        }
+
+        private void ThenTheAggregateReRoutesAre(List<ReRoute> expectedReRoutes)
+        {
+            for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
+            {
+                var result = _config.Data.ReRoutes[i];
+                var expected = expectedReRoutes[i];
+
+                result.DownstreamReRoute.Count.ShouldBe(expected.DownstreamReRoute.Count);
+
+                result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
+                result.UpstreamTemplatePattern.OriginalValue.ShouldBe(expected.UpstreamTemplatePattern.OriginalValue);
+                result.UpstreamTemplatePattern.Template.ShouldBe(expected.UpstreamTemplatePattern.Template);
+
+                result.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value);
+                result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
+                result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
+                result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
+                result.DownstreamReRoute[0].RequestIdKey.ShouldBe(expected.DownstreamReRoute[0].RequestIdKey);
+                result.DownstreamReRoute[0].LoadBalancerKey.ShouldBe(expected.DownstreamReRoute[0].LoadBalancerKey);
+                result.DownstreamReRoute[0].DelegatingHandlers.ShouldBe(expected.DownstreamReRoute[0].DelegatingHandlers);
+                result.DownstreamReRoute[0].AddHeadersToDownstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToDownstream);
+                result.DownstreamReRoute[0].AddHeadersToUpstream.ShouldBe(expected.DownstreamReRoute[0].AddHeadersToUpstream, "AddHeadersToUpstream should be set");
+            }
+        }
+
         private void ThenTheReRoutesAre(List<ReRoute> expectedReRoutes)
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
@@ -873,10 +970,11 @@
 
                 result.DownstreamReRoute.Count.ShouldBe(expected.DownstreamReRoute.Count);
 
-                result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.UpstreamHttpMethod.ShouldBe(expected.UpstreamHttpMethod);
-                result.UpstreamPathTemplate.Value.ShouldBe(expected.UpstreamPathTemplate.Value);
-                result.UpstreamTemplatePattern?.Template.ShouldBe(expected.UpstreamTemplatePattern?.Template);
+                result.UpstreamTemplatePattern.OriginalValue.ShouldBe(expected.UpstreamTemplatePattern.OriginalValue);
+                result.UpstreamTemplatePattern.Template.ShouldBe(expected.UpstreamTemplatePattern.Template);
+
+                result.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value);
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
@@ -918,11 +1016,22 @@
                 .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
-        private void GivenTheUpstreamTemplatePatternCreatorReturns(string pattern)
+        private void GivenTheUpstreamTemplatePatternCreatorReturns(string pattern, string original)
         {
             _upstreamTemplatePatternCreator
                 .Setup(x => x.Create(It.IsAny<FileReRoute>()))
-                .Returns(new UpstreamPathTemplate(pattern, 1, false));
+                .Returns(new UpstreamPathTemplate(pattern, 1, false, original));
+        }
+
+        private void GivenTheUpstreamTemplatePatternCreatorReturns(params (string pattern, string original)[] list)
+        {
+            var builder = _upstreamTemplatePatternCreator
+                .SetupSequence(x => x.Create(It.IsAny<IReRoute>()));
+
+            foreach (var p in list)
+            {
+                builder.Returns(new UpstreamPathTemplate(p.pattern, 1, false, p.original));
+            }
         }
 
         private void ThenTheRequestIdKeyCreatorIsCalledCorrectly()

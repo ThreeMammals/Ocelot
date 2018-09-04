@@ -1,5 +1,4 @@
-﻿using IdentityModel;
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Linq;
@@ -11,6 +10,7 @@ namespace Ocelot.Authorisation
     public class ScopesAuthoriser : IScopesAuthoriser
     {
         private readonly IClaimsParser _claimsParser;
+        private readonly string _scope = "scope";
 
         public ScopesAuthoriser(IClaimsParser claimsParser)
         {
@@ -24,7 +24,7 @@ namespace Ocelot.Authorisation
                 return new OkResponse<bool>(true);
             }
 
-            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, JwtClaimTypes.Scope);
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, _scope);
 
             if (values.IsError)
             {

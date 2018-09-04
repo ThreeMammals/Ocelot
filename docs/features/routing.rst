@@ -211,7 +211,6 @@ Ocelot allows you to specify a querystring as part of the DownstreamPathTemplate
             }
         ],
         "GlobalConfiguration": {
-            "UseServiceDiscovery": false
         }
     }
 
@@ -239,7 +238,6 @@ Ocelot will also allow you to put query string parameters in the UpstreamPathTem
             }
         ],
         "GlobalConfiguration": {
-            "UseServiceDiscovery": false
         }
     }
 

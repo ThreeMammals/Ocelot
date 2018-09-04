@@ -5,11 +5,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Responses;
-    using Ocelot.Values;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
@@ -30,8 +27,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
-            services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
-            services.AddSingleton<IDownstreamRouteProvider, Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>();
+            services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
+            services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
             var provider = services.BuildServiceProvider();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -49,7 +46,22 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             this.Given(_ => GivenTheReRoutes(reRoutes))
                 .When(_ => WhenIGet())
-                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
+        {
+            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
+            var reRoutes = new List<ReRoute>
+            {
+                new ReRouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
+            };
+
+            this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
                 .BDDfy();
         }
 
@@ -61,7 +73,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
                 .When(_ => WhenIGet())
-                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
                 .BDDfy();
         }
 
@@ -73,7 +85,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
                 .When(_ => WhenIGet())
-                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
                 .BDDfy();
         }
 
@@ -85,7 +97,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
                 .When(_ => WhenIGet())
-                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder>())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
                 .BDDfy();
         }
 
@@ -97,7 +109,22 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
                 .When(_ => WhenIGet())
-                .Then(_ => ThenTheResultShouldBe<Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteCreator>())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteCreator>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_downstream_route_creator_with_dynamic_re_route()
+        {
+            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
+            var reRoutes = new List<ReRoute>
+            {
+                new ReRouteBuilder().Build()
+            };
+
+            this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteCreator>())
                 .BDDfy();
         }
 

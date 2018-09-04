@@ -1,6 +1,4 @@
-﻿using Polly.Timeout;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
     public class QoSOptions
     {
@@ -9,7 +7,7 @@ namespace Ocelot.Configuration
             int durationofBreak, 
             int timeoutValue, 
             string key,
-            TimeoutStrategy timeoutStrategy = TimeoutStrategy.Pessimistic)
+            string timeoutStrategy = "Pessimistic")
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             DurationOfBreak = durationofBreak;
@@ -24,9 +22,10 @@ namespace Ocelot.Configuration
 
         public int TimeoutValue { get; }
 
-        public TimeoutStrategy TimeoutStrategy { get; }
+        public string TimeoutStrategy { get; }
 
         public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 && TimeoutValue > 0;
+
         public string Key { get; }
     }
 }

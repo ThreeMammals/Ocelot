@@ -7,8 +7,7 @@
         "Get"
       ],
       "DownstreamScheme": "http",
-      "ServiceName": "OcelotServiceApplication/OcelotApplicationService",
-      "UseServiceDiscovery" :  true
+      "ServiceName": "OcelotServiceApplication/OcelotApplicationService"
     }
   ],
   "GlobalConfiguration": {

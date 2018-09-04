@@ -225,7 +225,7 @@
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081"))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?cmd=instance"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1"))
                 .BDDfy();
         }
 
@@ -255,7 +255,7 @@
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?Tom=test&laura=1"))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/api/products/1"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1&cmd=instance"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1"))
                 .BDDfy();
         }
 
@@ -296,7 +296,7 @@
                 .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
                 .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                 .WithDownstreamScheme("http")
-                .WithUpstreamPathTemplate("/uc/Authorized/{server}/{action}")
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -350,7 +350,7 @@
         {
             _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(path));
             _downstreamUrlTemplateVariableReplacer
-                .Setup(x => x.Replace(It.IsAny<PathTemplate>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+                .Setup(x => x.Replace(It.IsAny<DownstreamPathTemplate>(), It.IsAny<List<PlaceholderNameAndValue>>()))
                 .Returns(_downstreamPath);
         }
 

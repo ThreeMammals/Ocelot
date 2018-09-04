@@ -29,7 +29,6 @@
         UnableToFindLoadBalancerError,
         RequestTimedOutError,
         UnableToFindQoSProviderError,
-        UnableToSetConfigInConsulError,
         UnmappableRequestError,
         RateLimitOptionsError,
         PathTemplateDoesntStartWithForwardSlash,

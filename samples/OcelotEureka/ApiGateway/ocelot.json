@@ -4,7 +4,6 @@
       "DownstreamPathTemplate": "/api/Category",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/Category",
-      "UseServiceDiscovery": true,
       "ServiceName": "ncore-rat",
       "UpstreamHttpMethod": [ "Get" ],
       "QoSOptions": {

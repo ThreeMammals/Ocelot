@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
+        public void should_fix_issue_555()
         {
             var configuration = new FileConfiguration
             {
@@ -29,11 +29,10 @@ namespace Ocelot.AcceptanceTests
                     {
                         new FileReRoute
                         {
-                            DownstreamPathTemplate = "/api/values",
+                            DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/EquipmentInterfaces",
+                            UpstreamPathTemplate = "/{everything}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            UseServiceDiscovery = true,
                             ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                         }
                     },
@@ -48,10 +47,46 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "cmd=instance"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/a?b=c"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/values",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/EquipmentInterfaces",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
+                        }
+                    },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    {
+                        Host = "localhost",
+                        Port = 19081,
+                        Type = "ServiceFabric"
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
@@ -70,7 +105,6 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/EquipmentInterfaces",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UseServiceDiscovery = true,
                         ServiceName = "OcelotServiceApplication/OcelotApplicationService"
                     }
                 },

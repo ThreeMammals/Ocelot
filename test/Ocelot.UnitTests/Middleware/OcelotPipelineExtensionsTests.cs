@@ -10,10 +10,7 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.Middleware.Pipeline;
     using Ocelot.Request.Middleware;
     using Ocelot.WebSockets.Middleware;
-    using Pivotal.Discovery.Client;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
-    using Steeltoe.Discovery.Eureka;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -39,7 +36,6 @@ namespace Ocelot.UnitTests.Middleware
                  .Then(_ => ThenThePipelineIsBuilt())
                  .BDDfy();
         }
-
 
         private void ThenThePipelineIsBuilt()
         {
@@ -67,22 +63,12 @@ namespace Ocelot.UnitTests.Middleware
             _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
         }
 
-
         private void GivenTheDepedenciesAreSetUp()
         {
             IConfigurationBuilder test = new ConfigurationBuilder();
             var root = test.Build();
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(root);
-            services.AddDiscoveryClient(new DiscoveryOptions 
-            {
-                ClientType = DiscoveryClientType.EUREKA,
-                ClientOptions = new EurekaClientOptions()
-                {
-                    ShouldFetchRegistry = false,
-                    ShouldRegisterWithEureka = false
-                }
-            });
             services.AddOcelot();
             var provider = services.BuildServiceProvider();
             _builder = new OcelotPipelineBuilder(provider);

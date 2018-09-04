@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
-using Polly.CircuitBreaker;
-using Polly.Timeout;
 
 namespace Ocelot.Requester
 {
@@ -14,14 +12,17 @@ namespace Ocelot.Requester
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
         private readonly IDelegatingHandlerHandlerFactory _factory;
+        private readonly IExceptionToErrorMapper _mapper;
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
             IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerFactory house)
+            IDelegatingHandlerHandlerFactory factory, 
+            IExceptionToErrorMapper mapper)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
             _cacheHandlers = cacheHandlers;
-            _factory = house;
+            _factory = factory;
+            _mapper = mapper;
         }
 
         public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context)
@@ -35,21 +36,10 @@ namespace Ocelot.Requester
                 var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
                 return new OkResponse<HttpResponseMessage>(response);
             }
-            catch (TimeoutRejectedException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-            }
-            catch (TaskCanceledException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-            }
-            catch (BrokenCircuitException exception)
-            {
-                return new ErrorResponse<HttpResponseMessage>(new RequestTimedOutError(exception));
-            }
             catch (Exception exception)
             {
-                return new ErrorResponse<HttpResponseMessage>(new UnableToCompleteRequestError(exception));
+                var error = _mapper.Map(exception);
+                return new ErrorResponse<HttpResponseMessage>(error);
             }
             finally
             {

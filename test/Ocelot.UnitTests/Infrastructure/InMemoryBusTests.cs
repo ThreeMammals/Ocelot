@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Infrastructure
                 called = true;
             });
             _bus.Publish(new object(), 1);
-            await Task.Delay(10);
+            await Task.Delay(100);
             called.ShouldBeTrue();
         }
 

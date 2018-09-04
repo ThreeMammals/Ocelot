@@ -10,6 +10,7 @@ using Ocelot.Configuration.Validator;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -49,14 +50,14 @@ namespace Ocelot.Configuration.Creator
             IRateLimitOptionsCreator rateLimitOptionsCreator,
             IRegionCreator regionCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-            IAdministrationPath adminPath,
+            IServiceProvider serviceProvider,
             IHeaderFindAndReplaceCreator headerFAndRCreator,
             IDownstreamAddressesCreator downstreamAddressesCreator
             )
         {
             _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
-            _adminPath = adminPath;
+            _adminPath = serviceProvider.GetService<IAdministrationPath>();
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -103,6 +104,12 @@ namespace Ocelot.Configuration.Creator
                 reRoutes.Add(ocelotReRoute);
             }
 
+            foreach(var fileDynamicReRoute in fileConfiguration.DynamicReRoutes)
+            {
+                var reRoute = SetUpDynamicReRoute(fileDynamicReRoute, fileConfiguration.GlobalConfiguration);
+                reRoutes.Add(reRoute);
+            }
+
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
 
             var lbOptions = CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
@@ -111,8 +118,10 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
 
+            var adminPath = _adminPath != null ? _adminPath.Path : null;
+
             var config = new InternalConfiguration(reRoutes, 
-                _adminPath.Path, 
+                adminPath, 
                 serviceProviderConfiguration, 
                 fileConfiguration.GlobalConfiguration.RequestIdKey, 
                 lbOptions, 
@@ -124,7 +133,24 @@ namespace Ocelot.Configuration.Creator
             return new OkResponse<IInternalConfiguration>(config);
         }
 
-        public ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
+        private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithEnableRateLimiting(true)
+                .WithRateLimitOptions(rateLimitOption)
+                .WithServiceName(fileDynamicReRoute.ServiceName)
+                .Build();
+
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
+                .Build();
+
+            return reRoute;
+        }
+
+        private ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var applicableReRoutes = reRoutes
                 .SelectMany(x => x.DownstreamReRoute)
@@ -140,9 +166,8 @@ namespace Ocelot.Configuration.Creator
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateReRoute);
 
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate(aggregateReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
-                .WithUpstreamTemplatePattern(upstreamTemplatePattern)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
                 .WithUpstreamHost(aggregateReRoute.UpstreamHost)
                 .WithAggregator(aggregateReRoute.Aggregator)
@@ -156,9 +181,8 @@ namespace Ocelot.Configuration.Creator
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
             var reRoute = new ReRouteBuilder()
-                .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
-                .WithUpstreamTemplatePattern(upstreamTemplatePattern)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamReRoute(downstreamReRoutes)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .Build();
@@ -186,7 +210,7 @@ namespace Ocelot.Configuration.Creator
 
             var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod.ToArray());
 
-            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute.RateLimitOptions, globalConfiguration);
 
             var region = _regionCreator.Create(fileReRoute);
 
@@ -198,12 +222,13 @@ namespace Ocelot.Configuration.Creator
 
             var lbOptions = CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
 
+            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
+
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
-                .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
-                .WithUpstreamTemplatePattern(upstreamTemplatePattern)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithIsAuthenticated(fileReRouteOptions.IsAuthenticated)
                 .WithAuthenticationOptions(authOptionsForRoute)
                 .WithClaimsToHeaders(claimsToHeaders)
@@ -223,7 +248,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRateLimitOptions(rateLimitOption)
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
-                .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
+                .WithUseServiceDiscovery(useServiceDiscovery)
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)

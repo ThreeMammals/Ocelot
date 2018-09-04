@@ -1,28 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using CacheManager.Core;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Cache;
-using Ocelot.Configuration;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
-using Ocelot.DependencyInjection;
-using Ocelot.Requester;
-using Ocelot.UnitTests.Requester;
-using Shouldly;
-using IdentityServer4.AccessTokenValidation;
-using TestStack.BDDfy;
-using Xunit;
-using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
-using Ocelot.Middleware.Multiplexer;
-
 namespace Ocelot.UnitTests.DependencyInjection
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Hosting.Internal;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.Setter;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Requester;
+    using Ocelot.UnitTests.Requester;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+    using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
+    using Ocelot.Middleware.Multiplexer;
+
     public class OcelotBuilderTests
     {
         private readonly IServiceCollection _services;
@@ -80,72 +75,12 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_set_up_cache_manager()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpCacheManager())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .And(x => OnlyOneVersionOfEachCacheIsRegistered())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_consul()
-        {            
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpConsul())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_rafty()
-        {            
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpRafty())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_administration_with_identity_server_options()
-        {
-            Action<IdentityServerAuthenticationOptions> options = o => {};
-
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpAdministration(options))
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_administration()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpAdministration())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .Then(x => ThenTheCorrectAdminPathIsRegitered())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_use_logger_factory()
         {
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenIValidateScopes())
                 .When(x => WhenIAccessLoggerFactory())
                 .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_set_up_tracing()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpOpentracing())
-                .When(x => WhenIAccessOcelotHttpTracingHandler())
                 .BDDfy();
         }
 
@@ -191,15 +126,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ocelotBuilder.AddTransientDefinedAggregator<T>();
         }
 
-        private void ThenTheSpecificHandlersAreSingleton()
-        {
-            var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
-            var first = handlers[0];
-            handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
-            var second = handlers[0];
-            first.ShouldBe(second);
-        }
-
         private void ThenTheSpecificHandlersAreTransient()
         {
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
@@ -218,16 +144,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             first.ShouldNotBe(second);
         }
 
-        private void WhenISetUpAdministration()
-        {
-            _ocelotBuilder.AddAdministration("/administration", "secret");
-        }
-
-        private void WhenISetUpAdministration(Action<IdentityServerAuthenticationOptions> options)
-        {
-            _ocelotBuilder.AddAdministration("/administration", options);
-        }
-
         private void AddTransientGlobalDelegatingHandler<T>()
             where T : DelegatingHandler
         {
@@ -238,13 +154,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : DelegatingHandler
         {
             _ocelotBuilder.AddDelegatingHandler<T>();
-        }
-
-        private void ThenTheCorrectAdminPathIsRegitered()
-        {
-            _serviceProvider = _services.BuildServiceProvider();
-            var path = _serviceProvider.GetService<IAdministrationPath>();
-            path.Path.ShouldBe("/administration");
         }
 
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
@@ -289,60 +198,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             first.ShouldBe(second);
         }
 
-        private void OnlyOneVersionOfEachCacheIsRegistered()
-        {
-            var outputCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<CachedResponse>));
-            var outputCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<CachedResponse>));
-            var instance = (ICacheManager<CachedResponse>)outputCacheManager.ImplementationInstance;
-            var ocelotConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<IInternalConfiguration>));
-            var ocelotConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<IInternalConfiguration>));
-            var fileConfigCache = _services.Single(x => x.ServiceType == typeof(IOcelotCache<FileConfiguration>));
-            var fileConfigCacheManager = _services.Single(x => x.ServiceType == typeof(ICacheManager<FileConfiguration>));
-
-            instance.Configuration.MaxRetries.ShouldBe(_maxRetries);
-            outputCache.ShouldNotBeNull();
-            ocelotConfigCache.ShouldNotBeNull();
-            ocelotConfigCacheManager.ShouldNotBeNull();
-            fileConfigCache.ShouldNotBeNull();
-            fileConfigCacheManager.ShouldNotBeNull();
-        }
-
-        private void WhenISetUpConsul()
-        {
-            try
-            {
-                _ocelotBuilder.AddStoreOcelotConfigurationInConsul();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }       
-        }
-
-        private void WhenISetUpRafty()
-        {
-            try
-            {
-                _ocelotBuilder.AddAdministration("/administration", "secret").AddRafty();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }       
-        }
-
-        private void AddGlobalDelegatingHandler<T>()
-            where T : DelegatingHandler
-        {
-            _ocelotBuilder.AddDelegatingHandler<T>(true);
-        }
-
-        private void AddSpecificDelegatingHandler<T>()
-            where T : DelegatingHandler
-        {
-            _ocelotBuilder.AddDelegatingHandler<T>();
-        }
-
         private void ThenAnOcelotBuilderIsReturned()
         {
             _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
@@ -372,39 +227,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             }
         }
 
-        private void WhenISetUpCacheManager()
-        {
-            try
-            {
-                _ocelotBuilder.AddCacheManager(x => {
-                    x.WithMaxRetries(_maxRetries);
-                    x.WithDictionaryHandle();
-                });
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpOpentracing()
-        {
-            try
-            {
-                _ocelotBuilder.AddOpenTracing(
-                    option =>
-                    {
-                        option.CollectorUrl = "http://localhost:9618";
-                        option.Service = "Ocelot.ManualTest";
-                    }
-               );
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
         private void WhenIAccessLoggerFactory()
         {
             try
@@ -412,19 +234,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 _serviceProvider = _services.BuildServiceProvider();
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
                 logger.ShouldNotBeNull();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenIAccessOcelotHttpTracingHandler()
-        {
-            try
-            {
-                var tracingHandler = _serviceProvider.GetService<OcelotHttpTracingHandler>();
-                tracingHandler.ShouldNotBeNull();
             }
             catch (Exception e)
             {

@@ -1,19 +1,27 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
-using Ocelot.Configuration.File;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Ocelot.Configuration.Validator
+﻿namespace Ocelot.Configuration.Validator
 {
+    using FluentValidation;
+    using Microsoft.AspNetCore.Authentication;
+    using Ocelot.Configuration.File;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System;
+    using Microsoft.Extensions.DependencyInjection;
+    using Requester;
+
     public class ReRouteFluentValidator : AbstractValidator<FileReRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
+        private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
 
-        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider)
+        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, QosDelegatingHandlerDelegate qosDelegatingHandlerDelegate)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
+            _qosDelegatingHandlerDelegate = qosDelegatingHandlerDelegate;
+
+            RuleFor(reRoute => reRoute.QoSOptions)
+                .SetValidator(new FileQoSOptionsFluentValidator(_qosDelegatingHandlerDelegate));
 
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
                 .Must(path => path.StartsWith("/"))
@@ -47,15 +55,12 @@ namespace Ocelot.Configuration.Validator
                 .MustAsync(IsSupportedAuthenticationProviders)
                 .WithMessage("{PropertyValue} is unsupported authentication provider");
 
-            When(reRoute => reRoute.UseServiceDiscovery, () => {
-                RuleFor(r => r.ServiceName).NotEmpty().WithMessage("ServiceName cannot be empty or null when using service discovery or Ocelot cannot look up your service!");
-                });
-
-            When(reRoute => !reRoute.UseServiceDiscovery, () => {
-                RuleFor(r => r.DownstreamHostAndPorts).NotEmpty().WithMessage("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!");
+            When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
+                RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
+                    .WithMessage("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!");
             });
 
-            When(reRoute => !reRoute.UseServiceDiscovery, () => {
+            When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
                     .SetCollectionValidator(new HostAndPortValidator());
             });

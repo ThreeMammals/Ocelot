@@ -1,9 +1,3 @@
-using Ocelot.DownstreamRouteFinder.Finder;
-using Xunit;
-using Shouldly;
-using Ocelot.Configuration;
-using System.Net.Http;
-
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System;
@@ -14,6 +8,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     using Ocelot.LoadBalancer.LoadBalancers;
     using Responses;
     using TestStack.BDDfy;
+    using Ocelot.DownstreamRouteFinder.Finder;
+    using Xunit;
+    using Shouldly;
+    using Ocelot.Configuration;
+    using System.Net.Http;
+    using System.Collections.Generic;
 
     public class DownstreamRouteCreatorTests
     {
@@ -50,6 +50,34 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(_ => GivenTheConfiguration(configuration))
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheDownstreamRouteIsCreated())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_create_downstream_route_with_rate_limit_options()
+        {
+            var rateLimitOptions = new RateLimitOptionsBuilder()
+                .WithEnableRateLimiting(true)
+                .WithClientIdHeader("test")
+                .Build();
+
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("auth")
+                .WithRateLimitOptions(rateLimitOptions)
+                .Build();
+
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
+                .Build();
+
+            var reRoutes = new List<ReRoute> { reRoute };
+            
+            var configuration = new InternalConfiguration(reRoutes, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
+
+            this.Given(_ => GivenTheConfiguration(configuration))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheDownstreamRouteIsCreated())
+                .And(_ => WithRateLimitOptions(rateLimitOptions))
                 .BDDfy();
         }
 
@@ -174,9 +202,16 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Returns(options);
         }
 
+        private void WithRateLimitOptions(RateLimitOptions expected)
+        {
+            _result.Data.ReRoute.DownstreamReRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+            _result.Data.ReRoute.DownstreamReRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+            _result.Data.ReRoute.DownstreamReRoute[0].RateLimitOptions.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
+        }
+
         private void ThenTheDownstreamRouteIsCreated()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.UpstreamHttpMethod[0].ShouldBe(HttpMethod.Get);
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
@@ -187,25 +222,28 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(NoLoadBalancer));
             _result.Data.ReRoute.DownstreamReRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
             _result.Data.ReRoute.DownstreamReRoute[0].QosOptions.ShouldBe(_qoSOptions);
+            _result.Data.ReRoute.UpstreamTemplatePattern.ShouldNotBeNull();
+            _result.Data.ReRoute.DownstreamReRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
+
         }
 
         private void ThenTheDownstreamPathIsForwardSlash()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/|GET");
         }
 
         private void ThenThePathDoesNotHaveTrailingSlash()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
         }
 
         private void ThenTheQueryStringIsRemoved()
         {
-            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
+            _result.Data.ReRoute.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("/test");
             _result.Data.ReRoute.DownstreamReRoute[0].ServiceName.ShouldBe("auth");
             _result.Data.ReRoute.DownstreamReRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
         }

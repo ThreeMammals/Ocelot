@@ -22,24 +22,36 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {
             try
             {
-                if(_loadBalancers.TryGetValue(reRoute.LoadBalancerKey, out var loadBalancer))
+                Response<ILoadBalancer> result;
+
+                if (_loadBalancers.TryGetValue(reRoute.LoadBalancerKey, out var loadBalancer))
                 {
                     loadBalancer = _loadBalancers[reRoute.LoadBalancerKey];
 
-                    if(reRoute.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
+                    if (reRoute.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
                     {
-                        loadBalancer = await _factory.Get(reRoute, config);
+                        result = await _factory.Get(reRoute, config);
+                        if (result.IsError)
+                        {
+                            return new ErrorResponse<ILoadBalancer>(result.Errors);
+                        }
+                        loadBalancer = result.Data;
                         AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                     }
 
                     return new OkResponse<ILoadBalancer>(loadBalancer);
                 }
 
-                loadBalancer = await _factory.Get(reRoute, config);
+                result = await _factory.Get(reRoute, config);
+                if (result.IsError)
+                {
+                    return new ErrorResponse<ILoadBalancer>(result.Errors);
+                }
+                loadBalancer = result.Data;
                 AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                 return new OkResponse<ILoadBalancer>(loadBalancer);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
                 {

@@ -63,7 +63,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                     }
                     else
                     {
-                        var placeholderValue = GetPlaceholderValue(pathTemplate, query, placeholderName, path, counterForPath + 1, '/');
+                        var placeholderValue = GetPlaceholderValue(pathTemplate, query, placeholderName, path, counterForPath + 1, '?');
                         placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
                     }
 

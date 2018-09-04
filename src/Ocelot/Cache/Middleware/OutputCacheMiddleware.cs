@@ -1,29 +1,25 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using System.IO;
-using Ocelot.Middleware.Multiplexer;
-
-namespace Ocelot.Cache.Middleware
+﻿namespace Ocelot.Cache.Middleware
 {
+    using System;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System.IO;
+
     public class OutputCacheMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotCache<CachedResponse> _outputCache;
-        private readonly IRegionCreator _regionCreator;
 
         public OutputCacheMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IOcelotCache<CachedResponse> outputCache,
-            IRegionCreator regionCreator)
+            IOcelotCache<CachedResponse> outputCache)
                 :base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
         {
             _next = next;
             _outputCache = outputCache;
-            _regionCreator = regionCreator;
         }
 
         public async Task Invoke(DownstreamContext context)

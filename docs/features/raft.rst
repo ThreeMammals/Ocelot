@@ -1,11 +1,15 @@
 Raft (EXPERIMENTAL DO NOT USE IN PRODUCTION)
 ============================================
 
-Ocelot has recenely integrated `Rafty <https://github.com/TomPallister/Rafty>`_ which is an implementation of Raft that I have also been working on over the last year. This project is very experimental so please do not use this feature of Ocelot in production until I think it's OK.
+Ocelot has recently integrated `Rafty <https://github.com/TomPallister/Rafty>`_ which is an implementation of Raft that I have also been working on over the last year. This project is very experimental so please do not use this feature of Ocelot in production until I think it's OK.
 
 Raft is a distributed concensus algorythm that allows a cluster of servers (Ocelots) to maintain local state without having a centralised database for storing state (e.g. SQL Server). 
 
-In order to enable Rafty in Ocelot you must make the following changes to your Startup.cs.
+To get Raft support you must first install the Ocelot Rafty package.
+
+``Install-Package Ocelot.Provider.Rafty``
+
+Then you must make the following changes to your Startup.cs / Program.cs.
 
 .. code-block:: csharp
 

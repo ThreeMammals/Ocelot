@@ -1,29 +1,30 @@
-using System.Collections.Generic;
-using Ocelot.Configuration;
-using Ocelot.Infrastructure.Consul;
-using Ocelot.Logging;
-using Ocelot.ServiceDiscovery.Configuration;
-using Ocelot.ServiceDiscovery.Providers;
-using Ocelot.Values;
-
 namespace Ocelot.ServiceDiscovery
-{    
-    using Steeltoe.Common.Discovery;
+{
+    using System.Collections.Generic;
+    using Ocelot.Configuration;
+    using Ocelot.Logging;
+    using Ocelot.ServiceDiscovery.Configuration;
+    using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Values;
+    using System;
+    using System.Linq;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Responses;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
-        private readonly IConsulClientFactory _consulFactory;
-        private readonly IDiscoveryClient _eurekaClient;
+        private readonly ServiceDiscoveryFinderDelegate _delegates;
+        private readonly IServiceProvider _provider;
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IConsulClientFactory consulFactory, IDiscoveryClient eurekaClient)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
         {
             _factory = factory;
-            _consulFactory = consulFactory;
-            _eurekaClient = eurekaClient;
+            _provider = provider;
+            _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
         }
 
-        public IServiceDiscoveryProvider Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
+        public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
         {
             if (reRoute.UseServiceDiscovery)
             {
@@ -35,36 +36,32 @@ namespace Ocelot.ServiceDiscovery
             foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
                 var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
-                
+
                 services.Add(service);
             }
 
-            return new ConfigurationServiceProvider(services);
+            return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
         }
 
-        private IServiceDiscoveryProvider GetServiceDiscoveryProvider(ServiceProviderConfiguration serviceConfig, string serviceName)
+        private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, string key)
         {
-            if (serviceConfig.Type?.ToLower() == "servicefabric")
+            if (config.Type?.ToLower() == "servicefabric")
             {
-                var config = new ServiceFabricConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName);
-                return new ServiceFabricServiceDiscoveryProvider(config);
+                var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, key);
+                return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
             }
 
-            if (serviceConfig.Type?.ToLower() == "eureka")
+            if (_delegates != null)
             {
-                return new EurekaServiceDiscoveryProvider(serviceName, _eurekaClient);
-            }
-            
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(serviceConfig.Host, serviceConfig.Port, serviceName, serviceConfig.Token);
+                var provider = _delegates?.Invoke(_provider, config, key);
 
-            var consulServiceDiscoveryProvider =  new ConsulServiceDiscoveryProvider(consulRegistryConfiguration, _factory, _consulFactory);
-
-            if (serviceConfig.Type?.ToLower() == "pollconsul")
-            {
-                return new PollingConsulServiceDiscoveryProvider(serviceConfig.PollingInterval, consulRegistryConfiguration.KeyOfServiceInConsul, _factory, consulServiceDiscoveryProvider);
+                if(provider.GetType().Name.ToLower() == config.Type.ToLower())
+                {
+                    return new OkResponse<IServiceDiscoveryProvider>(provider);
+                }
             }
 
-            return consulServiceDiscoveryProvider;
+            return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError($"Unable to find service discovery provider for type: {config.Type}"));
         }
     }
 }
