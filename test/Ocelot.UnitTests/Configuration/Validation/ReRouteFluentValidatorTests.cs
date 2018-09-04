@@ -1,4 +1,4 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿namespace Ocelot.UnitTests.Configuration.Validation
 {
     using System;
     using System.Collections.Generic;
