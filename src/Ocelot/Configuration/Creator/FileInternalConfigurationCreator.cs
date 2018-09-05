@@ -22,59 +22,28 @@ namespace Ocelot.Configuration.Creator
     public class FileInternalConfigurationCreator : IInternalConfigurationCreator
     {
         private readonly IConfigurationValidator _configurationValidator;
-        private readonly IOcelotLogger _logger;
-        private readonly IClaimsToThingCreator _claimsToThingCreator;
-        private readonly IAuthenticationOptionsCreator _authOptionsCreator;
-        private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
-        private readonly IRequestIdKeyCreator _requestIdKeyCreator;
-        private readonly IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
-        private readonly IQoSOptionsCreator _qosOptionsCreator;
-        private readonly IReRouteOptionsCreator _fileReRouteOptionsCreator;
-        private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
-        private readonly IRegionCreator _regionCreator;
-        private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
-        private readonly IAdministrationPath _adminPath;
-        private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
-        private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
+        private readonly IConfigurationCreator _configCreator;
+        private readonly IDynamicsCreator _dynamicsCreator;
+        private readonly IReRoutesCreator _reRoutesCreator;
+        private readonly IAggregatesCreator _aggregatesCreator;
 
         public FileInternalConfigurationCreator(
             IConfigurationValidator configurationValidator,
-            IOcelotLoggerFactory loggerFactory,
-            IClaimsToThingCreator claimsToThingCreator,
-            IAuthenticationOptionsCreator authOptionsCreator,
-            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
-            IRequestIdKeyCreator requestIdKeyCreator,
-            IServiceProviderConfigurationCreator serviceProviderConfigCreator,
-            IQoSOptionsCreator qosOptionsCreator,
-            IReRouteOptionsCreator fileReRouteOptionsCreator,
-            IRateLimitOptionsCreator rateLimitOptionsCreator,
-            IRegionCreator regionCreator,
-            IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-            IServiceProvider serviceProvider,
-            IHeaderFindAndReplaceCreator headerFAndRCreator,
-            IDownstreamAddressesCreator downstreamAddressesCreator
+            IReRoutesCreator reRoutesCreator,
+            IAggregatesCreator aggregatesCreator,
+            IDynamicsCreator dynamicsCreator,
+            IConfigurationCreator configCreator
             )
         {
-            _logger = loggerFactory.CreateLogger<FileInternalConfigurationCreator>();
-            _adminPath = serviceProvider.GetService<IAdministrationPath>();
-
-            _downstreamAddressesCreator = downstreamAddressesCreator;
-            _headerFAndRCreator = headerFAndRCreator;
-            _regionCreator = regionCreator;
-            _rateLimitOptionsCreator = rateLimitOptionsCreator;
-            _requestIdKeyCreator = requestIdKeyCreator;
-            _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
-            _authOptionsCreator = authOptionsCreator;
+            _configCreator = configCreator;
+            _dynamicsCreator = dynamicsCreator;
+            _aggregatesCreator = aggregatesCreator;
+            _reRoutesCreator = reRoutesCreator;
             _configurationValidator = configurationValidator;
-            _claimsToThingCreator = claimsToThingCreator;
-            _serviceProviderConfigCreator = serviceProviderConfigCreator;
-            _qosOptionsCreator = qosOptionsCreator;
-            _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
-            _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
-        
+
         public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
-        {     
+        {
             var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
@@ -82,212 +51,20 @@ namespace Ocelot.Configuration.Creator
                 return new ErrorResponse<IInternalConfiguration>(response.Data.Errors);
             }
 
-            var reRoutes = ReRoutes(fileConfiguration);
+            var reRoutes = _reRoutesCreator.ReRoutes(fileConfiguration);
 
-            var aggregates = Aggregates(fileConfiguration, reRoutes);
+            var aggregates = _aggregatesCreator.Aggregates(fileConfiguration, reRoutes);
 
-            var dynamicReRoute = Dynamics(fileConfiguration);
-            
+            var dynamicReRoute = _dynamicsCreator.Dynamics(fileConfiguration);
+
             var mergedReRoutes = reRoutes
                 .Union(aggregates)
                 .Union(dynamicReRoute)
                 .ToList();
 
-            var config = InternalConfiguration(fileConfiguration, mergedReRoutes);
+            var config = _configCreator.InternalConfiguration(fileConfiguration, mergedReRoutes);
 
             return new OkResponse<IInternalConfiguration>(config);
-        }
-
-        private List<ReRoute> Dynamics(FileConfiguration fileConfiguration)
-        {
-            return fileConfiguration.DynamicReRoutes
-                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration)).ToList();
-        }
-        private List<ReRoute> ReRoutes(FileConfiguration fileConfiguration)
-        {
-            return fileConfiguration.ReRoutes
-                .Select(reRoute => {
-                    var downstreamReRoute = SetUpDownstreamReRoute(reRoute, fileConfiguration.GlobalConfiguration);
-                    return SetUpReRoute(reRoute, downstreamReRoute);
-                })
-                .ToList();
-        }
-
-        private List<ReRoute> Aggregates(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
-        {
-            return fileConfiguration.Aggregates
-                .Select(aggregate => SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration))
-                .ToList();
-        }
-
-        private InternalConfiguration InternalConfiguration(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
-        {
-            var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
-
-            var lbOptions = CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
-
-            var qosOptions = _qosOptionsCreator.Create(fileConfiguration.GlobalConfiguration.QoSOptions);
-
-            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
-
-            var adminPath = _adminPath != null ? _adminPath.Path : null;
-
-            return new InternalConfiguration(reRoutes, 
-                adminPath, 
-                serviceProviderConfiguration, 
-                fileConfiguration.GlobalConfiguration.RequestIdKey, 
-                lbOptions, 
-                fileConfiguration.GlobalConfiguration.DownstreamScheme,
-                qosOptions,
-                httpHandlerOptions
-                );
-        }
-
-        private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var rateLimitOption = _rateLimitOptionsCreator.Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
-
-            var downstreamReRoute = new DownstreamReRouteBuilder()
-                .WithEnableRateLimiting(true)
-                .WithRateLimitOptions(rateLimitOption)
-                .WithServiceName(fileDynamicReRoute.ServiceName)
-                .Build();
-
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoute(downstreamReRoute)
-                .Build();
-
-            return reRoute;
-        }
-
-        private ReRoute SetUpAggregateReRoute(IEnumerable<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var applicableReRoutes = reRoutes
-                .SelectMany(x => x.DownstreamReRoute)
-                .Where(r => aggregateReRoute.ReRouteKeys.Contains(r.Key))
-                .ToList();
-
-            if(applicableReRoutes.Count != aggregateReRoute.ReRouteKeys.Count)
-            {
-                //todo - log or throw or return error whatever?
-            }
-
-            //make another re route out of these
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateReRoute);
-
-            var reRoute = new ReRouteBuilder()
-                .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
-                .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithDownstreamReRoutes(applicableReRoutes)
-                .WithUpstreamHost(aggregateReRoute.UpstreamHost)
-                .WithAggregator(aggregateReRoute.Aggregator)
-                .Build();
-
-            return reRoute;
-        }
-
-        private ReRoute SetUpReRoute(FileReRoute fileReRoute, DownstreamReRoute downstreamReRoutes)
-        {
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
-
-            var reRoute = new ReRouteBuilder()
-                .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
-                .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithDownstreamReRoute(downstreamReRoutes)
-                .WithUpstreamHost(fileReRoute.UpstreamHost)
-                .Build();
-
-            return reRoute;
-        }
-
-         private DownstreamReRoute SetUpDownstreamReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
-
-            var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
-
-            var reRouteKey = CreateReRouteKey(fileReRoute);
-
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
-
-            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute);
-
-            var claimsToHeaders = _claimsToThingCreator.Create(fileReRoute.AddHeadersToRequest);
-
-            var claimsToClaims = _claimsToThingCreator.Create(fileReRoute.AddClaimsToRequest);
-
-            var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
-
-            var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod.ToArray());
-
-            var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute.RateLimitOptions, globalConfiguration);
-
-            var region = _regionCreator.Create(fileReRoute);
-
-            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute.HttpHandlerOptions);
-
-            var hAndRs = _headerFAndRCreator.Create(fileReRoute);
-
-            var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
-
-            var lbOptions = CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
-
-            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
-
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithKey(fileReRoute.Key)
-                .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
-                .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
-                .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithIsAuthenticated(fileReRouteOptions.IsAuthenticated)
-                .WithAuthenticationOptions(authOptionsForRoute)
-                .WithClaimsToHeaders(claimsToHeaders)
-                .WithClaimsToClaims(claimsToClaims)
-                .WithRouteClaimsRequirement(fileReRoute.RouteClaimsRequirement)
-                .WithIsAuthorised(fileReRouteOptions.IsAuthorised)
-                .WithClaimsToQueries(claimsToQueries)
-                .WithRequestIdKey(requestIdKey)
-                .WithIsCached(fileReRouteOptions.IsCached)
-                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
-                .WithDownstreamScheme(fileReRoute.DownstreamScheme)
-                .WithLoadBalancerOptions(lbOptions)
-                .WithDownstreamAddresses(downstreamAddresses)
-                .WithLoadBalancerKey(reRouteKey)
-                .WithQosOptions(qosOptions)
-                .WithEnableRateLimiting(fileReRouteOptions.EnableRateLimiting)
-                .WithRateLimitOptions(rateLimitOption)
-                .WithHttpHandlerOptions(httpHandlerOptions)
-                .WithServiceName(fileReRoute.ServiceName)
-                .WithUseServiceDiscovery(useServiceDiscovery)
-                .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
-                .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
-                .WithUpstreamHost(fileReRoute.UpstreamHost)
-                .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
-                .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
-                .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
-                .WithDangerousAcceptAnyServerCertificateValidator(fileReRoute.DangerousAcceptAnyServerCertificateValidator)
-                .Build();
-
-            return reRoute;
-        }
-
-        private LoadBalancerOptions CreateLoadBalancerOptions(FileLoadBalancerOptions options)
-        {
-            return new LoadBalancerOptionsBuilder()
-                .WithType(options.Type)
-                .WithKey(options.Key)
-                .WithExpiryInMs(options.Expiry)
-                .Build();
-        }
-
-        private string CreateReRouteKey(FileReRoute fileReRoute)
-        {
-            if (!string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Type) && !string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Key) && fileReRoute.LoadBalancerOptions.Type == nameof(CookieStickySessions))
-            {
-                return $"{nameof(CookieStickySessions)}:{fileReRoute.LoadBalancerOptions.Key}";
-            }
-
-            return $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}|{string.Join(",", fileReRoute.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}";
         }
     }
 }

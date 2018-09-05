@@ -38,7 +38,7 @@
         private readonly Mock<IServiceProvider> _serviceProvider;
         private readonly Mock<IHeaderFindAndReplaceCreator> _headerFindAndReplaceCreator;
         private readonly Mock<IDownstreamAddressesCreator> _downstreamAddressesCreator;
-
+        private readonly Mock<ILoadBalancerOptionsCreator> _loadBalancerOptionsCreator;
         public FileInternalConfigurationCreatorTests()
         {
             _logger = new Mock<IOcelotLoggerFactory>();
@@ -56,23 +56,29 @@
             _serviceProvider = new Mock<IServiceProvider>();
             _headerFindAndReplaceCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _downstreamAddressesCreator = new Mock<IDownstreamAddressesCreator>();
+            _loadBalancerOptionsCreator = new Mock<ILoadBalancerOptionsCreator>();
 
-            _internalConfigurationCreator = new FileInternalConfigurationCreator( 
-                _validator.Object, 
-                _logger.Object,
-                _claimsToThingCreator.Object,
-                _authOptionsCreator.Object, 
+            var reRoutesCreator = new ReRoutesCreator(
+                _claimsToThingCreator.Object, 
+                _authOptionsCreator.Object,
                 _upstreamTemplatePatternCreator.Object,
                 _requestIdKeyCreator.Object,
-                _serviceProviderConfigCreator.Object,
                 _qosOptionsCreator.Object,
                 _fileReRouteOptionsCreator.Object,
                 _rateLimitOptions.Object,
                 _regionCreator.Object,
                 _httpHandlerOptionsCreator.Object,
-                _serviceProvider.Object,
                 _headerFindAndReplaceCreator.Object,
-                _downstreamAddressesCreator.Object);
+                _downstreamAddressesCreator.Object,
+                _loadBalancerOptionsCreator.Object);
+
+            var aggregatesCreator = new AggregatesCreator(_upstreamTemplatePatternCreator.Object);
+
+            var dynamicsCreator = new DynamicsCreator(_rateLimitOptions.Object);
+
+            var configCreator = new ConfigurationCreator(_serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _httpHandlerOptionsCreator.Object, _serviceProvider.Object, _loadBalancerOptionsCreator.Object);
+
+            _internalConfigurationCreator = new FileInternalConfigurationCreator(_validator.Object, reRoutesCreator, aggregatesCreator, dynamicsCreator, configCreator);
         }
 
         [Fact]
