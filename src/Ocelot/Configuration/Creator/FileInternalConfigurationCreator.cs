@@ -55,16 +55,17 @@ namespace Ocelot.Configuration.Creator
             IDownstreamAddressesCreator downstreamAddressesCreator
             )
         {
+            _logger = loggerFactory.CreateLogger<FileInternalConfigurationCreator>();
+            _adminPath = serviceProvider.GetService<IAdministrationPath>();
+
             _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
-            _adminPath = serviceProvider.GetService<IAdministrationPath>();
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
             _authOptionsCreator = authOptionsCreator;
             _configurationValidator = configurationValidator;
-            _logger = loggerFactory.CreateLogger<FileInternalConfigurationCreator>();
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
@@ -74,12 +75,6 @@ namespace Ocelot.Configuration.Creator
         
         public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
         {     
-            var config = await SetUpConfiguration(fileConfiguration);
-            return config;
-        }
-
-        private async Task<Response<IInternalConfiguration>> SetUpConfiguration(FileConfiguration fileConfiguration)
-        {
             var response = await _configurationValidator.IsValid(fileConfiguration);
 
             if (response.Data.IsError)
@@ -87,29 +82,46 @@ namespace Ocelot.Configuration.Creator
                 return new ErrorResponse<IInternalConfiguration>(response.Data.Errors);
             }
 
-            var reRoutes = new List<ReRoute>();
+            var reRoutes = ReRoutes(fileConfiguration);
 
-            foreach (var reRoute in fileConfiguration.ReRoutes)
-            {
-                var downstreamReRoute = SetUpDownstreamReRoute(reRoute, fileConfiguration.GlobalConfiguration);
+            var aggregates = Aggregates(fileConfiguration, reRoutes);
 
-                var ocelotReRoute = SetUpReRoute(reRoute, downstreamReRoute);
-                
-                reRoutes.Add(ocelotReRoute);
-            }
+            var dynamicReRoute = Dynamics(fileConfiguration);
+            
+            var mergedReRoutes = reRoutes
+                .Union(aggregates)
+                .Union(dynamicReRoute)
+                .ToList();
 
-            foreach (var aggregate in fileConfiguration.Aggregates)
-            {
-                var ocelotReRoute = SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration);
-                reRoutes.Add(ocelotReRoute);
-            }
+            var config = InternalConfiguration(fileConfiguration, mergedReRoutes);
 
-            foreach(var fileDynamicReRoute in fileConfiguration.DynamicReRoutes)
-            {
-                var reRoute = SetUpDynamicReRoute(fileDynamicReRoute, fileConfiguration.GlobalConfiguration);
-                reRoutes.Add(reRoute);
-            }
+            return new OkResponse<IInternalConfiguration>(config);
+        }
 
+        private List<ReRoute> Dynamics(FileConfiguration fileConfiguration)
+        {
+            return fileConfiguration.DynamicReRoutes
+                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration)).ToList();
+        }
+        private List<ReRoute> ReRoutes(FileConfiguration fileConfiguration)
+        {
+            return fileConfiguration.ReRoutes
+                .Select(reRoute => {
+                    var downstreamReRoute = SetUpDownstreamReRoute(reRoute, fileConfiguration.GlobalConfiguration);
+                    return SetUpReRoute(reRoute, downstreamReRoute);
+                })
+                .ToList();
+        }
+
+        private List<ReRoute> Aggregates(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
+        {
+            return fileConfiguration.Aggregates
+                .Select(aggregate => SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration))
+                .ToList();
+        }
+
+        private InternalConfiguration InternalConfiguration(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
+        {
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
 
             var lbOptions = CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
@@ -120,7 +132,7 @@ namespace Ocelot.Configuration.Creator
 
             var adminPath = _adminPath != null ? _adminPath.Path : null;
 
-            var config = new InternalConfiguration(reRoutes, 
+            return new InternalConfiguration(reRoutes, 
                 adminPath, 
                 serviceProviderConfiguration, 
                 fileConfiguration.GlobalConfiguration.RequestIdKey, 
@@ -129,8 +141,6 @@ namespace Ocelot.Configuration.Creator
                 qosOptions,
                 httpHandlerOptions
                 );
-
-            return new OkResponse<IInternalConfiguration>(config);
         }
 
         private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
@@ -150,7 +160,7 @@ namespace Ocelot.Configuration.Creator
             return reRoute;
         }
 
-        private ReRoute SetUpAggregateReRoute(List<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
+        private ReRoute SetUpAggregateReRoute(IEnumerable<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var applicableReRoutes = reRoutes
                 .SelectMany(x => x.DownstreamReRoute)
