@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Ocelot.Configuration.Creator
 {
 
-    public class InternalConfigurationCreator : IConfigurationCreator
+    public class ConfigurationCreator : IConfigurationCreator
     {
         private readonly IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
         private readonly IQoSOptionsCreator _qosOptionsCreator;
@@ -18,7 +18,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IAdministrationPath _adminPath;
         private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
 
-        public InternalConfigurationCreator(
+        public ConfigurationCreator(
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
             IQoSOptionsCreator qosOptionsCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
