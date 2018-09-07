@@ -15,7 +15,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_do_a_thing()
+        public void should_create()
         {
             var fileLoadBalancerOptions = new FileLoadBalancerOptions
             {

@@ -19,6 +19,7 @@ namespace Ocelot.Configuration.Creator
         {
             return fileConfiguration.Aggregates
                 .Select(aggregate => SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration))
+                .Where(aggregate => aggregate != null)
                 .ToList();
         }
 
@@ -31,10 +32,9 @@ namespace Ocelot.Configuration.Creator
 
             if (applicableReRoutes.Count != aggregateReRoute.ReRouteKeys.Count)
             {
-                //todo - log or throw or return error whatever?
+                return null;
             }
 
-            //make another re route out of these
             var upstreamTemplatePattern = _creator.Create(aggregateReRoute);
 
             var reRoute = new ReRouteBuilder()
