@@ -30,7 +30,7 @@ namespace Ocelot.Configuration
             bool isAuthenticated,
             bool isAuthorised,
             AuthenticationOptions authenticationOptions,
-            DownstreamPathTemplate downstreamDownstreamPathTemplate,
+            DownstreamPathTemplate downstreamPathTemplate,
             string loadBalancerKey,
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
@@ -63,7 +63,7 @@ namespace Ocelot.Configuration
             IsAuthenticated = isAuthenticated;
             IsAuthorised = isAuthorised;
             AuthenticationOptions = authenticationOptions;
-            DownstreamDownstreamPathTemplate = downstreamDownstreamPathTemplate;
+            DownstreamPathTemplate = downstreamPathTemplate;
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
         }
@@ -91,7 +91,7 @@ namespace Ocelot.Configuration
         public bool IsAuthenticated { get; }
         public bool IsAuthorised { get; }
         public AuthenticationOptions AuthenticationOptions { get; }
-        public DownstreamPathTemplate DownstreamDownstreamPathTemplate { get; }
+        public DownstreamPathTemplate DownstreamPathTemplate { get; }
         public string LoadBalancerKey { get; }
         public List<string> DelegatingHandlers { get; }
         public List<AddHeader> AddHeadersToDownstream { get; }

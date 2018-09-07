@@ -34,7 +34,7 @@ namespace Ocelot.RateLimit.Middleware
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                Logger.LogInformation($"EndpointRateLimiting is not enabled for {context.DownstreamReRoute.DownstreamDownstreamPathTemplate.Value}");
+                Logger.LogInformation($"EndpointRateLimiting is not enabled for {context.DownstreamReRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(context);
                 return;
             }
@@ -45,7 +45,7 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamDownstreamPathTemplate.Value} is white listed from rate limiting");
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(context);
                 return;
             }
