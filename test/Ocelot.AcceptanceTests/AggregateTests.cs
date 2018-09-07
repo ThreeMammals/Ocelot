@@ -38,22 +38,6 @@ namespace Ocelot.AcceptanceTests
             {
                 ReRoutes = new List<FileReRoute>
                 {
-//             {
-//                 "ReRoutes": [{
-//                 "DownstreamPathTemplate": "/api/values?MailId={userid}",
-//                 "UpstreamPathTemplate": "/key1data/{userid}",
-//                 "UpstreamHttpMethod": [
-//                     "Get"
-//                 ],
-//                 "ServiceName": "",
-//                 "DownstreamScheme": "http",
-//                 "DownstreamHostAndPorts": [{
-//                     "Host": "localhost",
-//                     "Port": 8571
-//                 }],
-//                 "UseServiceDiscovery": false,
-//                 "Key": "key1"
-//             },
                     new FileReRoute
                     {
                         DownstreamPathTemplate =  "/api/values?MailId={userid}",
@@ -70,21 +54,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key1"
                     },
-                    //             {
-//                 "DownstreamPathTemplate": "/api/values?MailId={userid}",
-//                 "UpstreamPathTemplate": "/key2data/{userid}",
-//                 "UpstreamHttpMethod": [
-//                     "Get"
-//                 ],
-//                 "ServiceName": "",
-//                 "DownstreamScheme": "http",
-//                 "DownstreamHostAndPorts": [{
-//                     "Host": "localhost",
-//                     "Port": 8571
-//                 }],
-//                 "UseServiceDiscovery": false,
-//                 "Key": "key2"
-//             },
                     new FileReRoute
                     {
                         DownstreamPathTemplate =  "/api/values?MailId={userid}",
@@ -101,21 +70,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key2"
                     },
-                    //             {
-//                 "DownstreamPathTemplate": "/api/values?MailId={userid}",
-//                 "UpstreamPathTemplate": "/key3data/{userid}",
-//                 "UpstreamHttpMethod": [
-//                     "Get"
-//                 ],
-//                 "ServiceName": "",
-//                 "DownstreamScheme": "http",
-//                 "DownstreamHostAndPorts": [{
-//                     "Host": "localhost",
-//                     "Port": 8571
-//                 }],
-//                 "UseServiceDiscovery": false,
-//                 "Key": "key3"
-//             },
                     new FileReRoute
                     {
                         DownstreamPathTemplate =  "/api/values?MailId={userid}",
@@ -132,21 +86,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key3"
                     },
-                    //             {
-//                 "DownstreamPathTemplate": "/api/values?MailId={userid}",
-//                 "UpstreamPathTemplate": "/key4data/{userid}",
-//                 "UpstreamHttpMethod": [
-//                     "Get"
-//                 ],
-//                 "ServiceName": "",
-//                 "DownstreamScheme": "http",
-//                 "DownstreamHostAndPorts": [{
-//                     "Host": "localhost",
-//                     "Port": 8571
-//                 }],
-//                 "UseServiceDiscovery": false,
-//                 "Key": "key4"
-//             }
                     new FileReRoute
                     {
                         DownstreamPathTemplate =  "/api/values?MailId={userid}",
@@ -166,15 +105,6 @@ namespace Ocelot.AcceptanceTests
                 },
                 Aggregates = new List<FileAggregateReRoute>
                 {
-            //{
-            //                 "ReRouteKeys": [
-            //                     "key1",
-            //                     "key2",
-            //                     "key3",
-            //                     "key4"
-            //                 ],
-            //                 "UpstreamPathTemplate": "/EmpDetail/IN/{userid}"
-            //             },
                     new FileAggregateReRoute
                     {
                         ReRouteKeys = new List<string>{
@@ -185,13 +115,6 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/EmpDetail/IN/{userid}"
                     },
-            //{
-            //                 "ReRouteKeys": [
-            //                     "key1",
-            //                     "key2"
-            //                 ],
-            //                 "UpstreamPathTemplate": "/EmpDetail/US/{userid}"
-            //             }
                      new FileAggregateReRoute
                     {
                         ReRouteKeys = new List<string>{
@@ -206,8 +129,6 @@ namespace Ocelot.AcceptanceTests
                     RequestIdKey = "CorrelationID"
                 }
             };
-
-            //Now request for url which matches /EmpDetail/US/{userid} upstream template(2nd aggregation url). The response that we get is from keys "key1", "key2","key1", "key2" (key 1 & key2 is repeated) . Response should have been just "key1", "key2" reponses
 
             var expected = "{\"key1\":some_data,\"key2\":some_data}";
 
