@@ -1,25 +1,24 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ConfigurationCreatorTests
     {
         private ConfigurationCreator _creator;
         private InternalConfiguration _result;
-        private Mock<IServiceProviderConfigurationCreator> _spcCreator;
-        private Mock<IQoSOptionsCreator> _qosCreator;
-        private Mock<IHttpHandlerOptionsCreator> _hhoCreator;
-        private Mock<ILoadBalancerOptionsCreator> _lboCreator;
+        private readonly Mock<IServiceProviderConfigurationCreator> _spcCreator;
+        private readonly Mock<IQoSOptionsCreator> _qosCreator;
+        private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
+        private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
         private FileConfiguration _fileConfig;
         private List<ReRoute> _reRoutes;
         private ServiceProviderConfiguration _spc;
@@ -27,7 +26,7 @@ namespace Ocelot.UnitTests.Configuration
         private QoSOptions _qoso;
         private HttpHandlerOptions _hho;
         private AdministrationPath _adminPath;
-        private ServiceCollection _serviceCollection;
+        private readonly ServiceCollection _serviceCollection;
 
         public ConfigurationCreatorTests()
         {

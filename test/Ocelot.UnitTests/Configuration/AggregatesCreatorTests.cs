@@ -1,27 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.Values;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Values;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class AggregatesCreatorTests
     {
-        private AggregatesCreator _creator;
-        private Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly AggregatesCreator _creator;
+        private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
         private FileConfiguration _fileConfiguration;
         private List<ReRoute> _reRoutes;
         private List<ReRoute> _result;
-        private UpstreamPathTemplate _aggregate1utp;
-        private UpstreamPathTemplate _aggregate2utp;
+        private UpstreamPathTemplate _aggregate1Utp;
+        private UpstreamPathTemplate _aggregate2Utp;
 
         public AggregatesCreatorTests()
         {
@@ -103,14 +102,14 @@ namespace Ocelot.UnitTests.Configuration
 
             _result[0].UpstreamHttpMethod.ShouldContain(x => x == HttpMethod.Get);
             _result[0].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[0].UpstreamHost);
-            _result[0].UpstreamTemplatePattern.ShouldBe(_aggregate1utp);
+            _result[0].UpstreamTemplatePattern.ShouldBe(_aggregate1Utp);
             _result[0].Aggregator.ShouldBe(_fileConfiguration.Aggregates[0].Aggregator);
             _result[0].DownstreamReRoute.ShouldContain(x => x == _reRoutes[0].DownstreamReRoute[0]);
             _result[0].DownstreamReRoute.ShouldContain(x => x == _reRoutes[1].DownstreamReRoute[0]);
 
             _result[1].UpstreamHttpMethod.ShouldContain(x => x == HttpMethod.Get);
             _result[1].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[1].UpstreamHost);
-            _result[1].UpstreamTemplatePattern.ShouldBe(_aggregate2utp);
+            _result[1].UpstreamTemplatePattern.ShouldBe(_aggregate2Utp);
             _result[1].Aggregator.ShouldBe(_fileConfiguration.Aggregates[1].Aggregator);
             _result[1].DownstreamReRoute.ShouldContain(x => x == _reRoutes[2].DownstreamReRoute[0]);
             _result[1].DownstreamReRoute.ShouldContain(x => x == _reRoutes[3].DownstreamReRoute[0]);        
@@ -124,12 +123,12 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheUtpCreatorReturns()
         {
-            _aggregate1utp = new UpstreamPathTemplateBuilder().Build();
-            _aggregate2utp = new UpstreamPathTemplateBuilder().Build();
+            _aggregate1Utp = new UpstreamPathTemplateBuilder().Build();
+            _aggregate2Utp = new UpstreamPathTemplateBuilder().Build();
 
             _utpCreator.SetupSequence(x => x.Create(It.IsAny<IReRoute>()))
-                .Returns(_aggregate1utp)
-                .Returns(_aggregate2utp);
+                .Returns(_aggregate1Utp)
+                .Returns(_aggregate2Utp);
         }
 
         private void ThenTheResultIsEmpty()
