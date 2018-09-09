@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
-
 namespace Ocelot.Configuration.Creator
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Builder;
+    using File;
 
     public class DynamicsCreator : IDynamicsCreator
     {
@@ -18,15 +17,17 @@ namespace Ocelot.Configuration.Creator
         public List<ReRoute> Dynamics(FileConfiguration fileConfiguration)
         {
             return fileConfiguration.DynamicReRoutes
-                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration)).ToList();
+                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration))
+                .ToList();
         }
 
         private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var rateLimitOption = _rateLimitOptionsCreator.Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
+            var rateLimitOption = _rateLimitOptionsCreator
+                .Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
-                .WithEnableRateLimiting(true)
+                .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .WithServiceName(fileDynamicReRoute.ServiceName)
                 .Build();

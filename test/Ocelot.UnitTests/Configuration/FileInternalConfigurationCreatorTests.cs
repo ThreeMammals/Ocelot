@@ -936,7 +936,7 @@
         {
             var dynamic = _config.Data.ReRoutes[0].DownstreamReRoute[0];
             dynamic.ServiceName.ShouldBe(serviceName);
-            dynamic.EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+            dynamic.EnableEndpointEndpointRateLimiting.ShouldBeFalse();
             dynamic.RateLimitOptions.RateLimitRule.Period.ShouldBe(rateLimitOptions.Period);
             dynamic.RateLimitOptions.RateLimitRule.Limit.ShouldBe(rateLimitOptions.Limit);
             dynamic.RateLimitOptions.RateLimitRule.PeriodTimespan.ShouldBe(rateLimitOptions.PeriodTimespan);

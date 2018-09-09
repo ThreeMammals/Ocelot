@@ -1,8 +1,12 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
     using Moq;
     using Ocelot.Cache;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Shouldly;
     using Xunit;
 
     public class ReRoutesCreatorTests
@@ -20,6 +24,8 @@
         private Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
         private Mock<IDownstreamAddressesCreator> _daCreator;
         private Mock<ILoadBalancerOptionsCreator> _lboCreator;
+        private FileConfiguration _fileConfig;
+        private List<ReRoute> _result;
 
         public ReRoutesCreatorTests()
         {
@@ -53,9 +59,13 @@
         }
 
         [Fact]
-        public void should_do()
+        public void should_return_nothing()
         {
+            _fileConfig = new FileConfiguration();
 
+            _result = _creator.ReRoutes(_fileConfig);
+
+            _result.ShouldBeEmpty();
         }
     }
 }
