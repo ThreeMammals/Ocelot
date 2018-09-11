@@ -1,17 +1,17 @@
-using System.Collections.Generic;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ReRouteOptionsCreatorTests
     {
-        private ReRouteOptionsCreator _creator;
+        private readonly ReRouteOptionsCreator _creator;
         private FileReRoute _reRoute;
         private ReRouteOptions _result;
 
@@ -40,7 +40,8 @@ namespace Ocelot.UnitTests.Configuration
                 FileCacheOptions = new FileCacheOptions
                 {
                     TtlSeconds = 1
-                }
+                },
+                ServiceName = "west"
             };
 
             var expected = new ReRouteOptionsBuilder()
@@ -48,6 +49,7 @@ namespace Ocelot.UnitTests.Configuration
                 .WithIsAuthorised(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
+                .WithUseServiceDiscovery(true)
                 .Build();
 
             this.Given(x => x.GivenTheFollowing(reRoute))
@@ -72,6 +74,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsAuthorised.ShouldBe(expected.IsAuthorised);
             _result.IsCached.ShouldBe(expected.IsCached);
             _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+            _result.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
         }
     }
 }

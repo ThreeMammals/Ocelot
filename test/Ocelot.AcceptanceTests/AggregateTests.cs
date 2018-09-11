@@ -32,6 +32,116 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_fix_issue_597()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate =  "/api/values?MailId={userid}",
+                        UpstreamPathTemplate = "/key1data/{userid}",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 8571
+                            }
+                        },
+                        Key = "key1"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate =  "/api/values?MailId={userid}",
+                        UpstreamPathTemplate = "/key2data/{userid}",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 8571
+                            }
+                        },
+                        Key = "key2"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate =  "/api/values?MailId={userid}",
+                        UpstreamPathTemplate = "/key3data/{userid}",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 8571
+                            }
+                        },
+                        Key = "key3"
+                    },
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate =  "/api/values?MailId={userid}",
+                        UpstreamPathTemplate = "/key4data/{userid}",
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 8571
+                            }
+                        },
+                        Key = "key4"
+                    },
+                },
+                Aggregates = new List<FileAggregateReRoute>
+                {
+                    new FileAggregateReRoute
+                    {
+                        ReRouteKeys = new List<string>{
+                            "key1",
+                            "key2",
+                            "key3",
+                            "key4"
+                        },
+                        UpstreamPathTemplate = "/EmpDetail/IN/{userid}"
+                    },
+                     new FileAggregateReRoute
+                    {
+                        ReRouteKeys = new List<string>{
+                            "key1",
+                            "key2",
+                        },
+                        UpstreamPathTemplate = "/EmpDetail/US/{userid}"
+                    }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    RequestIdKey = "CorrelationID"
+                }
+            };
+
+            var expected = "{\"key1\":some_data,\"key2\":some_data}";
+
+            this.Given(x => x.GivenServiceIsRunning("http://localhost:8571", 200, "some_data"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_200_with_simple_url_user_defined_aggregate()
         {
             var configuration = new FileConfiguration
@@ -71,13 +181,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom"
                         }
                     },
-                    Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateReRoute>
                     {
                         new FileAggregateReRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string> 
+                            ReRouteKeys = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -140,13 +250,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom"
                         }
                     },
-                    Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateReRoute>
                     {
                         new FileAggregateReRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string> 
+                            ReRouteKeys = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -366,6 +476,15 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
+        }
+
+        private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
+        {
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
         }
 
         private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)

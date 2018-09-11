@@ -2,6 +2,7 @@ namespace Ocelot.Configuration.Creator
 {
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.File;
+    using System.Collections.Generic;
     using System.Linq;
 
     public class QoSOptionsCreator : IQoSOptionsCreator
@@ -15,14 +16,14 @@ namespace Ocelot.Configuration.Creator
                 .Build();
         }
 
-        public QoSOptions Create(FileQoSOptions options, string pathTemplate, string[] httpMethods)
+        public QoSOptions Create(FileQoSOptions options, string pathTemplate, List<string> httpMethods)
         {
             var key = CreateKey(pathTemplate, httpMethods);
 
             return Map(key, options.TimeoutValue, options.DurationOfBreak, options.ExceptionsAllowedBeforeBreaking);
         }
 
-        public QoSOptions Create(QoSOptions options, string pathTemplate, string[] httpMethods)
+        public QoSOptions Create(QoSOptions options, string pathTemplate, List<string> httpMethods)
         {
             var key = CreateKey(pathTemplate, httpMethods);
 
@@ -39,7 +40,7 @@ namespace Ocelot.Configuration.Creator
                 .Build();
         }
 
-        private string CreateKey(string pathTemplate, string[] httpMethods)
+        private string CreateKey(string pathTemplate, List<string> httpMethods)
         {
             return $"{pathTemplate.FirstOrDefault()}|{string.Join(",", httpMethods)}";
         }

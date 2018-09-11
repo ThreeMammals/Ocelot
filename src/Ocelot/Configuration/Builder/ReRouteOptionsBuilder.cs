@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Builder
         private bool _isAuthorised;
         private bool _isCached;
         private bool _enableRateLimiting;
+        private bool _useServiceDiscovery;
 
         public ReRouteOptionsBuilder WithIsCached(bool isCached)
         {
@@ -31,9 +32,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteOptionsBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
+        {
+            _useServiceDiscovery = useServiceDiscovery;
+            return this;
+        }
+
         public ReRouteOptions Build()
         {
-            return new ReRouteOptions(_isAuthenticated, _isAuthorised, _isCached, _enableRateLimiting);
+            return new ReRouteOptions(_isAuthenticated, _isAuthorised, _isCached, _enableRateLimiting, _useServiceDiscovery);
         }
     }
 }
