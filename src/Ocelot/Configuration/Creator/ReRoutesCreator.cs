@@ -26,6 +26,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
+        private readonly IReRouteKeyCreator _reRouteKeyCreator;
 
         public ReRoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -39,9 +40,11 @@ namespace Ocelot.Configuration.Creator
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IHeaderFindAndReplaceCreator headerFAndRCreator,
             IDownstreamAddressesCreator downstreamAddressesCreator,
-            ILoadBalancerOptionsCreator loadBalancerOptionsCreator
+            ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
+            IReRouteKeyCreator reRouteKeyCreator
             )
         {
+            _reRouteKeyCreator = reRouteKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
@@ -68,27 +71,13 @@ namespace Ocelot.Configuration.Creator
                 .ToList();
         }
 
-        private ReRoute SetUpReRoute(FileReRoute fileReRoute, DownstreamReRoute downstreamReRoutes)
-        {
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
-
-            var reRoute = new ReRouteBuilder()
-                .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
-                .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithDownstreamReRoute(downstreamReRoutes)
-                .WithUpstreamHost(fileReRoute.UpstreamHost)
-                .Build();
-
-            return reRoute;
-        }
-
         private DownstreamReRoute SetUpDownstreamReRoute(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var fileReRouteOptions = _fileReRouteOptionsCreator.Create(fileReRoute);
 
             var requestIdKey = _requestIdKeyCreator.Create(fileReRoute, globalConfiguration);
 
-            var reRouteKey = CreateReRouteKey(fileReRoute);
+            var reRouteKey = _reRouteKeyCreator.Create(fileReRoute);
 
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
@@ -100,7 +89,7 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
-            var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod.ToArray());
+            var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod);
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute.RateLimitOptions, globalConfiguration);
 
@@ -113,8 +102,6 @@ namespace Ocelot.Configuration.Creator
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
             var lbOptions = _loadBalancerOptionsCreator.CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
-
-            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
 
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)
@@ -140,10 +127,9 @@ namespace Ocelot.Configuration.Creator
                 .WithRateLimitOptions(rateLimitOption)
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
-                .WithUseServiceDiscovery(useServiceDiscovery)
+                .WithUseServiceDiscovery(fileReRouteOptions.UseServiceDiscovery)
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
-                .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
                 .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
                 .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
@@ -153,14 +139,18 @@ namespace Ocelot.Configuration.Creator
             return reRoute;
         }
 
-        private string CreateReRouteKey(FileReRoute fileReRoute)
+        private ReRoute SetUpReRoute(FileReRoute fileReRoute, DownstreamReRoute downstreamReRoutes)
         {
-            if (!string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Type) && !string.IsNullOrEmpty(fileReRoute.LoadBalancerOptions.Key) && fileReRoute.LoadBalancerOptions.Type == nameof(CookieStickySessions))
-            {
-                return $"{nameof(CookieStickySessions)}:{fileReRoute.LoadBalancerOptions.Key}";
-            }
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
-            return $"{fileReRoute.UpstreamPathTemplate}|{string.Join(",", fileReRoute.UpstreamHttpMethod)}|{string.Join(",", fileReRoute.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}";
+            var reRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
+                .WithDownstreamReRoute(downstreamReRoutes)
+                .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .Build();
+
+            return reRoute;
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _handlerOptions = new HttpHandlerOptionsBuilder().Build();
             _loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(NoLoadBalancer)).Build();
             _qosOptionsCreator
-                .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<string[]>()))
+                .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
                 .Returns(_qoSOptions);
             _creator = new DownstreamRouteCreator(_qosOptionsCreator.Object);
         }
@@ -198,7 +198,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheQosCreatorReturns(QoSOptions options)
         {
             _qosOptionsCreator
-                .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<string[]>()))
+                .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
                 .Returns(options);
         }
 
@@ -260,7 +260,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.ReRoute.DownstreamReRoute[0].QosOptions.ShouldBe(expected);
             _result.Data.ReRoute.DownstreamReRoute[0].QosOptions.UseQos.ShouldBeTrue();
             _qosOptionsCreator
-                .Verify(x => x.Create(expected, _upstreamUrlPath, It.IsAny<string[]>()), Times.Once);
+                .Verify(x => x.Create(expected, _upstreamUrlPath, It.IsAny<List<string>>()), Times.Once);
         }
 
         private void GivenTheConfiguration(IInternalConfiguration config)

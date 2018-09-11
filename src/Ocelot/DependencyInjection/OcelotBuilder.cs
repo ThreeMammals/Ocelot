@@ -58,6 +58,7 @@ namespace Ocelot.DependencyInjection
             Services.AddSingleton<HostAndPortValidator>();
             Services.AddSingleton<IReRoutesCreator, ReRoutesCreator>();
             Services.AddSingleton<IAggregatesCreator, AggregatesCreator>();
+            Services.AddSingleton<IReRouteKeyCreator, ReRouteKeyCreator>();
             Services.AddSingleton<IConfigurationCreator, ConfigurationCreator>();
             Services.AddSingleton<IDynamicsCreator, DynamicsCreator>();
             Services.AddSingleton<ILoadBalancerOptionsCreator, LoadBalancerOptionsCreator>();

@@ -48,6 +48,7 @@ namespace Ocelot.UnitTests.Configuration
                 .WithIsAuthorised(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
+                .WithUseServiceDiscovery(true)
                 .Build();
 
             this.Given(x => x.GivenTheFollowing(reRoute))
@@ -72,6 +73,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsAuthorised.ShouldBe(expected.IsAuthorised);
             _result.IsCached.ShouldBe(expected.IsCached);
             _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+            _result.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
         }
     }
 }

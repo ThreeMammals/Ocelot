@@ -11,12 +11,14 @@ namespace Ocelot.Configuration.Creator
             var isAuthorised = IsAuthorised(fileReRoute);
             var isCached = IsCached(fileReRoute);
             var enableRateLimiting = IsEnableRateLimiting(fileReRoute);
+            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
 
             var options = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(isAuthenticated)
                 .WithIsAuthorised(isAuthorised)
                 .WithIsCached(isCached)
                 .WithRateLimiting(enableRateLimiting)
+                .WithUseServiceDiscovery(useServiceDiscovery)
                 .Build();
             
             return options;
