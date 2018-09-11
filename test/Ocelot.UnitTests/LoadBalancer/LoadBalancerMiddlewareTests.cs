@@ -12,6 +12,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.Errors;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.LoadBalancer.Middleware;
+    using Ocelot.LoadBalancer.Providers;
     using Ocelot.Logging;
     using Ocelot.Request.Middleware;
     using Ocelot.Responses;
@@ -34,6 +35,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private LoadBalancingMiddleware _middleware;
         private DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
+        private IDownstreamRequestBaseHostProvider _baseHostProvider;
 
         public LoadBalancerMiddlewareTests()
         {
@@ -47,6 +49,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _loggerFactory.Setup(x => x.CreateLogger<LoadBalancingMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
+            _baseHostProvider = new DownstreamRequestBaseHostProvider();
         }
 
         [Fact]
@@ -110,7 +113,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
+            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object, _baseHostProvider);
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 

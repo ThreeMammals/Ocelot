@@ -42,7 +42,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             if (ServiceFabricRequest(context))
             {
                 var pathAndQuery = CreateServiceFabricUri(context, response);
-                context.DownstreamRequest.AbsolutePath = pathAndQuery.path;
+                context.DownstreamRequest.AbsolutePath = (context.DownstreamRequest.ApplicationName ?? string.Empty) + pathAndQuery.path;
                 context.DownstreamRequest.Query = pathAndQuery.query;
             }
             else
@@ -51,14 +51,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                 if(ContainsQueryString(dsPath))
                 {
-                    context.DownstreamRequest.AbsolutePath = GetPath(dsPath);
+                    context.DownstreamRequest.AbsolutePath = (context.DownstreamRequest.ApplicationName ?? string.Empty) + GetPath(dsPath);
                     context.DownstreamRequest.Query = GetQueryString(dsPath);
                 }
                 else
                 {
                     RemoveQueryStringParametersThatHaveBeenUsedInTemplate(context);
 
-                    context.DownstreamRequest.AbsolutePath = dsPath.Value;
+                    context.DownstreamRequest.AbsolutePath = (context.DownstreamRequest.ApplicationName ?? string.Empty) + dsPath.Value;
                 }
             }
 

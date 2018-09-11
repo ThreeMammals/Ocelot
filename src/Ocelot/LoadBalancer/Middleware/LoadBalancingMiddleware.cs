@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Providers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -10,14 +11,17 @@ namespace Ocelot.LoadBalancer.Middleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
+        private readonly IDownstreamRequestBaseHostProvider _baseHostProvider;
 
         public LoadBalancingMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            ILoadBalancerHouse loadBalancerHouse) 
+            ILoadBalancerHouse loadBalancerHouse,
+            IDownstreamRequestBaseHostProvider baseHostProvider) 
                 :base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
         {
             _next = next;
             _loadBalancerHouse = loadBalancerHouse;
+            _baseHostProvider = baseHostProvider;
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -38,7 +42,9 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            context.DownstreamRequest.Host = hostAndPort.Data.DownstreamHost;
+            var baseHostInfo = _baseHostProvider.GetBaseHostInfo(hostAndPort.Data.DownstreamHost);
+            context.DownstreamRequest.Host = baseHostInfo.BaseHost;
+            context.DownstreamRequest.ApplicationName = baseHostInfo.ApplicationName;
 
             if (hostAndPort.Data.DownstreamPort > 0)
             {

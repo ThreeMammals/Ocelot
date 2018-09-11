@@ -49,6 +49,7 @@ namespace Ocelot.DependencyInjection
     using Steeltoe.Common.Discovery;
     using Pivotal.Discovery.Client;
     using Ocelot.Request.Creator;
+    using Ocelot.LoadBalancer.Providers;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -117,6 +118,7 @@ namespace Ocelot.DependencyInjection
             _services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             _services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             _services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+            _services.TryAddSingleton<IDownstreamRequestBaseHostProvider, DownstreamRequestBaseHostProvider>();
 
             if (UsingEurekaServiceDiscoveryProvider(configurationRoot))
             {

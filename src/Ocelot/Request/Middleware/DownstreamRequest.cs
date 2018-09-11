@@ -33,6 +33,8 @@ namespace Ocelot.Request.Middleware
 
         public int Port { get; set; }
 
+        public string ApplicationName { get; set; }
+
         public string AbsolutePath { get; set; }
 
         public string Query { get; set; }
