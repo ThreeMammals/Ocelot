@@ -1,18 +1,19 @@
-using FluentValidation;
-using Ocelot.Configuration.File;
-
 namespace Ocelot.Configuration.Validator
 {
+    using System;
+    using FluentValidation;
+    using File;
+    using Microsoft.Extensions.DependencyInjection;
     using Requester;
 
     public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
     {
         private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
 
-        public FileQoSOptionsFluentValidator(QosDelegatingHandlerDelegate qosDelegatingHandlerDelegate)
+        public FileQoSOptionsFluentValidator(IServiceProvider provider)
         {
-            _qosDelegatingHandlerDelegate = qosDelegatingHandlerDelegate;
-            
+            _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+
             When(qosOptions => qosOptions.TimeoutValue > 0 && qosOptions.ExceptionsAllowedBeforeBreaking > 0, () => {
                 RuleFor(qosOptions => qosOptions)
                 .Must(HaveQosHandlerRegistered)

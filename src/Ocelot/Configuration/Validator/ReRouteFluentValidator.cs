@@ -1,59 +1,77 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
+    using System;
     using FluentValidation;
     using Microsoft.AspNetCore.Authentication;
-    using Ocelot.Configuration.File;
+    using File;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using System;
-    using Microsoft.Extensions.DependencyInjection;
-    using Requester;
 
     public class ReRouteFluentValidator : AbstractValidator<FileReRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
-        private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
 
-        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, QosDelegatingHandlerDelegate qosDelegatingHandlerDelegate)
+        public ReRouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
-            _qosDelegatingHandlerDelegate = qosDelegatingHandlerDelegate;
 
             RuleFor(reRoute => reRoute.QoSOptions)
-                .SetValidator(new FileQoSOptionsFluentValidator(_qosDelegatingHandlerDelegate));
+                .SetValidator(fileQoSOptionsFluentValidator);
 
             RuleFor(reRoute => reRoute.DownstreamPathTemplate)
-                .Must(path => path.StartsWith("/"))
-                .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
+                .NotEmpty()
+                .WithMessage("{PropertyName} cannot be empty");
 
             RuleFor(reRoute => reRoute.UpstreamPathTemplate)
-                .Must(path => !path.Contains("//"))
-                .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
+                .NotEmpty()
+                .WithMessage("{PropertyName} cannot be empty");
 
-            RuleFor(reRoute => reRoute.DownstreamPathTemplate)
-                .Must(path => !path.Contains("//"))
-                .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
+            When(reRoute => !string.IsNullOrEmpty(reRoute.DownstreamPathTemplate), () =>
+            {
+                RuleFor(reRoute => reRoute.DownstreamPathTemplate)
+                    .Must(path => path.StartsWith("/"))
+                    .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
 
-            RuleFor(reRoute => reRoute.UpstreamPathTemplate)
-                .Must(path => path.StartsWith("/"))
-                .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
+                RuleFor(reRoute => reRoute.DownstreamPathTemplate)
+                    .Must(path => !path.Contains("//"))
+                    .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
 
-            RuleFor(reRoute => reRoute.DownstreamPathTemplate)
-                .Must(path => !path.Contains("https://") && !path.Contains("http://"))
-                .WithMessage("{PropertyName} {PropertyValue} contains scheme");
+                RuleFor(reRoute => reRoute.DownstreamPathTemplate)
+                    .Must(path => !path.Contains("https://") && !path.Contains("http://"))
+                    .WithMessage("{PropertyName} {PropertyValue} contains scheme");
+            });
 
-            RuleFor(reRoute => reRoute.UpstreamPathTemplate)
-                .Must(path => !path.Contains("https://") && !path.Contains("http://"))
-                .WithMessage("{PropertyName} {PropertyValue} contains scheme");
+            When(reRoute => !string.IsNullOrEmpty(reRoute.UpstreamPathTemplate), () =>
+            {
+                RuleFor(reRoute => reRoute.UpstreamPathTemplate)
+                    .Must(path => !path.Contains("//"))
+                    .WithMessage("{PropertyName} {PropertyValue} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
 
-            RuleFor(reRoute => reRoute.RateLimitOptions)
-                .Must(IsValidPeriod)
-                .WithMessage("RateLimitOptions.Period does not contains (s,m,h,d)");
-                
+                RuleFor(reRoute => reRoute.UpstreamPathTemplate)
+                    .Must(path => path.StartsWith("/"))
+                    .WithMessage("{PropertyName} {PropertyValue} doesnt start with forward slash");
+
+                RuleFor(reRoute => reRoute.UpstreamPathTemplate)
+                    .Must(path => !path.Contains("https://") && !path.Contains("http://"))
+                    .WithMessage("{PropertyName} {PropertyValue} contains scheme");
+            });
+
+            When(reRoute => reRoute.RateLimitOptions.EnableRateLimiting, () =>
+            {
+                RuleFor(reRoute => reRoute.RateLimitOptions.Period)
+                    .NotEmpty()
+                    .WithMessage("RateLimitOptions.Period is empty");
+
+                RuleFor(reRoute => reRoute.RateLimitOptions)
+                    .Must(IsValidPeriod)
+                    .WithMessage("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+            });
+
             RuleFor(reRoute => reRoute.AuthenticationOptions)
                 .MustAsync(IsSupportedAuthenticationProviders)
-                .WithMessage("{PropertyValue} is unsupported authentication provider");
+                .WithMessage("{PropertyName} {PropertyValue} is unsupported authentication provider");
 
             When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
@@ -62,7 +80,7 @@
 
             When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () => {
                 RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
-                    .SetCollectionValidator(new HostAndPortValidator());
+                    .SetCollectionValidator(hostAndPortValidator);
             });
         }
 
@@ -82,9 +100,22 @@
 
         private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
         {
-            string period = rateLimitOptions.Period;
+            if (string.IsNullOrEmpty(rateLimitOptions.Period))
+            {
+                return false;
+            }
 
-            return !rateLimitOptions.EnableRateLimiting || period.Contains("s") || period.Contains("m") || period.Contains("h") || period.Contains("d");
+            var period = rateLimitOptions.Period;
+
+            var secondsRegEx = new Regex("^[0-9]+s");
+            var minutesRegEx = new Regex("^[0-9]+m");
+            var hoursRegEx = new Regex("^[0-9]+h");
+            var daysRegEx = new Regex("^[0-9]+d");
+
+            return secondsRegEx.Match(period).Success
+                   || minutesRegEx.Match(period).Success
+                   || hoursRegEx.Match(period).Success
+                   || daysRegEx.Match(period).Success;
         }
     }
 }

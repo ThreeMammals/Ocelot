@@ -1,4 +1,4 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿namespace Ocelot.UnitTests.Configuration.Validation
 {
     using System.Collections.Generic;
     using System.Security.Claims;
@@ -33,7 +33,8 @@
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
             var provider = new ServiceCollection()
                 .BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+            // Todo - replace with mocks
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         [Fact]
@@ -766,10 +767,11 @@
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} doesnt start with forward slash"))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Upstream Path Template http://asdf.com contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
-                .And(x => x.ThenTheErrorMessageAtPositionIs(4, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(1, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(2, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} contains scheme"))
+
+                .And(x => x.ThenTheErrorMessageAtPositionIs(3, "Upstream Path Template http://asdf.com contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(4, "Upstream Path Template http://asdf.com doesnt start with forward slash"))
                 .And(x => x.ThenTheErrorMessageAtPositionIs(5, "Upstream Path Template http://asdf.com contains scheme"))
                 .BDDfy();
         }
@@ -947,7 +949,7 @@
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 
@@ -1140,7 +1142,7 @@
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contains (s,m,h,d)"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
                 .BDDfy();
         }
 
@@ -1383,7 +1385,7 @@
             QosDelegatingHandlerDelegate del = (a,b) => new FakeDelegatingHandler();
             collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         private void GivenAServiceDiscoveryHandler()
@@ -1392,7 +1394,7 @@
             ServiceDiscoveryFinderDelegate del = (a,b,c) => new FakeServiceDiscoveryProvider();
             collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(_authProvider.Object, provider);
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
