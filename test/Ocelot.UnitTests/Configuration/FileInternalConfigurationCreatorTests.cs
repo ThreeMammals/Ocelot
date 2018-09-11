@@ -949,7 +949,7 @@
                 result.UpstreamTemplatePattern.OriginalValue.ShouldBe(expected.UpstreamTemplatePattern.OriginalValue);
                 result.UpstreamTemplatePattern.Template.ShouldBe(expected.UpstreamTemplatePattern.Template);
 
-                result.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value);
+                result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
@@ -974,7 +974,7 @@
                 result.UpstreamTemplatePattern.OriginalValue.ShouldBe(expected.UpstreamTemplatePattern.OriginalValue);
                 result.UpstreamTemplatePattern.Template.ShouldBe(expected.UpstreamTemplatePattern.Template);
 
-                result.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value);
+                result.DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamReRoute[0].DownstreamPathTemplate.Value);
                 result.DownstreamReRoute[0].ClaimsToClaims.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToClaims.Count);
                 result.DownstreamReRoute[0].ClaimsToHeaders.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToHeaders.Count);
                 result.DownstreamReRoute[0].ClaimsToQueries.Count.ShouldBe(expected.DownstreamReRoute[0].ClaimsToQueries.Count);
