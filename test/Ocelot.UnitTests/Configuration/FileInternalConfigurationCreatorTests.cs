@@ -36,11 +36,8 @@
         {
             _validator = new Mock<IConfigurationValidator>();
             _reRoutesCreator = new Mock<IReRoutesCreator>();
-
             _aggregatesCreator = new Mock<IAggregatesCreator>();
-
             _dynamicsCreator = new Mock<IDynamicsCreator>();
-
             _configCreator = new Mock<IConfigurationCreator>();
 
             _creator = new FileInternalConfigurationCreator(_validator.Object, _reRoutesCreator.Object, _aggregatesCreator.Object, _dynamicsCreator.Object, _configCreator.Object);

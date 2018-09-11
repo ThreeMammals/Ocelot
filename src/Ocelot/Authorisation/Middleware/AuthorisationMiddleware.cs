@@ -82,7 +82,7 @@
             }
             else
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamDownstreamPathTemplate.Value} route does not require user to be authorised");
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
                 await _next.Invoke(context);
             }
         }

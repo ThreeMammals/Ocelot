@@ -234,7 +234,7 @@
             _result[reRouteIndex].DownstreamReRoute[0].ServiceName.ShouldBe(expected.ServiceName);
             _result[reRouteIndex].DownstreamReRoute[0].DownstreamScheme.ShouldBe(expected.DownstreamScheme);
             _result[reRouteIndex].DownstreamReRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
-            _result[reRouteIndex].DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
+            _result[reRouteIndex].DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
             _result[reRouteIndex].DownstreamReRoute[0].Key.ShouldBe(expected.Key);
             _result[reRouteIndex].UpstreamHttpMethod
                 .Select(x => x.Method)

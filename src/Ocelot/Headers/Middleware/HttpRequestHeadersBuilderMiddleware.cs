@@ -26,7 +26,7 @@ namespace Ocelot.Headers.Middleware
         {
             if (context.DownstreamReRoute.ClaimsToHeaders.Any())
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamDownstreamPathTemplate.Value} has instructions to convert claims to headers");
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
                 var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(context.DownstreamReRoute.ClaimsToHeaders, context.HttpContext.User.Claims, context.DownstreamRequest);
 

@@ -27,7 +27,7 @@ namespace Ocelot.Requester.QoS
                 return new OkResponse<DelegatingHandler>(handler(request, _ocelotLoggerFactory));
             }
 
-            return new ErrorResponse<DelegatingHandler>(new UnableToFindQoSProviderError($"could not find qosProvider for {request.DownstreamScheme}{request.DownstreamAddresses}{request.DownstreamDownstreamPathTemplate}"));
+            return new ErrorResponse<DelegatingHandler>(new UnableToFindQoSProviderError($"could not find qosProvider for {request.DownstreamScheme}{request.DownstreamAddresses}{request.DownstreamPathTemplate}"));
         }
     }
 }

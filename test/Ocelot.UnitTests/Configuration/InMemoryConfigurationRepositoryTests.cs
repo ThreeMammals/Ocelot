@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.ReRoutes[0].DownstreamReRoute[0].DownstreamDownstreamPathTemplate.Value.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()

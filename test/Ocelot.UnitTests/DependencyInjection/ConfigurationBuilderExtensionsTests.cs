@@ -85,7 +85,7 @@
                     new FileReRoute
                     {
                         DownstreamScheme = "DownstreamScheme",
-                        DownstreamPathTemplate = "DownstreamDownstreamPathTemplate",
+                        DownstreamPathTemplate = "DownstreamPathTemplate",
                         Key = "Key",
                         UpstreamHost = "UpstreamHost",
                         UpstreamHttpMethod = new List<string>
