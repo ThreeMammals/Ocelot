@@ -4,6 +4,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface ILoadBalancerOptionsCreator
     {
-        LoadBalancerOptions CreateLoadBalancerOptions(FileLoadBalancerOptions options);
+        LoadBalancerOptions Create(FileLoadBalancerOptions options);
     }
 }

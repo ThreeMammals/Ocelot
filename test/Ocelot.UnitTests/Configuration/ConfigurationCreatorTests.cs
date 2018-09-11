@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheDepdenciesAreCalledCorrectly()
         {
             _spcCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration), Times.Once);
-            _lboCreator.Verify(x => x.CreateLoadBalancerOptions(_fileConfig.GlobalConfiguration.LoadBalancerOptions), Times.Once);
+            _lboCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.LoadBalancerOptions), Times.Once);
             _qosCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.QoSOptions), Times.Once);
             _hhoCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.HttpHandlerOptions), Times.Once);
         }
@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Configuration
             _hho = new HttpHandlerOptionsBuilder().Build();
 
             _spcCreator.Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(_spc);
-            _lboCreator.Setup(x => x.CreateLoadBalancerOptions(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
+            _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _qosCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>())).Returns(_qoso);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         }
@@ -118,7 +118,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var serviceProvider = _serviceCollection.BuildServiceProvider();
             _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object);
-            _result = _creator.InternalConfiguration(_fileConfig, _reRoutes);
+            _result = _creator.Create(_fileConfig, _reRoutes);
         }
     }
 }

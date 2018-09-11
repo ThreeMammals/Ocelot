@@ -5,6 +5,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IReRoutesCreator
     {
-        List<ReRoute> ReRoutes(FileConfiguration fileConfiguration);
+        List<ReRoute> Create(FileConfiguration fileConfiguration);
     }
 }

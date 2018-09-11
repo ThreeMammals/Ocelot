@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Cache;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Logging;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Ocelot.Configuration.Creator
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Cache;
+    using Builder;
+    using File;
 
     public class ReRoutesCreator : IReRoutesCreator
     {
@@ -60,7 +54,7 @@ namespace Ocelot.Configuration.Creator
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         }
 
-        public List<ReRoute> ReRoutes(FileConfiguration fileConfiguration)
+        public List<ReRoute> Create(FileConfiguration fileConfiguration)
         {
             return fileConfiguration.ReRoutes
                 .Select(reRoute =>
@@ -101,7 +95,7 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
 
-            var lbOptions = _loadBalancerOptionsCreator.CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions);
+            var lbOptions = _loadBalancerOptionsCreator.Create(fileReRoute.LoadBalancerOptions);
 
             var reRoute = new DownstreamReRouteBuilder()
                 .WithKey(fileReRoute.Key)

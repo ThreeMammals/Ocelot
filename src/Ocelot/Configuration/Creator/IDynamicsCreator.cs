@@ -5,6 +5,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IDynamicsCreator
     {
-        List<ReRoute> Dynamics(FileConfiguration fileConfiguration);
+        List<ReRoute> Create(FileConfiguration fileConfiguration);
     }
 }

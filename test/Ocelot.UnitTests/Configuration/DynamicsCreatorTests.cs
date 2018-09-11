@@ -115,7 +115,7 @@
 
         private void WhenICreate()
         {
-            _result = _creator.Dynamics(_fileConfig);
+            _result = _creator.Create(_fileConfig);
         }
 
         private void GivenThe(FileConfiguration fileConfig)

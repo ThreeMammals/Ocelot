@@ -178,7 +178,7 @@
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(_ht);
             _daCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(_dhp);
-            _lboCreator.Setup(x => x.CreateLoadBalancerOptions(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
+            _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
         }
 
         private void ThenTheReRoutesAreCreated()
@@ -201,7 +201,7 @@
 
         private void WhenICreate()
         {
-            _result = _creator.ReRoutes(_fileConfig);
+            _result = _creator.Create(_fileConfig);
         }
 
         private void ThenTheReRouteIsSet(FileReRoute expected, int reRouteIndex)
@@ -265,7 +265,7 @@
             _hhoCreator.Verify(x => x.Create(fileReRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileReRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileReRoute), Times.Once);
-            _lboCreator.Verify(x => x.CreateLoadBalancerOptions(fileReRoute.LoadBalancerOptions), Times.Once);
+            _lboCreator.Verify(x => x.Create(fileReRoute.LoadBalancerOptions), Times.Once);
         }
     }
 }

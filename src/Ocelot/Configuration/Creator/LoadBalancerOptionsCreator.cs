@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.Creator
 
     public class LoadBalancerOptionsCreator : ILoadBalancerOptionsCreator
     {
-        public LoadBalancerOptions CreateLoadBalancerOptions(FileLoadBalancerOptions options)
+        public LoadBalancerOptions Create(FileLoadBalancerOptions options)
         {
             return new LoadBalancerOptionsBuilder()
                 .WithType(options.Type)

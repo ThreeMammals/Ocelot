@@ -5,6 +5,6 @@ namespace Ocelot.Configuration.Creator
 {
     public interface IAggregatesCreator
     {
-        List<ReRoute> Aggregates(FileConfiguration fileConfiguration, List<ReRoute> reRoutes);
+        List<ReRoute> Create(FileConfiguration fileConfiguration, List<ReRoute> reRoutes);
     }
 }

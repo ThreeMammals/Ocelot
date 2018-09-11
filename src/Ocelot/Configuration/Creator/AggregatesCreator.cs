@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
-
 namespace Ocelot.Configuration.Creator
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Builder;
+    using File;
 
     public class AggregatesCreator : IAggregatesCreator
     {
@@ -15,7 +14,7 @@ namespace Ocelot.Configuration.Creator
             _creator = creator;
         }
 
-        public List<ReRoute> Aggregates(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
+        public List<ReRoute> Create(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
         {
             return fileConfiguration.Aggregates
                 .Select(aggregate => SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration))

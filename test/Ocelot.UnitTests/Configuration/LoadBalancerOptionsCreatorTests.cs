@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.CreateLoadBalancerOptions(_fileLoadBalancerOptions);
+            _result = _creator.Create(_fileLoadBalancerOptions);
         }
 
         private void GivenThe(FileLoadBalancerOptions fileLoadBalancerOptions)

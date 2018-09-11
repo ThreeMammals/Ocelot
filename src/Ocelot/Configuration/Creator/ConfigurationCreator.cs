@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using Ocelot.Cache;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Validator;
-using Ocelot.DependencyInjection;
-using Ocelot.Logging;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Ocelot.Configuration.Creator
 {
+    using System;
+    using System.Collections.Generic;
+    using File;
+    using DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection;
 
     public class ConfigurationCreator : IConfigurationCreator
     {
@@ -33,11 +29,11 @@ namespace Ocelot.Configuration.Creator
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
 
-        public InternalConfiguration InternalConfiguration(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
+        public InternalConfiguration Create(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
         {
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
 
-            var lbOptions = _loadBalancerOptionsCreator.CreateLoadBalancerOptions(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
+            var lbOptions = _loadBalancerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
 
             var qosOptions = _qosOptionsCreator.Create(fileConfiguration.GlobalConfiguration.QoSOptions);
 

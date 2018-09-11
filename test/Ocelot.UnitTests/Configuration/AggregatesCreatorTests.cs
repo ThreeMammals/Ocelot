@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Aggregates(_fileConfiguration, _reRoutes);
+            _result = _creator.Create(_fileConfiguration, _reRoutes);
         }
     }
 }

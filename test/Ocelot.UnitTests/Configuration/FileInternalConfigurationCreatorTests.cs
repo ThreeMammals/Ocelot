@@ -2,21 +2,16 @@
 {
     using System.Collections.Generic;
     using Moq;
-    using Ocelot.Cache;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Validator;
-    using Ocelot.Logging;
     using Ocelot.Responses;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
     using Ocelot.Errors;
-    using Ocelot.UnitTests.TestData;
-    using Ocelot.Values;
-    using System;
     using System.Threading.Tasks;
     using Ocelot.UnitTests.Responder;
     using System.Linq;
@@ -30,7 +25,7 @@
         private readonly Mock<IConfigurationCreator> _configCreator;
         private Response<IInternalConfiguration> _config;
         private FileConfiguration _fileConfiguration;
-        private FileInternalConfigurationCreator _internalConfigurationCreator;
+        private readonly FileInternalConfigurationCreator _creator;
         private Response<IInternalConfiguration> _result;
         private List<ReRoute> _reRoutes;
         private List<ReRoute> _aggregates;
@@ -48,7 +43,7 @@
 
             _configCreator = new Mock<IConfigurationCreator>();
 
-            _internalConfigurationCreator = new FileInternalConfigurationCreator(_validator.Object, _reRoutesCreator.Object, _aggregatesCreator.Object, _dynamicsCreator.Object, _configCreator.Object);
+            _creator = new FileInternalConfigurationCreator(_validator.Object, _reRoutesCreator.Object, _aggregatesCreator.Object, _dynamicsCreator.Object, _configCreator.Object);
         }
 
         [Fact]
@@ -78,16 +73,16 @@
 
         private void ThenTheDependenciesAreCalledCorrectly()
         {
-            _reRoutesCreator.Verify(x => x.ReRoutes(_fileConfiguration), Times.Once);
-            _aggregatesCreator.Verify(x => x.Aggregates(_fileConfiguration, _reRoutes), Times.Once);
-            _dynamicsCreator.Verify(x => x.Dynamics(_fileConfiguration), Times.Once);
+            _reRoutesCreator.Verify(x => x.Create(_fileConfiguration), Times.Once);
+            _aggregatesCreator.Verify(x => x.Create(_fileConfiguration, _reRoutes), Times.Once);
+            _dynamicsCreator.Verify(x => x.Create(_fileConfiguration), Times.Once);
 
             var mergedReRoutes = _reRoutes
                 .Union(_aggregates)
                 .Union(_dynamics)
                 .ToList();
 
-            _configCreator.Verify(x => x.InternalConfiguration(_fileConfiguration, It.Is<List<ReRoute>>(y => y.Count == mergedReRoutes.Count)), Times.Once);
+            _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<List<ReRoute>>(y => y.Count == mergedReRoutes.Count)), Times.Once);
         }
 
         private void GivenTheDependenciesAreSetUp()
@@ -97,10 +92,10 @@
             _dynamics = new List<ReRoute> { new ReRouteBuilder().Build() };
             _internalConfig = new InternalConfiguration(null, "", null, "", null, "", null, null);
 
-            _reRoutesCreator.Setup(x => x.ReRoutes(It.IsAny<FileConfiguration>())).Returns(_reRoutes);
-            _aggregatesCreator.Setup(x => x.Aggregates(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_aggregates);
-            _dynamicsCreator.Setup(x => x.Dynamics(It.IsAny<FileConfiguration>())).Returns(_dynamics);
-            _configCreator.Setup(x => x.InternalConfiguration(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_internalConfig);
+            _reRoutesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_reRoutes);
+            _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_aggregates);
+            _dynamicsCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_dynamics);
+            _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_internalConfig);
         }
 
         private void GivenTheValidationSucceeds()
@@ -117,7 +112,7 @@
 
         private async Task WhenICreate()
         {
-            _result = await _internalConfigurationCreator.Create(_fileConfiguration);
+            _result = await _creator.Create(_fileConfiguration);
         }
 
         private void GivenTheValidationFails()

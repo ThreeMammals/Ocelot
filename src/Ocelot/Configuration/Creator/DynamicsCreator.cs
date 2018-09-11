@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.Creator
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
         }
 
-        public List<ReRoute> Dynamics(FileConfiguration fileConfiguration)
+        public List<ReRoute> Create(FileConfiguration fileConfiguration)
         {
             return fileConfiguration.DynamicReRoutes
                 .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration))
