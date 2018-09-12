@@ -69,6 +69,7 @@ namespace Ocelot.UnitTests.Middleware
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
                 .And(x => ThenTheContentTypeIs("application/json"))
+                .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
                 .BDDfy();
         }
 
@@ -114,6 +115,11 @@ namespace Ocelot.UnitTests.Middleware
                 .Then(x => ThenTheContentIs(expected))
                 .And(x => ThenTheErrorIsMapped())
                 .BDDfy();
+        }
+
+        private void ThenTheReasonPhraseIs(string expected)
+        {
+            _upstreamContext.DownstreamResponse.ReasonPhrase.ShouldBe(expected);
         }
 
         private void ThenTheErrorIsMapped()
