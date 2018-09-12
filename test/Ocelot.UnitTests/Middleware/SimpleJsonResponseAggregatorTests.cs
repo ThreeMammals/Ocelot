@@ -49,13 +49,13 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute
             };
 
@@ -91,13 +91,13 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute,
             };
 

@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace> {new HeaderFindAndReplace("test", "test", "chiken", 0)};
 
@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>();
 
@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -138,7 +138,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -165,7 +165,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -192,7 +192,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -219,7 +219,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {

@@ -559,7 +559,7 @@ namespace Ocelot.AcceptanceTests
             var merge = $"{one}, {two}";
             merge = merge.Replace("Hello", "Bye").Replace("{", "").Replace("}", "");
             var headers = responses.SelectMany(x => x.Headers).ToList();
-            return new DownstreamResponse(new StringContent(merge), HttpStatusCode.OK, headers);
+            return new DownstreamResponse(new StringContent(merge), HttpStatusCode.OK, headers, "some reason");
         }
     }
 }

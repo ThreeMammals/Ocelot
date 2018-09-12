@@ -452,6 +452,11 @@
             header.First().ShouldBe(value);
         }
 
+        public void ThenTheReasonPhraseIs(string expected)
+        {
+            _response.ReasonPhrase.ShouldBe(expected);
+        }
+
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
