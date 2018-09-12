@@ -46,7 +46,7 @@ namespace Ocelot.Middleware.Multiplexer
                 Headers = {ContentType = new MediaTypeHeaderValue("application/json")}
             };
 
-            originalContext.DownstreamResponse = new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>());
+            originalContext.DownstreamResponse = new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?");
         }
 
         private static void MapAggregateError(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts, int i)

@@ -53,7 +53,7 @@
                 { "content-type", new List<string> { "application/json" } }
             };
 
-            var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, "", contentHeaders);
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, "", contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())
@@ -69,7 +69,7 @@
                 { "Expires", new List<string> { "-1" } }
             };
 
-            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", contentHeaders);
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())

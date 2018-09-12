@@ -49,13 +49,13 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute
             };
 
@@ -69,6 +69,7 @@ namespace Ocelot.UnitTests.Middleware
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
                 .And(x => ThenTheContentTypeIs("application/json"))
+                .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
                 .BDDfy();
         }
 
@@ -91,13 +92,13 @@ namespace Ocelot.UnitTests.Middleware
 
             var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
             var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
             {
-                DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>()),
+                DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute,
             };
 
@@ -114,6 +115,11 @@ namespace Ocelot.UnitTests.Middleware
                 .Then(x => ThenTheContentIs(expected))
                 .And(x => ThenTheErrorIsMapped())
                 .BDDfy();
+        }
+
+        private void ThenTheReasonPhraseIs(string expected)
+        {
+            _upstreamContext.DownstreamResponse.ReasonPhrase.ShouldBe(expected);
         }
 
         private void ThenTheErrorIsMapped()

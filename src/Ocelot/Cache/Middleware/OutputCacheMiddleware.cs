@@ -87,7 +87,7 @@
                 streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-            return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList());
+            return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList(), cached.ReasonPhrase);
         }
 
         internal async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
@@ -109,7 +109,7 @@
 
             var contentHeaders = response?.Content?.Headers.ToDictionary(v => v.Key, v => v.Value);
 
-            var cached = new CachedResponse(statusCode, headers, body, contentHeaders);
+            var cached = new CachedResponse(statusCode, headers, body, contentHeaders, response.ReasonPhrase);
             return cached;
         }
     }
