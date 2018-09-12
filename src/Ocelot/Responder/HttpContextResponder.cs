@@ -43,14 +43,7 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ response.Content.Headers.ContentLength.ToString() }) );
             }
 
-            context.Response.OnStarting(state =>
-            {
-                var httpContext = (HttpContext)state;
-
-                httpContext.Response.StatusCode = (int)response.StatusCode;
-
-                return Task.CompletedTask;
-            }, context);
+            context.Response.StatusCode = (int)response.StatusCode;
 
             using(content)
             {
