@@ -107,7 +107,7 @@ Instead of adding the configuration directly e.g. AddJsonFile("ocelot.json") you
                 .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                 .AddJsonFile("appsettings.json", true, true)
                 .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                .AddOcelot()
+                .AddOcelot(hostingContext.HostingEnvironment)
                 .AddEnvironmentVariables();
         })
 
@@ -116,6 +116,22 @@ In this scenario Ocelot will look for any files that match the pattern (?i)ocelo
 The way Ocelot merges the files is basically load them, loop over them, add any ReRoutes, add any AggregateReRoutes and if the file is called ocelot.global.json add the GlobalConfiguration aswell as any ReRoutes or AggregateReRoutes. Ocelot will then save the merged configuration to a file called ocelot.json and this will be used as the source of truth while ocelot is running.
 
 At the moment there is no validation at this stage it only happens when Ocelot validates the final merged configuration. This is something to be aware of when you are investigating problems. I would advise always checking what is in ocelot.json if you have any problems.
+
+You can also give Ocelot a specific path to look in for the configuration files like below.
+
+.. code-block:: csharp
+
+    .ConfigureAppConfiguration((hostingContext, config) =>
+        {
+            config
+                .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                .AddOcelot("/foo/bar", hostingContext.HostingEnvironment)
+                .AddEnvironmentVariables();
+        })
+
+Ocelot needs the HostingEnvironment so it know's to exclude anything environment specific from the algorithm. 
 
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

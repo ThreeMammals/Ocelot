@@ -29,12 +29,12 @@ namespace Ocelot.DependencyInjection
             return builder;
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IHostingEnvironment env = null)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IHostingEnvironment env)
         {
             return builder.AddOcelot(".", env);
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IHostingEnvironment env = null)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IHostingEnvironment env)
         {
             const string primaryConfigFile = "ocelot.json";
 

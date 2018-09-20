@@ -22,9 +22,12 @@
         private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
         private FileConfiguration _envSpecific;
+        private Mock<IHostingEnvironment> _hostingEnvironment;
+
 
         public ConfigurationBuilderExtensionsTests()
         {
+            _hostingEnvironment = new Mock<IHostingEnvironment>();
             // Clean up config files before each test
             var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
 
@@ -47,7 +50,8 @@
         public void should_merge_files()
         {
             this.Given(_ => GivenMultipleConfigurationFiles("", false))
-                .When(_ => WhenIAddOcelotConfiguration(false))
+                .And(_ => GivenTheEnvironmentIs(null))
+                .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
                 .BDDfy();
         }
@@ -56,7 +60,8 @@
         public void should_merge_files_except_env()
         {
             this.Given(_ => GivenMultipleConfigurationFiles("", true))
-                .When(_ => WhenIAddOcelotConfiguration(true))
+                .And(_ => GivenTheEnvironmentIs("Env"))
+                .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
                 .And(_ => NotContainsEnvSpecificConfig())
                 .BDDfy();
@@ -241,14 +246,16 @@
             }
         }
 
-        private void WhenIAddOcelotConfiguration(bool addEnv)
+        private void GivenTheEnvironmentIs(string env)
+        {
+            _hostingEnvironment.SetupGet(x => x.EnvironmentName).Returns(env);
+        }
+
+        private void WhenIAddOcelotConfiguration()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder();
 
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
-            hostingEnvironment.SetupGet(x => x.EnvironmentName).Returns(addEnv ? "Env" : null);
-
-            builder.AddOcelot(hostingEnvironment.Object);
+            builder.AddOcelot(_hostingEnvironment.Object);
 
             _configRoot = builder.Build();
         }
@@ -256,7 +263,7 @@
         private void WhenIAddOcelotConfigurationWithSpecificFolder(string folder)
         {
             IConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.AddOcelot(folder);
+            builder.AddOcelot(folder, _hostingEnvironment.Object);
             _configRoot = builder.Build();
         }
 
