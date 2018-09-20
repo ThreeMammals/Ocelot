@@ -1,21 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Errors;
-using Ocelot.Logging;
-using Ocelot.Requester;
-using Ocelot.Requester.QoS;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Requester
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Errors;
+    using Ocelot.Logging;
+    using Ocelot.Requester;
+    using Ocelot.Requester.QoS;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
     using Responder;
 
     public class DelegatingHandlerHandlerProviderFactoryTests
@@ -287,6 +286,26 @@ namespace Ocelot.UnitTests.Requester
                 .WithTimeoutValue(1)
                 .WithDurationOfBreak(1)
                 .WithExceptionsAllowedBeforeBreaking(1)
+                .Build();
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true)).WithLoadBalancerKey("").Build();
+
+            this.Given(x => GivenTheFollowingRequest(reRoute))
+                .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
+                .And(x => GivenTheServiceProviderReturnsNothing())
+                .When(x => WhenIGet())
+                .Then(x => ThenThereIsDelegatesInProvider(1))
+                .And(x => ThenItIsQosHandler(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_provider_with_qos_delegate_when_timeout_value_set()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .WithTimeoutValue(1)
                 .Build();
 
             var reRoute = new DownstreamReRouteBuilder()
