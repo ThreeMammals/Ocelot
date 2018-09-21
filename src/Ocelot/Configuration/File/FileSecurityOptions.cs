@@ -8,12 +8,12 @@ namespace Ocelot.Configuration.File
     {
         public FileSecurityOptions()
         {
-            IPWhitelist = new List<string>();
-            IPBlacklist = new List<string>();
+            IPAllowedList = new List<string>();
+            IPBlockedList = new List<string>();
         }
 
-        public List<string> IPWhitelist { get; set; } 
+        public List<string> IPAllowedList { get; set; } 
 
-        public List<string> IPBlacklist { get; set; }
+        public List<string> IPBlockedList { get; set; }
     }
 }

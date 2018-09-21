@@ -19,22 +19,25 @@ namespace Ocelot.Security.IPSecurity
             {
                 return new OkResponse();
             }
-            if (securityOptions.IPBlacklist != null)
+
+            if (securityOptions.IPBlockedList != null)
             {
-                if (securityOptions.IPBlacklist.Exists(f => f == clientIp.ToString()))
+                if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
                 {
                     var error = new UnauthenticatedError($"{clientIp.ToString()} Cannot request to enter the blacklist");
                     return new ErrorResponse(error);
                 }
             }
-            if (securityOptions.IPWhitelist != null)
+
+            if (securityOptions.IPAllowedList != null)
             {
-                if (!securityOptions.IPWhitelist.Exists(f => f == clientIp.ToString()))
+                if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
                     var error = new UnauthenticatedError($"{clientIp.ToString()}  is not in the whitelist, the request is invalid");
                     return new ErrorResponse(error);
                 }
             }
+
             return await Task.FromResult(new OkResponse());
         }
     }

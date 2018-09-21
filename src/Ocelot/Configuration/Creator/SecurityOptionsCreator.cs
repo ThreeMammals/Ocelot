@@ -9,7 +9,7 @@ namespace Ocelot.Configuration.Creator
     {
         public SecurityOptions Create(FileSecurityOptions securityOptions)
         {
-            return new SecurityOptions(securityOptions.IPWhitelist, securityOptions.IPBlacklist);
+            return new SecurityOptions(securityOptions.IPAllowedList, securityOptions.IPBlockedList);
         }
     }
 }
