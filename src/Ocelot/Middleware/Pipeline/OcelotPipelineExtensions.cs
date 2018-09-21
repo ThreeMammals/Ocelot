@@ -15,6 +15,7 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
+using Ocelot.Security.Middleware;
 using Ocelot.WebSockets.Middleware;
 
 namespace Ocelot.Middleware.Pipeline
@@ -47,6 +48,9 @@ namespace Ocelot.Middleware.Pipeline
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
+
+            // This security module, IP whitelist blacklist, extended security mechanism
+            builder.UseSecurityMiddleware();
 
             //Expand other branch pipes
             if (pipelineConfiguration.MapWhenOcelotPipeline != null)

@@ -35,6 +35,8 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Request.Creator;
+    using Ocelot.Security.IPSecurity;
+    using Ocelot.Security;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -125,6 +127,9 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
 
+            //add security 
+            this.AddSecurity();
+
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
@@ -139,22 +144,28 @@ namespace Ocelot.DependencyInjection
             Services.AddWebEncoders();
         }
 
-        public IOcelotBuilder AddSingletonDefinedAggregator<T>() 
+        public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
             Services.AddSingleton<IDefinedAggregator, T>();
             return this;
         }
 
-        public IOcelotBuilder AddTransientDefinedAggregator<T>() 
+        public IOcelotBuilder AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
             Services.AddTransient<IDefinedAggregator, T>();
             return this;
         }
 
-        public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false) 
-            where THandler : DelegatingHandler 
+        private void AddSecurity()
+        {
+            Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
+            Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
+        }
+
+        public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
+            where THandler : DelegatingHandler
         {
             if(global)
             {

@@ -38,7 +38,7 @@ namespace Ocelot.Configuration.Builder
         private List<AddHeader> _addHeadersToDownstream;
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
-
+        private SecurityOptions _securityOptions;
         public DownstreamReRouteBuilder()
         {
             _downstreamAddresses = new List<DownstreamHostAndPort>();
@@ -227,6 +227,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithSecurityOptions(SecurityOptions securityOptions)
+        {
+            _securityOptions = securityOptions;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
@@ -258,7 +264,8 @@ namespace Ocelot.Configuration.Builder
                 _delegatingHandlers,
                 _addHeadersToDownstream,
                 _addHeadersToUpstream,
-                _dangerousAcceptAnyServerCertificateValidator);
+                _dangerousAcceptAnyServerCertificateValidator,
+                _securityOptions);
         }
     }
 }
