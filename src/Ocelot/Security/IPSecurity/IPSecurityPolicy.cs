@@ -29,7 +29,7 @@ namespace Ocelot.Security.IPSecurity
                 }
             }
 
-            if (securityOptions.IPAllowedList != null)
+            if (securityOptions.IPAllowedList != null && securityOptions.IPAllowedList.Count > 0)
             {
                 if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
@@ -37,7 +37,7 @@ namespace Ocelot.Security.IPSecurity
                     return new ErrorResponse(error);
                 }
             }
-
+         
             return await Task.FromResult(new OkResponse());
         }
     }

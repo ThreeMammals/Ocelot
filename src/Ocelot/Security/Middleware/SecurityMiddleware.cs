@@ -1,8 +1,6 @@
 ﻿using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Ocelot.Security.Middleware
