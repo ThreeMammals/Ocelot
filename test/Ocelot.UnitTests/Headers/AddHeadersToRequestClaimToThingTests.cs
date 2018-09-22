@@ -15,6 +15,9 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
+    using Ocelot.Infrastructure;
+    using Ocelot.Logging;
+
     public class AddHeadersToRequestClaimToThingTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
@@ -24,11 +27,15 @@ namespace Ocelot.UnitTests.Headers
         private List<ClaimToThing> _configuration;
         private Response _result;
         private Response<string> _claimValue;
+        private Mock<IPlaceholders> _placeholders;
+        private Mock<IOcelotLoggerFactory> _factory;
 
         public AddHeadersToRequestClaimToThingTests()
         {
             _parser = new Mock<IClaimsParser>();
-            _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
+            _placeholders = new Mock<IPlaceholders>();
+            _factory = new Mock<IOcelotLoggerFactory>();
+            _addHeadersToRequest = new AddHeadersToRequest(_parser.Object, _placeholders.Object, _factory.Object);
             _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
