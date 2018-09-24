@@ -71,14 +71,12 @@ namespace Ocelot.IntegrationTests
                 }
             };
 
-            var host = "::1";
-
             this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:6773", 200, "X-Forwarded-For"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
                 .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseHeaderIs("X-Forwarded-For", host))
+                .And(x => ThenXForwardedForIsSet())
                 .BDDfy();
         }
 
@@ -174,10 +172,21 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(code);
         }
 
-        private void ThenTheResponseHeaderIs(string key, string value)
+        private void ThenXForwardedForIsSet()
         {
+            var windowsOrMac = "::1";
+            var linux = "127.0.0.1";
+
             var header = _response.Content.ReadAsStringAsync().Result;
-            header.ShouldBe(value);
+
+            bool passed = false;
+            
+            if(header == windowsOrMac || header == linux) 
+            {
+                passed = true;
+            }
+
+            passed.ShouldBeTrue();
         }
 
         public void Dispose()
