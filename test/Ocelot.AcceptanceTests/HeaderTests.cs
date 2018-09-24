@@ -4,6 +4,7 @@ namespace Ocelot.AcceptanceTests
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;

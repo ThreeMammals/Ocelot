@@ -1,22 +1,29 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration;
-using Ocelot.Infrastructure.Claims.Parser;
-using Ocelot.Responses;
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.Creator;
-using Ocelot.Request.Middleware;
-
-namespace Ocelot.Headers
+﻿namespace Ocelot.Headers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Infrastructure;
+    using Logging;
+    using Ocelot.Configuration;
+    using Ocelot.Infrastructure.Claims.Parser;
+    using Ocelot.Responses;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Primitives;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
+
     public class AddHeadersToRequest : IAddHeadersToRequest
     {
         private readonly IClaimsParser _claimsParser;
+        private readonly IPlaceholders _placeholders;
+        private readonly IOcelotLogger _logger;
 
-        public AddHeadersToRequest(IClaimsParser claimsParser)
+        public AddHeadersToRequest(IClaimsParser claimsParser, IPlaceholders placeholders, IOcelotLoggerFactory factory)
         {
+            _logger = factory.CreateLogger<AddHeadersToRequest>();
             _claimsParser = claimsParser;
+            _placeholders = placeholders;
         }
 
         public Response SetHeadersOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<System.Security.Claims.Claim> claims, DownstreamRequest downstreamRequest)
@@ -46,6 +53,7 @@ namespace Ocelot.Headers
         public void SetHeadersOnDownstreamRequest(IEnumerable<AddHeader> headers, HttpContext context)
         {
             var requestHeader = context.Request.Headers;
+
             foreach (var header in headers)
             {
                 if (requestHeader.ContainsKey(header.Key))
@@ -53,7 +61,22 @@ namespace Ocelot.Headers
                     requestHeader.Remove(header.Key);
                 }
 
-                requestHeader.Add(header.Key, header.Value);
+                if (header.Value.StartsWith("{") && header.Value.EndsWith("}"))
+                {
+                    var value = _placeholders.Get(header.Value);
+
+                    if (value.IsError)
+                    {
+                        _logger.LogWarning($"Unable to add header to response {header.Key}: {header.Value}");
+                        continue;
+                    }
+
+                    requestHeader.Add(header.Key, new StringValues(value.Data));
+                }
+                else
+                {
+                    requestHeader.Add(header.Key, header.Value);
+                }
             }
         }
     }

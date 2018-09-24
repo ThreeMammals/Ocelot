@@ -1,15 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration;
-using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Extensions;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using Ocelot.Request.Middleware;
-using Ocelot.Responses;
-
 namespace Ocelot.Headers
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Ocelot.Configuration;
+    using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.Extensions;
+    using Ocelot.Middleware;
+    using Ocelot.Responses;
+
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
         private readonly IPlaceholders _placeholders;
@@ -19,8 +17,11 @@ namespace Ocelot.Headers
             _placeholders = placeholders;
         }
 
-        public Response Replace(DownstreamResponse response, List<HeaderFindAndReplace> fAndRs, DownstreamRequest request)
+        public Response Replace(DownstreamContext context, List<HeaderFindAndReplace> fAndRs)
         {
+            var response = context.DownstreamResponse;
+            var request = context.DownstreamRequest;
+
             foreach (var f in fAndRs)
             {
                 var dict = response.Headers.ToDictionary(x => x.Key);
