@@ -46,6 +46,20 @@ namespace Ocelot.UnitTests.Authentication
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_call_next_middleware_if_route_is_using_options_method()
+        {
+            this.Given(x => GivenTheDownStreamRouteIs(
+                    new DownstreamReRouteBuilder()
+                        .WithUpstreamHttpMethod(new List<string> { "Options" })
+                        .WithIsAuthenticated(true)
+                        .Build()))
+                .And(x => GivenTheRequestIsUsingOptionsMethod())
+                .When(x => WhenICallTheMiddleware())
+                .Then(x => ThenTheUserIsAuthenticated())
+                .BDDfy();
+        }
+
         private void WhenICallTheMiddleware()
         {
             _next = (context) => {
@@ -68,9 +82,14 @@ namespace Ocelot.UnitTests.Authentication
             };
         }
 
+        private void GivenTheRequestIsUsingOptionsMethod()
+        {
+            _downstreamContext.HttpContext.Request.Method = "OPTIONS";
+        }
+
         private void ThenTheUserIsAuthenticated()
         {
-            var content = _downstreamContext.HttpContext.Response.Body.AsString(); 
+            var content = _downstreamContext.HttpContext.Response.Body.AsString();
             content.ShouldBe("The user is authenticated");
         }
 
@@ -84,7 +103,7 @@ namespace Ocelot.UnitTests.Authentication
     {
         public static string AsString(this Stream stream)
         {
-            using(var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 string text = reader.ReadToEnd();
                 return text;
