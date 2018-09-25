@@ -91,7 +91,7 @@ namespace Ocelot.Middleware.Pipeline
             }
 
             // The next thing we do is look at any claims transforms in case this is important for authorisation
-            builder.UseClaimsBuilderMiddleware();
+            builder.UseClaimsToClaimsMiddleware();
 
             // Allow pre authorisation logic. The idea being people might want to run something custom before what is built in.
             builder.UseIfNotNull(pipelineConfiguration.PreAuthorisationMiddleware);
@@ -109,14 +109,14 @@ namespace Ocelot.Middleware.Pipeline
                 builder.Use(pipelineConfiguration.AuthorisationMiddleware);
             }
 
-            // Now we can run any header transformation logic
-            builder.UseHttpRequestHeadersBuilderMiddleware();
+            // Now we can run the claims to headers transformation middleware
+            builder.UseClaimsToHeadersMiddleware();
 
             // Allow the user to implement their own query string manipulation logic
             builder.UseIfNotNull(pipelineConfiguration.PreQueryStringBuilderMiddleware);
 
-            // Now we can run any query string transformation logic
-            builder.UseQueryStringBuilderMiddleware();
+            // Now we can run any claims to query string transformation middleware
+            builder.UseClaimsToQueryStringMiddleware();
 
             // Get the load balancer for this request
             builder.UseLoadBalancingMiddleware();
