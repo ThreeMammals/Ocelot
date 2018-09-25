@@ -27,6 +27,7 @@ using BenchmarkDotNet.Validators;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Middleware.Multiplexer;
+using Ocelot.Configuration;
 
 namespace Ocelot.Benchmarks
 {
@@ -54,7 +55,6 @@ namespace Ocelot.Benchmarks
             var services = serviceCollection.BuildServiceProvider();
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
-            var icr = services.GetService<IInternalConfigurationRepository>();
             var multiplexer = services.GetService<IMultiplexer>();
 
             _next = async context => {
@@ -62,8 +62,16 @@ namespace Ocelot.Benchmarks
                 throw new Exception("BOOM");
             };
             
-            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, icr, multiplexer);
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = new PathString("/test");
+            httpContext.Request.QueryString = new QueryString("?a=b");
+            httpContext.Request.Headers.Add("Host", "most");
+            
+            _downstreamContext = new DownstreamContext(httpContext)
+            {
+                Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null)
+            };
         }
 
         [Benchmark(Baseline = true)]
