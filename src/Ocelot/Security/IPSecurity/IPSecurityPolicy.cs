@@ -24,7 +24,7 @@ namespace Ocelot.Security.IPSecurity
             {
                 if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($"{clientIp.ToString()} Cannot request to enter the blacklist");
+                    var error = new UnauthenticatedError($" This request rejects access to {clientIp.ToString()} IP");
                     return new ErrorResponse(error);
                 }
             }
@@ -33,7 +33,7 @@ namespace Ocelot.Security.IPSecurity
             {
                 if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($"{clientIp.ToString()}  is not in the whitelist, the request is invalid");
+                    var error = new UnauthenticatedError($"{clientIp.ToString()} does not allow access, the request is invalid");
                     return new ErrorResponse(error);
                 }
             }
