@@ -17,6 +17,7 @@ namespace Ocelot.Security.Middleware
         {
             _logger = loggerFactory.CreateLogger<SecurityMiddleware>();
             _securityPolicies = securityPolicies;
+            _next = next;
         }
 
         public async Task Invoke(DownstreamContext context)
