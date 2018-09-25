@@ -35,7 +35,8 @@ namespace Ocelot.Configuration
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
             List<AddHeader> addHeadersToUpstream,
-            bool dangerousAcceptAnyServerCertificateValidator)
+            bool dangerousAcceptAnyServerCertificateValidator,
+            SecurityOptions securityOptions)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -66,6 +67,7 @@ namespace Ocelot.Configuration
             DownstreamPathTemplate = downstreamPathTemplate;
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
+            SecurityOptions = securityOptions;
         }
 
         public string Key { get; }
@@ -97,5 +99,6 @@ namespace Ocelot.Configuration
         public List<AddHeader> AddHeadersToDownstream { get; }
         public List<AddHeader> AddHeadersToUpstream { get; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
+        public SecurityOptions SecurityOptions { get; }
     }
 }
