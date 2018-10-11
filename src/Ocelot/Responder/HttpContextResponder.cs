@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
 using Ocelot.Middleware;
@@ -43,14 +44,9 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ response.Content.Headers.ContentLength.ToString() }) );
             }
 
-            context.Response.OnStarting(state =>
-            {
-                var httpContext = (HttpContext)state;
+            SetStatusCode(context, (int)response.StatusCode);
 
-                httpContext.Response.StatusCode = (int)response.StatusCode;
-
-                return Task.CompletedTask;
-            }, context);
+            context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = response.ReasonPhrase;
 
             using(content)
             {
@@ -63,7 +59,15 @@ namespace Ocelot.Responder
 
         public void SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
-            context.Response.StatusCode = statusCode;
+            SetStatusCode(context, statusCode);
+        }
+
+        private void SetStatusCode(HttpContext context, int statusCode)
+        {
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = statusCode;
+            }
         }
 
         private static void AddHeaderIfDoesntExist(HttpContext context, Header httpResponseHeader)

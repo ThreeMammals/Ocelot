@@ -30,12 +30,13 @@ namespace Ocelot.Configuration
             bool isAuthenticated,
             bool isAuthorised,
             AuthenticationOptions authenticationOptions,
-            DownstreamPathTemplate downstreamDownstreamPathTemplate,
+            DownstreamPathTemplate downstreamPathTemplate,
             string loadBalancerKey,
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
             List<AddHeader> addHeadersToUpstream,
-            bool dangerousAcceptAnyServerCertificateValidator)
+            bool dangerousAcceptAnyServerCertificateValidator,
+            SecurityOptions securityOptions)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -63,9 +64,10 @@ namespace Ocelot.Configuration
             IsAuthenticated = isAuthenticated;
             IsAuthorised = isAuthorised;
             AuthenticationOptions = authenticationOptions;
-            DownstreamDownstreamPathTemplate = downstreamDownstreamPathTemplate;
+            DownstreamPathTemplate = downstreamPathTemplate;
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
+            SecurityOptions = securityOptions;
         }
 
         public string Key { get; }
@@ -91,11 +93,12 @@ namespace Ocelot.Configuration
         public bool IsAuthenticated { get; }
         public bool IsAuthorised { get; }
         public AuthenticationOptions AuthenticationOptions { get; }
-        public DownstreamPathTemplate DownstreamDownstreamPathTemplate { get; }
+        public DownstreamPathTemplate DownstreamPathTemplate { get; }
         public string LoadBalancerKey { get; }
         public List<string> DelegatingHandlers { get; }
         public List<AddHeader> AddHeadersToDownstream { get; }
         public List<AddHeader> AddHeadersToUpstream { get; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
+        public SecurityOptions SecurityOptions { get; }
     }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
@@ -31,7 +32,7 @@ namespace Ocelot.UnitTests.Responder
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Transfer-Encoding", new List<string> {"woop"})
-                });
+                }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
             var header = httpContext.Response.Headers["Transfer-Encoding"];
@@ -43,7 +44,7 @@ namespace Ocelot.UnitTests.Responder
         {
             var httpContext = new DefaultHttpContext();
             var response = new DownstreamResponse(new StringContent("test"), HttpStatusCode.OK,
-                new List<KeyValuePair<string, IEnumerable<string>>>());
+                new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
             var header = httpContext.Response.Headers["Content-Length"];
@@ -58,11 +59,26 @@ namespace Ocelot.UnitTests.Responder
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                });
+                }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
             var header = httpContext.Response.Headers["test"];
             header.First().ShouldBe("test");
+        }
+
+
+        [Fact]
+        public void should_add_reason_phrase()
+        {
+            var httpContext = new DefaultHttpContext();
+            var response = new DownstreamResponse(new StringContent(""), HttpStatusCode.OK,
+                new List<KeyValuePair<string, IEnumerable<string>>>
+                {
+                    new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
+                }, "some reason");
+
+            _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
+            httpContext.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase.ShouldBe(response.ReasonPhrase);
         }
 
         [Fact]

@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
         {
-            _postReplacer.Verify(x => x.Replace(It.IsAny<DownstreamResponse>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<DownstreamRequest>()), Times.Once);
+            _postReplacer.Verify(x => x.Replace(It.IsAny<DownstreamContext>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()

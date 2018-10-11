@@ -43,11 +43,11 @@ namespace Ocelot.UnitTests.Middleware
             {
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }
             };
 
@@ -72,11 +72,11 @@ namespace Ocelot.UnitTests.Middleware
             {
                 new DownstreamContext(new DefaultHttpContext())
                 { 
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }
             };
 
@@ -146,7 +146,7 @@ namespace Ocelot.UnitTests.Middleware
                 var laura = await responses[1].Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
                 var headers = responses.SelectMany(x => x.Headers).ToList();
-                return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers);
+                return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers, "some reason");
             }
         }
     }

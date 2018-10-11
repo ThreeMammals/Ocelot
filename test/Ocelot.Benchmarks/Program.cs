@@ -10,7 +10,8 @@ namespace Ocelot.Benchmarks
                     typeof(DictionaryBenchmarks),
                     typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
                     typeof(AllTheThingsBenchmarks),
-                    typeof(ExceptionHandlerMiddlewareBenchmarks)
+                    typeof(ExceptionHandlerMiddlewareBenchmarks),
+                    typeof(DownstreamRouteFinderMiddlewareBenchmarks)
                });
 
             switcher.Run(args);

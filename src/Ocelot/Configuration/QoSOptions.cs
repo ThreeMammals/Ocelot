@@ -24,7 +24,7 @@
 
         public string TimeoutStrategy { get; }
 
-        public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 && TimeoutValue > 0;
+        public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
 
         public string Key { get; }
     }

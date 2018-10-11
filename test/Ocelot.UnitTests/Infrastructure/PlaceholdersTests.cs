@@ -1,27 +1,31 @@
-using System;
-using System.Net.Http;
-using Moq;
-using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Middleware;
-using Ocelot.Request.Middleware;
-using Ocelot.Responses;
-using Shouldly;
-using Xunit;
-
 namespace Ocelot.UnitTests.Infrastructure
 {
+    using Microsoft.AspNetCore.Http;
+    using System;
+    using System.Net;
+    using System.Net.Http;
+    using Moq;
+    using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Responses;
+    using Shouldly;
+    using Xunit;
+
     public class PlaceholdersTests
     {
-        private IPlaceholders _placeholders;
-        private Mock<IBaseUrlFinder> _finder;
-        private Mock<IRequestScopedDataRepository> _repo;
-        
+        private readonly IPlaceholders _placeholders;
+        private readonly Mock<IBaseUrlFinder> _finder;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
+        private readonly Mock<IHttpContextAccessor> _accessor;
+
         public PlaceholdersTests()
         {
+            _accessor = new Mock<IHttpContextAccessor>();
             _repo = new Mock<IRequestScopedDataRepository>();
             _finder = new Mock<IBaseUrlFinder>();
-            _placeholders = new Placeholders(_finder.Object, _repo.Object);
+            _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
         }
 
         [Fact]
@@ -31,6 +35,15 @@ namespace Ocelot.UnitTests.Infrastructure
             _finder.Setup(x => x.Find()).Returns(baseUrl);
             var result = _placeholders.Get("{BaseUrl}");
             result.Data.ShouldBe(baseUrl);
+        }
+
+        [Fact]
+        public void should_return_remote_ip_address()
+        {
+            var httpContext = new DefaultHttpContext(){Connection = { RemoteIpAddress = IPAddress.Any}};
+            _accessor.Setup(x => x.HttpContext).Returns(httpContext);
+            var result = _placeholders.Get("{RemoteIpAddress}");
+            result.Data.ShouldBe(httpContext.Connection.RemoteIpAddress.ToString());
         }
 
         [Fact]

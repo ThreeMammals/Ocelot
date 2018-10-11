@@ -71,6 +71,28 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        public void should_create_with_add_headers_to_request()
+        {
+            const string key = "X-Forwarded-For";
+            const string value = "{RemoteIpAddress}";
+
+            var reRoute = new FileReRoute
+            {
+                UpstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {key, value},
+                }
+            };
+
+            var expected = new AddHeader(key, value);
+
+            this.Given(x => GivenTheReRoute(reRoute))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_use_base_url_placeholder()
         {
             var reRoute = new FileReRoute

@@ -1,5 +1,4 @@
-﻿using System;
-using Ocelot.Configuration.Builder;
+﻿using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator
@@ -8,11 +7,9 @@ namespace Ocelot.Configuration.Creator
     {
         public RateLimitOptions Create(FileRateLimitRule fileRateLimitRule, FileGlobalConfiguration globalConfiguration)
         {
-            RateLimitOptions rateLimitOption = null;
-
             if (fileRateLimitRule != null && fileRateLimitRule.EnableRateLimiting)
             {
-                rateLimitOption = new RateLimitOptionsBuilder()
+                return new RateLimitOptionsBuilder()
                     .WithClientIdHeader(globalConfiguration.RateLimitOptions.ClientIdHeader)
                     .WithClientWhiteList(fileRateLimitRule.ClientWhitelist)
                     .WithDisableRateLimitHeaders(globalConfiguration.RateLimitOptions.DisableRateLimitHeaders)
@@ -26,7 +23,7 @@ namespace Ocelot.Configuration.Creator
                     .Build();
             }
 
-            return rateLimitOption;
+            return new RateLimitOptionsBuilder().WithEnableRateLimiting(false).Build();
         }
     }
 }

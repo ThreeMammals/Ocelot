@@ -1,22 +1,22 @@
-using Xunit;
-using Shouldly;
-using TestStack.BDDfy;
-using System.Net.Http;
-using Ocelot.Headers;
-using Ocelot.Configuration;
-using System.Collections.Generic;
-using Ocelot.Responses;
-using System.Linq;
-using System.Net;
-using Moq;
-using Ocelot.Infrastructure;
-using Ocelot.Middleware;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Middleware.Multiplexer;
-using Ocelot.Request.Middleware;
-
 namespace Ocelot.UnitTests.Headers
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Infrastructure;
+    using Ocelot.Middleware;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Request.Middleware;
+    using Xunit;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using System.Net.Http;
+    using Ocelot.Headers;
+    using Ocelot.Configuration;
+    using System.Collections.Generic;
+    using Ocelot.Responses;
+    using System.Linq;
+    using System.Net;
+    using Moq;
+
     public class HttpResponseHeaderReplacerTests
     {
         private DownstreamResponse _response;
@@ -27,12 +27,14 @@ namespace Ocelot.UnitTests.Headers
         private DownstreamRequest _request;
         private Mock<IBaseUrlFinder> _finder;
         private Mock<IRequestScopedDataRepository> _repo;
+        private Mock<IHttpContextAccessor> _accessor;
 
         public HttpResponseHeaderReplacerTests()
         {
+            _accessor = new Mock<IHttpContextAccessor>();
             _repo = new Mock<IRequestScopedDataRepository>();
             _finder = new Mock<IBaseUrlFinder>();
-            _placeholders = new Placeholders(_finder.Object, _repo.Object);
+            _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
             _replacer = new HttpResponseHeaderReplacer(_placeholders);
         }
 
@@ -43,7 +45,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace> {new HeaderFindAndReplace("test", "test", "chiken", 0)};
 
@@ -61,7 +63,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>();
 
@@ -84,7 +86,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -111,7 +113,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -138,7 +140,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -165,7 +167,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -192,7 +194,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -219,7 +221,7 @@ namespace Ocelot.UnitTests.Headers
                 new List<KeyValuePair<string, IEnumerable<string>>>()
                 {
                     new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                });
+                }, "");
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
@@ -261,7 +263,8 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenICallTheReplacer()
         {
-            _result = _replacer.Replace(_response, _headerFindAndReplaces, _request);
+            var context = new DownstreamContext(new DefaultHttpContext()) {DownstreamResponse = _response, DownstreamRequest = _request};
+            _result = _replacer.Replace(context, _headerFindAndReplaces);
         }
 
         private void ThenTheHeaderShouldBe(string key, string value)
