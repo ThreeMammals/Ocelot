@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Builder
         private int _serviceDiscoveryProviderPort;
         private string _type;
         private string _token;
+        private bool _useHttpsScheme;
         private string _configurationKey;
         private int _pollingInterval;
 
@@ -45,9 +46,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ServiceProviderConfigurationBuilder WithUseHttpsScheme(bool useHttpsScheme)
+        {
+            _useHttpsScheme = useHttpsScheme;
+            return this;
+        }
+
         public ServiceProviderConfiguration Build()
         {
-            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey, _pollingInterval);
+            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey, _pollingInterval, _useHttpsScheme);
         }
     }
 }
