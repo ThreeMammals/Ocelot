@@ -13,6 +13,7 @@ namespace Ocelot.Configuration.Creator
                 ? globalConfiguration?.ServiceDiscoveryProvider?.Type 
                 : "consul";
             var pollingInterval = globalConfiguration?.ServiceDiscoveryProvider?.PollingInterval ?? 0;
+            var useHttpsScheme = globalConfiguration?.ServiceDiscoveryProvider?.UseHttpsScheme ?? false;
 
             return new ServiceProviderConfigurationBuilder()
                 .WithHost(host)
@@ -21,6 +22,7 @@ namespace Ocelot.Configuration.Creator
                 .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
                 .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)
                 .WithPollingInterval(pollingInterval)
+                .WithUseHttpsScheme(useHttpsScheme)
                 .Build();
         }
     }
