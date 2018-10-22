@@ -39,6 +39,9 @@ namespace Ocelot.Responder.Middleware
                 
                 SetErrorResponse(context.HttpContext, context.Errors);
             }
+            else if (context.DownstreamResponse == null)
+            {//If the pipeline is forced to terminate without any processing, the instantiation of the object is not instantiated.
+            }
             else
             {
                 Logger.LogDebug("no pipeline errors, setting and returning completed response");
