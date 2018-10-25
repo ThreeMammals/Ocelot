@@ -1,7 +1,7 @@
 Request Aggregation
 ===================
 
-Ocelot allow's you to specify Aggregate ReRoutes that compose multiple normal ReRoutes and map their responses into one object. This is usual where you have 
+Ocelot allows you to specify Aggregate ReRoutes that compose multiple normal ReRoutes and map their responses into one object. This is usual where you have 
 a client that is making multiple requests to a server where it could just be one. This feature allows you to start implementing back end for a front end type 
 architecture with Ocelot.
 
