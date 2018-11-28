@@ -90,7 +90,16 @@ namespace Ocelot.WebSockets.Middleware
             {
                 if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
                 {
-                    client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                    try
+                    {
+                        client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // Expected in .NET Framework for headers that are mistakenly considered restricted.
+                        // See: https://github.com/dotnet/corefx/issues/26627
+                        // .NET Core does not exhibit this issue, ironically due to a separate bug (https://github.com/dotnet/corefx/issues/18784)
+                    }
                 }
             }
 
