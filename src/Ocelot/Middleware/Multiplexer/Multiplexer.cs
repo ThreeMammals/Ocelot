@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
@@ -53,7 +54,7 @@ namespace Ocelot.Middleware.Multiplexer
                     {
                         var downstreamContext = new DownstreamContext(context.HttpContext)
                         {
-                            TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues,
+                            TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
                             Configuration = context.Configuration,
                             DownstreamReRoute = downstreamReRoute,
                         };
@@ -65,7 +66,7 @@ namespace Ocelot.Middleware.Multiplexer
                 {
                     var downstreamContext = new DownstreamContext(context.HttpContext)
                     {
-                        TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues,
+                        TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
                         Configuration = context.Configuration,
                         DownstreamReRoute = downstreamReRoute,
                     };
