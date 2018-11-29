@@ -13,12 +13,13 @@ namespace Ocelot.UnitTests.Middleware
         private readonly InMemoryResponseAggregatorFactory _factory;
         private Mock<IDefinedAggregatorProvider> _provider;
         private ReRoute _reRoute;
-        private IResponseAggregator _aggregator;
+        private Mock<IResponseAggregator> _aggregator;
 
         public ResponseAggregatorFactoryTests()
         {
             _provider = new Mock<IDefinedAggregatorProvider>();
-            _factory = new InMemoryResponseAggregatorFactory(_provider.Object);
+            _aggregator = new Mock<IResponseAggregator>();
+            _factory = new InMemoryResponseAggregatorFactory(_provider.Object, _aggregator);
         }
         
         [Fact]
