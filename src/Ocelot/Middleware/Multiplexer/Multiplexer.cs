@@ -10,12 +10,10 @@ namespace Ocelot.Middleware.Multiplexer
     public class Multiplexer : IMultiplexer
     {
         private readonly IResponseAggregatorFactory _factory;
-        private readonly Logging.IOcelotLoggerFactory _logger;
 
-        public Multiplexer(IResponseAggregatorFactory factory, Logging.IOcelotLoggerFactory logger)
+        public Multiplexer(IResponseAggregatorFactory factory)
         {
             _factory = factory;
-            _logger = logger;
         }
 
         public async Task Multiplex(DownstreamContext context, ReRoute reRoute, OcelotRequestDelegate next)
