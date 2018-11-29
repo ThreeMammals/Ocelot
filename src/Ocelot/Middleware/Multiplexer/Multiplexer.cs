@@ -48,7 +48,7 @@ namespace Ocelot.Middleware.Multiplexer
                 var matchAdvancedAgg = reRouteKeysConfigs.FirstOrDefault(q => q.ReRouteKey == downstreamReRoute.Key);
                 if (matchAdvancedAgg != null)
                 {
-                    var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath);
+                    var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s=>s.ToString()).Distinct().ToList();
 
                     foreach (var value in values)
                     {
