@@ -189,8 +189,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHost = "localhost",
                             ReRouteKeys = new List<string>
                             {
-                                "Tom",
-                                "Laura"
+                                "Laura",
+                                "Tom"
                             },
                             Aggregator = "FakeDefinedAggregator"
                         }
@@ -258,8 +258,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHost = "localhost",
                             ReRouteKeys = new List<string>
                             {
-                                "Tom",
-                                "Laura"
+                                "Laura",
+                                "Tom"
                             }
                         }
                     }
@@ -326,8 +326,9 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHost = "localhost",
                             ReRouteKeys = new List<string>
                             {
-                                "Tom",
-                                "Laura"
+                                "Laura",
+                                "Tom"
+                                
                             }
                         }
                     }
@@ -394,8 +395,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHost = "localhost",
                             ReRouteKeys = new List<string>
                             {
-                                "Tom",
-                                "Laura"
+                                "Laura",
+                                "Tom"
                             }
                         }
                     }
@@ -462,8 +463,8 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHost = "localhost",
                             ReRouteKeys = new List<string>
                             {
-                                "Tom",
-                                "Laura"
+                                "Laura",
+                                "Tom"
                             }
                         }
                     }
