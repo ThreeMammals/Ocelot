@@ -1,0 +1,17 @@
+{
+    "ReRoutes": [
+      {
+        "DownstreamPathTemplate": "/{everything}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 9200
+          }
+        ],
+        "UpstreamPathTemplate": "/{everything}"
+      }
+    ],
+    "GlobalConfiguration": {
+    }
+  }
