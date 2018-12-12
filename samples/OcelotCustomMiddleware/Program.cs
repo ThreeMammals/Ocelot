@@ -29,7 +29,8 @@ namespace OcelotCustomMiddleware
                 .ConfigureServices(s => s.AddOcelot())
                 .Configure(app =>
                 {
-                    app.UseOcelot(new OcelotPipelineConfiguration(), builder => builder.BuildeCustomPipeline()).Wait();
+                    app.UseOcelot(new OcelotPipelineConfiguration(), (builder, configuration) => builder.BuildeCustomPipeline(configuration)).Wait();
+                    // app.UseOcelot(configuration=>{}, (builder, configuration) => builder.BuildeCustomPipeline(configuration)).Wait();
                 });
     }
 }

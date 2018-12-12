@@ -16,7 +16,7 @@ namespace OcelotCustomMiddleware
 
     public static class OcelotPipelineBuilderExtensions
     {
-        public static void BuildeCustomPipeline(this IOcelotPipelineBuilder builder)
+        public static void BuildeCustomPipeline(this IOcelotPipelineBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
         {
                         // This is registered to catch any global exceptions that are not handled
             // It also sets the Request Id if anything is set globally

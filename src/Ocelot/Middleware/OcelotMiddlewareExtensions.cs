@@ -26,14 +26,14 @@
             return builder;
         }
 
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, Action<OcelotPipelineConfiguration> pipelineConfiguration, Action<IOcelotPipelineBuilder> pipelineBuilderAction = null)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, Action<OcelotPipelineConfiguration> pipelineConfiguration, Action<IOcelotPipelineBuilder, OcelotPipelineConfiguration> pipelineBuilderAction = null)
         {
             var config = new OcelotPipelineConfiguration();
             pipelineConfiguration?.Invoke(config);
             return await builder.UseOcelot(config, pipelineBuilderAction);
         }
 
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration, Action<IOcelotPipelineBuilder> pipelineBuilderAction = null)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration, Action<IOcelotPipelineBuilder, OcelotPipelineConfiguration> pipelineBuilderAction = null)
         {
             await CreateConfiguration(builder);
 
@@ -42,7 +42,7 @@
             return CreateOcelotPipeline(builder, pipelineConfiguration, pipelineBuilderAction);
         }
 
-        private static IApplicationBuilder CreateOcelotPipeline(IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration, Action<IOcelotPipelineBuilder> pipelineBuilderAction)
+        private static IApplicationBuilder CreateOcelotPipeline(IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration, Action<IOcelotPipelineBuilder, OcelotPipelineConfiguration> pipelineBuilderAction)
         {
             var pipelineBuilder = new OcelotPipelineBuilder(builder.ApplicationServices);
 
@@ -52,7 +52,7 @@
             }
             else
             {
-                pipelineBuilderAction.Invoke(pipelineBuilder);
+                pipelineBuilderAction.Invoke(pipelineBuilder, pipelineConfiguration);
             }
 
             var firstDelegate = pipelineBuilder.Build();
