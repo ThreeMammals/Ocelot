@@ -11,9 +11,9 @@ dist: trusty
 osx_image: xcode9.2
 
 mono:
-  - 4.4.2
+  - 5.10.0
 
-dotnet: 2.1.301
+dotnet: 2.1.500
 
 before_install:
   - git fetch --unshallow # Travis always does a shallow clone, but GitVersion needs the full history including branches and tags
