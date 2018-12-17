@@ -8,9 +8,9 @@ Ocelot does not support...
 * Forwarding a host header - The host header that you send to Ocelot will not be forwarded to the downstream service. Obviously this would break everything :(
 
 * Swagger - I have looked multiple times at building swagger.json out of the Ocelot ocelot.json but it doesnt fit into the vision 
-I have for Ocelot. If you would like to have Swagger in Ocelot then you must roll your own swagger.json and do the following in your 
-Startup.cs or Program.cs. The code sample below registers a piece of middleware that loads your hand rolled swagger.json and returns 
-it on /swagger/v1/swagger.json. It then registers the SwaggerUI middleware from Swashbuckle.AspNetCore
+  I have for Ocelot. If you would like to have Swagger in Ocelot then you must roll your own swagger.json and do the following in your 
+  Startup.cs or Program.cs. The code sample below registers a piece of middleware that loads your hand rolled swagger.json and returns 
+  it on /swagger/v1/swagger.json. It then registers the SwaggerUI middleware from Swashbuckle.AspNetCore
 
 .. code-block:: csharp
 
