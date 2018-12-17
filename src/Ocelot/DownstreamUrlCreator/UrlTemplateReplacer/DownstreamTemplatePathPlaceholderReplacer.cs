@@ -8,11 +8,12 @@ namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
     public class DownstreamTemplatePathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
     {
-        public Response<DownstreamPath> Replace(DownstreamPathTemplate downstreamPathTemplate, List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
+        public Response<DownstreamPath> Replace(string downstreamPathTemplate,
+            List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
         {
             var downstreamPath = new StringBuilder();
 
-            downstreamPath.Append(downstreamPathTemplate.Value);
+            downstreamPath.Append(downstreamPathTemplate);
 
             foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
             {

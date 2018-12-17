@@ -27,7 +27,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var response = _replacer
-                .Replace(context.DownstreamReRoute.DownstreamPathTemplate, context.TemplatePlaceholderNameAndValues);
+                .Replace(context.DownstreamReRoute.DownstreamPathTemplate.Value, context.TemplatePlaceholderNameAndValues);
 
             if (response.IsError)
             {
@@ -103,7 +103,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             return dsPath.Value.Substring(0, dsPath.Value.IndexOf("?", StringComparison.Ordinal));
         }
 
-         private string GetQueryString(DownstreamPath dsPath)
+        private string GetQueryString(DownstreamPath dsPath)
         {
             return dsPath.Value.Substring(dsPath.Value.IndexOf("?", StringComparison.Ordinal));
         }
@@ -116,8 +116,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private (string path, string query) CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
         {
             var query = context.DownstreamRequest.Query;           
-            var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
-            return (serviceFabricPath, query);
+            var serviceName = _replacer.Replace(context.DownstreamReRoute.ServiceName, context.TemplatePlaceholderNameAndValues);
+            var pathTemplate = $"/{serviceName.Data.Value}{dsPath.Data.Value}";
+            return (pathTemplate, query);
         }
 
         private static bool ServiceFabricRequest(DownstreamContext context)
