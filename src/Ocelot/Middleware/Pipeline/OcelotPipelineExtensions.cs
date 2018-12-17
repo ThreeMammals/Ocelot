@@ -36,6 +36,12 @@ namespace Ocelot.Middleware.Pipeline
                     app.UseDownstreamRouteFinderMiddleware();
                     app.UseDownstreamRequestInitialiser();
                     app.UseLoadBalancingMiddleware();
+
+                    if (pipelineConfiguration.AuthenticationMiddleware == null)
+                        app.UseAuthenticationMiddleware();
+                    else
+                        app.Use(pipelineConfiguration.AuthenticationMiddleware);
+
                     app.UseDownstreamUrlCreatorMiddleware();
                     app.UseWebSocketsProxyMiddleware();
                 });
