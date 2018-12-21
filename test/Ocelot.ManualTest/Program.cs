@@ -1,4 +1,7 @@
-﻿namespace Ocelot.ManualTest
+﻿using System.Reflection.Metadata.Ecma335;
+using Ocelot.Requester;
+
+namespace Ocelot.ManualTest
 {
     using System.IO;
     using Microsoft.AspNetCore.Hosting;
@@ -36,7 +39,8 @@
                             x.Audience = "test";
                         });
 
-                    s.AddOcelot()
+                     s.AddSingleton<QosDelegatingHandlerDelegate>((x, t) => new FakeHandler());
+                     s.AddOcelot()
                         .AddDelegatingHandler<FakeHandler>(true);
                         // .AddCacheManager(x =>
                         // {
