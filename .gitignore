@@ -252,3 +252,6 @@ _templates/
 
 # JetBrains Rider
 .idea/
+
+# Test Results
+*.trx
