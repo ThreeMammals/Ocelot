@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -8,5 +9,7 @@ namespace Ocelot.Infrastructure
     {
         Response<string> Get(string key);
         Response<string> Get(string key, DownstreamRequest request);
+        Response Add(string key, Func<Response<string>> func);
+        Response Remove(string key);
     }
 }

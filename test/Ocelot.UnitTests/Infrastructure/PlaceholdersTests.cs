@@ -91,5 +91,37 @@ namespace Ocelot.UnitTests.Infrastructure
             var result = _placeholders.Get("{TraceId}");
             result.Data.ShouldBe(traceId);
         }
+
+        [Fact]
+        public void should_return_ok_when_added()
+        {
+            var result = _placeholders.Add("{Test}", () => new OkResponse<string>("test"));
+            result.IsError.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void should_return_ok_when_removed()
+        {
+            var result = _placeholders.Add("{Test}", () => new OkResponse<string>("test"));
+            result = _placeholders.Remove("{Test}");
+            result.IsError.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void should_return_error_when_added()
+        {
+            var result = _placeholders.Add("{Test}", () => new OkResponse<string>("test"));
+            result = _placeholders.Add("{Test}", () => new OkResponse<string>("test"));
+            result.IsError.ShouldBeTrue();
+            result.Errors[0].Message.ShouldBe("Unable to add placeholder: {Test}, placeholder already exists");
+        }
+
+        [Fact]
+        public void should_return_error_when_removed()
+        {
+            var result = _placeholders.Remove("{Test}");
+            result.IsError.ShouldBeTrue();
+            result.Errors[0].Message.ShouldBe("Unable to remove placeholder: {Test}, placeholder does not exists");
+        }
     }
 }
