@@ -16,7 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		GitVersion.yml = GitVersion.yml
 		global.json = global.json
 		LICENSE.md = LICENSE.md
-		ocelot.postman_collection.json = ocelot.postman_collection.json
 		README.md = README.md
 		release.ps1 = release.ps1
 		ReleaseNotes.md = ReleaseNotes.md
@@ -24,6 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		run-benchmarks.ps1 = run-benchmarks.ps1
 		run-unit-tests.ps1 = run-unit-tests.ps1
 		version.ps1 = version.ps1
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
+		docker-compose.yaml = docker-compose.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5B401523-36DA-4491-B73A-7590A26E420B}"
