@@ -59,6 +59,28 @@ namespace Ocelot.Infrastructure
             return new ErrorResponse<string>(new CouldNotFindPlaceholderError(key));
         }
 
+        public Response Add(string key, Func<Response<string>> func)
+        {
+            if(_placeholders.ContainsKey(key))
+            {
+                return new ErrorResponse(new CannotAddPlaceholderError($"Unable to add placeholder: {key}, placeholder already exists"));
+            }
+            
+            _placeholders.Add(key, func);
+            return new OkResponse();
+        }
+
+        public Response Remove(string key)
+        {
+            if(!_placeholders.ContainsKey(key))
+            {
+                return new ErrorResponse(new CannotRemovePlaceholderError($"Unable to remove placeholder: {key}, placeholder does not exists"));
+            }
+            
+            _placeholders.Remove(key);
+            return new OkResponse();
+        }
+
         private Func<Response<string>> GetRemoteIpAddress()
         {
             return () =>
