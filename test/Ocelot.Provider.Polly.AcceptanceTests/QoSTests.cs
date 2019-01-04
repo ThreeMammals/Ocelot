@@ -217,45 +217,7 @@
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
-
-        [Fact]
-        public void should_fix_issue_604()
-        {
-            var configuration = new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51579,
-                            }
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1,
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51579", 201, string.Empty, 100))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .BDDfy();
-        }
-
+       
         private void GivenIWaitMilliseconds(int ms)
         {
             Thread.Sleep(ms);
