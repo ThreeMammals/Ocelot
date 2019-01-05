@@ -9,6 +9,7 @@ namespace Ocelot.Tracing.Butterfly.AcceptanceTests
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.AcceptanceTests;
     using Rafty.Infrastructure;
     using Shouldly;
     using TestStack.BDDfy;
@@ -56,12 +57,6 @@ namespace Ocelot.Tracing.Butterfly.AcceptanceTests
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
                                 UseTracing = true
-                            },
-                            QoSOptions = new FileQoSOptions
-                            {
-                                ExceptionsAllowedBeforeBreaking = 3,
-                                DurationOfBreak = 10,
-                                TimeoutValue = 5000
                             }
                         },
                         new FileReRoute
@@ -81,12 +76,6 @@ namespace Ocelot.Tracing.Butterfly.AcceptanceTests
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
                                 UseTracing = true
-                            },
-                            QoSOptions = new FileQoSOptions
-                            {
-                                ExceptionsAllowedBeforeBreaking = 3,
-                                DurationOfBreak = 10,
-                                TimeoutValue = 5000
                             }
                         }
                     }
@@ -138,12 +127,6 @@ namespace Ocelot.Tracing.Butterfly.AcceptanceTests
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
                                 UseTracing = true
-                            },
-                            QoSOptions = new FileQoSOptions
-                            {
-                                ExceptionsAllowedBeforeBreaking = 3,
-                                DurationOfBreak = 10,
-                                TimeoutValue = 5000
                             },
                             DownstreamHeaderTransform = new Dictionary<string, string>()
                             {

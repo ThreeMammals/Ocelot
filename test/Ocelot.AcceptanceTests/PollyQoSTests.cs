@@ -7,16 +7,17 @@
     using System.Threading.Tasks;
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.AcceptanceTests;
     using TestStack.BDDfy;
     using Xunit;
 
-    public class QoSTests : IDisposable
+    public class PollyQoSTests : IDisposable
     {
         private readonly Steps _steps;
         private int _requestCount;
         private readonly ServiceHandler _serviceHandler;
 
-        public QoSTests()
+        public PollyQoSTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
@@ -46,6 +47,7 @@
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1000,
+                            ExceptionsAllowedBeforeBreaking = 10
                         }
                     }
                 }
@@ -53,7 +55,7 @@
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51569", 200, string.Empty, 10))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
                 .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -92,7 +94,7 @@
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51579", 201, string.Empty, 1000))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
                 .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
@@ -132,7 +134,7 @@
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51892", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
-                .Given(x => _steps.GivenOcelotIsRunning())
+                .Given(x => _steps.GivenOcelotIsRunningWithPolly())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -198,7 +200,7 @@
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51872", "Hello from Laura"))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))

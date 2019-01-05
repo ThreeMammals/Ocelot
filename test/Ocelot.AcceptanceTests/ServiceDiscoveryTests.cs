@@ -8,6 +8,7 @@
     using global::Consul;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using Ocelot.AcceptanceTests;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
@@ -90,7 +91,7 @@
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithConsul())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
                 .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
                 .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
@@ -144,7 +145,7 @@
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
+            .And(x => _steps.GivenOcelotIsRunningWithConsul())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/home"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -194,7 +195,7 @@
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
+            .And(x => _steps.GivenOcelotIsRunningWithConsul())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/web/something"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -253,7 +254,7 @@
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithConsul())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
                 .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
                 .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
@@ -309,7 +310,7 @@
                 .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
                 .And(_ => _steps.GivenThereIsAConfiguration(configuration))
-                .And(_ => _steps.GivenOcelotIsRunning())
+                .And(_ => _steps.GivenOcelotIsRunningWithConsul())
                 .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/home"))
                 .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -377,7 +378,7 @@
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithConsul())
                 .And(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
                 .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
                 .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
@@ -443,7 +444,7 @@
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
+            .And(x => _steps.GivenOcelotIsRunningWithConsul())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))

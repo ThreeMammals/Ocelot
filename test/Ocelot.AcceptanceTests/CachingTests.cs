@@ -1,7 +1,5 @@
 using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Ocelot.Cache.CacheManager.AcceptanceTests
 {
     using System;
@@ -10,6 +8,7 @@ namespace Ocelot.Cache.CacheManager.AcceptanceTests
     using System.Threading;
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.AcceptanceTests;
     using TestStack.BDDfy;
     using Xunit;
 

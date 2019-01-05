@@ -11,6 +11,7 @@ namespace Ocelot.Cache.CacheManager.AcceptanceTests
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using Ocelot.AcceptanceTests;
     using TestStack.BDDfy;
     using Xunit;
 

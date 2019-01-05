@@ -10,11 +10,12 @@
     using global::Consul;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using Ocelot.AcceptanceTests;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
-    public class WebSocketTests : IDisposable
+    public class ConsulWebSocketTests : IDisposable
     {
         private readonly List<string> _secondRecieved;
         private readonly List<string> _firstRecieved;
@@ -22,7 +23,7 @@
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
 
-        public WebSocketTests()
+        public ConsulWebSocketTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
@@ -91,7 +92,7 @@
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
-                .And(_ => _steps.StartFakeOcelotWithWebSockets())
+                .And(_ => _steps.StartFakeOcelotWithWebSocketsWithConsul())
                 .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
                 .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))

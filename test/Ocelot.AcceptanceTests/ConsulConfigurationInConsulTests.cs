@@ -1,7 +1,5 @@
 ﻿using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Ocelot.Provider.Consul.AcceptanceTests
 {
     using System;
@@ -17,11 +15,12 @@ namespace Ocelot.Provider.Consul.AcceptanceTests
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using Ocelot.AcceptanceTests;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
-    public class ConfigurationInConsulTests : IDisposable
+    public class ConsulConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
         private readonly Steps _steps;
@@ -29,7 +28,7 @@ namespace Ocelot.Provider.Consul.AcceptanceTests
         private FileConfiguration _config;
         private readonly List<ServiceEntry> _consulServices;
 
-        public ConfigurationInConsulTests()
+        public ConsulConfigurationInConsulTests()
         {
             _consulServices = new List<ServiceEntry>();
             _steps = new Steps();

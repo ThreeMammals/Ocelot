@@ -6,17 +6,18 @@
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using Ocelot.AcceptanceTests;
     using Steeltoe.Common.Discovery;
     using TestStack.BDDfy;
     using Xunit;
 
-    public class ServiceDiscoveryTests : IDisposable
+    public class EurekaServiceDiscoveryTests : IDisposable
     {
         private readonly Steps _steps;
         private readonly List<IServiceInstance> _eurekaInstances;
         private readonly ServiceHandler _serviceHandler;
 
-        public ServiceDiscoveryTests()
+        public EurekaServiceDiscoveryTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
@@ -62,10 +63,10 @@
                 .And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
                 .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
+                .And(x => _steps.GivenOcelotIsRunningWithEureka())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(ServiceDiscoveryTests)))
+                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests)))
                 .BDDfy();
         }
 
@@ -156,7 +157,7 @@
                 try
                 {
                     context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(nameof(ServiceDiscoveryTests));
+                    await context.Response.WriteAsync(nameof(EurekaServiceDiscoveryTests));
                 }
                 catch (Exception exception)
                 {
