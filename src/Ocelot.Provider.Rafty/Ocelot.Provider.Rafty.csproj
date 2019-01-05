@@ -26,8 +26,11 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot" Version="10.0.2"/>
-    <PackageReference Include="Ocelot.Administration" Version="0.1.0"/>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\Ocelot.Administration\Ocelot.Administration.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SQLite" Version="2.2.0"/>
     <PackageReference Include="Rafty" Version="0.4.4"/>
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
       <PrivateAssets>all</PrivateAssets>

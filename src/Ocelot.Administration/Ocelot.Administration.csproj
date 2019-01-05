@@ -26,7 +26,9 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot" Version="10.0.2" />
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

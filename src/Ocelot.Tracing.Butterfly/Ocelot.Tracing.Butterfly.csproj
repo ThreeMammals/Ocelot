@@ -27,9 +27,11 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Butterfly.Client" Version="0.0.8" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
-    <PackageReference Include="Ocelot" Version="8.0.5" />
   </ItemGroup>
 
 </Project>

@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Administration;
 
-    public class OcelotBuilderTests
+    public class OcelotAdministrationBuilderTests
     {
         private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         private IOcelotBuilder _ocelotBuilder;
         private Exception _ex;
 
-        public OcelotBuilderTests()
+        public OcelotAdministrationBuilderTests()
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();

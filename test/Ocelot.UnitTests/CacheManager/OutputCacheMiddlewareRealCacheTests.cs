@@ -51,7 +51,7 @@
                 Headers = { ContentType = new MediaTypeHeaderValue("application/json")}
             };
 
-            var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>());
+            var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
 
             this.Given(x => x.GivenResponseIsNotCached(response))
                 .And(x => x.GivenTheDownstreamRouteIs())
