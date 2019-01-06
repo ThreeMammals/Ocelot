@@ -1,19 +1,20 @@
-﻿namespace Ocelot.Provider.Consul.UnitTests
+﻿namespace Ocelot.UnitTests.Consul
 {
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Cache;
-    using Configuration;
-    using Configuration.Builder;
-    using Configuration.File;
-    using Configuration.Repository;
     using global::Consul;
-    using Logging;
     using Moq;
     using Newtonsoft.Json;
+    using Ocelot.Cache;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Repository;
+    using Ocelot.Logging;
+    using Provider.Consul;
     using Responses;
     using Shouldly;
     using TestStack.BDDfy;

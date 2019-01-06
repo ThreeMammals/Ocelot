@@ -1,12 +1,13 @@
-﻿namespace Ocelot.Provider.Eureka.UnitTests
+﻿namespace Ocelot.UnitTests.Eureka
 {
     using System.Threading.Tasks;
-    using Configuration;
-    using Configuration.Builder;
-    using Configuration.Repository;
     using Microsoft.AspNetCore.Builder.Internal;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Repository;
+    using Provider.Eureka;
     using Responses;
     using Shouldly;
     using Steeltoe.Common.Discovery;

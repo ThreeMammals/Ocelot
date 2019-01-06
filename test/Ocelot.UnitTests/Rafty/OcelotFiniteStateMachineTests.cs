@@ -1,7 +1,8 @@
-﻿namespace Ocelot.Provider.Rafty.UnitTests
+﻿namespace Ocelot.UnitTests.Rafty
 {
-    using Configuration.Setter;
     using Moq;
+    using Ocelot.Configuration.Setter;
+    using Provider.Rafty;
     using TestStack.BDDfy;
     using Xunit;
 

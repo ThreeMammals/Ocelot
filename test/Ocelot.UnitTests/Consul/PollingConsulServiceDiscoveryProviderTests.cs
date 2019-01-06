@@ -1,11 +1,12 @@
-﻿namespace Ocelot.Provider.Consul.UnitTests
+﻿namespace Ocelot.UnitTests.Consul
 {
     using System;
     using System.Collections.Generic;
-    using Infrastructure;
-    using Logging;
     using Moq;
-    using ServiceDiscovery.Providers;
+    using Ocelot.Infrastructure;
+    using Ocelot.Logging;
+    using Ocelot.ServiceDiscovery.Providers;
+    using Provider.Consul;
     using Shouldly;
     using TestStack.BDDfy;
     using Values;

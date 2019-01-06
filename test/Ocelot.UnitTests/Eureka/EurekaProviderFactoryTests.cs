@@ -1,8 +1,9 @@
-﻿namespace Ocelot.Provider.Eureka.UnitTests
+﻿namespace Ocelot.UnitTests.Eureka
 {
-    using Configuration.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
+    using Ocelot.Configuration.Builder;
+    using Provider.Eureka;
     using Shouldly;
     using Steeltoe.Common.Discovery;
     using Xunit;

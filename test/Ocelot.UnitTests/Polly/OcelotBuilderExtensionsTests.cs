@@ -1,14 +1,14 @@
-﻿namespace Ocelot.Provider.Polly.UnitTests
+﻿namespace Ocelot.UnitTests.Polly
 {
     using System.IO;
-    using Configuration;
-    using Configuration.Builder;
-    using DependencyInjection;
-    using Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
-    using Requester;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Logging;
+    using Ocelot.Requester;
+    using Provider.Polly;
     using Shouldly;
     using Xunit;
 

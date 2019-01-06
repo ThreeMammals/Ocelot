@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Provider.Eureka.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,6 @@
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
-    using Ocelot.AcceptanceTests;
     using Steeltoe.Common.Discovery;
     using TestStack.BDDfy;
     using Xunit;

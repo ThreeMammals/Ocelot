@@ -1,17 +1,18 @@
-﻿namespace Ocelot.Cache.CacheManager.UnitTests
+﻿namespace Ocelot.UnitTests.CacheManager
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Cache;
-    using Configuration;
-    using Configuration.File;
-    using DependencyInjection;
     using global::CacheManager.Core;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Cache;
+    using Ocelot.Cache.CacheManager;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

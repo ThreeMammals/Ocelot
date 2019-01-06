@@ -1,22 +1,17 @@
-namespace Ocelot.UnitTests.DependencyInjection
+namespace Ocelot.UnitTests.Administration
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
+    using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration.Setter;
+    using Ocelot.Administration;
     using Ocelot.DependencyInjection;
-    using Ocelot.Requester;
     using Shouldly;
-    using IdentityServer4.AccessTokenValidation;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Middleware.Multiplexer;
-    using Ocelot.Administration;
 
     public class OcelotAdministrationBuilderTests
     {

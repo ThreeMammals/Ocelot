@@ -1,13 +1,14 @@
-﻿namespace Ocelot.Provider.Rafty.UnitTests
+﻿namespace Ocelot.UnitTests.Rafty
 {
     using System;
     using System.Collections.Generic;
-    using Administration;
-    using DependencyInjection;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Administration;
+    using Ocelot.DependencyInjection;
+    using Provider.Rafty;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

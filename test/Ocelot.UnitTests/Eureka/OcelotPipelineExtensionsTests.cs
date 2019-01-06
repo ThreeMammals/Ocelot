@@ -1,10 +1,10 @@
-﻿namespace Ocelot.Provider.Eureka.UnitTests
+﻿namespace Ocelot.UnitTests.Eureka
 {
-    using DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Middleware;
-    using Middleware.Pipeline;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Pipeline;
     using Pivotal.Discovery.Client;
     using Shouldly;
     using Steeltoe.Common.Discovery;

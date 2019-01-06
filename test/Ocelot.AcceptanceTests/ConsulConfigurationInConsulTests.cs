@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Ocelot.Provider.Consul.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
@@ -9,13 +7,12 @@ namespace Ocelot.Provider.Consul.AcceptanceTests
     using System.Text;
     using Cache;
     using Configuration.File;
-    using global::Consul;
+    using Consul;
     using Infrastructure;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
-    using Ocelot.AcceptanceTests;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

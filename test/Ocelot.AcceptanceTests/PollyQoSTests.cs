@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Provider.Polly.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
@@ -7,7 +7,6 @@
     using System.Threading.Tasks;
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.AcceptanceTests;
     using TestStack.BDDfy;
     using Xunit;
 

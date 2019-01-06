@@ -1,12 +1,12 @@
-﻿namespace Ocelot.Cache.CacheManager.AcceptanceTests.Caching
+﻿namespace Ocelot.AcceptanceTests.Caching
 {
     using System;
     using System.Collections.Concurrent;
     using System.Linq;
-    using global::CacheManager.Core;
-    using global::CacheManager.Core.Internal;
-    using global::CacheManager.Core.Logging;
-    using global::CacheManager.Core.Utility;
+    using CacheManager.Core;
+    using CacheManager.Core.Internal;
+    using CacheManager.Core.Logging;
+    using CacheManager.Core.Utility;
 
     public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
     {

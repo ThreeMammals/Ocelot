@@ -1,6 +1,4 @@
-using Xunit;
-
-namespace Ocelot.Cache.CacheManager.AcceptanceTests
+namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +6,6 @@ namespace Ocelot.Cache.CacheManager.AcceptanceTests
     using System.Threading;
     using Configuration.File;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.AcceptanceTests;
     using TestStack.BDDfy;
     using Xunit;
 

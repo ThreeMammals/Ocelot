@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Provider.Consul.UnitTests
+﻿namespace Ocelot.UnitTests.Consul
 {
     using System;
     using System.Collections.Generic;
@@ -7,6 +7,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.DependencyInjection;
+    using Provider.Consul;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

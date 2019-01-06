@@ -24,6 +24,7 @@
     using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
     using System.IO.Compression;
     using System.Text;
+    using Caching;
     using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using Ocelot.Middleware.Multiplexer;
     using static Ocelot.Infrastructure.Wait;
@@ -34,7 +35,6 @@
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
     using global::CacheManager.Core;
     using Ocelot.Cache.CacheManager;
-    using Ocelot.Cache.CacheManager.AcceptanceTests.Caching;
     using Ocelot.Provider.Consul;
     using Ocelot.Provider.Eureka;
     using Ocelot.Infrastructure;

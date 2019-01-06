@@ -1,15 +1,14 @@
-namespace Ocelot.Tracing.Butterfly.AcceptanceTests
+namespace Ocelot.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
+    using Butterfly.Client.AspNetCore;
     using Configuration.File;
-    using global::Butterfly.Client.AspNetCore;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Ocelot.AcceptanceTests;
     using Rafty.Infrastructure;
     using Shouldly;
     using TestStack.BDDfy;
