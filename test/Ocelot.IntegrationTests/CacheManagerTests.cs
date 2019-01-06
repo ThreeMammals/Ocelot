@@ -1,7 +1,6 @@
 using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-namespace Ocelot.Cache.CacheManager.IntegrationTests
+namespace Ocelot.IntegrationTests
 {
     using System;
     using System.Collections.Generic;
@@ -20,8 +19,11 @@ namespace Ocelot.Cache.CacheManager.IntegrationTests
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Administration;
+    using Ocelot.IntegrationTests;
+    using Ocelot.Cache.CacheManager;
 
-    public class AdministrationTests : IDisposable
+    public class CacheManagerTests : IDisposable
     {
         private HttpClient _httpClient;
         private readonly HttpClient _httpClientTwo;
@@ -36,7 +38,7 @@ namespace Ocelot.Cache.CacheManager.IntegrationTests
         private IWebHost _fooServiceBuilder;
         private IWebHost _barServiceBuilder;
 
-        public AdministrationTests()
+        public CacheManagerTests()
         {
             _httpClient = new HttpClient();
             _httpClientTwo = new HttpClient();

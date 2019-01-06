@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Provider.Rafty.IntegrationTests
+﻿namespace Ocelot.IntegrationTests
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,6 @@
     using Administration;
     using Configuration.File;
     using DependencyInjection;
-    using global::Rafty.Infrastructure;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Data.Sqlite;
     using Microsoft.Extensions.Configuration;
@@ -21,6 +20,12 @@
     using Shouldly;
     using Xunit;
     using Xunit.Abstractions;
+    using Ocelot.Administration;
+    using Ocelot.IntegrationTests;
+    using Ocelot.Provider.Rafty;
+    using Ocelot.Infrastructure;
+    using Rafty.Infrastructure;
+    using Wait = Rafty.Infrastructure.Wait;
 
     public class RaftTests : IDisposable
     {

@@ -23,8 +23,8 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using Ocelot.Administration;
+using Ocelot.IntegrationTests;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.IntegrationTests
 {
     public class AdministrationTests : IDisposable
