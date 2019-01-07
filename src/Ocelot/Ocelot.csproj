@@ -10,8 +10,8 @@
     <AssemblyName>Ocelot</AssemblyName>
     <PackageId>Ocelot</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>
-    <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
-    <PackageProjectUrl>https://github.com/TomPallister/Ocelot</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
     <PackageIconUrl>http://threemammals.com/images/ocelot_logo.png</PackageIconUrl>
     <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
