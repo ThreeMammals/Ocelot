@@ -96,6 +96,3 @@ If you think this project is worth supporting financially please make a contribu
 ## Things that are currently annoying me
 
 [![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
-
-
-

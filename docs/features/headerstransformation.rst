@@ -1,7 +1,7 @@
 Headers Transformation
 ======================
 
-Ocelot allows the user to transform headers pre and post downstream request. At the moment Ocelot only supports find and replace. This feature was requested `GitHub #190 <https://github.com/TomPallister/Ocelot/issues/190>`_ and I decided that it was going to be useful in various ways.
+Ocelot allows the user to transform headers pre and post downstream request. At the moment Ocelot only supports find and replace. This feature was requested `GitHub #190 <https://github.com/ThreeMammals/Ocelot/issues/190>`_ and I decided that it was going to be useful in various ways.
 
 Add to Request
 ^^^^^^^^^^^^^^
@@ -23,7 +23,7 @@ Placeholders are supported too (see below).
 Add to Response
 ^^^^^^^^^^^^^^^
 
-This feature was requested in `GitHub #280 <https://github.com/TomPallister/Ocelot/issues/280>`_.
+This feature was requested in `GitHub #280 <https://github.com/ThreeMammals/Ocelot/issues/280>`_.
 
 If you want to add a header to your downstream response please add the following to a ReRoute in ocelot.json..
 

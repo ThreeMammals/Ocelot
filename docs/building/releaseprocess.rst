@@ -10,7 +10,7 @@ This section defines the release process for the maintainers of the project.
 
 * When the `release` branch has built successfully in Appveyor, select the build and then Deploy to the `GitHub Release` environment. This will create a new release in GitHub.
 
-* In Github, navigate to the `release <https://github.com/TomPallister/Ocelot/releases>`_. Modify the release name and tag as desired.
+* In Github, navigate to the `release <https://github.com/ThreeMammals/Ocelot/releases>`_. Modify the release name and tag as desired.
 
 * When you're ready, publish the release. This will tag the commit with the specified release number.
 

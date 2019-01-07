@@ -25,7 +25,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
     <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -54,5 +59,10 @@
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
+    <PackageReference Include="Consul" Version="0.7.2.6" />
+    <PackageReference Include="Rafty" Version="0.4.4" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.2" />
+    <PackageReference Include="CacheManager.Serialization.Json" Version="1.1.2" />
+    <PackageReference Include="Pivotal.Discovery.ClientCore" Version="2.0.1" />
   </ItemGroup>
 </Project>

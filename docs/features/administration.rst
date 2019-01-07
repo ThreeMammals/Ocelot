@@ -33,7 +33,7 @@ All you need to do to hook into your own IdentityServer is add the following to 
 
 You now need to get a token from your IdentityServer and use in subsequent requests to Ocelot's administration API.
 
-This feature was implemented for `issue 228 <https://github.com/TomPallister/Ocelot/issues/228>`_. It is useful because the IdentityServer authentication 
+This feature was implemented for `issue 228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_. It is useful because the IdentityServer authentication 
 middleware needs the URL of the IdentityServer. If you are using the internal IdentityServer it might not alaways be possible to have the Ocelot URL.  
 
 Internal IdentityServer

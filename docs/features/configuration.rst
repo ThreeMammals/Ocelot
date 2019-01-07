@@ -1,7 +1,7 @@
 Configuration
 ============
 
-An example configuration can be found `here <https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/ocelot.json>`_.
+An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/develop/test/Ocelot.ManualTest/ocelot.json>`_.
 There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
 The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
 configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
