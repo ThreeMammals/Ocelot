@@ -1,5 +1,6 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
+using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
@@ -270,7 +271,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 
         private void WhenIMatchThePaths()
         {
-            _result = _urlMatcher.Match(_path, _queryString, _downstreamPathTemplate, _containsQueryString);
+            _result = _urlMatcher.Match(_path, _queryString, new UpstreamPathTemplate(_downstreamPathTemplate, 0, _containsQueryString, _downstreamPathTemplate));
         }
 
         private void ThenTheResultIsTrue()

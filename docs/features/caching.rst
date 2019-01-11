@@ -32,7 +32,7 @@ Finally in order to use caching on a route in your ReRoute configuration add thi
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
 
-If you look at the example `here <https://github.com/TomPallister/Ocelot/blob/develop/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager 
+If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/develop/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager 
 is setup and then passed into the Ocelot AddCacheManager configuration method. You can use any settings supported by 
 the CacheManager package and just pass them in.
 

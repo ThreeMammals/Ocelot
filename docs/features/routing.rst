@@ -140,13 +140,13 @@ The ReRoute above will only be matched when the host header value is somedomain.
 
 If you do not set UpstreamHost on a ReRoute then any host header will match it. This means that if you have two ReRoutes that are the same, apart from the UpstreamHost, where one is null and the other set Ocelot will favour the one that has been set. 
 
-This feature was requested as part of `Issue 216 <https://github.com/TomPallister/Ocelot/pull/216>`_ .
+This feature was requested as part of `Issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_ .
 
 Priority
 ^^^^^^^^
 
 You can define the order you want your ReRoutes to match the Upstream HttpRequest by including a "Priority" property in ocelot.json
-See `Issue 270 <https://github.com/TomPallister/Ocelot/pull/270>`_ for reference
+See `Issue 270 <https://github.com/ThreeMammals/Ocelot/pull/270>`_ for reference
 
 .. code-block:: json
 
@@ -181,7 +181,7 @@ matched /goods/{catchAll} (because this is the first ReRoute in the list!).
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 
-This feature was requested in `issue 340 <https://github.com/TomPallister/Ocelot/issue/340>`_. 
+This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issue/340>`_. 
 
 The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the ReRoute config. See the docs :ref:`service-discovery` if 
 this sounds interesting to you.

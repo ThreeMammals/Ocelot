@@ -1,8 +1,8 @@
 Delegating Handlers
 ===================
 
-Ocelot allows the user to add delegating handlers to the HttpClient transport. This feature was requested `GitHub #208 <https://github.com/TomPallister/Ocelot/issues/208>`_ 
-and I decided that it was going to be useful in various ways. Since then we extended it in `GitHub #264 <https://github.com/TomPallister/Ocelot/issues/264>`_.
+Ocelot allows the user to add delegating handlers to the HttpClient transport. This feature was requested `GitHub #208 <https://github.com/ThreeMammals/Ocelot/issues/208>`_ 
+and I decided that it was going to be useful in various ways. Since then we extended it in `GitHub #264 <https://github.com/ThreeMammals/Ocelot/issues/264>`_.
 
 Usage
 ^^^^^

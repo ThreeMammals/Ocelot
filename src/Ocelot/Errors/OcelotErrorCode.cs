@@ -35,6 +35,8 @@
         FileValidationFailedError,
         UnableToFindDelegatingHandlerProviderError,
         CouldNotFindPlaceholderError,
-        CouldNotFindAggregatorError
+        CouldNotFindAggregatorError,
+        CannotAddPlaceholderError,
+        CannotRemovePlaceholderError
     }
 }
