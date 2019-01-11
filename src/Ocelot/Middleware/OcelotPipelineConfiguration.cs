@@ -8,7 +8,7 @@
     public class OcelotPipelineConfiguration
     {
         /// <summary>
-        /// This is called after the global error handling middleware so any code before calling next.invoke 
+        /// This is called after the global error handling middleware so any code before calling next.invoke
         /// is the next thing called in the Ocelot pipeline. Anything after next.invoke is the last thing called
         /// in the Ocelot pipeline before we go to the global error handler.
         /// </summary>
@@ -40,6 +40,7 @@
         /// This allows the user to implement there own query string manipulation logic
         /// </summary>
         public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
+
         /// <summary>
         /// This is an extension that will branch to different pipes
         /// </summary>

@@ -26,7 +26,6 @@ namespace Ocelot.Infrastructure
                 { "{BaseUrl}", GetBaseUrl() },
                 { "{TraceId}", GetTraceId() },
                 { "{RemoteIpAddress}", GetRemoteIpAddress() }
-
             };
 
             _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>
@@ -37,10 +36,10 @@ namespace Ocelot.Infrastructure
 
         public Response<string> Get(string key)
         {
-            if(_placeholders.ContainsKey(key))
+            if (_placeholders.ContainsKey(key))
             {
                 var response = _placeholders[key].Invoke();
-                if(!response.IsError)
+                if (!response.IsError)
                 {
                     return new OkResponse<string>(response.Data);
                 }
@@ -51,7 +50,7 @@ namespace Ocelot.Infrastructure
 
         public Response<string> Get(string key, DownstreamRequest request)
         {
-            if(_requestPlaceholders.ContainsKey(key))
+            if (_requestPlaceholders.ContainsKey(key))
             {
                 return new OkResponse<string>(_requestPlaceholders[key].Invoke(request));
             }
@@ -61,22 +60,22 @@ namespace Ocelot.Infrastructure
 
         public Response Add(string key, Func<Response<string>> func)
         {
-            if(_placeholders.ContainsKey(key))
+            if (_placeholders.ContainsKey(key))
             {
                 return new ErrorResponse(new CannotAddPlaceholderError($"Unable to add placeholder: {key}, placeholder already exists"));
             }
-            
+
             _placeholders.Add(key, func);
             return new OkResponse();
         }
 
         public Response Remove(string key)
         {
-            if(!_placeholders.ContainsKey(key))
+            if (!_placeholders.ContainsKey(key))
             {
                 return new ErrorResponse(new CannotRemovePlaceholderError($"Unable to remove placeholder: {key}, placeholder does not exists"));
             }
-            
+
             _placeholders.Remove(key);
             return new OkResponse();
         }
@@ -91,7 +90,7 @@ namespace Ocelot.Infrastructure
                     var remoteIdAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
                     return new OkResponse<string>(remoteIdAddress);
                 }
-                catch (Exception e)
+                catch
                 {
                     return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{RemoteIpAddress}"));
                 }

@@ -76,6 +76,7 @@
             // now create the config
             var internalConfigCreator = builder.ApplicationServices.GetService<IInternalConfigurationCreator>();
             var internalConfig = await internalConfigCreator.Create(fileConfig.CurrentValue);
+
             //Configuration error, throw error message
             if (internalConfig.IsError)
             {
@@ -102,9 +103,9 @@
                 await configuration(builder);
             }
 
-            if(AdministrationApiInUse(adminPath))
+            if (AdministrationApiInUse(adminPath))
             {
-                //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the 
+                //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the
                 //admin api it works...boy this is getting a spit spags boll.
                 var fileConfigSetter = builder.ApplicationServices.GetService<IFileConfigurationSetter>();
 
