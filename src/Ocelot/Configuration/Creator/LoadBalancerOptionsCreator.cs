@@ -2,7 +2,6 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator
 {
-
     public class LoadBalancerOptionsCreator : ILoadBalancerOptionsCreator
     {
         public LoadBalancerOptions Create(FileLoadBalancerOptions options)
