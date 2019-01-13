@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Removed code and changed RequestDelete to OcelotRequestDelete, HttpContext to DownstreamContext, removed some exception handling messages
 
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Middleware.Pipeline
 {
@@ -167,10 +166,12 @@ namespace Ocelot.Middleware.Pipeline
             {
                 throw new ArgumentNullException(nameof(app));
             }
+
             if (pipelineBuilderFunc == null)
             {
                 throw new ArgumentNullException(nameof(pipelineBuilderFunc));
             }
+
             var branchBuilder = app.New();
             var predicate = pipelineBuilderFunc.Invoke(branchBuilder);
             var branch = branchBuilder.Build();

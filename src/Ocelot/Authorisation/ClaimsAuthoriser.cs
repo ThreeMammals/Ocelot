@@ -32,7 +32,7 @@ namespace Ocelot.Authorisation
                     if (!authorised)
                     {
                         return new ErrorResponse<bool>(new ClaimValueNotAuthorisedError(
-                                $"claim value: {values.Data} is not the same as required value: {required.Value} for type: {required.Key}"));
+                                $"claim value: {string.Join(", ", values.Data)} is not the same as required value: {required.Value} for type: {required.Key}"));
                     }
                 }
                 else

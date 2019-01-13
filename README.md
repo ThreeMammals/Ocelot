@@ -10,7 +10,7 @@
 # Ocelot
 
 Ocelot is a .NET API Gateway. This project is aimed at people using .NET running 
-a micro services / service orientated architecture 
+a micro services / service oriented architecture 
 that need a unified point of entry into their system. However it will work with anything that speaks HTTP and run on any platform that ASP.NET Core supports.
 
 In particular I want easy integration with 
@@ -96,6 +96,3 @@ If you think this project is worth supporting financially please make a contribu
 ## Things that are currently annoying me
 
 [![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
-
-
-

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Ocelot.Configuration;
+using Ocelot.Responses;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ocelot.Configuration;
-using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -35,6 +35,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                         {
                             return new ErrorResponse<ILoadBalancer>(result.Errors);
                         }
+
                         loadBalancer = result.Data;
                         AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                     }
@@ -43,10 +44,12 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 }
 
                 result = await _factory.Get(reRoute, config);
+
                 if (result.IsError)
                 {
                     return new ErrorResponse<ILoadBalancer>(result.Errors);
                 }
+
                 loadBalancer = result.Data;
                 AddLoadBalancer(reRoute.LoadBalancerKey, loadBalancer);
                 return new OkResponse<ILoadBalancer>(loadBalancer);

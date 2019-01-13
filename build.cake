@@ -17,7 +17,7 @@ var artifactsDir = Directory("artifacts");
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 82d;
+var minCodeCoverage = 80d;
 var coverallsRepoToken = "coveralls-repo-token-ocelot";
 var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
 
@@ -263,14 +263,31 @@ Task("CreatePackages")
 	.Does(() => 
 	{
 		EnsureDirectoryExists(packagesDir);
-		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
+
+		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
 		//GenerateReleaseNotes(releaseNotesFile);
 
-        System.IO.File.WriteAllLines(artifactsFile, new[]{
-            "nuget:Ocelot." + buildVersion + ".nupkg",
-            //"releaseNotes:releasenotes.md"
-        });
+		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+
+		foreach(var projectFile in projectFiles)
+		{
+			System.IO.File.AppendAllLines(artifactsFile, new[]{
+				projectFile.GetFilename().FullPath,
+				//"releaseNotes:releasenotes.md"
+			});
+		}
+
+		var artifacts = System.IO.File
+			.ReadAllLines(artifactsFile)
+			.Distinct();
+		
+		foreach(var artifact in artifacts)
+		{
+			var codePackage = packagesDir + File(artifact);
+
+			Information("Created package " + codePackage);
+		}
 
 		if (AppVeyor.IsRunningOnAppVeyor)
 		{
@@ -344,8 +361,6 @@ Task("DownloadGitHubReleaseArtifacts")
 			var releaseUrl = tagsUrl + releaseTag;
 
 			Information("Release url " + releaseUrl);
-
-			//var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
 
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
 				.GetValue("assets_url")
@@ -451,21 +466,23 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 {
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
-            .Select(l => l.Split(':'))
-            .ToDictionary(v => v[0], v => v[1]);
-
-		var codePackage = packagesDir + File(artifacts["nuget"]);
-
-		Information("Pushing package " + codePackage);
+			.Distinct();
 		
-		Information("Calling NuGetPush");
+		foreach(var artifact in artifacts)
+		{
+			var codePackage = packagesDir + File(artifact);
 
-        NuGetPush(
-            codePackage,
-            new NuGetPushSettings {
-                ApiKey = feedApiKey,
-                Source = codeFeedUrl
-            });
+			Information("Pushing package " + codePackage);
+			
+			Information("Calling NuGetPush");
+
+			NuGetPush(
+				codePackage,
+				new NuGetPushSettings {
+					ApiKey = feedApiKey,
+					Source = codeFeedUrl
+				});
+		}
 }
 
 /// gets the resource from the specified url

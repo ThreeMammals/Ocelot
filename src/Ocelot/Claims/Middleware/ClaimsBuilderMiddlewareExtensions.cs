@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Ocelot.Middleware.Pipeline;
+﻿using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.Claims.Middleware
 {
-    public static class ClaimsToClaimsMiddlewareExtensions
+    public static class ClaimsBuilderMiddlewareExtensions
     {
         public static IOcelotPipelineBuilder UseClaimsToClaimsMiddleware(this IOcelotPipelineBuilder builder)
         {

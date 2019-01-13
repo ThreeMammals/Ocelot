@@ -28,7 +28,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             foreach (var reRoute in applicableReRoutes)
             {
-                var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, reRoute.UpstreamTemplatePattern.Template, reRoute.UpstreamTemplatePattern.ContainsQueryString);
+                var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, reRoute.UpstreamTemplatePattern);
 
                 if (urlMatch.Data.Match)
                 {
