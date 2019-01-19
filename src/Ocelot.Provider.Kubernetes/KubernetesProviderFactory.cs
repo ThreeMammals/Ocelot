@@ -11,10 +11,18 @@ namespace Ocelot.Provider.Kubernetes
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, name) =>
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
-            
-            var kubeClientFactory = provider.GetService<IKubeApiClientFactory>();
+            if (config.Type?.ToLower() == "k8s")
+            {
+                return GetkubeProvider(provider, config, name, factory);
+            }
+            return null;
+        };
 
-            var k8sRegistryConfiguration = new KubeRegistryConfiguration() {
+        private static ServiceDiscovery.Providers.IServiceDiscoveryProvider GetkubeProvider(IServiceProvider provider, Configuration.ServiceProviderConfiguration config, string name, IOcelotLoggerFactory factory)
+        {
+            var kubeClientFactory = provider.GetService<IKubeApiClientFactory>();
+            var k8sRegistryConfiguration = new KubeRegistryConfiguration()
+            {
                 ApiEndPoint = new Uri($"http://{config.Host}:{config.Port}"),
                 KeyOfServiceInK8s = name,
                 KubeNamespace = config.Namesapce,
@@ -26,6 +34,6 @@ namespace Ocelot.Provider.Kubernetes
             var k8sServiceDiscoveryProvider = new KubeProvider(k8sRegistryConfiguration, factory, kubeClientFactory);
 
             return k8sServiceDiscoveryProvider;
-        };
+        }
     }
 }

@@ -1,0 +1,27 @@
+{
+  "ReRoutes": [
+    {
+      "DownstreamPathTemplate": "/api/Category",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/Category",
+      "ServiceName": "DownstreamService",
+      "UpstreamHttpMethod": [ "Get" ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    }
+  ],
+  "GlobalConfiguration": {
+    "RequestIdKey": "OcRequestId",
+    "AdministrationPath": "/administration",
+    "ServiceDiscoveryProvider": {
+      "Host": "localhost",
+      "Port": 8001,
+      "Namesapce": "dev",
+      "Type": "k8s"
+    }
+  }
+}
