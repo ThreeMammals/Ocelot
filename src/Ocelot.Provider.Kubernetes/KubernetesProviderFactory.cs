@@ -11,7 +11,7 @@ namespace Ocelot.Provider.Kubernetes
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, name) =>
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
-            if (config.Type?.ToLower() == "k8s")
+            if (config.Type?.ToLower() == "kube")
             {
                 return GetkubeProvider(provider, config, name, factory);
             }
@@ -31,7 +31,7 @@ namespace Ocelot.Provider.Kubernetes
                 AllowInsecure = true // Don't validate server certificate
             };
 
-            var k8sServiceDiscoveryProvider = new KubeProvider(k8sRegistryConfiguration, factory, kubeClientFactory);
+            var k8sServiceDiscoveryProvider = new Kube(k8sRegistryConfiguration, factory, kubeClientFactory);
 
             return k8sServiceDiscoveryProvider;
         }

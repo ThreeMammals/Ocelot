@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Kubernetes
 {
-    public class KubeProvider : IServiceDiscoveryProvider
+    public class Kube : IServiceDiscoveryProvider
     {
         private KubeRegistryConfiguration kubeRegistryConfiguration;
         private IOcelotLoggerFactory factory;
         private IKubeApiClient kubeApi;
         private IKubeApiClientFactory kubeClientFactory;
 
-        public KubeProvider(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClientFactory kubeClientFactory)
+        public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClientFactory kubeClientFactory)
         {
             this.kubeRegistryConfiguration = kubeRegistryConfiguration;
             this.factory = factory;

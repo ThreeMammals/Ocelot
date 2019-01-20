@@ -1,7 +1,7 @@
 {
   "ReRoutes": [
     {
-      "DownstreamPathTemplate": "/api/Category",
+      "DownstreamPathTemplate": "/api/values",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/Category",
       "ServiceName": "DownstreamService",
@@ -21,7 +21,7 @@
       "Host": "localhost",
       "Port": 8001,
       "Namesapce": "dev",
-      "Type": "k8s"
+      "Type": "kube"
     }
   }
 }

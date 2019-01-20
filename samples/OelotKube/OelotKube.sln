@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Polly", "..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{323055CB-BF62-4A31-A619-A4444B633CDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownstreamService", "DownstreamService\DownstreamService.csproj", "{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "DownstreamService\DownstreamService.csproj", "{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
