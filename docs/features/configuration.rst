@@ -88,7 +88,7 @@ to you
                         .AddEnvironmentVariables();
                 })
 
-Ocelot will now use the environment specific configuration and fall back to ocelot.json if there isnt one.
+Ocelot will now use the environment specific configuration and fall back to ocelot.json if there isn't one.
 
 You also need to set the corresponding environment variable which is ASPNETCORE_ENVIRONMENT. More info on this can be found in the `asp.net core docs <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
 
@@ -131,7 +131,7 @@ You can also give Ocelot a specific path to look in for the configuration files 
                 .AddEnvironmentVariables();
         })
 
-Ocelot needs the HostingEnvironment so it know's to exclude anything environment specific from the algorithm. 
+Ocelot needs the HostingEnvironment so it knows to exclude anything environment specific from the algorithm. 
 
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,7 +161,7 @@ finds your Consul agent and interacts to load and store the configuration from C
         }
     }
 
-I decided to create this feature after working on the raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! 
+I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! 
 I guess it means if you want to use Ocelot to its fullest you take on Consul as a dependency for now.
 
 This feature has a 3 second ttl cache before making a new request to your local consul agent.
@@ -202,22 +202,23 @@ Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
 
 1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically 
 follow redirection responses from the Downstream resource; otherwise false. The default value is false.
+
 2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer 
 property to store server cookies and uses these cookies when sending requests. The default value is false. Please note
 that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests
 to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user
 noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients
 that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight
-requests. This would also mean that subsequent requests dont use the cookies from the previous response! All in all not a great situation. I would avoid setting 
+requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting 
 UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
 
 SSL Errors
 ^^^^^^^^^^
 
-Id you want to ignore SSL warnings / errors set the following in your ReRoute config.
+If you want to ignore SSL warnings / errors set the following in your ReRoute config.
 
 .. code-block:: json
 
     "DangerousAcceptAnyServerCertificateValidator": false
 
-I don't reccomend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
+I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
