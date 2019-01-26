@@ -24,9 +24,9 @@ namespace Ocelot.Middleware.Multiplexer
 
             var responseKeys = downstreamContexts.Select(s => s.DownstreamReRoute.Key).Distinct().ToList();
 
-            for (var k = 0; k < responceKeys.Count; k++)
+            for (var k = 0; k < responseKeys.Count; k++)
             {
-                var contexts = downstreamContexts.Where(w => w.DownstreamReRoute.Key == responceKeys[k]).ToList();
+                var contexts = downstreamContexts.Where(w => w.DownstreamReRoute.Key == responseKeys[k]).ToList();
                 if (contexts.Count == 1)
                 {
                     if (contexts[0].IsError)
@@ -36,12 +36,12 @@ namespace Ocelot.Middleware.Multiplexer
                     }
 
                     var content = await contexts[0].DownstreamResponse.Content.ReadAsStringAsync();
-                    contentBuilder.Append($"\"{responceKeys[k]}\":{content}");
+                    contentBuilder.Append($"\"{responseKeys[k]}\":{content}");
 
                 }
                 else
                 {
-                    contentBuilder.Append($"\"{responceKeys[k]}\":");
+                    contentBuilder.Append($"\"{responseKeys[k]}\":");
                     contentBuilder.Append("[");
 
                     for (var i = 0; i < contexts.Count; i++)
@@ -69,7 +69,7 @@ namespace Ocelot.Middleware.Multiplexer
                     contentBuilder.Append("]");
                 }
 
-                if (k + 1 < responceKeys.Count)
+                if (k + 1 < responseKeys.Count)
                 {
                     contentBuilder.Append(",");
                 }
