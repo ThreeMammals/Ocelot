@@ -173,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51888,
+                                    Port = 51890,
                                 }
                             },
                             UpstreamPathTemplate = "/UserDetails",
@@ -225,7 +225,7 @@ namespace Ocelot.AcceptanceTests
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
 
             this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51889", "/", 200, commentsResponseContent))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51888", "/users/1", 200, userDetailsResponseContent))
+                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51890", "/users/1", 200, userDetailsResponseContent))
                 .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51887", "/posts/2", 200, postDetailsResponseContent))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
