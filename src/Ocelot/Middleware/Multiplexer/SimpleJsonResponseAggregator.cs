@@ -22,7 +22,7 @@ namespace Ocelot.Middleware.Multiplexer
 
             contentBuilder.Append("{");
 
-            var responceKeys = downstreamContexts.Select(s => s.DownstreamReRoute.Key).Distinct().ToList();
+            var responseKeys = downstreamContexts.Select(s => s.DownstreamReRoute.Key).Distinct().ToList();
 
             for (var k = 0; k < responceKeys.Count; k++)
             {
