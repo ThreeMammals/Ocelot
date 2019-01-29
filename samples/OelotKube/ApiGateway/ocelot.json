@@ -5,13 +5,7 @@
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/values",
       "ServiceName": "downstreamservice",
-      "UpstreamHttpMethod": [ "Get" ],
-      "QoSOptions": {
-        "ExceptionsAllowedBeforeBreaking": 3,
-        "DurationOfBreak": 10000,
-        "TimeoutValue": 5000
-      },
-      "FileCacheOptions": { "TtlSeconds": 15 }
+      "UpstreamHttpMethod": [ "Get" ]      
     }
   ],
   "GlobalConfiguration": {

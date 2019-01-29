@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "..\..\src\Ocelot\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes", "..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{EF973868-98A6-4864-BF66-65B5A8C123FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Polly", "..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{323055CB-BF62-4A31-A619-A4444B633CDB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "DownstreamService\DownstreamService.csproj", "{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}"
 EndProject
 Global
@@ -31,10 +29,6 @@ Global
 		{EF973868-98A6-4864-BF66-65B5A8C123FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF973868-98A6-4864-BF66-65B5A8C123FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF973868-98A6-4864-BF66-65B5A8C123FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{323055CB-BF62-4A31-A619-A4444B633CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{323055CB-BF62-4A31-A619-A4444B633CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{323055CB-BF62-4A31-A619-A4444B633CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{323055CB-BF62-4A31-A619-A4444B633CDB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86FFAE3C-648F-4CDE-A260-37C8EBFBF4F2}.Release|Any CPU.ActiveCfg = Release|Any CPU

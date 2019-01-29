@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Kubernetes;
-using Ocelot.Provider.Polly;
 
 namespace ApiGateway
 {
@@ -20,7 +19,6 @@ namespace ApiGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOcelot()
-                .AddPolly()
                 .AddKubernetes();
         }
 
