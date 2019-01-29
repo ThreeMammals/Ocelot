@@ -3,8 +3,8 @@
     {
       "DownstreamPathTemplate": "/api/values",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/Category",
-      "ServiceName": "DownstreamService",
+      "UpstreamPathTemplate": "/values",
+      "ServiceName": "downstreamservice",
       "UpstreamHttpMethod": [ "Get" ],
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
@@ -18,9 +18,10 @@
     "RequestIdKey": "OcRequestId",
     "AdministrationPath": "/administration",
     "ServiceDiscoveryProvider": {
-      "Host": "localhost",
-      "Port": 8001,
-      "Namesapce": "dev",
+      "Host": "192.168.0.13",
+      "Port": 443,
+      "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
+      "Namespace": "dev",
       "Type": "kube"
     }
   }

@@ -13,19 +13,19 @@ namespace Ocelot.Provider.Kubernetes
     public class Kube : IServiceDiscoveryProvider
     {
         private KubeRegistryConfiguration kubeRegistryConfiguration;
-        private IOcelotLoggerFactory factory;
+        private IOcelotLogger logger;
         private IKubeApiClient kubeApi;
-        private IKubeApiClientFactory kubeClientFactory;
 
         public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClientFactory kubeClientFactory)
         {
             this.kubeRegistryConfiguration = kubeRegistryConfiguration;
-            this.factory = factory;
+            this.logger = factory.CreateLogger<Kube>();
             this.kubeApi = kubeClientFactory.Get(kubeRegistryConfiguration);
         }
 
         public async Task<List<Service>> Get()
         {
+            logger.LogDebug($"namespace:{kubeRegistryConfiguration.KubeNamespace } service:{kubeRegistryConfiguration.KeyOfServiceInK8s}");
             var service = await kubeApi.ServicesV1().Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
             var services = new List<Service>();
             if (IsValid(service))
