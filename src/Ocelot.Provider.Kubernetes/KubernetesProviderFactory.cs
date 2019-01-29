@@ -23,7 +23,7 @@ namespace Ocelot.Provider.Kubernetes
             var kubeClientFactory = provider.GetService<IKubeApiClientFactory>();
             var k8sRegistryConfiguration = new KubeRegistryConfiguration()
             {
-                ApiEndPoint = new Uri($"http://{config.Host}:{config.Port}"),
+                ApiEndPoint = new Uri($"https://{config.Host}:{config.Port}"),
                 KeyOfServiceInK8s = name,
                 KubeNamespace = config.Namesapce,
                 AuthStrategy = KubeAuthStrategy.BearerToken,
