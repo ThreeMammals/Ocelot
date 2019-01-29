@@ -189,7 +189,7 @@ this sounds interesting to you.
 Query Strings
 ^^^^^^^^^^^^^
 
-Ocelot allows you to specify a querystring as part of the DownstreamPathTemplate like the example below.
+Ocelot allows you to specify a query string as part of the DownstreamPathTemplate like the example below.
 
 .. code-block:: json
 
@@ -241,5 +241,5 @@ Ocelot will also allow you to put query string parameters in the UpstreamPathTem
         }
     }
 
-In this example Ocelot will only match requests that have a matching url path and the querystring starts with unitId=something. You can have other queries after this
+In this example Ocelot will only match requests that have a matching url path and the query string starts with unitId=something. You can have other queries after this
 but you must start with the matching parameter. Also Ocelot will swap the {unitId} parameter from the query string and use it in the downstream request path. 

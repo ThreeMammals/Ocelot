@@ -54,7 +54,7 @@ and LeastConnection algorithm you can use. If no load balancer is specified Ocel
 
 When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
 
-A lot of people have asked me to implement a feature where Ocelot polls consul for latest service information rather than per request. If you want to poll consul for the latest services rather than per request (default behaviour) then you need to set the following configuration.
+A lot of people have asked me to implement a feature where Ocelot polls Consul for latest service information rather than per request. If you want to poll Consul for the latest services rather than per request (default behaviour) then you need to set the following configuration.
 
 .. code-block:: json
 
@@ -67,9 +67,9 @@ A lot of people have asked me to implement a feature where Ocelot polls consul f
 
 The polling interval is in milliseconds and tells Ocelot how often to call Consul for changes in service configuration.
 
-Please note there are tradeoffs here. If you poll Consul it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volitile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling consul per request (as sidecar agent). If you are calling a remote consul agent then polling will be a good performance improvement.
+Please note there are tradeoffs here. If you poll Consul it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling Consul per request (as sidecar agent). If you are calling a remote Consul agent then polling will be a good performance improvement.
 
-You services need to be added to Consul something like below (c# style but hopefully this make sense)...The only important thing to note
+Your services need to be added to Consul something like below (C# style but hopefully this make sense)...The only important thing to note
 is not to add http or https to the Address field. I have been contacted before about not accepting scheme in Address and accepting scheme
 in address. After reading `this <https://www.consul.io/docs/agent/services.html>`_ I don't think the scheme should be in there.
 
@@ -108,7 +108,7 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
         "Type": "Consul"
     }
 
-Ocelot will add this token to the consul client that it uses to make requests and that is then used for every request.
+Ocelot will add this token to the Consul client that it uses to make requests and that is then used for every request.
 
 Eureka
 ^^^^^^
@@ -160,8 +160,8 @@ Dynamic Routing
 
 This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issue/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
 
-An example of this would be calling ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
-the path which is product and use it as a key to look up the service in consul. If consul returns a service Ocelot will request it on whatever host and port comes back from consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. Ocelot will apprend any query string to the downstream url as normal.
+An example of this would be calling Ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
+the path which is product and use it as a key to look up the service in Consul. If Consul returns a service Ocelot will request it on whatever host and port comes back from Consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. Ocelot will apprend any query string to the downstream url as normal.
 
 In order to enable dynamic routing you need to have 0 ReRoutes in your config. At the moment you cannot mix dynamic and configuration ReRoutes. In addition to this you need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
 
