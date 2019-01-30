@@ -46,6 +46,8 @@ GlobalConfiguration. The example here shows a typical configuration. It assumes 
 
 You use Ocelot to poll kubernetes for latest service information rather than per request. If you want to poll kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration.
 
+.. code-block:: json
+
 "ServiceDiscoveryProvider": {
    "Host": "192.168.0.13",
       "Port": 443,
@@ -54,6 +56,7 @@ You use Ocelot to poll kubernetes for latest service information rather than per
       "Type": "pollkube"
       "PollingInterval": 100
 }
+
 The polling interval is in milliseconds and tells Ocelot how often to call kubernetes for changes in service configuration.
 
 Please note there are tradeoffs here. If you poll kubernetes it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling kubernetes per request. 
