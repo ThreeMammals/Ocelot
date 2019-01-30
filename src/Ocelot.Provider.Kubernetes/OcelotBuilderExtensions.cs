@@ -1,10 +1,5 @@
-﻿using KubeClient;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
-using Ocelot.ServiceDiscovery;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ocelot.Provider.Kubernetes
 {
