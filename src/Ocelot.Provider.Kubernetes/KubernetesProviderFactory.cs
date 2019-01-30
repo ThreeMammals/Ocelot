@@ -11,11 +11,9 @@ namespace Ocelot.Provider.Kubernetes
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, name) =>
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
-            if (config.Type?.ToLower() == "kube")
-            {
-                return GetkubeProvider(provider, config, name, factory);
-            }
-            return null;
+             
+            return GetkubeProvider(provider, config, name, factory);
+ 
         };
 
         private static ServiceDiscovery.Providers.IServiceDiscoveryProvider GetkubeProvider(IServiceProvider provider, Configuration.ServiceProviderConfiguration config, string name, IOcelotLoggerFactory factory)
