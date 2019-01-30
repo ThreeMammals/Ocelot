@@ -33,6 +33,10 @@ namespace Ocelot.Provider.Kubernetes
 
             var k8sServiceDiscoveryProvider = new Kube(k8sRegistryConfiguration, factory, kubeClientFactory);
 
+            if (config.Type?.ToLower() == "pollkube")
+            {
+                return new PollKube(config.PollingInterval, factory, k8sServiceDiscoveryProvider);
+            }
             return k8sServiceDiscoveryProvider;
         }
     }
