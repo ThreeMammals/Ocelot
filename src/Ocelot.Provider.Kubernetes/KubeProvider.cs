@@ -25,12 +25,15 @@ namespace Ocelot.Provider.Kubernetes
 
         public async Task<List<Service>> Get()
         {
-            logger.LogDebug($"namespace:{kubeRegistryConfiguration.KubeNamespace } service:{kubeRegistryConfiguration.KeyOfServiceInK8s}");
-            var service = await kubeApi.ServicesV1().Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
+             var service = await kubeApi.ServicesV1().Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
             var services = new List<Service>();
             if (IsValid(service))
             {
                 services.Add(BuildService(service));
+            }
+            else
+            {
+                logger.LogWarning($"namespace:{kubeRegistryConfiguration.KubeNamespace }service:{kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
             }
             return services;
         }
