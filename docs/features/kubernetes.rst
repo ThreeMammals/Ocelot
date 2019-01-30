@@ -18,9 +18,8 @@ If you have services deployed in kubernetes you will normally use the naming ser
 
 The following example shows how to set up a ReRoute that will work in kubernetes. The most important thing is the ServiceName which is made up of the 
 kubernetes service name. We also need to set up the ServiceDiscoveryProvider in 
-GlobalConfiguration. The example here shows a typical configuration. It assumes kubernetes api server is running on 192.168.0.13 and that the api service is on port 443.
+GlobalConfiguration. The example here shows a typical configuration. It assumes kubernetes api server is running on 192.168.0.13 and that api service is on port 443.
 
-The example below is taken from the samples folder so please check it if this doesnt make sense!
 
 .. code-block:: json
 
@@ -45,7 +44,7 @@ The example below is taken from the samples folder so please check it if this do
   }
 }
 
-You also can use Ocelot polls kubernetes for latest service information rather than per request. If you want to poll kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration.
+You use Ocelot to poll kubernetes for latest service information rather than per request. If you want to poll kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration.
 
 "ServiceDiscoveryProvider": {
    "Host": "192.168.0.13",

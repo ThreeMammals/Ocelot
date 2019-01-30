@@ -25,7 +25,8 @@ namespace Ocelot.Provider.Kubernetes
 
         public async Task<List<Service>> Get()
         {
-             var service = await kubeApi.ServicesV1().Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
+            var service = await kubeApi.ServicesV1()
+                .Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
             var services = new List<Service>();
             if (IsValid(service))
             {

@@ -10,10 +10,8 @@ namespace Ocelot.Provider.Kubernetes
     {
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, name) =>
         {
-            var factory = provider.GetService<IOcelotLoggerFactory>();
-             
-            return GetkubeProvider(provider, config, name, factory);
- 
+            var factory = provider.GetService<IOcelotLoggerFactory>();             
+            return GetkubeProvider(provider, config, name, factory); 
         };
 
         private static ServiceDiscovery.Providers.IServiceDiscoveryProvider GetkubeProvider(IServiceProvider provider, Configuration.ServiceProviderConfiguration config, string name, IOcelotLoggerFactory factory)
@@ -30,7 +28,6 @@ namespace Ocelot.Provider.Kubernetes
             };
 
             var k8sServiceDiscoveryProvider = new Kube(k8sRegistryConfiguration, factory, kubeClientFactory);
-
             if (config.Type?.ToLower() == "pollkube")
             {
                 return new PollKube(config.PollingInterval, factory, k8sServiceDiscoveryProvider);
