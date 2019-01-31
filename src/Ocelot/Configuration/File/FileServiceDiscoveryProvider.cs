@@ -8,5 +8,6 @@ namespace Ocelot.Configuration.File
         public string Token { get; set; }
         public string ConfigurationKey { get; set; }
         public int PollingInterval { get; set; }
+        public string Namespace { get; set; }
     }
 }

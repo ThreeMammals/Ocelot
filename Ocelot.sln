@@ -56,6 +56,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Rafty", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,10 @@ Global
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +138,7 @@ Global
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{72C8E528-B4F5-45CE-8A06-CD3787364856} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}
