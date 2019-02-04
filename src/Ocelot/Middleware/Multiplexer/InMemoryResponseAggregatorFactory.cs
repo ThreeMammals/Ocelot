@@ -5,12 +5,12 @@ namespace Ocelot.Middleware.Multiplexer
     public class InMemoryResponseAggregatorFactory : IResponseAggregatorFactory
     {
         private readonly UserDefinedResponseAggregator _userDefined;
-        private readonly SimpleJsonResponseAggregator _simple;
+        private readonly IResponseAggregator _simple;
 
-        public InMemoryResponseAggregatorFactory(IDefinedAggregatorProvider provider)
+        public InMemoryResponseAggregatorFactory(IDefinedAggregatorProvider provider, IResponseAggregator responseAggregator)
         {
             _userDefined = new UserDefinedResponseAggregator(provider);
-            _simple = new SimpleJsonResponseAggregator();
+            _simple = responseAggregator;
         }
 
         public IResponseAggregator Get(ReRoute reRoute)

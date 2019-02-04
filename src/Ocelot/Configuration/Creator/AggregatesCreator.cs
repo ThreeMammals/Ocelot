@@ -24,14 +24,18 @@ namespace Ocelot.Configuration.Creator
 
         private ReRoute SetUpAggregateReRoute(IEnumerable<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var applicableReRoutes = reRoutes
-                .SelectMany(x => x.DownstreamReRoute)
-                .Where(r => aggregateReRoute.ReRouteKeys.Contains(r.Key))
-                .ToList();
+            var applicableReRoutes = new List<DownstreamReRoute>();
+            var allReRoutes = reRoutes.SelectMany(x => x.DownstreamReRoute);
 
-            if (applicableReRoutes.Count != aggregateReRoute.ReRouteKeys.Count)
+            foreach (var reRouteKey in aggregateReRoute.ReRouteKeys)
             {
-                return null;
+                var selec = allReRoutes.FirstOrDefault(q => q.Key == reRouteKey);
+                if (selec == null)
+                {
+                    return null;
+                }
+
+                applicableReRoutes.Add(selec);
             }
 
             var upstreamTemplatePattern = _creator.Create(aggregateReRoute);
@@ -40,6 +44,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
+                .WithAggregateReRouteConfig(aggregateReRoute.ReRouteKeysConfig)
                 .WithUpstreamHost(aggregateReRoute.UpstreamHost)
                 .WithAggregator(aggregateReRoute.Aggregator)
                 .Build();
