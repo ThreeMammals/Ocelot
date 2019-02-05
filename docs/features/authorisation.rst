@@ -1,4 +1,4 @@
-Authorisation
+Authorization
 =============
 
 Ocelot supports claims based authorisation which is run post authentication. This means if
