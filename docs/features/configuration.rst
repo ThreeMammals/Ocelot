@@ -219,6 +219,6 @@ If you want to ignore SSL warnings / errors set the following in your ReRoute co
 
 .. code-block:: json
 
-    "DangerousAcceptAnyServerCertificateValidator": false
+    "DangerousAcceptAnyServerCertificateValidator": true
 
 I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
