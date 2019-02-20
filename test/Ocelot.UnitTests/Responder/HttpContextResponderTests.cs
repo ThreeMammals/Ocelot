@@ -40,6 +40,23 @@ namespace Ocelot.UnitTests.Responder
         }
 
         [Fact]
+        public void should_ignore_content_if_null()
+        {
+            var httpContext = new DefaultHttpContext();
+            var response = new DownstreamResponse(null, HttpStatusCode.OK,
+                new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+            Should.NotThrow(() =>
+            {
+                _responder
+                    .SetResponseOnHttpContext(httpContext, response)
+                    .GetAwaiter()
+                    .GetResult()
+                ;
+            });
+        }
+
+        [Fact]
         public void should_have_content_length()
         {
             var httpContext = new DefaultHttpContext();
