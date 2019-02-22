@@ -42,6 +42,7 @@ namespace Ocelot.DependencyInjection
     {
         public IServiceCollection Services { get; }
         public IConfiguration Configuration { get; }
+        public IMvcCoreBuilder MvcCoreBuilder { get; }
 
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
@@ -71,7 +72,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
             Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
-            Services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
+            Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
             Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             Services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
@@ -133,16 +134,17 @@ namespace Ocelot.DependencyInjection
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            Services.AddMvcCore()
-                .AddApplicationPart(assembly)
-                .AddControllersAsServices()
-                .AddAuthorization()
-                .AddJsonFormatters();
+            this.MvcCoreBuilder = Services.AddMvcCore()
+                  .AddApplicationPart(assembly)
+                  .AddControllersAsServices()
+                  .AddAuthorization()
+                  .AddJsonFormatters();
 
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
             Services.AddWebEncoders();
         }
+
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
@@ -167,10 +169,11 @@ namespace Ocelot.DependencyInjection
         public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
             where THandler : DelegatingHandler
         {
-            if(global)
+            if (global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient<GlobalDelegatingHandler>(s => {
+                Services.AddTransient<GlobalDelegatingHandler>(s =>
+                {
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });
