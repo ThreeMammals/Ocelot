@@ -44,7 +44,7 @@ namespace Ocelot.Request.Middleware
                 Port = Port,
                 Host = Host,
                 Path = AbsolutePath,
-                Query = Query,
+                Query = RemoveLeadingQuestionMark(Query),
                 Scheme = Scheme
             };
 
@@ -59,7 +59,7 @@ namespace Ocelot.Request.Middleware
                 Port = Port,
                 Host = Host,
                 Path = AbsolutePath,
-                Query = Query,
+                Query = RemoveLeadingQuestionMark(Query),
                 Scheme = Scheme
             };
 
@@ -69,6 +69,16 @@ namespace Ocelot.Request.Middleware
         public override string ToString() 
         {
             return ToUri();
+        }
+
+        private string RemoveLeadingQuestionMark(string query)
+        {
+            if (!string.IsNullOrEmpty(query) && query.StartsWith("?"))
+            {
+                return query.Substring(1);
+            }
+
+            return query;
         }
     }
 }
