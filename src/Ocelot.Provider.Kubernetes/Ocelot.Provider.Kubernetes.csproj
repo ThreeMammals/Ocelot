@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.0-dev</Version>
+    <Authors>geffzhang</Authors>
+    <Company />
+    <Product>Ocelot</Product>
+    <Description>Provides Ocelot extensions to use kubernetes</Description>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageIconUrl>http://threemammals.com/images/ocelot_logo.png</PackageIconUrl>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageTags>API Gateway;.NET core</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
