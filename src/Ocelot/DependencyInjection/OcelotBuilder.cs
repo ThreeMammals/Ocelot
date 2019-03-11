@@ -72,7 +72,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
             Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
-            Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
+            Services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
             Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             Services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
@@ -169,11 +169,10 @@ namespace Ocelot.DependencyInjection
         public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
             where THandler : DelegatingHandler
         {
-            if (global)
+            if(global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient<GlobalDelegatingHandler>(s =>
-                {
+                Services.AddTransient<GlobalDelegatingHandler>(s =>{
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });
