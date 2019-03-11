@@ -18,7 +18,8 @@ namespace Ocelot.UnitTests.Middleware
         public ResponseAggregatorFactoryTests()
         {
             _provider = new Mock<IDefinedAggregatorProvider>();
-            _factory = new InMemoryResponseAggregatorFactory(_provider.Object);
+            _aggregator = new SimpleJsonResponseAggregator();
+            _factory = new InMemoryResponseAggregatorFactory(_provider.Object, _aggregator);
         }
         
         [Fact]

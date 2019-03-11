@@ -32,6 +32,15 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, httpResponseHeader);
             }
 
+            SetStatusCode(context, (int)response.StatusCode);
+
+            context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = response.ReasonPhrase;
+
+            if (response.Content is null)
+            {
+                return;
+            }
+
             foreach (var httpResponseHeader in response.Content.Headers)
             {
                 AddHeaderIfDoesntExist(context, new Header(httpResponseHeader.Key, httpResponseHeader.Value));
@@ -43,10 +52,6 @@ namespace Ocelot.Responder
             {
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ response.Content.Headers.ContentLength.ToString() }) );
             }
-
-            SetStatusCode(context, (int)response.StatusCode);
-
-            context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = response.ReasonPhrase;
 
             using(content)
             {
