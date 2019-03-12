@@ -12,6 +12,8 @@ namespace Ocelot.DependencyInjection
 
         IConfiguration Configuration { get; }
 
+        IMvcCoreBuilder MvcCoreBuilder { get; }
+
         IOcelotBuilder AddDelegatingHandler<T>(bool global = false)
             where T : DelegatingHandler;
 

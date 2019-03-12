@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Infrastructure.Claims.Parser
 {
-    using Errors;
+    using Microsoft.Extensions.Primitives;
     using Responses;
     using System.Collections.Generic;
     using System.Linq;
@@ -45,11 +45,11 @@
 
         private Response<string> GetValue(IEnumerable<Claim> claims, string key)
         {
-            var claim = claims.FirstOrDefault(c => c.Type == key);
+            var claimValues = claims.Where(c => c.Type == key).Select(c => c.Value).ToArray();
 
-            if (claim != null)
+            if (claimValues.Length > 0)
             {
-                return new OkResponse<string>(claim.Value);
+                return new OkResponse<string>(new StringValues(claimValues).ToString());
             }
 
             return new ErrorResponse<string>(new CannotFindClaimError($"Cannot find claim for key: {key}"));

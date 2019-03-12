@@ -138,8 +138,28 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 
 Okta
 ^^^^
+Add nuget package : `"Okta.AspNetCore" https://www.nuget.org/packages/Okta.AspNetCore/`_
 
-I have not had time to write this up but we have `Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
+In a StartUp.cs file add to a method Configure next lines:
+app.UseAuthentication();
+app.UseOcelot().Wait();
+
+In a StartUp.cs file add to a method ConfigureServices lines:
+
+services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = OktaDefaults.ApiAuthenticationScheme;
+                options.DefaultChallengeScheme = OktaDefaults.ApiAuthenticationScheme;
+                options.DefaultSignInScheme = OktaDefaults.ApiAuthenticationScheme;
+            })
+            .AddOktaWebApi(new OktaWebApiOptions
+            {
+                OktaDomain = _cfg["Okta:OktaDomain"]
+               
+            });
+services.AddOcelot(_cfg);
+
+`Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
 
 Allowed Scopes
 ^^^^^^^^^^^^^
