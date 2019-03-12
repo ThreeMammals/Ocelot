@@ -37,6 +37,7 @@
         CouldNotFindPlaceholderError,
         CouldNotFindAggregatorError,
         CannotAddPlaceholderError,
-        CannotRemovePlaceholderError
+        CannotRemovePlaceholderError,
+        QuotaExceededError
     }
 }
