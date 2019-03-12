@@ -41,7 +41,7 @@ namespace Ocelot.UnitTests.Configuration
                 .WithType("ServiceFabric")
                 .WithToken("testtoken")
                 .WithConfigurationKey("woo")
-                .WithNamesapce("default")
+                .WithNamespace("default")
                 .Build();
 
             this.Given(x => x.GivenTheFollowingGlobalConfig(globalConfig))
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.Port.ShouldBe(expected.Port);
             _result.Token.ShouldBe(expected.Token);
             _result.Type.ShouldBe(expected.Type);
-            _result.Namesapce.ShouldBe(expected.Namesapce);
+            _result.Namespace.ShouldBe(expected.Namespace);
             _result.ConfigurationKey.ShouldBe(expected.ConfigurationKey);
         }
     }

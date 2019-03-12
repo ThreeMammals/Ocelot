@@ -10,7 +10,7 @@
             Token = token;
             Type = type;
             PollingInterval = pollingInterval;
-            Namesapce = @namespace;
+            Namespace = @namespace;
         }
 
         public string Host { get; }
@@ -25,6 +25,6 @@
 
         public int PollingInterval { get; }
 
-        public string Namesapce { get; }
+        public string Namespace { get; }
     }
 }
