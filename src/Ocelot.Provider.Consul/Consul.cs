@@ -27,7 +27,7 @@
 
         public async Task<List<Service>> Get()
         {
-            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
+            var queryResult = await _consul.Catalog.Service(_config.KeyOfServiceInConsul, string.Empty);
 
             var services = new List<Service>();
 
@@ -39,26 +39,26 @@
                 }
                 else
                 {
-                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Address} and Port: {serviceEntry.ServicePort} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
                 }
             }
 
             return services.ToList();
         }
 
-        private Service BuildService(ServiceEntry serviceEntry)
+        private Service BuildService(CatalogService serviceEntry)
         {
             return new Service(
-                serviceEntry.Service.Service,
-                new ServiceHostAndPort(serviceEntry.Service.Address, serviceEntry.Service.Port),
-                serviceEntry.Service.ID,
-                GetVersionFromStrings(serviceEntry.Service.Tags),
-                serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
+                serviceEntry.ServiceName,
+                new ServiceHostAndPort(serviceEntry.Address, serviceEntry.ServicePort),
+                serviceEntry.ServiceID,
+                GetVersionFromStrings(serviceEntry.ServiceTags),
+                serviceEntry.ServiceTags ?? Enumerable.Empty<string>());
         }
 
-        private bool IsValid(ServiceEntry serviceEntry)
+        private bool IsValid(CatalogService serviceEntry)
         {
-            if (string.IsNullOrEmpty(serviceEntry.Service.Address) || serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
+            if (string.IsNullOrEmpty(serviceEntry.Address) || serviceEntry.Address.Contains("http://") || serviceEntry.Address.Contains("https://") || serviceEntry.ServicePort <= 0)
             {
                 return false;
             }
