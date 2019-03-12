@@ -13,7 +13,7 @@ namespace Ocelot.Configuration.Creator
                 ? globalConfiguration?.ServiceDiscoveryProvider?.Type 
                 : "consul";
             var pollingInterval = globalConfiguration?.ServiceDiscoveryProvider?.PollingInterval ?? 0;
-            var k8snamesapce = globalConfiguration?.ServiceDiscoveryProvider?.Namespace ?? string.Empty;
+            var k8snamespace = globalConfiguration?.ServiceDiscoveryProvider?.Namespace ?? string.Empty;
 
             return new ServiceProviderConfigurationBuilder()
                 .WithHost(host)
@@ -22,7 +22,7 @@ namespace Ocelot.Configuration.Creator
                 .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
                 .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)
                 .WithPollingInterval(pollingInterval)
-                .WithNamesapce(k8snamesapce)
+                .WithNamespace(k8snamespace)
                 .Build();
         }
     }

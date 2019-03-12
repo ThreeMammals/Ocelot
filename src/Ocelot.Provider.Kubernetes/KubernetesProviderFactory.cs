@@ -21,7 +21,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 ApiEndPoint = new Uri($"https://{config.Host}:{config.Port}"),
                 KeyOfServiceInK8s = name,
-                KubeNamespace = config.Namesapce,
+                KubeNamespace = config.Namespace,
                 AuthStrategy = KubeAuthStrategy.BearerToken,
                 AccessToken = config.Token,
                 AllowInsecure = true // Don't validate server certificate

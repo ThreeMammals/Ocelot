@@ -46,9 +46,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public ServiceProviderConfigurationBuilder WithNamesapce(string @namesapce)
+        public ServiceProviderConfigurationBuilder WithNamespace(string @namespace)
         {
-            _namespace = @namesapce;
+            _namespace = @namespace;
             return this;
         }
 
