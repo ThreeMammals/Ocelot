@@ -19,6 +19,7 @@ COPY src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj src/Ocelot.Provide
 COPY src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj
 COPY src/Ocelot.Provider.Rafty/Ocelot.Provider.Rafty.csproj src/Ocelot.Provider.Rafty/Ocelot.Provider.Rafty.csproj
 COPY src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj
+COPY src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj
 COPY test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 COPY test/Ocelot.ManualTest/Ocelot.ManualTest.csproj test/Ocelot.ManualTest/Ocelot.ManualTest.csproj
 COPY test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
