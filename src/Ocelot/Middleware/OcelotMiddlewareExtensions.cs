@@ -1,22 +1,22 @@
 ﻿namespace Ocelot.Middleware
 {
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Options;
-    using System.Diagnostics;
     using DependencyInjection;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
-    using Ocelot.Responses;
     using Ocelot.Logging;
     using Ocelot.Middleware.Pipeline;
-    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Responses;
+    using System;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public static class OcelotMiddlewareExtensions
     {
@@ -69,15 +69,18 @@
 
         private static async Task<IInternalConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
-            // make configuration from file system?
-            // earlier user needed to add ocelot files in startup configuration stuff, asp.net will map it to this
-            var fileConfig = builder.ApplicationServices.GetService<IOptionsMonitor<FileConfiguration>>();
+            var fileConfigurationRepository = builder.ApplicationServices.GetService<IFileConfigurationRepository>();
+            var fileConfiguration = await fileConfigurationRepository.Get();
+            if (fileConfiguration.IsError)
+            {
+                ThrowToStopOcelotStarting(fileConfiguration);
+            }
 
             // now create the config
             var internalConfigCreator = builder.ApplicationServices.GetService<IInternalConfigurationCreator>();
-            var internalConfig = await internalConfigCreator.Create(fileConfig.CurrentValue);
+            var internalConfig = await internalConfigCreator.Create(fileConfiguration.Data);
 
-            //Configuration error, throw error message
+            // Configuration error, throw error message
             if (internalConfig.IsError)
             {
                 ThrowToStopOcelotStarting(internalConfig);
@@ -87,11 +90,17 @@
             var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
             internalConfigRepo.AddOrReplace(internalConfig.Data);
 
-            fileConfig.OnChange(async (config) =>
+            // if configuration from file system
+            if (typeof(DiskFileConfigurationRepository) == fileConfigurationRepository.GetType())
             {
-                var newInternalConfig = await internalConfigCreator.Create(config);
-                internalConfigRepo.AddOrReplace(newInternalConfig.Data);
-            });
+                // earlier user needed to add ocelot files in startup configuration stuff, asp.net will map it to this
+                var fileConfig = builder.ApplicationServices.GetService<IOptionsMonitor<FileConfiguration>>();
+                fileConfig.OnChange(async (config) =>
+                {
+                    var newInternalConfig = await internalConfigCreator.Create(config);
+                    internalConfigRepo.AddOrReplace(newInternalConfig.Data);
+                });
+            }
 
             var adminPath = builder.ApplicationServices.GetService<IAdministrationPath>();
 
@@ -108,8 +117,7 @@
                 //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the
                 //admin api it works...boy this is getting a spit spags boll.
                 var fileConfigSetter = builder.ApplicationServices.GetService<IFileConfigurationSetter>();
-
-                await SetFileConfig(fileConfigSetter, fileConfig);
+                await SetFileConfig(fileConfigSetter, fileConfiguration.Data);
             }
 
             return GetOcelotConfigAndReturn(internalConfigRepo);
@@ -120,10 +128,9 @@
             return adminPath != null;
         }
 
-        private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptionsMonitor<FileConfiguration> fileConfig)
+        private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, FileConfiguration fileConfiguration)
         {
-            var response = await fileConfigSetter.Set(fileConfig.CurrentValue);
-
+            var response = await fileConfigSetter.Set(fileConfiguration);
             if (IsError(response))
             {
                 ThrowToStopOcelotStarting(response);
