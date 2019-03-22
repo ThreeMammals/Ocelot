@@ -33,6 +33,8 @@ namespace Ocelot.Requester.Middleware
             Logger.LogDebug("setting http response message");
 
             context.DownstreamResponse = new DownstreamResponse(response.Data);
+
+            await _next.Invoke(context);
         }
     }
 }
