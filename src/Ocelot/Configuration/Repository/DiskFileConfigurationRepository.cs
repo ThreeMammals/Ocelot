@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Repository
 {
@@ -23,11 +23,18 @@ namespace Ocelot.Configuration.Repository
 
         public Task<Response<FileConfiguration>> Get()
         {
-            string jsonConfiguration;
+            string jsonConfiguration = "{}";
 
-            lock(_lock)
+            lock (_lock)
             {
-                jsonConfiguration = System.IO.File.ReadAllText(_environmentFilePath);
+                if (System.IO.File.Exists(_environmentFilePath))
+                {
+                    jsonConfiguration = System.IO.File.ReadAllText(_environmentFilePath);
+                }
+                else if (System.IO.File.Exists(_ocelotFilePath))
+                {
+                    jsonConfiguration = System.IO.File.ReadAllText(_ocelotFilePath);
+                }
             }
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
@@ -39,7 +46,7 @@ namespace Ocelot.Configuration.Repository
         {
             string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
-            lock(_lock)
+            lock (_lock)
             {
                 if (System.IO.File.Exists(_environmentFilePath))
                 {
