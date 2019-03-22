@@ -69,7 +69,7 @@ All versions can be found [here](https://www.nuget.org/packages/Ocelot/)
 
 ## Documentation
 
-Please click [here](http://ocelot.readthedocs.io/en/latest/) for the Ocleot documentation. This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
+Please click [here](http://ocelot.readthedocs.io/en/latest/) for the Ocelot documentation. This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
 
 ## Coming up
 

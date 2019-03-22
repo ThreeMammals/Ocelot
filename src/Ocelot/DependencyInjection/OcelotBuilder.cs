@@ -42,6 +42,7 @@ namespace Ocelot.DependencyInjection
     {
         public IServiceCollection Services { get; }
         public IConfiguration Configuration { get; }
+        public IMvcCoreBuilder MvcCoreBuilder { get; }
 
         public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
@@ -106,7 +107,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-            Services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -133,16 +133,17 @@ namespace Ocelot.DependencyInjection
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            Services.AddMvcCore()
-                .AddApplicationPart(assembly)
-                .AddControllersAsServices()
-                .AddAuthorization()
-                .AddJsonFormatters();
+            this.MvcCoreBuilder = Services.AddMvcCore()
+                  .AddApplicationPart(assembly)
+                  .AddControllersAsServices()
+                  .AddAuthorization()
+                  .AddJsonFormatters();
 
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
             Services.AddWebEncoders();
         }
+
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
@@ -170,7 +171,7 @@ namespace Ocelot.DependencyInjection
             if(global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient<GlobalDelegatingHandler>(s => {
+                Services.AddTransient<GlobalDelegatingHandler>(s =>{
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });

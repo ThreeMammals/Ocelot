@@ -434,7 +434,8 @@
                         Host = "localhost",
                         Port = consulPort,
                         Type = "PollConsul",
-                        PollingInterval = 0
+                        PollingInterval = 0,
+                        Namespace = string.Empty
                     }
                 }
             };

@@ -2,7 +2,7 @@ Getting Started
 ===============
 
 Ocelot is designed to work with .NET Core only and is currently 
-built to netstandard2.0 `this <https://docs.microsoft.com/en-us/dotnet/articles/standard/library>`_ documentation may prove helpful when working out if Ocelot would be suitable for you.
+built to netstandard2.0. `This <https://docs.microsoft.com/en-us/dotnet/articles/standard/library>`_ documentation may prove helpful when working out if Ocelot would be suitable for you.
 
 .NET Core 2.1
 ^^^^^^^^^^^^^
@@ -32,8 +32,8 @@ The following is a very basic ocelot.json. It won't do anything but should get O
 The most important thing to note here is BaseUrl. Ocelot needs to know the URL it is running under
 in order to do Header find & replace and for certain administration configurations. When setting this URL it should be the external URL that clients will see Ocelot running on e.g. If you are running containers Ocelot might run on the url http://123.12.1.1:6543 but has something like nginx in front of it responding on https://api.mybusiness.com. In this case the Ocelot base url should be https://api.mybusiness.com. 
 
-If for some reason you are using containers and do want Ocelot to respond to client on http://123.12.1.1:6543
-then you can do this but if you are deploying multiple Ocelot's you will probably want to pass this on the command line in some kind of script. Hopefully whatever scheduler you are using can pass the IP.
+If you are using containers and require Ocelot to respond to clients on http://123.12.1.1:6543
+then you can do this, however if you are deploying multiple Ocelot's you will probably want to pass this on the command line in some kind of script. Hopefully whatever scheduler you are using can pass the IP.
 
 **Program**
 
@@ -74,6 +74,8 @@ AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot m
                 .Run(); 
         }
     }
+    
+ **Note:** When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace **.UseIISIntegration()** with **.UseIIS()**, otherwise you'll get startup errors.
 
 .NET Core 1.0
 ^^^^^^^^^^^^^

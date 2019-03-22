@@ -5,7 +5,7 @@ Ocelot supports one QoS capability at the current time. You can set on a per ReR
 want to use a circuit breaker when making requests to a downstream service. This uses an awesome
 .NET library called Polly check them out `here <https://github.com/App-vNext/Polly>`_.
 
-The first thing you need to do if you want to use the administration API is bring in the relavent NuGet package..
+The first thing you need to do if you want to use the administration API is bring in the relevant NuGet package..
 
 ``Install-Package Ocelot.Provider.Polly``
 

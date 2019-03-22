@@ -8,6 +8,7 @@ namespace Ocelot.Configuration.Builder
         private string _token;
         private string _configurationKey;
         private int _pollingInterval;
+        private string _namespace;
 
         public ServiceProviderConfigurationBuilder WithHost(string serviceDiscoveryProviderHost)
         {
@@ -45,9 +46,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ServiceProviderConfigurationBuilder WithNamespace(string @namespace)
+        {
+            _namespace = @namespace;
+            return this;
+        }
+
         public ServiceProviderConfiguration Build()
         {
-            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey, _pollingInterval);
+            return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey, _pollingInterval, _namespace);
         }
     }
 }
