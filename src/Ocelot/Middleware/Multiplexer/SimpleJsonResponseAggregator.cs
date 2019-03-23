@@ -37,7 +37,6 @@ namespace Ocelot.Middleware.Multiplexer
 
                     var content = await contexts[0].DownstreamResponse.Content.ReadAsStringAsync();
                     contentBuilder.Append($"\"{responseKeys[k]}\":{content}");
-
                 }
                 else
                 {
