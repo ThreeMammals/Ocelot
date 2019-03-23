@@ -72,7 +72,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
             Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
-            Services.TryAddSingleton<IServiceProviderConfigurationCreator,ServiceProviderConfigurationCreator>();
+            Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
             Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             Services.TryAddSingleton<IReRouteOptionsCreator, ReRouteOptionsCreator>();
             Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
@@ -127,7 +127,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
 
-            //add security 
+            //add security
             this.AddSecurity();
 
             //add asp.net services..
@@ -143,7 +143,6 @@ namespace Ocelot.DependencyInjection
             Services.AddMiddlewareAnalysis();
             Services.AddWebEncoders();
         }
-
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
@@ -168,10 +167,11 @@ namespace Ocelot.DependencyInjection
         public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
             where THandler : DelegatingHandler
         {
-            if(global)
+            if (global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient<GlobalDelegatingHandler>(s =>{
+                Services.AddTransient<GlobalDelegatingHandler>(s =>
+                {
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });
