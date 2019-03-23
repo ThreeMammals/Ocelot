@@ -25,7 +25,7 @@ namespace Ocelot.Provider.Polly
             try
             {
                 return await Policy
-                    .WrapAsync(_qoSProvider.CircuitBreaker.CircuitBreakerPolicy, _qoSProvider.CircuitBreaker.TimeoutPolicy)
+                    .WrapAsync(_qoSProvider.CircuitBreaker.Policies)
                     .ExecuteAsync(() => base.SendAsync(request,cancellationToken));
             }
             catch (BrokenCircuitException ex)
