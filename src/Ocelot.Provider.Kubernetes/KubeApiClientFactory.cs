@@ -8,9 +8,9 @@ namespace Ocelot.Provider.Kubernetes
         {
             var option = new KubeClientOptions
             {
-                ApiEndPoint = config.ApiEndPoint                
+                ApiEndPoint = config.ApiEndPoint
             };
-            if(!string.IsNullOrEmpty(config?.AccessToken))
+            if (!string.IsNullOrEmpty(config?.AccessToken))
             {
                 option.AccessToken = config.AccessToken;
                 option.AuthStrategy = config.AuthStrategy;
