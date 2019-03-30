@@ -5,7 +5,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Middleware;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Discovery.Client;
     using ServiceDiscovery;
 
     public static class OcelotBuilderExtensions

@@ -5,7 +5,7 @@
     using Configuration.Repository;
     using Microsoft.Extensions.DependencyInjection;
     using Middleware;
-    using Pivotal.Discovery.Client;
+    using Steeltoe.Discovery.Client;
 
     public class EurekaMiddlewareConfigurationProvider
     {
