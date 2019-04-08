@@ -48,14 +48,14 @@ You use Ocelot to poll kubernetes for latest service information rather than per
 
 .. code-block:: json
 
-"ServiceDiscoveryProvider": {
+  "ServiceDiscoveryProvider": {
    "Host": "192.168.0.13",
-      "Port": 443,
-      "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
-      "Namespace": "dev",
-      "Type": "pollkube"
-      "PollingInterval": 100
-}
+   "Port": 443,
+   "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
+   "Namespace": "dev",
+   "Type": "pollkube"
+   "PollingInterval": 100
+  } 
 
 The polling interval is in milliseconds and tells Ocelot how often to call kubernetes for changes in service configuration.
 
