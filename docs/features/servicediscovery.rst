@@ -113,7 +113,7 @@ Ocelot will add this token to the Consul client that it uses to make requests an
 Eureka
 ^^^^^^
 
-This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issue/262>`_ . to add support for Netflix's 
+This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issues/262>`_ . to add support for Netflix's 
 Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something
 to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
 
