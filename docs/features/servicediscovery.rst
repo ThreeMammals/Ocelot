@@ -113,7 +113,7 @@ Ocelot will add this token to the Consul client that it uses to make requests an
 Eureka
 ^^^^^^
 
-This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issue/262>`_ . to add support for Netflix's 
+This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issues/262>`_ . to add support for Netflix's 
 Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something
 to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
 
@@ -158,7 +158,7 @@ is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them 
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 
-This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issue/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
+This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
 
 An example of this would be calling Ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
 the path which is product and use it as a key to look up the service in Consul. If Consul returns a service Ocelot will request it on whatever host and port comes back from Consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. Ocelot will apprend any query string to the downstream url as normal.
