@@ -1023,7 +1023,7 @@
                                     Host = "bb.co.uk"
                                 }
                             },
-                            UpstreamHost = "host1"
+                            UpstreamHost = "host2"
                         }
                     }
             }))
