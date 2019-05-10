@@ -25,7 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubeClient" Version="2.2.4" />
+    <Compile Remove="IKubeApiClientFactory.cs" />
+    <Compile Remove="KubeApiClientFactory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KubeClient" Version="2.2.11" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.2.11" />
   </ItemGroup>
 
   <ItemGroup>
