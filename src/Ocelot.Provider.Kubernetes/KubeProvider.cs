@@ -13,9 +13,9 @@ namespace Ocelot.Provider.Kubernetes
     {
         private KubeRegistryConfiguration kubeRegistryConfiguration;
         private IOcelotLogger logger;
-        private KubeClient.IKubeApiClient kubeApi;
+        private IKubeApiClient kubeApi;
 
-        public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, KubeClient.IKubeApiClient kubeApi)
+        public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
         {
             this.kubeRegistryConfiguration = kubeRegistryConfiguration;
             this.logger = factory.CreateLogger<Kube>();
