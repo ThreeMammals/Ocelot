@@ -40,6 +40,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Request Aggregation
 * Service Discovery with Consul & Eureka
 * Service Fabric
+* Kubernetes 
 * WebSockets
 * Authentication
 * Authorisation
