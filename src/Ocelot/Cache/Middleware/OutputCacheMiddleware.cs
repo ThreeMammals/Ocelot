@@ -7,6 +7,8 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.IO;
+    using System.Security.Cryptography;
+    using System.Text;
 
     public class OutputCacheMiddleware : OcelotMiddleware
     {
@@ -31,10 +33,11 @@
             }
 
             var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
+            string downStreamRequestCacheKey = GenerateRequestCacheKey(context);
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
-            var cached = _outputCache.Get(downstreamUrlKey, context.DownstreamReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downStreamRequestCacheKey, context.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -61,7 +64,7 @@
 
             cached = await CreateCachedResponse(context.DownstreamResponse);
 
-            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
+            _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
 
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
@@ -69,6 +72,35 @@
         private void SetHttpResponseMessageThisRequest(DownstreamContext context, DownstreamResponse response)
         {
             context.DownstreamResponse = response;
+        }
+
+        private string GenerateRequestCacheKey(DownstreamContext context) {
+            string hashedContent = null;
+            if (string.Compare(context.DownstreamRequest.Method, "get", true) == 0) {
+                hashedContent = GenerateMd5(context.DownstreamRequest.OriginalString);
+            }
+            else {
+                byte[] requestContentBytes = Task.Run(async () => await context.DownstreamRequest.Content.ReadAsByteArrayAsync()).Result;
+                hashedContent = GenerateMd5(requestContentBytes);
+            }
+
+            return hashedContent;
+        }
+
+        private string GenerateMd5(byte[] contentBytes) {
+            MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(contentBytes);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++) {
+                sb.Append(hash[i].ToString("X2"));
+            }
+
+            return sb.ToString();
+        }
+
+        private string GenerateMd5(string contentString) {
+            byte[] contentBytes = Encoding.Unicode.GetBytes(contentString);
+            return GenerateMd5(contentBytes);
         }
 
         internal DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)
