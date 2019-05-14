@@ -69,7 +69,8 @@
 
         private void ThenTheContentTypeHeaderIsCached()
         {
-            var result = _cacheManager.Get("GET-https://some.url/blah?abcd=123", "kanken");
+            string cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+            var result = _cacheManager.Get(cacheKey, "kanken");
             var header = result.ContentHeaders["Content-Type"];
             header.First().ShouldBe("application/json");
         }
