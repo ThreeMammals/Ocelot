@@ -32,8 +32,10 @@
             builder.Services.RemoveAll(typeof(ICacheManager<FileConfiguration>));
             builder.Services.RemoveAll(typeof(IOcelotCache<FileConfiguration>));
             builder.Services.AddSingleton<ICacheManager<FileConfiguration>>(fileConfigCacheManagerOutputCache);
-            builder.Services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager)
-                            .AddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
+            builder.Services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
+
+            builder.Services.RemoveAll(typeof(ICacheKeyGenerator));
+            builder.Services.AddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
 
             return builder;
         }
