@@ -14,11 +14,22 @@ Then add the following to your ConfigureServices method.
     s.AddOcelot()
      .AddKubernetes();
 
-If you have services deployed in kubernetes you will normally use the naming service to access them.
+If you have services deployed in kubernetes you will normally use the naming service to access them. Default usePodServiceAccount = True, which means that ServiceAccount using Pod to access the service of the k8s cluster needs to be ServiceAccount based on RABC authorization
+
+.. code-block::csharp
+    public static class OcelotBuilderExtensions
+    {
+        public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true);
+    }
+
+You can replicate a Permissive. Using RBAC role bindings.
+`Permissive RBAC Permissions <https://kubernetes.io/docs/reference/access-authn-authz/rbac/#permissive-rbac-permissions>`_, k8s api server and token will read from pod .
+
+.. code-block::json
+kubectl create clusterrolebinding permissive-binding  --clusterrole=cluster-admin  --user=admin  --user=kubelet --group=system:serviceaccounts
 
 The following example shows how to set up a ReRoute that will work in kubernetes. The most important thing is the ServiceName which is made up of the 
-kubernetes service name. We also need to set up the ServiceDiscoveryProvider in 
-GlobalConfiguration. The example here shows a typical configuration. It assumes kubernetes api server is running on 192.168.0.13 and that api service is on port 443.
+kubernetes service name. We also need to set up the ServiceDiscoveryProvider in GlobalConfiguration. The example here shows a typical configuration. 
 
 
 .. code-block:: json
@@ -43,19 +54,21 @@ GlobalConfiguration. The example here shows a typical configuration. It assumes 
     }
   }
 }
+Service deployment in Namespace Dev , ServiceDiscoveryProvider type is kube, you also can set pollkube ServiceDiscoveryProvider type.
+  Note: Host、 Port and Token are no longer in use。
 
 You use Ocelot to poll kubernetes for latest service information rather than per request. If you want to poll kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration.
 
 .. code-block:: json
 
-"ServiceDiscoveryProvider": {
+  "ServiceDiscoveryProvider": {
    "Host": "192.168.0.13",
-      "Port": 443,
-      "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
-      "Namespace": "dev",
-      "Type": "pollkube"
-      "PollingInterval": 100
-}
+   "Port": 443,
+   "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
+   "Namespace": "dev",
+   "Type": "pollkube"
+   "PollingInterval": 100
+  } 
 
 The polling interval is in milliseconds and tells Ocelot how often to call kubernetes for changes in service configuration.
 

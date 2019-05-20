@@ -138,26 +138,39 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 
 Okta
 ^^^^
-Add nuget package : `"Okta.AspNetCore" https://www.nuget.org/packages/Okta.AspNetCore/`_
+Add the following to your startup Configure method:
 
-In a StartUp.cs file add to a method Configure next lines:
-app.UseAuthentication();
-app.UseOcelot().Wait();
+.. code-block:: csharp
 
-In a StartUp.cs file add to a method ConfigureServices lines:
+    app
+        .UseAuthentication()
+        .UseOcelot()
+        .Wait();
 
-services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultChallengeScheme = OktaDefaults.ApiAuthenticationScheme;
-                options.DefaultSignInScheme = OktaDefaults.ApiAuthenticationScheme;
-            })
-            .AddOktaWebApi(new OktaWebApiOptions
-            {
-                OktaDomain = _cfg["Okta:OktaDomain"]
-               
-            });
-services.AddOcelot(_cfg);
+
+Add the following, at minimum, to your startup ConfigureServices method:
+
+.. code-block:: csharp
+
+     services
+         .AddAuthentication()
+         .AddJwtBearer(oktaProviderKey, options =>
+         {
+             options.Audience = configuration["Authentication:Okta:Audience"]; // Okta Authorization server Audience
+             options.Authority = configuration["Authentication:Okta:Server"]; // Okta Authorization Issuer URI URL e.g. https://{subdomain}.okta.com/oauth2/{authidentifier}
+         });
+    services.AddOcelot(configuration);
+
+
+NOTE: In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta "scp" claim to "scope"
+
+
+.. code-block:: csharp
+
+     // Map Okta scp to scope claims instead of http://schemas.microsoft.com/identity/claims/scope to allow ocelot to read/verify them
+     JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("scp");
+     JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Add("scp", "scope");
+
 
 `Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
 

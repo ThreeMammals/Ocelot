@@ -16,18 +16,14 @@ namespace Ocelot.Provider.Kubernetes
 
         private static ServiceDiscovery.Providers.IServiceDiscoveryProvider GetkubeProvider(IServiceProvider provider, Configuration.ServiceProviderConfiguration config, string name, IOcelotLoggerFactory factory)
         {
-            var kubeClientFactory = provider.GetService<IKubeApiClientFactory>();
+            var kubeClient = provider.GetService<IKubeApiClient>();
             var k8sRegistryConfiguration = new KubeRegistryConfiguration()
             {
-                ApiEndPoint = new Uri($"https://{config.Host}:{config.Port}"),
                 KeyOfServiceInK8s = name,
                 KubeNamespace = config.Namespace,
-                AuthStrategy = KubeAuthStrategy.BearerToken,
-                AccessToken = config.Token,
-                AllowInsecure = true // Don't validate server certificate
             };
 
-            var k8sServiceDiscoveryProvider = new Kube(k8sRegistryConfiguration, factory, kubeClientFactory);
+            var k8sServiceDiscoveryProvider = new Kube(k8sRegistryConfiguration, factory, kubeClient);
             if (config.Type?.ToLower() == "pollkube")
             {
                 return new PollKube(config.PollingInterval, factory, k8sServiceDiscoveryProvider);

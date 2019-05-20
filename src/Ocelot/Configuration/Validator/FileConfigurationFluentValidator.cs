@@ -122,7 +122,7 @@
         {
             var matchingReRoutes = reRoutes
                 .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
-                            && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null))
+                            && (r.UpstreamHost == reRoute.UpstreamHost || reRoute.UpstreamHost == null))
                 .ToList();
 
             if (matchingReRoutes.Count == 1)

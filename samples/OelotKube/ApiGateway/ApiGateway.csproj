@@ -10,11 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
-    <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />
+	<PackageReference Include="Ocelot" Version="13.6.0-alpha0010"/>
+    <PackageReference Include="Ocelot.Provider.Kubernetes" Version="13.6.0-alpha0010"/>
   </ItemGroup>
 
 </Project>

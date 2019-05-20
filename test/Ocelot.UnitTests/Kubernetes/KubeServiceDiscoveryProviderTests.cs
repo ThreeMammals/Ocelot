@@ -1,4 +1,5 @@
-﻿using KubeClient.Models;
+﻿using KubeClient;
+using KubeClient.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +32,7 @@ namespace Ocelot.UnitTests.Kubernetes
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
         private string _receivedToken;
-        private readonly IKubeApiClientFactory _clientFactory;
+        private readonly IKubeApiClient _clientFactory;
 
         public KubeServiceDiscoveryProviderTests()
         {
@@ -42,15 +43,20 @@ namespace Ocelot.UnitTests.Kubernetes
             _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
             _serviceEntries = new ServiceV1();
             _factory = new Mock<IOcelotLoggerFactory>();
-            _clientFactory = new KubeApiClientFactory();
+
+            var option = new KubeClientOptions
+            {
+                ApiEndPoint = new Uri(_fakekubeServiceDiscoveryUrl),
+                AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG",
+                AuthStrategy = KubeClient.KubeAuthStrategy.BearerToken,
+                AllowInsecure = true
+            };
+
+            _clientFactory = KubeApiClient.Create(option);
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
             var config = new KubeRegistryConfiguration()
             {
-                ApiEndPoint = new Uri(_fakekubeServiceDiscoveryUrl),
-                AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG",
-                AllowInsecure = true,
-                AuthStrategy = KubeClient.KubeAuthStrategy.BearerToken,
                 KeyOfServiceInK8s = _serviceName,
                 KubeNamespace = _namespaces
             };
