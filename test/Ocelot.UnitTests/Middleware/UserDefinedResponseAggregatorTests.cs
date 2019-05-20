@@ -140,12 +140,12 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<DownstreamResponse> Aggregate(List<DownstreamResponse> responses)
+            public async Task<DownstreamResponse> Aggregate(List<DownstreamContext> responses)
             {
-                var tom = await responses[0].Content.ReadAsStringAsync();
-                var laura = await responses[1].Content.ReadAsStringAsync();
+                var tom = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
+                var laura = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
-                var headers = responses.SelectMany(x => x.Headers).ToList();
+                var headers = responses.SelectMany(x => x.DownstreamResponse.Headers).ToList();
                 return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers, "some reason");
             }
         }
