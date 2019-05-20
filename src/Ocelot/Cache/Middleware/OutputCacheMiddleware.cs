@@ -7,19 +7,23 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.IO;
+    using System.Text;
 
     public class OutputCacheMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotCache<CachedResponse> _outputCache;
+        private readonly ICacheKeyGenerator _cacheGeneratot;
 
         public OutputCacheMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IOcelotCache<CachedResponse> outputCache)
+            IOcelotCache<CachedResponse> outputCache,
+            ICacheKeyGenerator cacheGeneratot)
                 :base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
         {
             _next = next;
             _outputCache = outputCache;
+            _cacheGeneratot = cacheGeneratot;
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -31,10 +35,11 @@
             }
 
             var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
+            string downStreamRequestCacheKey = _cacheGeneratot.GenerateRequestCacheKey(context);
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
-            var cached = _outputCache.Get(downstreamUrlKey, context.DownstreamReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downStreamRequestCacheKey, context.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -61,12 +66,13 @@
 
             cached = await CreateCachedResponse(context.DownstreamResponse);
 
-            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
+            _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
 
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
-        private void SetHttpResponseMessageThisRequest(DownstreamContext context, DownstreamResponse response)
+        private void SetHttpResponseMessageThisRequest(DownstreamContext context, 
+                                                       DownstreamResponse response)
         {
             context.DownstreamResponse = response;
         }

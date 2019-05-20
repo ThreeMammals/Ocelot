@@ -23,6 +23,7 @@
     public class OutputCacheMiddlewareRealCacheTests
     {
         private readonly IOcelotCache<CachedResponse> _cacheManager;
+        private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly OutputCacheMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
         private OcelotRequestDelegate _next;
@@ -32,17 +33,18 @@
         public OutputCacheMiddlewareRealCacheTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
+            _logger = new Mock<IOcelotLogger>();            
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
             {
                 x.WithDictionaryHandle();
             });
             _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
+            _cacheKeyGenerator = new CacheKeyGenerator();
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
             _next = context => Task.CompletedTask;
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager);
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator);
         }
 
         [Fact]
@@ -69,7 +71,8 @@
 
         private void ThenTheContentTypeHeaderIsCached()
         {
-            var result = _cacheManager.Get("GET-https://some.url/blah?abcd=123", "kanken");
+            string cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+            var result = _cacheManager.Get(cacheKey, "kanken");
             var header = result.ContentHeaders["Content-Type"];
             header.First().ShouldBe("application/json");
         }
