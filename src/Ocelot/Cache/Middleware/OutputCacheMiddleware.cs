@@ -13,14 +13,17 @@
     {
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotCache<CachedResponse> _outputCache;
+        private readonly ICacheKeyGenerator _cacheGeneratot;
 
         public OutputCacheMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IOcelotCache<CachedResponse> outputCache)
+            IOcelotCache<CachedResponse> outputCache,
+            ICacheKeyGenerator cacheGeneratot)
                 :base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
         {
             _next = next;
             _outputCache = outputCache;
+            _cacheGeneratot = cacheGeneratot;
         }
 
         public async Task Invoke(DownstreamContext context)
@@ -32,7 +35,7 @@
             }
 
             var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
-            string downStreamRequestCacheKey = GenerateRequestCacheKey(context);
+            string downStreamRequestCacheKey = _cacheGeneratot.GenerateRequestCacheKey(context);
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
