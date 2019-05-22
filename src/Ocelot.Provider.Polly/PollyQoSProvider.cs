@@ -10,8 +10,8 @@ namespace Ocelot.Provider.Polly
 
     public class PollyQoSProvider
     {
-        private readonly CircuitBreakerPolicy _circuitBreakerPolicy;
-        private readonly TimeoutPolicy _timeoutPolicy;
+        private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
+        private readonly AsyncTimeoutPolicy _timeoutPolicy;
         private readonly IOcelotLogger _logger;
 
         public PollyQoSProvider(DownstreamReRoute reRoute, IOcelotLoggerFactory loggerFactory)
