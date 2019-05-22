@@ -5,6 +5,6 @@ namespace Ocelot.Middleware.Multiplexer
 {
     public interface IDefinedAggregator
     {
-        Task<DownstreamResponse> Aggregate(List<DownstreamResponse> responses);
+        Task<DownstreamResponse> Aggregate(List<DownstreamContext> responses);
     }
 }

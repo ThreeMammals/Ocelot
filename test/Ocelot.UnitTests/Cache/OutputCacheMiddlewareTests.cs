@@ -27,7 +27,9 @@
         private OutputCacheMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
         private readonly OcelotRequestDelegate _next;
+        private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
+
 
         public OutputCacheMiddlewareTests()
         {
@@ -35,6 +37,7 @@
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
+            _cacheKeyGenerator = new CacheKeyGenerator();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
@@ -89,7 +92,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object);
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
             _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
