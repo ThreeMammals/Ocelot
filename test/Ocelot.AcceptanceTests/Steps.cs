@@ -149,8 +149,14 @@
 
             if (File.Exists(configurationPath))
             {
-                Thread.Sleep(100);
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
@@ -162,8 +168,14 @@
 
             if (File.Exists(configurationPath))
             {
-                Thread.Sleep(100);
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
