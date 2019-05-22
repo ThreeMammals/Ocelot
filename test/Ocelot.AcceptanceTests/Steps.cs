@@ -141,7 +141,6 @@
             await _ocelotHost.StartAsync();
         }
 
-
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = TestConfiguration.ConfigurationPath;
@@ -150,6 +149,7 @@
 
             if (File.Exists(configurationPath))
             {
+                Thread.Sleep(100);
                 File.Delete(configurationPath);
             }
 
@@ -162,6 +162,7 @@
 
             if (File.Exists(configurationPath))
             {
+                Thread.Sleep(100);
                 File.Delete(configurationPath);
             }
 
@@ -190,7 +191,7 @@
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddOcelot();                    
+                    s.AddOcelot();
                 })
                 .Configure(app =>
                 {
@@ -261,7 +262,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
         public void ThenTheTraceHeaderIsSet(string key)
         {
             var header = _response.Headers.GetValues(key);
@@ -306,7 +306,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
         public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -339,7 +338,7 @@
                 .Configure(app =>
                 {
                     app.UseOcelot().Wait();
-                }); 
+                });
 
             _ocelotServer = new TestServer(_webHostBuilder);
 
@@ -376,7 +375,8 @@
 
         public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
         {
-            var result = Wait.WaitFor(2000).Until(() => {
+            var result = Wait.WaitFor(2000).Until(() =>
+            {
                 try
                 {
                     _response = _ocelotClient.GetAsync(url).Result;
@@ -391,7 +391,6 @@
 
             result.ShouldBeTrue();
         }
-
 
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
         {
@@ -423,7 +422,7 @@
                 .Configure(app =>
                 {
                     app.UseOcelot().Wait();
-                }); 
+                });
 
             _ocelotServer = new TestServer(_webHostBuilder);
 
@@ -559,7 +558,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>() 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>()
             where TOne : DelegatingHandler
             where TWo : DelegatingHandler
         {
@@ -592,7 +591,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>() 
+        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>()
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -623,7 +622,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency)
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -884,8 +883,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
-
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
@@ -1004,7 +1001,7 @@
         {
             _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
         }
-        
+
         public void ThenTheContentLengthIs(int expected)
         {
             _response.Content.Headers.ContentLength.ShouldBe(expected);
@@ -1111,7 +1108,6 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
-
         }
     }
 }
