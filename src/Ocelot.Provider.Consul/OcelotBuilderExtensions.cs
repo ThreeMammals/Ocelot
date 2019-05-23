@@ -3,6 +3,7 @@
     using Configuration.Repository;
     using DependencyInjection;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
     using Middleware;
     using ServiceDiscovery;
 
@@ -12,6 +13,8 @@
         {
             builder.Services.AddSingleton<ServiceDiscoveryFinderDelegate>(ConsulProviderFactory.Get);
             builder.Services.AddSingleton<IConsulClientFactory, ConsulClientFactory>();
+            builder.Services.RemoveAll(typeof(IFileConfigurationPollerOptions));
+            builder.Services.AddSingleton<IFileConfigurationPollerOptions, ConsulFileConfigurationPollerOption>();
             return builder;
         }
 
