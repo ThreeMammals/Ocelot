@@ -1,15 +1,15 @@
 namespace Ocelot.Errors.Middleware
 {
     using Configuration;
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Ocelot.Configuration.Repository;
     using Ocelot.Infrastructure.Extensions;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
@@ -21,7 +21,7 @@ namespace Ocelot.Errors.Middleware
 
         public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IInternalConfigurationRepository configRepo, 
+            IInternalConfigurationRepository configRepo,
             IRequestScopedDataRepository repo)
                 : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
@@ -41,7 +41,8 @@ namespace Ocelot.Errors.Middleware
 
                 if (configuration.IsError)
                 {
-                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                    throw new Exception(
+                        $"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 }
 
                 TrySetGlobalRequestId(context, configuration.Data);
@@ -59,7 +60,7 @@ namespace Ocelot.Errors.Middleware
                 var message = CreateMessage(context, e);
 
                 Logger.LogError(message, e);
-                
+
                 SetInternalServerErrorOnResponse(context);
             }
 

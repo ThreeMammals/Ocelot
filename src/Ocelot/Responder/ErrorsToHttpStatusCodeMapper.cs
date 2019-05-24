@@ -1,6 +1,6 @@
+using Ocelot.Errors;
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Errors;
 
 namespace Ocelot.Responder
 {
@@ -13,7 +13,7 @@ namespace Ocelot.Responder
                 return 401;
             }
 
-            if (errors.Any(e => e.Code == OcelotErrorCode.UnauthorizedError 
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnauthorizedError
                 || e.Code == OcelotErrorCode.ClaimValueNotAuthorisedError
                 || e.Code == OcelotErrorCode.ScopeNotAuthorisedError
                 || e.Code == OcelotErrorCode.UserDoesNotHaveClaimError
@@ -25,6 +25,14 @@ namespace Ocelot.Responder
             if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
             {
                 return 503;
+            }
+
+            if (errors.Any(e => e.Code == OcelotErrorCode.RequestCanceled))
+            {
+                // status code refer to
+                // https://stackoverflow.com/questions/46234679/what-is-the-correct-http-status-code-for-a-cancelled-request?answertab=votes#tab-top
+                // https://httpstatuses.com/499
+                return 499;
             }
 
             if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))

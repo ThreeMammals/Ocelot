@@ -2,7 +2,7 @@
 {
     public enum OcelotErrorCode
     {
-        UnauthenticatedError, 
+        UnauthenticatedError,
         UnknownError,
         DownstreampathTemplateAlreadyUsedError,
         UnableToFindDownstreamRouteError,
@@ -38,6 +38,7 @@
         CouldNotFindAggregatorError,
         CannotAddPlaceholderError,
         CannotRemovePlaceholderError,
-        QuotaExceededError
+        QuotaExceededError,
+        RequestCanceled
     }
 }
