@@ -1,4 +1,7 @@
-﻿namespace ApiGateway
+﻿using Ocelot.Provider.Eureka;
+using Ocelot.Provider.Polly;
+
+namespace ApiGateway
 {
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
@@ -27,7 +30,9 @@
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddOcelot();
+                    s.AddOcelot()
+                        .AddEureka()
+                        .AddPolly();
                 })
                 .Configure(a =>
                 {

@@ -5,7 +5,7 @@ os:
 
 # Ubuntu 14.04
 sudo: required
-dist: trusty
+dist: bionic
 
 # OS X 10.12
 osx_image: xcode9.2
@@ -13,7 +13,7 @@ osx_image: xcode9.2
 mono:
   - 5.10.0
 
-dotnet: 2.1.500
+dotnet: 2.2.105
 
 before_install:
   - git fetch --unshallow # Travis always does a shallow clone, but GitVersion needs the full history including branches and tags

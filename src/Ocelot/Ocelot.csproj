@@ -26,14 +26,14 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0">
+    <PackageReference Include="FluentValidation" Version="8.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.2.0">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

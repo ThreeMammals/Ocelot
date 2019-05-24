@@ -28,11 +28,11 @@
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="CacheManager.Core" Version="1.1.2" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.1.2" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.1.2" />
+    <PackageReference Include="CacheManager.Core" Version="1.2.0" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.2.0" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.2.0" />
   </ItemGroup>
 </Project>
