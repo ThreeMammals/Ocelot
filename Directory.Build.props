@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot</RepositoryUrl>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
