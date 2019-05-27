@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 using Ocelot.Responder;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Net;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Responder
         [InlineData(OcelotErrorCode.ClaimValueNotAuthorisedError)]
         [InlineData(OcelotErrorCode.ScopeNotAuthorisedError)]
         [InlineData(OcelotErrorCode.UnauthorizedError)]
-        [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)] 
+        [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)]
         public void should_return_forbidden(OcelotErrorCode errorCode)
         {
             ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Forbidden);
@@ -125,7 +125,7 @@ namespace Ocelot.UnitTests.Responder
             // If this test fails then it's because the number of error codes has changed.
             // You should make the appropriate changes to the test cases here to ensure
             // they cover all the error codes, and then modify this assertion.
-            Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(37, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
+            Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(38, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
         }
 
         private void ShouldMapErrorToStatusCode(OcelotErrorCode errorCode, HttpStatusCode expectedHttpStatusCode)
@@ -137,7 +137,7 @@ namespace Ocelot.UnitTests.Responder
         {
             var errors = new List<Error>();
 
-            foreach(var errorCode in errorCodes)
+            foreach (var errorCode in errorCodes)
             {
                 errors.Add(new AnyError(errorCode));
             }

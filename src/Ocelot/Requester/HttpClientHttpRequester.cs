@@ -1,9 +1,9 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
@@ -16,7 +16,7 @@ namespace Ocelot.Requester
 
         public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
             IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerFactory factory, 
+            IDelegatingHandlerHandlerFactory factory,
             IExceptionToErrorMapper mapper)
         {
             _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
@@ -33,7 +33,7 @@ namespace Ocelot.Requester
 
             try
             {
-                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage());
+                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage(), context.HttpContext.RequestAborted);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (Exception exception)
