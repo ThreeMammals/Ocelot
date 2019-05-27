@@ -34,6 +34,8 @@ namespace Ocelot.Errors.Middleware
         {
             try
             {
+                context.HttpContext.RequestAborted.ThrowIfCancellationRequested();
+
                 //try and get the global request id and set it for logs...
                 //should this basically be immutable per request...i guess it should!
                 //first thing is get config
@@ -52,6 +54,14 @@ namespace Ocelot.Errors.Middleware
                 Logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(context);
+            }
+            catch (OperationCanceledException e) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                Logger.LogDebug("operation canceled");
+                if (!context.HttpContext.Response.HasStarted)
+                {
+                    context.HttpContext.Response.StatusCode = 499;
+                }
             }
             catch (Exception e)
             {

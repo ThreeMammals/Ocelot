@@ -31,6 +31,14 @@
         }
 
         [Fact]
+        public void should_return_request_canceled()
+        {
+            var error = _mapper.Map(new OperationCanceledException());
+
+            error.ShouldBeOfType<RequestCanceledError>();
+        }
+
+        [Fact]
         public void should_return_error_from_mapper()
         {
             var errorMapping = new Dictionary<Type, Func<Exception, Error>>
