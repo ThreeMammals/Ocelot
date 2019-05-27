@@ -43,8 +43,7 @@ namespace Ocelot.Errors.Middleware
 
                 if (configuration.IsError)
                 {
-                    throw new Exception(
-                        $"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 }
 
                 TrySetGlobalRequestId(context, configuration.Data);
