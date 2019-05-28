@@ -1,7 +1,7 @@
 namespace Ocelot.Configuration
 {
-    using System.Collections.Generic;
     using Creator;
+    using System.Collections.Generic;
     using Values;
 
     public class DownstreamReRoute

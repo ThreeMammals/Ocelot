@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using Ocelot.Cache;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -45,14 +43,14 @@ namespace Ocelot.UnitTests.Cache
                 .Then(_ => ThenTheRegionIs("region"))
                 .BDDfy();
         }
-        
+
         private void GivenTheReRoute(FileReRoute reRoute)
         {
             _reRoute = reRoute;
         }
 
         private void WhenICreateTheRegion()
-        {            
+        {
             RegionCreator regionCreator = new RegionCreator();
             _result = regionCreator.Create(_reRoute);
         }

@@ -1,10 +1,5 @@
 ﻿using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
-using Ocelot.Middleware;
-using Shouldly;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -39,7 +34,7 @@ namespace Ocelot.AcceptanceTests
 
         [Fact]
         public void should_reload_config_on_change()
-        {           
+        {
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
@@ -51,7 +46,6 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_reload_config_on_change()
         {
-           
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))

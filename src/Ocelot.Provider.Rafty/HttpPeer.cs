@@ -1,7 +1,6 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System.Net.Http;
-    using System.Threading.Tasks;
+    using Administration;
     using Configuration;
     using global::Rafty.Concensus.Messages;
     using global::Rafty.Concensus.Peers;
@@ -11,7 +10,8 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-    using Administration;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     public class HttpPeer : IPeer
     {

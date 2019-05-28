@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {

@@ -2,7 +2,7 @@
 
 namespace Ocelot.UnitTests.Responder
 {
-    class AnyError : Error
+    internal class AnyError : Error
     {
         public AnyError() : base("blahh", OcelotErrorCode.UnknownError)
         {

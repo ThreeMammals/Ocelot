@@ -1,18 +1,15 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -422,7 +419,6 @@ namespace Ocelot.AcceptanceTests
                             {
                                 "Laura",
                                 "Tom"
-
                             }
                         }
                     }

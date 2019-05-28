@@ -1,7 +1,5 @@
-using System;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Requester;
@@ -64,7 +62,6 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .Then(_ => ThenTheResultIsInValid())
                 .And(_ => ThenTheErrorIs())
                 .BDDfy();
-
         }
 
         private void ThenTheErrorIs()

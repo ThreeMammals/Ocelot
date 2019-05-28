@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Ocelot.Authentication.Middleware;
+﻿using Ocelot.Authentication.Middleware;
 using Ocelot.Authorisation.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
@@ -17,6 +15,8 @@ using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
 using Ocelot.Security.Middleware;
 using Ocelot.WebSockets.Middleware;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.Middleware.Pipeline
 {
@@ -96,7 +96,7 @@ namespace Ocelot.Middleware.Pipeline
             // Allow pre authorisation logic. The idea being people might want to run something custom before what is built in.
             builder.UseIfNotNull(pipelineConfiguration.PreAuthorisationMiddleware);
 
-            // Now we have authenticated and done any claims transformation we 
+            // Now we have authenticated and done any claims transformation we
             // can authorise the request
             // We allow the ocelot middleware to be overriden by whatever the
             // user wants
@@ -124,7 +124,7 @@ namespace Ocelot.Middleware.Pipeline
             // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
             builder.UseDownstreamUrlCreatorMiddleware();
 
-            // Not sure if this is the best place for this but we use the downstream url 
+            // Not sure if this is the best place for this but we use the downstream url
             // as the basis for our cache key.
             builder.UseOutputCacheMiddleware();
 

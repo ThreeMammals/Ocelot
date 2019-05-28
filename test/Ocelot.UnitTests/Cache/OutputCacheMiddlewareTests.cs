@@ -1,9 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Cache
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Cache;
@@ -13,15 +9,18 @@
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
-    using System.Net;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Middleware;
 
     public class OutputCacheMiddlewareTests
     {
-        private readonly Mock<IOcelotCache<CachedResponse>> _cache;    
+        private readonly Mock<IOcelotCache<CachedResponse>> _cache;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
@@ -29,7 +28,6 @@
         private readonly OcelotRequestDelegate _next;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
-
 
         public OutputCacheMiddlewareTests()
         {
@@ -119,7 +117,7 @@
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
-                
+
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
 
             _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;

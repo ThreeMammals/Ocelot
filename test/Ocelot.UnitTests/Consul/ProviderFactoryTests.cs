@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
-    using System;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Logging;
     using Provider.Consul;
     using Shouldly;
+    using System;
     using Xunit;
 
     public class ProviderFactoryTests

@@ -1,14 +1,13 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System.Net.Http;
-    using Configuration;
+    using Administration;
     using Configuration.Repository;
     using global::Rafty.Concensus.Peers;
     using global::Rafty.Infrastructure;
     using Microsoft.Extensions.Options;
     using Middleware;
     using System.Collections.Generic;
-    using Administration;
+    using System.Net.Http;
 
     public class FilePeersProvider : IPeersProvider
     {

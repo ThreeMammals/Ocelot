@@ -1,8 +1,5 @@
 ﻿namespace Ocelot.UnitTests.CacheManager
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using global::CacheManager.Core;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
@@ -14,6 +11,9 @@
     using Ocelot.Configuration.File;
     using Ocelot.DependencyInjection;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -79,7 +79,8 @@
         {
             try
             {
-                _ocelotBuilder.AddCacheManager(x => {
+                _ocelotBuilder.AddCacheManager(x =>
+                {
                     x.WithMaxRetries(_maxRetries);
                     x.WithDictionaryHandle();
                 });

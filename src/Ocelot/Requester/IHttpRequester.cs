@@ -1,7 +1,7 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using Ocelot.Middleware;
+﻿using Ocelot.Middleware;
 using Ocelot.Responses;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {

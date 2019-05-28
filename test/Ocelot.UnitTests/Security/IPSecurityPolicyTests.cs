@@ -5,11 +5,9 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security.IPSecurity;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -21,6 +19,7 @@ namespace Ocelot.UnitTests.Security
         private readonly DownstreamReRouteBuilder _downstreamReRouteBuilder;
         private readonly IPSecurityPolicy _ipSecurityPolicy;
         private Response response;
+
         public IPSecurityPolicyTests()
         {
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
@@ -60,7 +59,6 @@ namespace Ocelot.UnitTests.Security
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
-
 
         [Fact]
         private void should_allowedIp_clientIp_block()

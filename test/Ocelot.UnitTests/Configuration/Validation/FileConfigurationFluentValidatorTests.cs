@@ -1,25 +1,25 @@
 ﻿namespace Ocelot.UnitTests.Configuration.Validation
 {
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using System.Text.Encodings.Web;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Authentication;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Moq;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Validator;
-    using Ocelot.Responses;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Requester;
-    using Requester;
+    using Ocelot.Responses;
+    using Ocelot.ServiceDiscovery;
     using Ocelot.ServiceDiscovery.Providers;
     using Ocelot.Values;
-    using Ocelot.ServiceDiscovery;
+    using Requester;
+    using Shouldly;
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Text.Encodings.Web;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class FileConfigurationFluentValidatorTests
     {
@@ -126,7 +126,7 @@
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler()
         {
@@ -300,7 +300,7 @@
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
         {
@@ -1382,7 +1382,7 @@
         private void GivenAQoSHandler()
         {
             var collection = new ServiceCollection();
-            QosDelegatingHandlerDelegate del = (a,b) => new FakeDelegatingHandler();
+            QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
             collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(provider, new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
@@ -1391,7 +1391,7 @@
         private void GivenAServiceDiscoveryHandler()
         {
             var collection = new ServiceCollection();
-            ServiceDiscoveryFinderDelegate del = (a,b,c) => new FakeServiceDiscoveryProvider();
+            ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
             collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(provider, new ReRouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));

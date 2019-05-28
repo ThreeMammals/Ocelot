@@ -1,15 +1,15 @@
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
-    using Values;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.Net.Http;
     using TestStack.BDDfy;
+    using Values;
     using Xunit;
 
     public class AggregatesCreatorTests
@@ -112,13 +112,13 @@ namespace Ocelot.UnitTests.Configuration
             _result[1].UpstreamTemplatePattern.ShouldBe(_aggregate2Utp);
             _result[1].Aggregator.ShouldBe(_fileConfiguration.Aggregates[1].Aggregator);
             _result[1].DownstreamReRoute.ShouldContain(x => x == _reRoutes[2].DownstreamReRoute[0]);
-            _result[1].DownstreamReRoute.ShouldContain(x => x == _reRoutes[3].DownstreamReRoute[0]);        
+            _result[1].DownstreamReRoute.ShouldContain(x => x == _reRoutes[3].DownstreamReRoute[0]);
         }
 
         private void ThenTheUtpCreatorIsCalledCorrectly()
         {
             _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[0]), Times.Once);
-            _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[1]), Times.Once);        
+            _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[1]), Times.Once);
         }
 
         private void GivenTheUtpCreatorReturns()

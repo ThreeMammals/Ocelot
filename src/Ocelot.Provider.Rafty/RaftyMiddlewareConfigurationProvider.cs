@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System.Threading.Tasks;
     using global::Rafty.Concensus.Node;
     using global::Rafty.Infrastructure;
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
     using Middleware;
-    using Microsoft.AspNetCore.Hosting;
+    using System.Threading.Tasks;
 
     public static class RaftyMiddlewareConfigurationProvider
     {

@@ -1,13 +1,11 @@
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Ocelot.Infrastructure;
     using Ocelot.Middleware;
     using Responses;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Threading.Tasks;
     using Values;
 
     public class CookieStickySessions : ILoadBalancer

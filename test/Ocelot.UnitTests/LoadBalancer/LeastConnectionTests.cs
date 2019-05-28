@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -42,8 +42,8 @@ namespace Ocelot.UnitTests.LoadBalancer
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
             var tasks = new Task[100];
-           
-            for(var i = 0; i < tasks.Length; i++)
+
+            for (var i = 0; i < tasks.Length; i++)
             {
                 tasks[i] = LeaseDelayAndRelease();
             }
@@ -154,7 +154,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_build_connections_per_service()
         {
-             var serviceName = "products";
+            var serviceName = "products";
 
             var availableServices = new List<Service>
             {
@@ -185,7 +185,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_release_connection()
         {
-             var serviceName = "products";
+            var serviceName = "products";
 
             var availableServices = new List<Service>
             {
@@ -226,11 +226,11 @@ namespace Ocelot.UnitTests.LoadBalancer
             var serviceName = "products";
 
             var hostAndPort = new ServiceHostAndPort("localhost", 80);
-               this.Given(x => x.GivenAHostAndPort(hostAndPort))
-                .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
-                .When(x => x.WhenIGetTheNextHostAndPort())
-                .Then(x => x.ThenServiceAreNullErrorIsReturned())
-                .BDDfy();
+            this.Given(x => x.GivenAHostAndPort(hostAndPort))
+             .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
+             .When(x => x.WhenIGetTheNextHostAndPort())
+             .Then(x => x.ThenServiceAreNullErrorIsReturned())
+             .BDDfy();
         }
 
         [Fact]
@@ -239,11 +239,11 @@ namespace Ocelot.UnitTests.LoadBalancer
             var serviceName = "products";
 
             var hostAndPort = new ServiceHostAndPort("localhost", 80);
-               this.Given(x => x.GivenAHostAndPort(hostAndPort))
-                .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
-                .When(x => x.WhenIGetTheNextHostAndPort())
-                .Then(x => x.ThenServiceAreEmptyErrorIsReturned())
-                .BDDfy();
+            this.Given(x => x.GivenAHostAndPort(hostAndPort))
+             .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
+             .When(x => x.WhenIGetTheNextHostAndPort())
+             .Then(x => x.ThenServiceAreEmptyErrorIsReturned())
+             .BDDfy();
         }
 
         private void ThenServiceAreNullErrorIsReturned()

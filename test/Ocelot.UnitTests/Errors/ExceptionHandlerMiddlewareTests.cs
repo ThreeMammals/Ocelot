@@ -1,24 +1,24 @@
 namespace Ocelot.UnitTests.Errors
 {
-    using System;
-    using System.Net;
-    using System.Threading.Tasks;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Logging;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
-    using Ocelot.Errors;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Middleware;
     using Ocelot.Configuration.Repository;
+    using Ocelot.Errors;
+    using Ocelot.Errors.Middleware;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Shouldly;
+    using System;
+    using System.Net;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class ExceptionHandlerMiddlewareTests
     {
-        bool _shouldThrowAnException;
+        private bool _shouldThrowAnException;
         private readonly Mock<IInternalConfigurationRepository> _configRepo;
         private readonly Mock<IRequestScopedDataRepository> _repo;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
@@ -35,7 +35,8 @@ namespace Ocelot.UnitTests.Errors
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ExceptionHandlerMiddleware>()).Returns(_logger.Object);
-            _next = async context => {
+            _next = async context =>
+            {
                 await Task.CompletedTask;
 
                 if (_shouldThrowAnException)
@@ -47,7 +48,7 @@ namespace Ocelot.UnitTests.Errors
             };
             _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _configRepo.Object, _repo.Object);
         }
-        
+
         [Fact]
         public void NoDownstreamException()
         {
@@ -102,21 +103,21 @@ namespace Ocelot.UnitTests.Errors
         [Fact]
         public void should_throw_exception_if_config_provider_returns_error()
         {
-             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-                .And(_ => GivenTheConfigReturnsError())
-                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-                .Then(_ => ThenAnExceptionIsThrown())
-                .BDDfy();
+            this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
+               .And(_ => GivenTheConfigReturnsError())
+               .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+               .Then(_ => ThenAnExceptionIsThrown())
+               .BDDfy();
         }
 
         [Fact]
         public void should_throw_exception_if_config_provider_throws()
         {
-             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-                .And(_ => GivenTheConfigThrows())
-                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-                .Then(_ => ThenAnExceptionIsThrown())
-                .BDDfy();
+            this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
+               .And(_ => GivenTheConfigThrows())
+               .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+               .Then(_ => ThenAnExceptionIsThrown())
+               .BDDfy();
         }
 
         private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
@@ -133,8 +134,8 @@ namespace Ocelot.UnitTests.Errors
         private void GivenTheConfigThrows()
         {
             var ex = new Exception("outer", new Exception("inner"));
-             _configRepo
-                .Setup(x => x.Get()).Throws(ex);
+            _configRepo
+               .Setup(x => x.Get()).Throws(ex);
         }
 
         private void ThenAnExceptionIsThrown()
@@ -186,7 +187,7 @@ namespace Ocelot.UnitTests.Errors
             _repo.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
-        class FakeError : Error
+        private class FakeError : Error
         {
             internal FakeError()
                 : base("meh", OcelotErrorCode.CannotAddDataError)

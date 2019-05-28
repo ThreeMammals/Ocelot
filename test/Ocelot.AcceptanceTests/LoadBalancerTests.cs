@@ -1,11 +1,11 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -58,9 +58,9 @@ namespace Ocelot.AcceptanceTests
                             }
                         }
                     },
-                    GlobalConfiguration = new FileGlobalConfiguration()
-                    {
-                    }
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                }
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -107,9 +107,9 @@ namespace Ocelot.AcceptanceTests
                             }
                         }
                     },
-                    GlobalConfiguration = new FileGlobalConfiguration()
-                    {
-                    }
+                GlobalConfiguration = new FileGlobalConfiguration()
+                {
+                }
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))

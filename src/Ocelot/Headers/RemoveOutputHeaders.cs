@@ -1,8 +1,7 @@
+using Ocelot.Middleware;
+using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
@@ -13,7 +12,7 @@ namespace Ocelot.Headers
         /// in a given context such as transfer encoding chunked when ASP.NET is not
         /// returning the response in this manner
         /// </summary>
-        private readonly string[] _unsupportedRequestHeaders = 
+        private readonly string[] _unsupportedRequestHeaders =
         {
             "Transfer-Encoding"
         };

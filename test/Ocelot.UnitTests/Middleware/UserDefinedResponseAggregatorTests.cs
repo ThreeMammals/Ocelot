@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
@@ -13,6 +7,11 @@ using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -71,7 +70,7 @@ namespace Ocelot.UnitTests.Middleware
             var contexts = new List<DownstreamContext>
             {
                 new DownstreamContext(new DefaultHttpContext())
-                { 
+                {
                     DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
                 new DownstreamContext(new DefaultHttpContext())

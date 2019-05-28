@@ -6,13 +6,10 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security;
-using Ocelot.Security.IPSecurity;
 using Ocelot.Security.Middleware;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
@@ -44,6 +41,7 @@ namespace Ocelot.UnitTests.Security
             _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
+
         [Fact]
         public void should_legal_request()
         {

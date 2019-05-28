@@ -1,12 +1,9 @@
 namespace Ocelot.Request.Middleware
 {
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Request.Creator;
+    using System.Threading.Tasks;
 
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
@@ -18,7 +15,7 @@ namespace Ocelot.Request.Middleware
             IOcelotLoggerFactory loggerFactory,
             Mapper.IRequestMapper requestMapper,
             IDownstreamRequestCreator creator)
-                :base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
+                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
         {
             _next = next;
             _requestMapper = requestMapper;

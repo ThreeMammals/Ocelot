@@ -1,7 +1,4 @@
 ﻿using Ocelot.Middleware.Pipeline;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ocelot.Security.Middleware
 {

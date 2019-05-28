@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Ocelot.Configuration.File
 {
@@ -12,7 +10,7 @@ namespace Ocelot.Configuration.File
             IPBlockedList = new List<string>();
         }
 
-        public List<string> IPAllowedList { get; set; } 
+        public List<string> IPAllowedList { get; set; }
 
         public List<string> IPBlockedList { get; set; }
     }

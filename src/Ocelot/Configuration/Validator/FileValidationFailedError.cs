@@ -4,7 +4,7 @@
 
     public class FileValidationFailedError : Error
     {
-        public FileValidationFailedError(string message) 
+        public FileValidationFailedError(string message)
             : base(message, OcelotErrorCode.FileValidationFailedError)
         {
         }

@@ -22,7 +22,6 @@ namespace Ocelot.Provider.Kubernetes
             this.kubeApi = kubeApi;
         }
 
-
         public async Task<List<Service>> Get()
         {
             var service = await kubeApi.ServicesV1()

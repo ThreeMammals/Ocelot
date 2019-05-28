@@ -2,9 +2,6 @@
 
 namespace Ocelot.UnitTests.Headers
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
@@ -16,6 +13,9 @@ namespace Ocelot.UnitTests.Headers
     using Ocelot.Logging;
     using Ocelot.Request.Middleware;
     using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -91,7 +91,7 @@ namespace Ocelot.UnitTests.Headers
             _addHeaders
                 .Verify(x => x.SetHeadersOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
-                    It.IsAny<IEnumerable<System.Security.Claims.Claim>>(), 
+                    It.IsAny<IEnumerable<System.Security.Claims.Claim>>(),
                     _downstreamContext.DownstreamRequest), Times.Once);
         }
     }

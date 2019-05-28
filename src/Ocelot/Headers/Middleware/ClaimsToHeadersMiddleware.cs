@@ -1,10 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
+﻿using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.Headers.Middleware
 {
@@ -15,8 +12,8 @@ namespace Ocelot.Headers.Middleware
 
         public ClaimsToHeadersMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IAddHeadersToRequest addHeadersToRequest)  
-                :base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
+            IAddHeadersToRequest addHeadersToRequest)
+                : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
         {
             _next = next;
             _addHeadersToRequest = addHeadersToRequest;

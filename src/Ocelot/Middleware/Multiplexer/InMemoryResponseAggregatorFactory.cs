@@ -15,7 +15,7 @@ namespace Ocelot.Middleware.Multiplexer
 
         public IResponseAggregator Get(ReRoute reRoute)
         {
-            if(!string.IsNullOrEmpty(reRoute.Aggregator))
+            if (!string.IsNullOrEmpty(reRoute.Aggregator))
             {
                 return _userDefined;
             }

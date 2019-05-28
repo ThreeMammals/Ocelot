@@ -1,14 +1,14 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
+    using Configuration.Repository;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Responses;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Threading.Tasks;
-    using Configuration.Repository;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Responses;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -84,7 +84,7 @@
             _steps.Dispose();
         }
 
-        class FakeFileConfigurationRepository : IFileConfigurationRepository
+        private class FakeFileConfigurationRepository : IFileConfigurationRepository
         {
             public Task<Response<FileConfiguration>> Get()
             {

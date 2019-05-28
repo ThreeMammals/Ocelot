@@ -1,10 +1,5 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Text;
     using Cache;
     using Configuration.File;
     using Consul;
@@ -14,6 +9,11 @@
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Text;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -312,7 +312,8 @@
 
         private void ThenTheConfigIsUpdatedInOcelot()
         {
-            var result = Wait.WaitFor(20000).Until(() => {
+            var result = Wait.WaitFor(20000).Until(() =>
+            {
                 try
                 {
                     _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
@@ -444,7 +445,7 @@
             _steps.Dispose();
         }
 
-        class FakeCache : IOcelotCache<FileConfiguration>
+        private class FakeCache : IOcelotCache<FileConfiguration>
         {
             public void Add(string key, FileConfiguration value, TimeSpan ttl, string region)
             {

@@ -1,19 +1,18 @@
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using System;
     using Moq;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Responses;
-    using TestStack.BDDfy;
-    using Ocelot.DownstreamRouteFinder.Finder;
-    using Xunit;
     using Shouldly;
-    using Ocelot.Configuration;
-    using System.Net.Http;
     using System.Collections.Generic;
+    using System.Net.Http;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class DownstreamRouteCreatorTests
     {
@@ -71,7 +70,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Build();
 
             var reRoutes = new List<ReRoute> { reRoute };
-            
+
             var configuration = new InternalConfiguration(reRoutes, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions);
 
             this.Given(_ => GivenTheConfiguration(configuration))
@@ -224,7 +223,6 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.ReRoute.DownstreamReRoute[0].QosOptions.ShouldBe(_qoSOptions);
             _result.Data.ReRoute.UpstreamTemplatePattern.ShouldNotBeNull();
             _result.Data.ReRoute.DownstreamReRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
-
         }
 
         private void ThenTheDownstreamPathIsForwardSlash()

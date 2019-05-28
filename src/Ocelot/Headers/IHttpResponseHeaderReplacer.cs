@@ -1,9 +1,9 @@
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
     using Ocelot.Configuration;
     using Ocelot.Middleware;
     using Ocelot.Responses;
+    using System.Collections.Generic;
 
     public interface IHttpResponseHeaderReplacer
     {

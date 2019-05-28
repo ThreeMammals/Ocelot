@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder

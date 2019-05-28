@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Shouldly;
+using System;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 

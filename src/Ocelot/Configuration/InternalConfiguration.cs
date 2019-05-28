@@ -5,13 +5,13 @@ namespace Ocelot.Configuration
     public class InternalConfiguration : IInternalConfiguration
     {
         public InternalConfiguration(
-            List<ReRoute> reRoutes, 
-            string administrationPath, 
-            ServiceProviderConfiguration serviceProviderConfiguration, 
-            string requestId, 
-            LoadBalancerOptions loadBalancerOptions, 
-            string downstreamScheme, 
-            QoSOptions qoSOptions, 
+            List<ReRoute> reRoutes,
+            string administrationPath,
+            ServiceProviderConfiguration serviceProviderConfiguration,
+            string requestId,
+            LoadBalancerOptions loadBalancerOptions,
+            string downstreamScheme,
+            QoSOptions qoSOptions,
             HttpHandlerOptions httpHandlerOptions)
         {
             ReRoutes = reRoutes;
@@ -25,9 +25,9 @@ namespace Ocelot.Configuration
         }
 
         public List<ReRoute> ReRoutes { get; }
-        public string AdministrationPath {get;}
-        public ServiceProviderConfiguration ServiceProviderConfiguration {get;}
-        public string RequestId {get;}
+        public string AdministrationPath { get; }
+        public ServiceProviderConfiguration ServiceProviderConfiguration { get; }
+        public string RequestId { get; }
         public LoadBalancerOptions LoadBalancerOptions { get; }
         public string DownstreamScheme { get; }
         public QoSOptions QoSOptions { get; }

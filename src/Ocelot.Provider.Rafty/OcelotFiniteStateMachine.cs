@@ -1,9 +1,9 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System.Threading.Tasks;
     using Configuration.Setter;
     using global::Rafty.FiniteStateMachine;
     using global::Rafty.Log;
+    using System.Threading.Tasks;
 
     public class OcelotFiniteStateMachine : IFiniteStateMachine
     {

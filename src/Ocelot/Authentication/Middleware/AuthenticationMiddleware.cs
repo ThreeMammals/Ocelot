@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration;
-using Ocelot.Errors;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Threading.Tasks;
 
 namespace Ocelot.Authentication.Middleware
 {

@@ -20,7 +20,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRateLimiting(enableRateLimiting)
                 .WithUseServiceDiscovery(useServiceDiscovery)
                 .Build();
-            
+
             return options;
         }
 

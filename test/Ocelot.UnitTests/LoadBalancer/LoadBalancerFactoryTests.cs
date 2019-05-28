@@ -2,13 +2,13 @@ using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using System.Collections.Generic;
-using Ocelot.ServiceDiscovery.Providers;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("CookieStickySessions", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))

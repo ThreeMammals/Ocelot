@@ -6,11 +6,11 @@ namespace Ocelot.Configuration
     {
         List<ReRoute> ReRoutes { get; }
 
-        string AdministrationPath {get;}
+        string AdministrationPath { get; }
 
-        ServiceProviderConfiguration ServiceProviderConfiguration {get;}
+        ServiceProviderConfiguration ServiceProviderConfiguration { get; }
 
-        string RequestId {get;}
+        string RequestId { get; }
 
         LoadBalancerOptions LoadBalancerOptions { get; }
 

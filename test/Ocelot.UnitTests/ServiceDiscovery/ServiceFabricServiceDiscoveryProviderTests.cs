@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using System.Collections.Generic;
-    using Ocelot.Values;
-    using Xunit;
-    using TestStack.BDDfy;
-    using Shouldly;
     using Ocelot.ServiceDiscovery.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Values;
+    using Shouldly;
+    using System.Collections.Generic;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class ServiceFabricServiceDiscoveryProviderTests
     {

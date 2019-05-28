@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 

@@ -1,14 +1,8 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    using Caching;
+    using Configuration.Repository;
+    using global::CacheManager.Core;
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -17,29 +11,34 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Ocelot.Cache.CacheManager;
+    using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware;
-    using Shouldly;
-    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-    using System.IO.Compression;
-    using System.Text;
-    using Caching;
-    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using Ocelot.Middleware.Multiplexer;
-    using static Ocelot.Infrastructure.Wait;
-    using Configuration.Repository;
-    using Ocelot.Configuration.Creator;
-    using Requester;
-    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
-    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
-    using global::CacheManager.Core;
-    using Ocelot.Cache.CacheManager;
     using Ocelot.Provider.Consul;
     using Ocelot.Provider.Eureka;
-    using Ocelot.Infrastructure;
     using Ocelot.Provider.Polly;
     using Ocelot.Tracing.Butterfly;
+    using Requester;
+    using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
+    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
     public class Steps : IDisposable
     {

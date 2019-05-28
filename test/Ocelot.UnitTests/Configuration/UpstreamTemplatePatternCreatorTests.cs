@@ -101,11 +101,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_set_upstream_template_pattern_to_respect_case_sensitivity()
         {
-                var fileReRoute = new FileReRoute
-                {
-                    UpstreamPathTemplate = "/PRODUCTS/{productId}",
-                    ReRouteIsCaseSensitive = true
-                };
+            var fileReRoute = new FileReRoute
+            {
+                UpstreamPathTemplate = "/PRODUCTS/{productId}",
+                ReRouteIsCaseSensitive = true
+            };
             this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/PRODUCTS/.+$"))

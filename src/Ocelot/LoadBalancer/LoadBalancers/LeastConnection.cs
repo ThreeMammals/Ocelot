@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ocelot.Errors;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -29,7 +28,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
             if (services == null)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"services were null for {_serviceName}") );
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"services were null for {_serviceName}"));
             }
 
             if (!services.Any())
@@ -37,8 +36,8 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"services were empty for {_serviceName}"));
             }
 
-            lock(_syncLock)
-            {        
+            lock (_syncLock)
+            {
                 //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
                 UpdateServices(services);
 
@@ -49,14 +48,14 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 leaseWithLeastConnections = AddConnection(leaseWithLeastConnections);
 
                 _leases.Add(leaseWithLeastConnections);
-            
+
                 return new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
             }
         }
 
         public void Release(ServiceHostAndPort hostAndPort)
         {
-            lock(_syncLock)
+            lock (_syncLock)
             {
                 var matchingLease = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == hostAndPort.DownstreamHost
                     && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort);

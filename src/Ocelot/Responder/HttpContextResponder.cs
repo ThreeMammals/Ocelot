@@ -1,12 +1,11 @@
-﻿using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
 using Ocelot.Middleware;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Ocelot.Responder
 {
@@ -48,12 +47,12 @@ namespace Ocelot.Responder
 
             var content = await response.Content.ReadAsStreamAsync();
 
-            if(response.Content.Headers.ContentLength != null)
+            if (response.Content.Headers.ContentLength != null)
             {
-                AddHeaderIfDoesntExist(context, new Header("Content-Length", new []{ response.Content.Headers.ContentLength.ToString() }) );
+                AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
             }
 
-            using(content)
+            using (content)
             {
                 if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
                 {

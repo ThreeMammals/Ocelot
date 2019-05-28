@@ -1,25 +1,25 @@
 ﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
     using Moq;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
     using Ocelot.Responses;
     using Ocelot.Values;
+    using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
-    using Shouldly;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Middleware;
 
     public class DownstreamUrlCreatorMiddlewareTests
     {
@@ -49,7 +49,7 @@
         {
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
                 .Build();
 
@@ -58,7 +58,7 @@
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
                     new DownstreamRoute(
-                    new List<PlaceholderNameAndValue>(), 
+                    new List<PlaceholderNameAndValue>(),
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -307,7 +307,7 @@
                 .WithHost("localhost")
                 .WithPort(19081)
                 .Build();
-            
+
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?PartitionKind=test&PartitionKey=1"))
@@ -350,8 +350,6 @@
                 .BDDfy();
         }
 
-
-
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null);
@@ -386,6 +384,7 @@
                 setup.Returns(response);
             }
         }
+
         private void GivenTheUrlReplacerWillReturn(string path)
         {
             _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(path));

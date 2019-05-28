@@ -1,6 +1,6 @@
-using System;
 using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
+using System;
 
 namespace Ocelot.Logging
 {
@@ -16,21 +16,21 @@ namespace Ocelot.Logging
         }
 
         public void LogTrace(string message)
-        {            
+        {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
             _logger.LogTrace("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
         public void LogDebug(string message)
-        {            
+        {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
             _logger.LogDebug("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);
         }
 
         public void LogInformation(string message)
-        {            
+        {
             var requestId = GetOcelotRequestId();
             var previousRequestId = GetOcelotPreviousRequestId();
             _logger.LogInformation("requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}", requestId, previousRequestId, message);

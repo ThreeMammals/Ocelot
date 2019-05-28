@@ -1,12 +1,10 @@
 ﻿namespace Ocelot.Authorisation.Middleware
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Errors;
-    using Ocelot.Middleware;
-    using Logging;
-    using Responses;
     using Configuration;
+    using Logging;
+    using Ocelot.Middleware;
+    using Responses;
+    using System.Threading.Tasks;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {
@@ -18,7 +16,7 @@
             IClaimsAuthoriser claimsAuthoriser,
             IScopesAuthoriser scopesAuthoriser,
             IOcelotLoggerFactory loggerFactory)
-            :base(loggerFactory.CreateLogger<AuthorisationMiddleware>())
+            : base(loggerFactory.CreateLogger<AuthorisationMiddleware>())
         {
             _next = next;
             _claimsAuthoriser = claimsAuthoriser;

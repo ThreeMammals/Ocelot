@@ -1,7 +1,7 @@
 namespace Ocelot.Request.Creator
 {
-    using System.Net.Http;
     using Ocelot.Request.Middleware;
+    using System.Net.Http;
 
     public interface IDownstreamRequestCreator
     {

@@ -33,7 +33,7 @@ namespace Ocelot.Infrastructure
 
         private async Task Process()
         {
-            foreach(var delayedMessage in _queue.GetConsumingEnumerable())
+            foreach (var delayedMessage in _queue.GetConsumingEnumerable())
             {
                 await Task.Delay(delayedMessage.Delay);
 

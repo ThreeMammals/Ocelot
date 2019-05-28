@@ -2,38 +2,36 @@
 
 namespace Ocelot.UnitTests.Request
 {
-    using System.Net.Http;
     using Microsoft.AspNetCore.Http;
     using Moq;
+    using Ocelot.Infrastructure;
     using Ocelot.Logging;
+    using Ocelot.Request.Creator;
     using Ocelot.Request.Mapper;
     using Ocelot.Request.Middleware;
-    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Responses;
+    using Shouldly;
+    using System.Net.Http;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Responses;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Shouldly;
-    using Ocelot.Request.Creator;
-    using Ocelot.Infrastructure;
 
     public class DownstreamRequestInitialiserMiddlewareTests
     {
-        readonly DownstreamRequestInitialiserMiddleware _middleware;
+        private readonly DownstreamRequestInitialiserMiddleware _middleware;
 
-        readonly Mock<HttpContext> _httpContext;
+        private readonly Mock<HttpContext> _httpContext;
 
-        readonly Mock<HttpRequest> _httpRequest;
+        private readonly Mock<HttpRequest> _httpRequest;
 
-        readonly Mock<OcelotRequestDelegate> _next;
+        private readonly Mock<OcelotRequestDelegate> _next;
 
-        readonly Mock<IRequestMapper> _requestMapper;
+        private readonly Mock<IRequestMapper> _requestMapper;
 
-        readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
 
-        readonly Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
 
-        Response<HttpRequestMessage> _mappedRequest;
+        private Response<HttpRequestMessage> _mappedRequest;
         private DownstreamContext _downstreamContext;
 
         public DownstreamRequestInitialiserMiddlewareTests()
@@ -50,8 +48,8 @@ namespace Ocelot.UnitTests.Request
                 .Returns(_logger.Object);
 
             _middleware = new DownstreamRequestInitialiserMiddleware(
-                _next.Object, 
-                _loggerFactory.Object, 
+                _next.Object,
+                _loggerFactory.Object,
                 _requestMapper.Object,
                 new DownstreamRequestCreator(new FrameworkDescription()));
 
@@ -109,7 +107,7 @@ namespace Ocelot.UnitTests.Request
 
         private void WhenTheMiddlewareIsInvoked()
         {
-           _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()

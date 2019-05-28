@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Ocelot.Security.IPSecurity
 {
@@ -37,7 +34,7 @@ namespace Ocelot.Security.IPSecurity
                     return new ErrorResponse(error);
                 }
             }
-         
+
             return await Task.FromResult(new OkResponse());
         }
     }

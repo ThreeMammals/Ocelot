@@ -1,17 +1,17 @@
 namespace Ocelot.UnitTests.Configuration
 {
+    using Microsoft.AspNetCore.Hosting;
+    using Moq;
+    using Newtonsoft.Json;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Repository;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
-    using Moq;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Newtonsoft.Json;
     using System.IO;
     using System.Threading;
-    using Microsoft.AspNetCore.Hosting;
-    using Ocelot.Configuration.Repository;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
@@ -26,6 +26,7 @@ namespace Ocelot.UnitTests.Configuration
         // cant pick it up if they run in parralel..and the semaphore stops them running at the same time...sigh
         // these are not really unit tests but whatever...
         private string _environmentName = "DEV.DEV";
+
         private static SemaphoreSlim _semaphore;
 
         public DiskFileConfigurationRepositoryTests()
@@ -102,7 +103,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheUserAddedOcelotJson()
         {
-             _ocelotJsonPath = $"{AppContext.BaseDirectory}/ocelot.json";
+            _ocelotJsonPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
             if (File.Exists(_ocelotJsonPath))
             {
@@ -136,7 +137,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for(var i = 0; i < _result.ReRoutes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
                 for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {
@@ -176,7 +177,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds)
         {
             var path = !string.IsNullOrEmpty(_environmentSpecificPath) ? _environmentSpecificPath : _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
-            
+
             var resultText = File.ReadAllText(path);
             var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
             resultText.ShouldBe(expectedText);
@@ -193,7 +194,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for(var i = 0; i < _result.ReRoutes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
                 for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {

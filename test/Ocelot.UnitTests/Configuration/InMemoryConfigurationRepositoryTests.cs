@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
 using Shouldly;
+using System;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsError.ShouldBeFalse();
         }
 
-        class FakeConfig : IInternalConfiguration
+        private class FakeConfig : IInternalConfiguration
         {
             private readonly string _downstreamTemplatePath;
 
@@ -100,11 +100,11 @@ namespace Ocelot.UnitTests.Configuration
                 }
             }
 
-            public string AdministrationPath {get;}
+            public string AdministrationPath { get; }
 
             public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
 
-            public string RequestId {get;}
+            public string RequestId { get; }
             public LoadBalancerOptions LoadBalancerOptions { get; }
             public string DownstreamScheme { get; }
             public QoSOptions QoSOptions { get; }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -10,6 +8,7 @@ using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IInternalConfigurationRepository> _configRepo;
         private Mock<IInternalConfigurationCreator> _configCreator;
         private Response<IInternalConfiguration> _configuration;
-        private object _result; 
+        private object _result;
         private Mock<IFileConfigurationRepository> _repo;
 
         public FileConfigurationSetterTests()

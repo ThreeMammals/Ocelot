@@ -1,13 +1,12 @@
 namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
-    using System.Net.Sockets;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -215,10 +214,10 @@ namespace Ocelot.AcceptanceTests
                             }
                         }
                     },
-                    GlobalConfiguration = new FileGlobalConfiguration
-                    {
-                        BaseUrl = "http://anotherapp.azurewebsites.net"
-                    }
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    BaseUrl = "http://anotherapp.azurewebsites.net"
+                }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:6773", "/", 302, "Location", "http://localhost:6773/pay/Receive"))

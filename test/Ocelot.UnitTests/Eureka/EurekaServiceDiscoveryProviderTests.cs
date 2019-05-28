@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.UnitTests.Eureka
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Moq;
     using Provider.Eureka;
     using Shouldly;
     using Steeltoe.Common.Discovery;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Values;
     using Xunit;

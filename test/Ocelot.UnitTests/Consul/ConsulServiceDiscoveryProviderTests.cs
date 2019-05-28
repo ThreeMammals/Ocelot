@@ -1,9 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
     using global::Consul;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -13,6 +9,10 @@
     using Ocelot.Logging;
     using Provider.Consul;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using TestStack.BDDfy;
     using Values;
     using Xunit;

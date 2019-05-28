@@ -69,7 +69,7 @@ namespace Ocelot.Request.Middleware
             return uriBuilder.Uri.AbsoluteUri;
         }
 
-        public override string ToString() 
+        public override string ToString()
         {
             return ToUri();
         }

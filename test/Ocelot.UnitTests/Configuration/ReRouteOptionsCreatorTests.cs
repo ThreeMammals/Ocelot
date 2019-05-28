@@ -1,11 +1,11 @@
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Shouldly;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _creator = new ReRouteOptionsCreator();
         }
-        
+
         [Fact]
         public void should_create_re_route_options()
         {

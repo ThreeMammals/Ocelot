@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration
             var reRoute = new FileReRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> {"GET", "POST", "PUT"},
+                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
                     new FileHostAndPort
@@ -80,6 +80,5 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.ShouldBe(expected);
         }
-
     }
 }

@@ -1,20 +1,20 @@
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using System;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
-    using Values;
-    using System.Collections.Generic;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
+    using Ocelot.Responses;
     using Ocelot.ServiceDiscovery;
     using Ocelot.ServiceDiscovery.Providers;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
+    using Values;
     using Xunit;
-    using Ocelot.Responses;
 
     public class ServiceDiscoveryProviderFactoryTests
     {
@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _provider = _collection.BuildServiceProvider();
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
-        
+
         [Fact]
         public void should_return_no_service_provider()
         {
@@ -135,7 +135,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
 
-        class Fake : IServiceDiscoveryProvider
+        private class Fake : IServiceDiscoveryProvider
         {
             public Task<List<Service>> Get()
             {
@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         {
             var result = (ConfigurationServiceProvider)_result.Data;
             var services = result.Get().Result;
-            
+
             for (int i = 0; i < services.Count; i++)
             {
                 var service = services[i];

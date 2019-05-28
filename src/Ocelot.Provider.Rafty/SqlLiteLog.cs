@@ -1,15 +1,15 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
     using global::Rafty.Infrastructure;
     using global::Rafty.Log;
     using Microsoft.Data.Sqlite;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public class SqlLiteLog : ILog
     {

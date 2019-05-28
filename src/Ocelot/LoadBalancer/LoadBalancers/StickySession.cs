@@ -1,5 +1,5 @@
-using System;
 using Ocelot.Values;
+using System;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -13,9 +13,9 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         }
 
         public ServiceHostAndPort HostAndPort { get; }
-        
+
         public DateTime Expiry { get; }
 
-        public string Key {get;}
+        public string Key { get; }
     }
 }

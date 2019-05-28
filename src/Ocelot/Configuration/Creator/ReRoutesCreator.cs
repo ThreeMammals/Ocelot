@@ -1,10 +1,10 @@
 namespace Ocelot.Configuration.Creator
 {
+    using Builder;
+    using Cache;
+    using File;
     using System.Collections.Generic;
     using System.Linq;
-    using Cache;
-    using Builder;
-    using File;
 
     public class ReRoutesCreator : IReRoutesCreator
     {

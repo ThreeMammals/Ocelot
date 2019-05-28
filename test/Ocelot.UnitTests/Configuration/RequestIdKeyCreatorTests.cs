@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
             var reRoute = new FileReRoute
             {
                 RequestIdKey = "cheese"
-            };            
+            };
             var globalConfig = new FileGlobalConfiguration
             {
                 RequestIdKey = "test"

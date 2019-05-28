@@ -1,14 +1,6 @@
 ﻿namespace Ocelot.Administration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IdentityModel.Tokens.Jwt;
-    using System.Linq;
-    using System.Security.Cryptography.X509Certificates;
-    using Configuration;
-    using Configuration.Creator;
     using DependencyInjection;
-    using IdentityModel;
     using IdentityServer4.AccessTokenValidation;
     using IdentityServer4.Models;
     using Microsoft.AspNetCore.Builder;
@@ -16,6 +8,10 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Ocelot.Middleware;
+    using System;
+    using System.Collections.Generic;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Security.Cryptography.X509Certificates;
 
     public static class OcelotBuilderExtensions
     {
@@ -61,7 +57,8 @@
         {
             builder.Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
             var identityServerBuilder = builder.Services
-                .AddIdentityServer(o => {
+                .AddIdentityServer(o =>
+                {
                     o.IssuerUri = "Ocelot";
                 })
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))

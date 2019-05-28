@@ -1,7 +1,7 @@
 ﻿namespace Ocelot.Provider.Polly
 {
-    using System;
     using Errors;
+    using System;
 
     public class RequestTimedOutError : Error
     {

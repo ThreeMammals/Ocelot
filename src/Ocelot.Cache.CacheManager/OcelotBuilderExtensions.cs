@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.Cache.CacheManager
 {
-    using System;
     using Configuration;
     using Configuration.File;
     using DependencyInjection;
     using global::CacheManager.Core;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
+    using System;
 
     public static class OcelotBuilderExtensions
     {

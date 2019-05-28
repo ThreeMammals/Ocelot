@@ -76,10 +76,11 @@ namespace Ocelot.UnitTests.Kubernetes
                     Namespace = "dev"
                 },
                 Spec = new ServiceSpecV1()
-                 {
-                     ClusterIP = "localhost"                     
+                {
+                    ClusterIP = "localhost"
                 },
-                Status = new ServiceStatusV1() {
+                Status = new ServiceStatusV1()
+                {
                     LoadBalancer = new LoadBalancerStatusV1()
                 }
             };
@@ -91,7 +92,7 @@ namespace Ocelot.UnitTests.Kubernetes
                 }
             );
 
-            this.Given(x => GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl,  _serviceName, _namespaces))
+            this.Given(x => GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces))
                 .And(x => GivenTheServicesAreRegisteredWithKube(serviceEntryOne))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(1))
@@ -113,7 +114,6 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _serviceEntries = serviceEntries;
         }
-
 
         private void GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string serviceName, string namespaces)
         {

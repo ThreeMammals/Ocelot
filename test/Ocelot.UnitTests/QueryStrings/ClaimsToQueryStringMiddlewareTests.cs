@@ -2,8 +2,7 @@
 
 namespace Ocelot.UnitTests.QueryStrings
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
+    using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
@@ -12,13 +11,14 @@ namespace Ocelot.UnitTests.QueryStrings
     using Ocelot.Logging;
     using Ocelot.QueryStrings;
     using Ocelot.QueryStrings.Middleware;
+    using Ocelot.Request.Middleware;
     using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
-    using System.Security.Claims;
-    using Microsoft.AspNetCore.Http;
-    using System.Threading.Tasks;
-    using Ocelot.Request.Middleware;
 
     public class ClaimsToQueryStringMiddlewareTests
     {

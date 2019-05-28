@@ -3,9 +3,11 @@ namespace Ocelot.DependencyInjection
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
     using Ocelot.Authorisation;
     using Ocelot.Cache;
     using Ocelot.Claims;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Parser;
@@ -16,27 +18,25 @@ namespace Ocelot.DependencyInjection
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Headers;
+    using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Claims.Parser;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;
+    using Ocelot.Request.Creator;
     using Ocelot.Request.Mapper;
     using Ocelot.Requester;
     using Ocelot.Requester.QoS;
     using Ocelot.Responder;
-    using Ocelot.ServiceDiscovery;
-    using System.Reflection;
-    using Ocelot.Configuration;
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-    using System.Net.Http;
-    using Ocelot.Infrastructure;
-    using Ocelot.Middleware.Multiplexer;
-    using Ocelot.Request.Creator;
-    using Ocelot.Security.IPSecurity;
     using Ocelot.Security;
+    using Ocelot.Security.IPSecurity;
+    using Ocelot.ServiceDiscovery;
+    using System.Net.Http;
+    using System.Reflection;
 
     public class OcelotBuilder : IOcelotBuilder
     {

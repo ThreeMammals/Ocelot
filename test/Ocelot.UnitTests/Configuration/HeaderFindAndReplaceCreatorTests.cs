@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -44,7 +41,7 @@ namespace Ocelot.UnitTests.Configuration
                     {"Test", "Test, Chicken"},
                     {"Moop", "o, a"}
                 },
-                 DownstreamHeaderTransform = new Dictionary<string, string>
+                DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Pop", "West, East"},
                     {"Bop", "e, r"}
@@ -97,7 +94,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var reRoute = new FileReRoute
             {
-                 DownstreamHeaderTransform = new Dictionary<string, string>
+                DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
                 }
@@ -154,7 +151,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var reRoute = new FileReRoute
             {
-                 DownstreamHeaderTransform = new Dictionary<string, string>
+                DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Location", "http://www.bbc.co.uk/pay, {BaseUrl}pay"},
                 }
@@ -177,7 +174,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var reRoute = new FileReRoute
             {
-                 DownstreamHeaderTransform = new Dictionary<string, string>
+                DownstreamHeaderTransform = new Dictionary<string, string>
                 {
                     {"Trace-Id", "{TraceId}"},
                 }
@@ -245,7 +242,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.AddHeadersToDownstream[0].Key.ShouldBe(addHeader.Key);
             _result.AddHeadersToDownstream[0].Value.ShouldBe(addHeader.Value);
         }
-        
+
         private void ThenTheFollowingAddHeaderToUpstreamIsReturned(AddHeader addHeader)
         {
             _result.AddHeadersToUpstream[0].Key.ShouldBe(addHeader.Key);
@@ -255,7 +252,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)
         {
             _result.Downstream.Count.ShouldBe(downstream.Count);
-            
+
             for (int i = 0; i < _result.Downstream.Count; i++)
             {
                 var result = _result.Downstream[i];
@@ -264,7 +261,7 @@ namespace Ocelot.UnitTests.Configuration
                 result.Index.ShouldBe(expected.Index);
                 result.Key.ShouldBe(expected.Key);
                 result.Replace.ShouldBe(expected.Replace);
-            }        
+            }
         }
 
         private void GivenTheReRoute(FileReRoute reRoute)
@@ -280,7 +277,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)
         {
             _result.Upstream.Count.ShouldBe(expecteds.Count);
-            
+
             for (int i = 0; i < _result.Upstream.Count; i++)
             {
                 var result = _result.Upstream[i];

@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Headers;
 using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responder;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using Xunit;
 
 namespace Ocelot.UnitTests.Responder
@@ -82,7 +81,6 @@ namespace Ocelot.UnitTests.Responder
             var header = httpContext.Response.Headers["test"];
             header.First().ShouldBe("test");
         }
-
 
         [Fact]
         public void should_add_reason_phrase()
