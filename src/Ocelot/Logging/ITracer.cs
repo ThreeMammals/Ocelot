@@ -1,10 +1,10 @@
 namespace Ocelot.Logging
 {
+    using Microsoft.AspNetCore.Http;
     using System;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
 
     public interface ITracer
     {

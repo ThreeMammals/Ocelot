@@ -4,23 +4,23 @@ using Xunit;
 
 namespace Ocelot.IntegrationTests
 {
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Newtonsoft.Json;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Net.Http;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Newtonsoft.Json;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Microsoft.AspNetCore.Http;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.Configuration;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
     using System.Linq;
     using System.Net;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
 
     public class HeaderTests : IDisposable
     {
@@ -180,8 +180,8 @@ namespace Ocelot.IntegrationTests
             var header = _response.Content.ReadAsStringAsync().Result;
 
             bool passed = false;
-            
-            if(header == windowsOrMac || header == linux) 
+
+            if (header == windowsOrMac || header == linux)
             {
                 passed = true;
             }

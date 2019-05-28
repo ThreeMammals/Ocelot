@@ -1,9 +1,9 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
     using Ocelot.Configuration.File;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
     using Xunit;
 
     public class CannotStartOcelotTests : IDisposable

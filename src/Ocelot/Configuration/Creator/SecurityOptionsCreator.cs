@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Ocelot.Configuration.File;
+﻿using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator
 {

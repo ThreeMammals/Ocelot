@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Castle.Components.DictionaryAdapter;
+﻿using Castle.Components.DictionaryAdapter;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -13,6 +8,10 @@ using Ocelot.Middleware.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
 using Shouldly;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -80,7 +79,6 @@ namespace Ocelot.UnitTests.Middleware
                 .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()

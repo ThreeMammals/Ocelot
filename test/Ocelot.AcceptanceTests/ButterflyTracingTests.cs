@@ -1,9 +1,5 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
     using Butterfly.Client.AspNetCore;
     using Configuration.File;
     using Microsoft.AspNetCore.Builder;
@@ -11,6 +7,10 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.AspNetCore.Http;
     using Rafty.Infrastructure;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
     using TestStack.BDDfy;
     using Xunit;
     using Xunit.Abstractions;
@@ -157,7 +157,8 @@ namespace Ocelot.AcceptanceTests
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .ConfigureServices(services => {
+                .ConfigureServices(services =>
+                {
                     services.AddButterfly(option =>
                     {
                         option.CollectorUrl = butterflyUrl;
@@ -169,10 +170,10 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.UsePathBase(basePath);
                     app.Run(async context =>
-                    {   
+                    {
                         _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
-                        if(_downstreamPathOne != basePath)
+                        if (_downstreamPathOne != basePath)
                         {
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync("downstream path didnt match base path");
@@ -216,7 +217,8 @@ namespace Ocelot.AcceptanceTests
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .ConfigureServices(services => {
+                .ConfigureServices(services =>
+                {
                     services.AddButterfly(option =>
                     {
                         option.CollectorUrl = butterflyUrl;
@@ -228,10 +230,10 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.UsePathBase(basePath);
                     app.Run(async context =>
-                    {   
+                    {
                         _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
-                        if(_downstreamPathTwo != basePath)
+                        if (_downstreamPathTwo != basePath)
                         {
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync("downstream path didnt match base path");

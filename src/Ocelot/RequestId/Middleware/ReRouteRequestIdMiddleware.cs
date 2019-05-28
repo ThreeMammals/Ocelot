@@ -1,12 +1,11 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Net.Http.Headers;
-using System.Collections.Generic;
 using Ocelot.Request.Middleware;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace Ocelot.RequestId.Middleware
 {
@@ -16,7 +15,7 @@ namespace Ocelot.RequestId.Middleware
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
         public ReRouteRequestIdMiddleware(OcelotRequestDelegate next,
-            IOcelotLoggerFactory loggerFactory, 
+            IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
                 : base(loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>())
         {

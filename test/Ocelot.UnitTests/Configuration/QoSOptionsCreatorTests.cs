@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _creator = new QoSOptionsCreator();
         }
-        
+
         [Fact]
         public void should_create_qos_options()
         {
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 QoSOptions = new FileQoSOptions
                 {
-                    ExceptionsAllowedBeforeBreaking = 1, 
+                    ExceptionsAllowedBeforeBreaking = 1,
                     DurationOfBreak = 1,
                     TimeoutValue = 1
                 }

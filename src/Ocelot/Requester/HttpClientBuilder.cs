@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using Ocelot.Configuration;
-using Ocelot.Logging;
-using Ocelot.Middleware;
 
 namespace Ocelot.Requester
 {
@@ -19,8 +19,8 @@ namespace Ocelot.Requester
         private readonly TimeSpan _defaultTimeout;
 
         public HttpClientBuilder(
-            IDelegatingHandlerHandlerFactory factory, 
-            IHttpClientCache cacheHandlers, 
+            IDelegatingHandlerHandlerFactory factory,
+            IHttpClientCache cacheHandlers,
             IOcelotLogger logger)
         {
             _factory = factory;
@@ -55,7 +55,7 @@ namespace Ocelot.Requester
             }
 
             var timeout = context.DownstreamReRoute.QosOptions.TimeoutValue == 0
-                ? _defaultTimeout 
+                ? _defaultTimeout
                 : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptions.TimeoutValue);
 
             _httpClient = new HttpClient(CreateHttpMessageHandler(handler, context.DownstreamReRoute))
@@ -73,7 +73,7 @@ namespace Ocelot.Requester
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
             bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
-            
+
             if (useCookies)
             {
                 return UseCookiesHandler(context);
@@ -97,12 +97,12 @@ namespace Ocelot.Requester
         private HttpClientHandler UseCookiesHandler(DownstreamContext context)
         {
             return new HttpClientHandler
-                {
-                    AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                    UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                    UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
-                    CookieContainer = new CookieContainer()
-                };
+            {
+                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
+                CookieContainer = new CookieContainer()
+            };
         }
 
         public void Save()

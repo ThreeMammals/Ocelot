@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using Moq;
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Headers;
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using TestStack.BDDfy;
 using Xunit;
-using System.Net.Http;
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
@@ -97,7 +97,7 @@ namespace Ocelot.UnitTests.Headers
                .Then(x => x.ThenTheResultIsError())
                .BDDfy();
         }
-        
+
         private void GivenClaims(List<Claim> claims)
         {
             _claims = claims;
@@ -119,8 +119,8 @@ namespace Ocelot.UnitTests.Headers
             _parser
                 .Setup(
                     x =>
-                        x.GetValue(It.IsAny<IEnumerable<Claim>>(), 
-                        It.IsAny<string>(), 
+                        x.GetValue(It.IsAny<IEnumerable<Claim>>(),
+                        It.IsAny<string>(),
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                 .Returns(_claimValue);
@@ -147,9 +147,9 @@ namespace Ocelot.UnitTests.Headers
             header.Value.First().ShouldBe(_claimValue.Data);
         }
 
-        class AnyError : Error
+        private class AnyError : Error
         {
-            public AnyError() 
+            public AnyError()
                 : base("blahh", OcelotErrorCode.UnknownError)
             {
             }

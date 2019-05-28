@@ -3,9 +3,9 @@
     public class QoSOptions
     {
         public QoSOptions(
-            int exceptionsAllowedBeforeBreaking, 
-            int durationofBreak, 
-            int timeoutValue, 
+            int exceptionsAllowedBeforeBreaking,
+            int durationofBreak,
+            int timeoutValue,
             string key,
             string timeoutStrategy = "Pessimistic")
         {
@@ -14,7 +14,7 @@
             TimeoutValue = timeoutValue;
             TimeoutStrategy = timeoutStrategy;
             Key = key;
-        }         
+        }
 
         public int ExceptionsAllowedBeforeBreaking { get; }
 

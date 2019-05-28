@@ -1,8 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Moq;
     using Ocelot.Cache;
     using Ocelot.Configuration;
@@ -11,6 +8,8 @@
     using Ocelot.Configuration.File;
     using Ocelot.Values;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.Linq;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -31,7 +30,7 @@
         private Mock<ILoadBalancerOptionsCreator> _lboCreator;
         private Mock<IReRouteKeyCreator> _rrkCreator;
         private Mock<ISecurityOptionsCreator> _soCreator;
-         private FileConfiguration _fileConfig;
+        private FileConfiguration _fileConfig;
         private ReRouteOptions _rro;
         private string _requestId;
         private string _rrk;

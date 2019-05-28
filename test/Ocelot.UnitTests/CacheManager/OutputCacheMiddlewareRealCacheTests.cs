@@ -1,11 +1,5 @@
 ﻿namespace Ocelot.UnitTests.CacheManager
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
     using global::CacheManager.Core;
     using Microsoft.AspNetCore.Http;
     using Moq;
@@ -17,6 +11,12 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -33,7 +33,7 @@
         public OutputCacheMiddlewareRealCacheTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();            
+            _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
             {
@@ -52,7 +52,7 @@
         {
             var content = new StringContent("{\"Test\": 1}")
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json")}
+                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
             };
 
             var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");

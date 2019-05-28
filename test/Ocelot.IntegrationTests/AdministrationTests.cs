@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security.Claims;
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
@@ -13,17 +6,21 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Ocelot.Administration;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Administration;
-using Ocelot.IntegrationTests;
 
 namespace Ocelot.IntegrationTests
 {
@@ -62,19 +59,19 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
-         [Fact]
-         public void should_return_response_200_with_call_re_routes_controller()
-         {
+        [Fact]
+        public void should_return_response_200_with_call_re_routes_controller()
+        {
             var configuration = new FileConfiguration();
 
-             this.Given(x => GivenThereIsAConfiguration(configuration))
-                 .And(x => GivenOcelotIsRunning())
-                 .And(x => GivenIHaveAnOcelotToken("/administration"))
-                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                 .BDDfy();
-         }
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
 
         [Fact]
         public void should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
@@ -226,7 +223,7 @@ namespace Ocelot.IntegrationTests
                 }
             };
 
-             var updatedConfiguration = new FileConfiguration
+            var updatedConfiguration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -321,7 +318,7 @@ namespace Ocelot.IntegrationTests
                 }
             };
 
-             var updatedConfiguration = new FileConfiguration
+            var updatedConfiguration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -429,14 +426,15 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
-         [Fact]
-         public void should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
-         {
+        [Fact]
+        public void should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
+        {
             var configuration = new FileConfiguration();
 
             var identityServerRootUrl = "http://localhost:5123";
 
-            Action<IdentityServerAuthenticationOptions> options = o => {
+            Action<IdentityServerAuthenticationOptions> options = o =>
+            {
                 o.Authority = identityServerRootUrl;
                 o.ApiName = "api";
                 o.RequireHttpsMetadata = false;
@@ -444,15 +442,15 @@ namespace Ocelot.IntegrationTests
                 o.ApiSecret = "secret";
             };
 
-             this.Given(x => GivenThereIsAConfiguration(configuration))
-                 .And(x => GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api"))
-                 .And(x => GivenOcelotIsRunningWithIdentityServerSettings(options))
-                 .And(x => GivenIHaveAToken(identityServerRootUrl))
-                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                 .BDDfy();
-         }
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api"))
+                .And(x => GivenOcelotIsRunningWithIdentityServerSettings(options))
+                .And(x => GivenIHaveAToken(identityServerRootUrl))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
 
         private void GivenIHaveAToken(string url)
         {
@@ -476,7 +474,7 @@ namespace Ocelot.IntegrationTests
             }
         }
 
-          private void GivenThereIsAnIdentityServerOn(string url, string apiName)
+        private void GivenThereIsAnIdentityServerOn(string url, string apiName)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -529,14 +527,14 @@ namespace Ocelot.IntegrationTests
                 })
                 .Build();
 
-                _identityServerBuilder.Start();
+            _identityServerBuilder.Start();
 
-                using (var httpClient = new HttpClient())
-                {
-                    var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
-                    response.EnsureSuccessStatusCode();
-                }        
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                response.EnsureSuccessStatusCode();
             }
+        }
 
         private void GivenAnotherOcelotIsRunning(string baseUrl)
         {
@@ -669,16 +667,18 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureServices(x => {
+                .ConfigureServices(x =>
+                {
                     x.AddSingleton(_webHostBuilder);
                     x.AddOcelot()
                     .AddAdministration("/administration", configOptions);
-                    })
-                    .Configure(app => {
+                })
+                    .Configure(app =>
+                    {
                         app.UseOcelot().Wait();
                     });
 
-              _builder = _webHostBuilder.Build();
+            _builder = _webHostBuilder.Build();
 
             _builder.Start();
         }
@@ -728,12 +728,14 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureServices(x => {
+                .ConfigureServices(x =>
+                {
                     x.AddSingleton(_webHostBuilder);
                     x.AddOcelot()
                         .AddAdministration("/administration", "secret");
                 })
-                .Configure(app => {
+                .Configure(app =>
+                {
                     app.UseOcelot().Wait();
                 });
 
@@ -804,7 +806,7 @@ namespace Ocelot.IntegrationTests
                 {
                     app.UsePathBase("/foo");
                     app.Run(async context =>
-                    {   
+                    {
                         context.Response.StatusCode = 200;
                         await context.Response.WriteAsync("foo");
                     });
@@ -825,7 +827,7 @@ namespace Ocelot.IntegrationTests
                 {
                     app.UsePathBase("/bar");
                     app.Run(async context =>
-                    {   
+                    {
                         context.Response.StatusCode = 200;
                         await context.Response.WriteAsync("bar");
                     });

@@ -7,7 +7,6 @@ using Ocelot.Provider.Kubernetes;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 

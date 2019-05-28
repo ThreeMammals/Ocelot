@@ -1,4 +1,3 @@
-using System;
 using FluentValidation.Results;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;

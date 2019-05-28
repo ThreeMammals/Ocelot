@@ -22,10 +22,10 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void should_set_up_pipeline()
         {
-           this.Given(_ => GivenTheDepedenciesAreSetUp())
-                .When(_ => WhenIBuild())
-                .Then(_ => ThenThePipelineIsBuilt())
-                .BDDfy();
+            this.Given(_ => GivenTheDepedenciesAreSetUp())
+                 .When(_ => WhenIBuild())
+                 .Then(_ => ThenThePipelineIsBuilt())
+                 .BDDfy();
         }
 
         [Fact]

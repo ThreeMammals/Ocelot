@@ -10,8 +10,8 @@ namespace Ocelot.Values
             Priority = priority;
             ContainsQueryString = containsQueryString;
             OriginalValue = originalValue;
-            Pattern = template == null ? 
-                new Regex("$^", RegexOptions.Compiled | RegexOptions.Singleline) : 
+            Pattern = template == null ?
+                new Regex("$^", RegexOptions.Compiled | RegexOptions.Singleline) :
                 new Regex(template, RegexOptions.Compiled | RegexOptions.Singleline);
         }
 
@@ -22,7 +22,7 @@ namespace Ocelot.Values
         public bool ContainsQueryString { get; }
 
         public string OriginalValue { get; }
-        
+
         public Regex Pattern { get; }
     }
 }

@@ -1,32 +1,31 @@
 ﻿namespace Ocelot.UnitTests.Request.Mapper
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.Extensions.Primitives;
     using Ocelot.Request.Mapper;
     using Ocelot.Responses;
-    using TestStack.BDDfy;
-    using Xunit;
     using Shouldly;
     using System;
+    using System.Collections.Generic;
     using System.IO;
-    using System.Text;
+    using System.Linq;
+    using System.Net.Http;
     using System.Security.Cryptography;
+    using System.Text;
     using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class RequestMapperTests
     {
-        readonly HttpRequest _inputRequest;
+        private readonly HttpRequest _inputRequest;
 
-        readonly RequestMapper _requestMapper;
+        private readonly RequestMapper _requestMapper;
 
-        Response<HttpRequestMessage> _mappedRequest;
+        private Response<HttpRequestMessage> _mappedRequest;
 
-        List<KeyValuePair<string, StringValues>> _inputHeaders = null;
+        private List<KeyValuePair<string, StringValues>> _inputHeaders = null;
 
         public RequestMapperTests()
         {
@@ -210,9 +209,9 @@
                 .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
                 .And(_ => ThenTheMappedRequestHasContentSize("This is my content".Length))
                 .And(_ => ThenTheOtherContentTypeHeadersAreNotMapped())
-                .BDDfy();           
+                .BDDfy();
         }
-        
+
         private void ThenTheContentHeadersAreNotAddedToNonContentHeaders()
         {
             _mappedRequest.Data.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");
@@ -407,12 +406,12 @@
         private void ThenTheMappedRequestHasEachHeader()
         {
             _mappedRequest.Data.Headers.Count().ShouldBe(_inputHeaders.Count);
-            foreach(var header in _mappedRequest.Data.Headers)
+            foreach (var header in _mappedRequest.Data.Headers)
             {
                 var inputHeader = _inputHeaders.First(h => h.Key == header.Key);
                 inputHeader.ShouldNotBeNull();
                 inputHeader.Value.Count().ShouldBe(header.Value.Count());
-                foreach(var inputHeaderValue in inputHeader.Value)
+                foreach (var inputHeaderValue in inputHeader.Value)
                 {
                     header.Value.Any(v => v == inputHeaderValue);
                 }

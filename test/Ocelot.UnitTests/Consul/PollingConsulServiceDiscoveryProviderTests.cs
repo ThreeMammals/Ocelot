@@ -1,13 +1,13 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
-    using System;
-    using System.Collections.Generic;
     using Moq;
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
     using Ocelot.ServiceDiscovery.Providers;
     using Provider.Consul;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Values;
     using Xunit;
@@ -58,7 +58,8 @@
         {
             _provider = new PollConsul(_delay, _factory.Object, _consulServiceDiscoveryProvider.Object);
 
-            var result = Wait.WaitFor(3000).Until(() => {
+            var result = Wait.WaitFor(3000).Until(() =>
+            {
                 try
                 {
                     _result = _provider.Get().GetAwaiter().GetResult();

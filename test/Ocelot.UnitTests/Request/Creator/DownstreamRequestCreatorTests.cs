@@ -1,12 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Moq;
 using Ocelot.Infrastructure;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Middleware;
 using Shouldly;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -47,7 +46,8 @@ namespace Ocelot.UnitTests.Request.Creator
             var content = new StringContent("test");
             request.Content = content;
 
-            methods.ForEach(m => {
+            methods.ForEach(m =>
+            {
                 this.Given(_ => GivenTheFrameworkIs(".NET Framework"))
                     .And(_ => GivenTheRequestIs(request))
                     .When(_ => WhenICreate())

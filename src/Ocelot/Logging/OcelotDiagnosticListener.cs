@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DiagnosticAdapter;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DiagnosticAdapter;
 using Ocelot.Middleware;
+using System;
 
 namespace Ocelot.Logging
 {

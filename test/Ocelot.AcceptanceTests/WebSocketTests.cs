@@ -1,13 +1,13 @@
 namespace Ocelot.AcceptanceTests
 {
+    using Ocelot.Configuration.File;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
                 .And(_ => _steps.StartFakeOcelotWithWebSockets())
                 .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
-                .And(_ => StartSecondFakeDownstreamService($"http://{secondDownstreamHost}:{secondDownstreamPort}","/ws"))
+                .And(_ => StartSecondFakeDownstreamService($"http://{secondDownstreamHost}:{secondDownstreamPort}", "/ws"))
                 .When(_ => WhenIStartTheClients())
                 .Then(_ => ThenBothDownstreamServicesAreCalled())
                 .BDDfy();
@@ -132,7 +132,7 @@ namespace Ocelot.AcceptanceTests
         private async Task StartClient(string url)
         {
             var client = new ClientWebSocket();
-            
+
             await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
             var sending = Task.Run(async () =>
@@ -221,7 +221,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartFakeDownstreamService(string url, string path)
         {
-            await _serviceHandler.StartFakeDownstreamService(url, path, async(context, next) =>
+            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
             {
                 if (context.Request.Path == path)
                 {

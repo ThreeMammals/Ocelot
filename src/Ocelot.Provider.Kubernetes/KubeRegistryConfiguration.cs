@@ -1,7 +1,4 @@
-﻿using KubeClient;
-using System;
-
-namespace Ocelot.Provider.Kubernetes
+﻿namespace Ocelot.Provider.Kubernetes
 {
     public class KubeRegistryConfiguration
     {

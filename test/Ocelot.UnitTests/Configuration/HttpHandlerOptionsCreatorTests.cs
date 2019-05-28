@@ -1,20 +1,19 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Requester;
 using Shouldly;
+using System;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Logging;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Logging;
 
     public class HttpHandlerOptionsCreatorTests
     {
@@ -34,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_not_use_tracing_if_fake_tracer_registered()
         {
-            var fileReRoute = new FileReRoute 
+            var fileReRoute = new FileReRoute
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
@@ -53,7 +52,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_tracing_if_real_tracer_registered()
         {
-            var fileReRoute = new FileReRoute 
+            var fileReRoute = new FileReRoute
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
@@ -165,7 +164,7 @@ namespace Ocelot.UnitTests.Configuration
             _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 
-        class FakeTracer : ITracer
+        private class FakeTracer : ITracer
         {
             public void Event(HttpContext httpContext, string @event)
             {

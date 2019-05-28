@@ -1,21 +1,21 @@
 namespace Ocelot.UnitTests.Requester
 {
     using Microsoft.AspNetCore.Http;
-    using System.Net.Http;
     using Moq;
+    using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using Ocelot.Requester;
     using Ocelot.Requester.Middleware;
     using Ocelot.Responses;
-    using TestStack.BDDfy;
-    using Xunit;
+    using Ocelot.UnitTests.Responder;
     using Shouldly;
-    using System.Threading.Tasks;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Middleware;
     using System;
     using System.Linq;
-    using Ocelot.UnitTests.Responder;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class HttpRequesterMiddlewareTests
     {

@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
+    using Configuration.File;
+    using Microsoft.AspNetCore.Http;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
-    using Configuration.File;
-    using Microsoft.AspNetCore.Http;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -218,7 +218,7 @@
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
-       
+
         private void GivenIWaitMilliseconds(int ms)
         {
             Thread.Sleep(ms);

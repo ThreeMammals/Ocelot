@@ -1,7 +1,7 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
-    using System.Collections.Generic;
     using Ocelot.Errors;
+    using System.Collections.Generic;
 
     public class ConfigurationValidationResult
     {
@@ -19,6 +19,6 @@
 
         public bool IsError { get; }
 
-        public List<Error> Errors { get; } 
+        public List<Error> Errors { get; }
     }
 }

@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -29,7 +29,7 @@ namespace Ocelot.Configuration.Creator
                     placeholders.Add(placeHolderName);
 
                     //hack to handle /{url} case
-                    if(ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
+                    if (ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
                     {
                         return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, 0, false, reRoute.UpstreamPathTemplate);
                     }
@@ -48,11 +48,11 @@ namespace Ocelot.Configuration.Creator
             {
                 var indexOfPlaceholder = upstreamTemplate.IndexOf(placeholders[i]);
                 var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder);
-                if(indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf("?") < upstreamTemplate.IndexOf(placeholders[i])))
+                if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf("?") < upstreamTemplate.IndexOf(placeholders[i])))
                 {
                     upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverything);
-                } 
-                else 
+                }
+                else
                 {
                     upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverythingUntilNextForwardSlash);
                 }
@@ -63,13 +63,13 @@ namespace Ocelot.Configuration.Creator
                 return new UpstreamPathTemplate(RegExForwardSlashOnly, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
             }
 
-            if(upstreamTemplate.EndsWith("/"))
+            if (upstreamTemplate.EndsWith("/"))
             {
-                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length -1, 1) + "(/|)";
+                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length - 1, 1) + "(/|)";
             }
 
-            var route = reRoute.ReRouteIsCaseSensitive 
-                ? $"^{upstreamTemplate}{RegExMatchEndString}" 
+            var route = reRoute.ReRouteIsCaseSensitive
+                ? $"^{upstreamTemplate}{RegExMatchEndString}"
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
             return new UpstreamPathTemplate(route, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
@@ -77,8 +77,8 @@ namespace Ocelot.Configuration.Creator
 
         private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
         {
-            if(upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
-            {   
+            if (upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
+            {
                 return true;
             }
 

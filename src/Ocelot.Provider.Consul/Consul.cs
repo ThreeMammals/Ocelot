@@ -1,15 +1,14 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
     using global::Consul;
     using Infrastructure.Extensions;
     using Logging;
     using ServiceDiscovery.Providers;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
     using Values;
-
 
     public class Consul : IServiceDiscoveryProvider
     {

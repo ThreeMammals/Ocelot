@@ -11,7 +11,7 @@ namespace Ocelot.DependencyInjection
         public OcelotAdministrationBuilder(IServiceCollection services, IConfiguration configurationRoot)
         {
             ConfigurationRoot = configurationRoot;
-            Services = services;    
+            Services = services;
         }
     }
 }

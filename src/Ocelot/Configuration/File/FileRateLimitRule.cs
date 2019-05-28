@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Ocelot.Infrastructure.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.File
 {

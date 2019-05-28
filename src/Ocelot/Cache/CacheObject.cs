@@ -2,7 +2,7 @@
 {
     using System;
 
-    class CacheObject<T>
+    internal class CacheObject<T>
     {
         public CacheObject(T value, DateTime expires)
         {

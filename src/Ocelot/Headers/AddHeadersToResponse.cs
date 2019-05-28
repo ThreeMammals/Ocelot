@@ -1,11 +1,11 @@
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
     using Ocelot.Configuration.Creator;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Extensions;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+    using System.Collections.Generic;
 
     public class AddHeadersToResponse : IAddHeadersToResponse
     {
@@ -20,13 +20,13 @@ namespace Ocelot.Headers
 
         public void Add(List<AddHeader> addHeaders, DownstreamResponse response)
         {
-            foreach(var add in addHeaders)
+            foreach (var add in addHeaders)
             {
-                if(add.Value.StartsWith('{') && add.Value.EndsWith('}'))
+                if (add.Value.StartsWith('{') && add.Value.EndsWith('}'))
                 {
                     var value = _placeholders.Get(add.Value);
-                    
-                    if(value.IsError)
+
+                    if (value.IsError)
                     {
                         _logger.LogWarning($"Unable to add header to response {add.Key}: {add.Value}");
                         continue;

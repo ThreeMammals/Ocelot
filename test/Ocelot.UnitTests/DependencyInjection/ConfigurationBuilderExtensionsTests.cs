@@ -1,16 +1,16 @@
 ﻿namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System.Collections.Generic;
-    using System.IO;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Moq;
     using Newtonsoft.Json;
     using Ocelot.Configuration.File;
-    using Microsoft.Extensions.Configuration;
     using Ocelot.DependencyInjection;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.IO;
     using TestStack.BDDfy;
     using Xunit;
-    using Moq;
-    using Microsoft.AspNetCore.Hosting;
 
     public class ConfigurationBuilderExtensionsTests
     {
@@ -24,14 +24,13 @@
         private FileConfiguration _envSpecific;
         private Mock<IHostingEnvironment> _hostingEnvironment;
 
-
         public ConfigurationBuilderExtensionsTests()
         {
             _hostingEnvironment = new Mock<IHostingEnvironment>();
             // Clean up config files before each test
             var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
 
-            foreach(var config in subConfigFiles)
+            foreach (var config in subConfigFiles)
             {
                 config.Delete();
             }
@@ -313,10 +312,10 @@
 
         private void GivenTheBaseUrl(string baseUrl)
         {
-            #pragma warning disable CS0618
+#pragma warning disable CS0618
             var builder = new ConfigurationBuilder()
                 .AddOcelotBaseUrl(baseUrl);
-            #pragma warning restore CS0618
+#pragma warning restore CS0618
             _configuration = builder.Build();
         }
 

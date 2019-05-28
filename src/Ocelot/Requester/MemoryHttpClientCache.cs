@@ -1,8 +1,8 @@
 ﻿namespace Ocelot.Requester
 {
+    using Configuration;
     using System;
     using System.Collections.Concurrent;
-    using Configuration;
 
     public class MemoryHttpClientCache : IHttpClientCache
     {
@@ -22,6 +22,6 @@
         {
             //todo handle error?
             return _httpClientsCache.TryGetValue(key, out var client) ? client : null;
-        }      
+        }
     }
 }

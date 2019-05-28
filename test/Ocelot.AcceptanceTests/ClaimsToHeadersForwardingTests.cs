@@ -1,22 +1,23 @@
 ﻿using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace Ocelot.AcceptanceTests
 {
+    using IdentityServer4.AccessTokenValidation;
+    using IdentityServer4.Models;
     using IdentityServer4.Test;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
     using System.Security.Claims;
-    using IdentityServer4.AccessTokenValidation;
-    using IdentityServer4.Models;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration.File;
     using TestStack.BDDfy;
 
     public class ClaimsToHeadersForwardingTests : IDisposable
@@ -44,21 +45,21 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_and_foward_claim_as_header()
         {
-           var user = new TestUser()
-           {
-               Username = "test",
-               Password = "test",
-               SubjectId = "registered|1231231",
-               Claims = new List<Claim>
+            var user = new TestUser()
+            {
+                Username = "test",
+                Password = "test",
+                SubjectId = "registered|1231231",
+                Claims = new List<Claim>
                {
                    new Claim("CustomerId", "123"),
                    new Claim("LocationId", "1")
                }
-           };
+            };
 
-           var configuration = new FileConfiguration
-           {
-               ReRoutes = new List<FileReRoute>
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
                    {
                        new FileReRoute
                        {
@@ -91,18 +92,18 @@ namespace Ocelot.AcceptanceTests
                            }
                        }
                    }
-           };
+            };
 
-           this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
-               .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
-               .And(x => _steps.GivenIHaveAToken("http://localhost:52888"))
-               .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-               .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-               .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-               .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
-               .BDDfy();
+            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
+                .And(x => _steps.GivenIHaveAToken("http://localhost:52888"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
+                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+                .BDDfy();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)

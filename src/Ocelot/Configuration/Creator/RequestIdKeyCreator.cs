@@ -8,11 +8,11 @@ namespace Ocelot.Configuration.Creator
         {
             var reRouteId = !string.IsNullOrEmpty(fileReRoute.RequestIdKey);
 
-             var requestIdKey = reRouteId
-                ? fileReRoute.RequestIdKey
-                : globalConfiguration.RequestIdKey;
+            var requestIdKey = reRouteId
+               ? fileReRoute.RequestIdKey
+               : globalConfiguration.RequestIdKey;
 
-                return requestIdKey;
+            return requestIdKey;
         }
     }
 }

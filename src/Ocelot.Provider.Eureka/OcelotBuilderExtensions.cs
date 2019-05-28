@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.Provider.Eureka
 {
-    using System.Linq;
     using DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Middleware;
-    using Steeltoe.Discovery.Client;
     using ServiceDiscovery;
+    using Steeltoe.Discovery.Client;
+    using System.Linq;
 
     public static class OcelotBuilderExtensions
     {

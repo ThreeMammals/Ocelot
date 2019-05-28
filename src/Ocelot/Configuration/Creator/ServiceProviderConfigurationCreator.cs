@@ -9,8 +9,8 @@ namespace Ocelot.Configuration.Creator
         {
             var port = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
             var host = globalConfiguration?.ServiceDiscoveryProvider?.Host ?? "localhost";
-            var type = !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Type) 
-                ? globalConfiguration?.ServiceDiscoveryProvider?.Type 
+            var type = !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Type)
+                ? globalConfiguration?.ServiceDiscoveryProvider?.Type
                 : "consul";
             var pollingInterval = globalConfiguration?.ServiceDiscoveryProvider?.PollingInterval ?? 0;
             var k8snamespace = globalConfiguration?.ServiceDiscoveryProvider?.Namespace ?? string.Empty;

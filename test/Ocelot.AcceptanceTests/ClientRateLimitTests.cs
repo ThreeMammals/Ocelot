@@ -60,20 +60,20 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
-                         HttpStatusCode = 428
+                        HttpStatusCode = 428
                     },
-                     RequestIdKey ="oceclientrequest"
+                    RequestIdKey = "oceclientrequest"
                 }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
                 .BDDfy();
         }
@@ -100,7 +100,7 @@
                             UpstreamPathTemplate = "/api/ClientRateLimit",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = _steps.RequestIdKey,
-                             
+
                             RateLimitOptions = new FileRateLimitRule()
                             {
                                 EnableRateLimiting = true,
@@ -121,24 +121,24 @@
                         RateLimitCounterPrefix = "",
                         HttpStatusCode = 428
                     },
-                     RequestIdKey ="oceclientrequest"
+                    RequestIdKey = "oceclientrequest"
                 }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51926", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
                 .And(x => _steps.GivenIWait(1000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
                 .And(x => _steps.GivenIWait(1000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit",1))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
                 .BDDfy();
         }

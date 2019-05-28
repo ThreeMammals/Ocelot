@@ -1,14 +1,14 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -147,7 +147,7 @@
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();   
+                .BDDfy();
         }
 
         [Fact]
@@ -203,7 +203,7 @@
         }
 
         public class FakeDependency
-        {            
+        {
             public bool Called;
         }
 
@@ -226,7 +226,7 @@
 
         // ReSharper disable once ClassNeverInstantiated.Local
         private class FakeHandler : DelegatingHandler
-        {  
+        {
             public static DateTime TimeCalled { get; private set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -238,7 +238,7 @@
 
         // ReSharper disable once ClassNeverInstantiated.Local
         private class FakeHandlerTwo : DelegatingHandler
-        {  
+        {
             public static DateTime TimeCalled { get; private set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

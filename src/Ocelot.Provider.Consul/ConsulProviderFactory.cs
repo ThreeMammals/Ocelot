@@ -1,8 +1,6 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using System.Threading.Tasks;
     using Logging;
-    using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using ServiceDiscovery;
 

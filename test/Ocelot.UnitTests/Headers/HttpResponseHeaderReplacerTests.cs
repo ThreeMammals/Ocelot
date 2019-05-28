@@ -1,21 +1,21 @@
 namespace Ocelot.UnitTests.Headers
 {
     using Microsoft.AspNetCore.Http;
-    using Ocelot.Infrastructure;
-    using Ocelot.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Request.Middleware;
-    using Xunit;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using System.Net.Http;
-    using Ocelot.Headers;
+    using Moq;
     using Ocelot.Configuration;
-    using System.Collections.Generic;
+    using Ocelot.Headers;
+    using Ocelot.Infrastructure;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
     using Ocelot.Responses;
+    using Shouldly;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Net;
-    using Moq;
+    using System.Net.Http;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class HttpResponseHeaderReplacerTests
     {
@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.Headers
                     new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
                 }, "");
 
-            var fAndRs = new List<HeaderFindAndReplace> {new HeaderFindAndReplace("test", "test", "chiken", 0)};
+            var fAndRs = new List<HeaderFindAndReplace> { new HeaderFindAndReplace("test", "test", "chiken", 0) };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com/";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -107,7 +107,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com/";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -134,7 +134,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com/test/product";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -161,7 +161,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com/test/product";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -188,7 +188,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com:123/test/product";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -215,7 +215,7 @@ namespace Ocelot.UnitTests.Headers
             const string downstreamUrl = "http://downstream.com:123/test/product";
 
             var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") {RequestUri = new System.Uri(downstreamUrl)};
+                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>()
@@ -243,7 +243,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheHeadersAreNotReplaced()
         {
-             _result.ShouldBeOfType<OkResponse>();
+            _result.ShouldBeOfType<OkResponse>();
             foreach (var f in _headerFindAndReplaces)
             {
                 var values = _response.Headers.First(x => x.Key == f.Key);
@@ -263,7 +263,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenICallTheReplacer()
         {
-            var context = new DownstreamContext(new DefaultHttpContext()) {DownstreamResponse = _response, DownstreamRequest = _request};
+            var context = new DownstreamContext(new DefaultHttpContext()) { DownstreamResponse = _response, DownstreamRequest = _request };
             _result = _replacer.Replace(context, _headerFindAndReplaces);
         }
 

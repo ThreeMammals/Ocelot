@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Ocelot.Errors;
+using System.Collections.Generic;
 
 namespace Ocelot.Responses
 {
@@ -13,7 +13,7 @@ namespace Ocelot.Responses
         protected Response(List<Error> errors)
         {
             Errors = errors ?? new List<Error>();
-        } 
+        }
 
         public List<Error> Errors { get; }
 

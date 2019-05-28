@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Shouldly;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Middleware
             _factory = new Mock<IResponseAggregatorFactory>();
             _aggregator = new Mock<IResponseAggregator>();
             _context = new DownstreamContext(new DefaultHttpContext());
-            _pipeline = context => Task.FromResult(_count++); 
+            _pipeline = context => Task.FromResult(_count++);
             _factory.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(_aggregator.Object);
             _multiplexer = new Multiplexer(_factory.Object);
         }

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Ocelot.LoadBalancer.LoadBalancers;
+﻿using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.LoadBalancer.Middleware
 {
@@ -13,8 +13,8 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public LoadBalancingMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            ILoadBalancerHouse loadBalancerHouse) 
-                :base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
+            ILoadBalancerHouse loadBalancerHouse)
+                : base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
         {
             _next = next;
             _loadBalancerHouse = loadBalancerHouse;
@@ -23,7 +23,7 @@ namespace Ocelot.LoadBalancer.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var loadBalancer = await _loadBalancerHouse.Get(context.DownstreamReRoute, context.Configuration.ServiceProviderConfiguration);
-            if(loadBalancer.IsError)
+            if (loadBalancer.IsError)
             {
                 Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
                 SetPipelineError(context, loadBalancer.Errors);
@@ -31,7 +31,7 @@ namespace Ocelot.LoadBalancer.Middleware
             }
 
             var hostAndPort = await loadBalancer.Data.Lease(context);
-            if(hostAndPort.IsError)
+            if (hostAndPort.IsError)
             {
                 Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
                 SetPipelineError(context, hostAndPort.Errors);

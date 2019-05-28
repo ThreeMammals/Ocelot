@@ -1,13 +1,13 @@
 ﻿namespace Ocelot.UnitTests.Requester
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Errors;
     using Ocelot.Requester;
     using Responder;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Xunit;
 
     public class HttpExeptionToErrorMapperTests

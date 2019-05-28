@@ -1,10 +1,10 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System.Threading.Tasks;
     using Configuration.File;
     using Configuration.Setter;
     using global::Rafty.Concensus.Node;
     using global::Rafty.Infrastructure;
+    using System.Threading.Tasks;
 
     public class RaftyFileConfigurationSetter : IFileConfigurationSetter
     {

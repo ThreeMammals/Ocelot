@@ -1,16 +1,16 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using System.Net.Http;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Validators;
+using System.Net.Http;
 
 namespace Ocelot.Benchmarks
 {
-    using System.Collections.Concurrent;
     using Configuration;
     using Configuration.Builder;
     using Requester;
+    using System.Collections.Concurrent;
 
     [Config(typeof(DictionaryBenchmarks))]
     public class DictionaryBenchmarks : ManualConfig

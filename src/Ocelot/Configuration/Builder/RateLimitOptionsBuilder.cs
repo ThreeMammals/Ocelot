@@ -63,8 +63,8 @@ namespace Ocelot.Configuration.Builder
 
         public RateLimitOptions Build()
         {
-            return new RateLimitOptions(_enableRateLimiting, _clientIdHeader, _clientWhitelist, 
-                _disableRateLimitHeaders, _quotaExceededMessage, _rateLimitCounterPrefix, 
+            return new RateLimitOptions(_enableRateLimiting, _clientIdHeader, _clientWhitelist,
+                _disableRateLimitHeaders, _quotaExceededMessage, _rateLimitCounterPrefix,
                 _rateLimitRule, _httpStatusCode);
         }
     }

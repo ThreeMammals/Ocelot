@@ -2,8 +2,6 @@
 
 namespace Ocelot.UnitTests.Claims
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Claims;
@@ -14,6 +12,8 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
 

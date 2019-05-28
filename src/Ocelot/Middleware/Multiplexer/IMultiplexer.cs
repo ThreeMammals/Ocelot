@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
+using System.Threading.Tasks;
 
 namespace Ocelot.Middleware.Multiplexer
 {

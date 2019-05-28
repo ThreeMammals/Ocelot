@@ -1,13 +1,13 @@
 ﻿namespace Ocelot.Cache.Middleware
 {
-    using System;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+    using System;
     using System.IO;
+    using System.Linq;
+    using System.Net.Http;
     using System.Text;
+    using System.Threading.Tasks;
 
     public class OutputCacheMiddleware : OcelotMiddleware
     {
@@ -19,7 +19,7 @@
             IOcelotLoggerFactory loggerFactory,
             IOcelotCache<CachedResponse> outputCache,
             ICacheKeyGenerator cacheGeneratot)
-                :base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
+                : base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
         {
             _next = next;
             _outputCache = outputCache;
@@ -71,16 +71,18 @@
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
-        private void SetHttpResponseMessageThisRequest(DownstreamContext context, 
+        private void SetHttpResponseMessageThisRequest(DownstreamContext context,
                                                        DownstreamResponse response)
         {
             context.DownstreamResponse = response;
         }
 
-        private string GenerateRequestCacheKey(DownstreamContext context) {
+        private string GenerateRequestCacheKey(DownstreamContext context)
+        {
             string hashedContent = null;
             StringBuilder downStreamUrlKeyBuilder = new StringBuilder($"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}");
-            if(context.DownstreamRequest.Content != null) {
+            if (context.DownstreamRequest.Content != null)
+            {
                 string requestContentString = Task.Run(async () => await context.DownstreamRequest.Content?.ReadAsStringAsync()).Result;
                 downStreamUrlKeyBuilder.Append(requestContentString);
             }

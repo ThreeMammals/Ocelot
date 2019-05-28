@@ -1,7 +1,5 @@
 namespace Ocelot.UnitTests.Administration
 {
-    using System;
-    using System.Collections.Generic;
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
@@ -10,6 +8,8 @@ namespace Ocelot.UnitTests.Administration
     using Ocelot.Administration;
     using Ocelot.DependencyInjection;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Administration
         [Fact]
         public void should_set_up_administration_with_identity_server_options()
         {
-            Action<IdentityServerAuthenticationOptions> options = o => {};
+            Action<IdentityServerAuthenticationOptions> options = o => { };
 
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpAdministration(options))
@@ -88,4 +88,3 @@ namespace Ocelot.UnitTests.Administration
         }
     }
 }
-

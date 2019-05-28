@@ -27,7 +27,7 @@ namespace Ocelot.Cache
         public Dictionary<string, IEnumerable<string>> ContentHeaders { get; private set; }
 
         public string Body { get; private set; }
-        
+
         public string ReasonPhrase { get; private set; }
     }
 }

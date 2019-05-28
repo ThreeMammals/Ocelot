@@ -1,10 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
+﻿using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.Claims.Middleware
 {
@@ -13,10 +10,10 @@ namespace Ocelot.Claims.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IAddClaimsToRequest _addClaimsToRequest;
 
-        public ClaimsToClaimsMiddleware(OcelotRequestDelegate next, 
+        public ClaimsToClaimsMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IAddClaimsToRequest addClaimsToRequest) 
-                :base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
+            IAddClaimsToRequest addClaimsToRequest)
+                : base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
         {
             _next = next;
             _addClaimsToRequest = addClaimsToRequest;

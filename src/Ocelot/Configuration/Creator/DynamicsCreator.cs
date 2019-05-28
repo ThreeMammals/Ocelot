@@ -1,9 +1,9 @@
 namespace Ocelot.Configuration.Creator
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using Builder;
     using File;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class DynamicsCreator : IDynamicsCreator
     {

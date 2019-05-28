@@ -1,7 +1,7 @@
 ﻿namespace Ocelot.Configuration
 {
     /// <summary>
-    /// Describes configuration parameters for http handler, 
+    /// Describes configuration parameters for http handler,
     /// that is created to handle a request to service
     /// </summary>
     public class HttpHandlerOptions

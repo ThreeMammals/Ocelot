@@ -4,20 +4,20 @@
 
 namespace Ocelot.UnitTests.Authentication
 {
+    using Microsoft.AspNetCore.Http;
+    using Moq;
+    using Ocelot.Authentication.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Shouldly;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Configuration;
-    using Ocelot.Middleware;
 
     public class AuthenticationMiddlewareTests
     {
@@ -62,7 +62,8 @@ namespace Ocelot.UnitTests.Authentication
 
         private void WhenICallTheMiddleware()
         {
-            _next = (context) => {
+            _next = (context) =>
+            {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
                 context.HttpContext.Response.Body = stream;
@@ -74,7 +75,8 @@ namespace Ocelot.UnitTests.Authentication
 
         private void GivenTheTestServerPipelineIsConfigured()
         {
-            _next = (context) => {
+            _next = (context) =>
+            {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
                 context.HttpContext.Response.Body = stream;

@@ -1,13 +1,13 @@
 namespace Ocelot.UnitTests.Requester
 {
-    using System;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
     using Ocelot.Requester;
     using Shouldly;
+    using System;
     using Xunit;
-    using Ocelot.Logging;
 
     public class TracingHandlerFactoryTests
     {
