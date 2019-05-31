@@ -35,8 +35,15 @@
                 if (IsValid(serviceEntry))
                 {
                     var nodes = await _consul.Catalog.Nodes();
-                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
-                    services.Add(BuildService(serviceEntry, serviceNode));
+                    if (nodes.Response == null)
+                    {
+                        services.Add(BuildService(serviceEntry, null));
+                    }
+                    else
+                    {
+                        var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
+                        services.Add(BuildService(serviceEntry, serviceNode));
+                    }
                 }
                 else
                 {
