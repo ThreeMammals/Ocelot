@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.UnitTests.Headers
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration.Creator;
     using Ocelot.Headers;
+    using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Claims.Parser;
+    using Ocelot.Logging;
     using Responder;
     using Responses;
     using Shouldly;
@@ -76,7 +76,6 @@
             _logger.Verify(x => x.LogWarning($"Unable to add header to response {key}: {value}"), Times.Once);
         }
 
-
         private void GivenHttpRequestWithoutHeaders()
         {
             _context = new DefaultHttpContext
@@ -109,7 +108,7 @@
             _addedHeader = new AddHeader(headerKey, headerValue);
             _addHeadersToRequest.SetHeadersOnDownstreamRequest(new[] { _addedHeader }, _context);
         }
-        
+
         private void ThenTheHeaderGetsTakenOverToTheRequestHeaders()
         {
             var requestHeaders = _context.Request.Headers;

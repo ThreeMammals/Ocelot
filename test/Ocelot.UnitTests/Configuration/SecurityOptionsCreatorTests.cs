@@ -2,9 +2,7 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Shouldly;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -49,7 +47,6 @@ namespace Ocelot.UnitTests.Configuration
             _fileReRoute = reRoute;
         }
 
-
         private void WhenICreate()
         {
             _result = _creator.Create(_fileReRoute.SecurityOptions);
@@ -67,6 +64,5 @@ namespace Ocelot.UnitTests.Configuration
                 _result.IPBlockedList[i].ShouldBe(expected.IPBlockedList[i]);
             }
         }
-
     }
 }

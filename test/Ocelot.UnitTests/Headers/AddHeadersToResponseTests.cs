@@ -1,18 +1,17 @@
-using Xunit;
-using TestStack.BDDfy;
-using Ocelot.Headers;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration.Creator;
 using Moq;
-using Ocelot.Responses;
+using Ocelot.Configuration.Creator;
+using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.UnitTests.Responder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.Headers
 {
@@ -56,9 +55,9 @@ namespace Ocelot.UnitTests.Headers
             {
                 new AddHeader("Trace-Id", "{TraceId}")
             };
-             
-             var traceId = "123";
-            
+
+            var traceId = "123";
+
             this.Given(_ => GivenAResponseMessage())
                 .And(_ => GivenTheTraceIdIs(traceId))
                 .And(_ => GivenTheAddHeaders(addHeaders))
@@ -94,7 +93,7 @@ namespace Ocelot.UnitTests.Headers
             {
                 new AddHeader("Trace-Id", "{TraceId}")
             };
-             
+
             this.Given(_ => GivenAResponseMessage())
                 .And(_ => GivenTheTraceIdErrors())
                 .And(_ => GivenTheAddHeaders(addHeaders))

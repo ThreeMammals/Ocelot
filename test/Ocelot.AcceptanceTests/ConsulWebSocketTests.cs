@@ -1,16 +1,16 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
+    using Configuration.File;
+    using Consul;
+    using Microsoft.AspNetCore.Http;
+    using Newtonsoft.Json;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Configuration.File;
-    using Consul;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -130,7 +130,7 @@
             {
                 if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                 {
-                     var json = JsonConvert.SerializeObject(_serviceEntries);
+                    var json = JsonConvert.SerializeObject(_serviceEntries);
                     context.Response.Headers.Add("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }

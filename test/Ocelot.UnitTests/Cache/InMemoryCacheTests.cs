@@ -1,9 +1,9 @@
 ﻿namespace Ocelot.UnitTests.Cache
 {
-    using System;
-    using System.Threading;
     using Ocelot.Cache;
     using Shouldly;
+    using System;
+    using System.Threading;
     using Xunit;
 
     public class InMemoryCacheTests
@@ -68,7 +68,7 @@
             result.ShouldBeNull();
         }
 
-        class Fake
+        private class Fake
         {
             public Fake(int value)
             {

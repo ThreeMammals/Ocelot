@@ -1,14 +1,8 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    using Caching;
+    using Configuration.Repository;
+    using global::CacheManager.Core;
     using IdentityServer4.AccessTokenValidation;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -17,29 +11,34 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Ocelot.Cache.CacheManager;
+    using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware;
-    using Shouldly;
-    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-    using System.IO.Compression;
-    using System.Text;
-    using Caching;
-    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using Ocelot.Middleware.Multiplexer;
-    using static Ocelot.Infrastructure.Wait;
-    using Configuration.Repository;
-    using Ocelot.Configuration.Creator;
-    using Requester;
-    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
-    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
-    using global::CacheManager.Core;
-    using Ocelot.Cache.CacheManager;
     using Ocelot.Provider.Consul;
     using Ocelot.Provider.Eureka;
-    using Ocelot.Infrastructure;
     using Ocelot.Provider.Polly;
     using Ocelot.Tracing.Butterfly;
+    using Requester;
+    using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
+    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
     public class Steps : IDisposable
     {
@@ -141,7 +140,6 @@
             await _ocelotHost.StartAsync();
         }
 
-
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = TestConfiguration.ConfigurationPath;
@@ -150,7 +148,14 @@
 
             if (File.Exists(configurationPath))
             {
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
@@ -162,7 +167,14 @@
 
             if (File.Exists(configurationPath))
             {
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
@@ -190,7 +202,7 @@
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddOcelot();                    
+                    s.AddOcelot();
                 })
                 .Configure(app =>
                 {
@@ -261,7 +273,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
         public void ThenTheTraceHeaderIsSet(string key)
         {
             var header = _response.Headers.GetValues(key);
@@ -306,7 +317,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
         public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -339,7 +349,7 @@
                 .Configure(app =>
                 {
                     app.UseOcelot().Wait();
-                }); 
+                });
 
             _ocelotServer = new TestServer(_webHostBuilder);
 
@@ -376,7 +386,8 @@
 
         public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
         {
-            var result = Wait.WaitFor(2000).Until(() => {
+            var result = Wait.WaitFor(2000).Until(() =>
+            {
                 try
                 {
                     _response = _ocelotClient.GetAsync(url).Result;
@@ -391,7 +402,6 @@
 
             result.ShouldBeTrue();
         }
-
 
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
         {
@@ -423,7 +433,7 @@
                 .Configure(app =>
                 {
                     app.UseOcelot().Wait();
-                }); 
+                });
 
             _ocelotServer = new TestServer(_webHostBuilder);
 
@@ -559,7 +569,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>() 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>()
             where TOne : DelegatingHandler
             where TWo : DelegatingHandler
         {
@@ -592,7 +602,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>() 
+        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>()
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -623,7 +633,7 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency)
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -884,8 +894,6 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-
-
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
@@ -1004,7 +1012,7 @@
         {
             _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
         }
-        
+
         public void ThenTheContentLengthIs(int expected)
         {
             _response.Content.Headers.ContentLength.ShouldBe(expected);
@@ -1111,7 +1119,6 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
-
         }
     }
 }

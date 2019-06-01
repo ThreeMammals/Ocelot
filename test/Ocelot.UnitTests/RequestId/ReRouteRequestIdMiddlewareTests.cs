@@ -1,24 +1,24 @@
 ﻿namespace Ocelot.UnitTests.RequestId
 {
     using Microsoft.AspNetCore.Http;
+    using Moq;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
+    using Ocelot.RequestId.Middleware;
+    using Ocelot.Responses;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using Moq;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.RequestId.Middleware;
-    using Ocelot.Responses;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Middleware;
 
     public class ReRouteRequestIdMiddlewareTests
     {
@@ -80,9 +80,9 @@
                     .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
                         .WithRequestIdKey("LSRequestId")
-                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())
-                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
@@ -100,9 +100,9 @@
                     .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
                         .WithRequestIdKey("LSRequestId")
-                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())
-                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             var requestId = Guid.NewGuid().ToString();
@@ -124,9 +124,9 @@
                     .WithDownstreamReRoute(new DownstreamReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
                         .WithRequestIdKey("LSRequestId")
-                        .WithUpstreamHttpMethod(new List<string> {"Get"})
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())
-                    .WithUpstreamHttpMethod(new List<string> {"Get"})
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
 
             var requestId = Guid.NewGuid().ToString();

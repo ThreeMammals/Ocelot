@@ -1,8 +1,5 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Configuration.Creator;
     using Configuration.File;
     using Configuration.Repository;
@@ -11,6 +8,9 @@
     using Microsoft.Extensions.Options;
     using Middleware;
     using Responses;
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public static class ConsulMiddlewareConfigurationProvider
     {

@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Threading.Tasks;
 
 namespace Ocelot.Headers.Middleware
 {
@@ -17,8 +17,8 @@ namespace Ocelot.Headers.Middleware
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeadersToResponse,
-            IAddHeadersToRequest addHeadersToRequest) 
-                :base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
+            IAddHeadersToRequest addHeadersToRequest)
+                : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeadersToResponse = addHeadersToResponse;
             _addHeadersToRequest = addHeadersToRequest;
@@ -38,7 +38,7 @@ namespace Ocelot.Headers.Middleware
 
             await _next.Invoke(context);
 
-            if(context.IsError)
+            if (context.IsError)
             {
                 return;
             }

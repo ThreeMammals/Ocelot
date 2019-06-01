@@ -1,10 +1,10 @@
 ﻿namespace Ocelot.Configuration.Builder
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using Ocelot.Values;
-    using System.Linq;
     using Ocelot.Configuration.File;
+    using Ocelot.Values;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
 
     public class ReRouteBuilder
     {
@@ -68,8 +68,8 @@
             return new ReRoute(
                 _downstreamReRoutes,
                 _downstreamReRoutesConfig,
-                _upstreamHttpMethod, 
-                _upstreamTemplatePattern, 
+                _upstreamHttpMethod,
+                _upstreamTemplatePattern,
                 _upstreamHost,
                 _aggregator
                 );

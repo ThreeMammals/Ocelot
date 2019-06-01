@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using Ocelot.Authorisation;
-using Ocelot.Configuration;
+﻿using Ocelot.Authorisation;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
-using Ocelot.Values;
-
 using Shouldly;
+using System.Collections.Generic;
+using System.Security.Claims;
 using TestStack.BDDfy;
 using Xunit;
 

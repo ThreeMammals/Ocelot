@@ -1,16 +1,16 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Text;
     using Configuration.File;
     using Consul;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Text;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -96,7 +96,7 @@ namespace Ocelot.AcceptanceTests
                                         var kvp = new FakeConsulGetResponse(base64);
 
                                         await context.Response.WriteJsonAsync(new FakeConsulGetResponse[] { kvp });
-                                    }                               
+                                    }
                                     else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                     {
                                         try

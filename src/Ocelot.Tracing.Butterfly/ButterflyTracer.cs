@@ -1,17 +1,17 @@
 ﻿namespace Ocelot.Tracing.Butterfly
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
     using global::Butterfly.Client.AspNetCore;
     using global::Butterfly.Client.Tracing;
     using global::Butterfly.OpenTracing;
     using Infrastructure.Extensions;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public class ButterflyTracer : DelegatingHandler, Logging.ITracer
     {
@@ -25,7 +25,7 @@
 
         public void Event(HttpContext httpContext, string @event)
         {
-            // todo - if the user isnt using tracing the code gets here and will blow up on 
+            // todo - if the user isnt using tracing the code gets here and will blow up on
             // _tracer.Tracer.TryExtract..
             if (_tracer == null)
             {
@@ -52,8 +52,8 @@
 
         public Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken, 
-            Action<string> addTraceIdToRepo, 
+            CancellationToken cancellationToken,
+            Action<string> addTraceIdToRepo,
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
         {
             return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken, addTraceIdToRepo, baseSendAsync));
@@ -62,8 +62,8 @@
         protected virtual async Task<HttpResponseMessage> TracingSendAsync(
             ISpan span,
             HttpRequestMessage request,
-            CancellationToken cancellationToken, 
-            Action<string> addTraceIdToRepo, 
+            CancellationToken cancellationToken,
+            Action<string> addTraceIdToRepo,
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
         {
             if (request.Headers.Contains(PrefixSpanId))

@@ -1,13 +1,9 @@
-﻿using System;
+﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
 
 namespace Ocelot.Authorisation
 {
@@ -26,7 +22,8 @@ namespace Ocelot.Authorisation
             ClaimsPrincipal claimsPrincipal,
             Dictionary<string, string> routeClaimsRequirement,
             List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
-        ){
+        )
+        {
             foreach (var required in routeClaimsRequirement)
             {
                 var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
@@ -62,15 +59,14 @@ namespace Ocelot.Authorisation
                             if (matchingPlaceholders.Length == 0)
                             {
                                 return new ErrorResponse<bool>(new ClaimValueNotAuthorisedError(
-                                    $"config error: requires variable claim value: {variableName} placeholders does not contain that variable: {string.Join(", ", urlPathPlaceholderNameAndValues.Select(p=>p.Name))}"));
+                                    $"config error: requires variable claim value: {variableName} placeholders does not contain that variable: {string.Join(", ", urlPathPlaceholderNameAndValues.Select(p => p.Name))}"));
                             }
                             else
                             {
                                 return new ErrorResponse<bool>(new ClaimValueNotAuthorisedError(
-                                    $"config error: requires variable claim value: {required.Value} but placeholders are ambiguous: {string.Join(", ", urlPathPlaceholderNameAndValues.Where(p=>p.Name.Equals(variableName)).Select(p => p.Value))}"));
+                                    $"config error: requires variable claim value: {required.Value} but placeholders are ambiguous: {string.Join(", ", urlPathPlaceholderNameAndValues.Where(p => p.Name.Equals(variableName)).Select(p => p.Value))}"));
                             }
                         }
-                        
                     }
                     else
                     {

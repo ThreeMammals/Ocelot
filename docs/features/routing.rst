@@ -37,7 +37,7 @@ The DownstreamPathTemplate, DownstreamScheme and DownstreamHostAndPorts define t
 DownstreamHostAndPorts is a collection that defines the host and port of any downstream services that you wish to forward requests to. 
 Usually this will just contain a single entry but sometimes you might want to load balance requests to your downstream services and Ocelot allows you add more than one entry and then select a load balancer.
 
-The UpstreamPathTemplate is the URL that Ocelot will use to identity which DownstreamPathTemplate to use for a given request. 
+The UpstreamPathTemplate is the URL that Ocelot will use to identify which DownstreamPathTemplate to use for a given request. 
 The UpstreamHttpMethod is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL. You can set a specific list of HTTP Methods or set an empty list to allow any of them. 
 
 In Ocelot you can add placeholders for variables to your Templates in the form of {something}.

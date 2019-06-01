@@ -7,7 +7,6 @@ using Ocelot.Values;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -59,7 +58,8 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _provider = new PollKube(_delay, _factory.Object, _kubeServiceDiscoveryProvider.Object);
 
-            var result = Wait.WaitFor(3000).Until(() => {
+            var result = Wait.WaitFor(3000).Until(() =>
+            {
                 try
                 {
                     _result = _provider.Get().GetAwaiter().GetResult();

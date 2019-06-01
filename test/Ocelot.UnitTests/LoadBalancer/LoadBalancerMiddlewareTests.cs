@@ -2,9 +2,6 @@ using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
@@ -17,6 +14,9 @@ namespace Ocelot.UnitTests.LoadBalancer
     using Ocelot.Responses;
     using Ocelot.Values;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_load_balancer()
-        {         
+        {
             var downstreamRoute = new DownstreamReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
@@ -94,9 +94,9 @@ namespace Ocelot.UnitTests.LoadBalancer
             var downstreamRoute = new DownstreamReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
-                
-             var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-                .Build();
+
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+               .Build();
 
             this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
                 .And(x => GivenTheConfigurationIs(serviceProviderConfig))
@@ -130,9 +130,9 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheLoadBalancerReturnsAnError()
         {
             _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
-             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
-                .ReturnsAsync(_getHostAndPortError);
+            _loadBalancer
+               .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+               .ReturnsAsync(_getHostAndPortError);
         }
 
         private void GivenTheLoadBalancerReturns()

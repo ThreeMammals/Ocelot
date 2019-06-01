@@ -1,10 +1,10 @@
 namespace Ocelot.Configuration.Creator
 {
+    using DependencyInjection;
+    using File;
+    using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.Collections.Generic;
-    using File;
-    using DependencyInjection;
-    using Microsoft.Extensions.DependencyInjection;
 
     public class ConfigurationCreator : IConfigurationCreator
     {

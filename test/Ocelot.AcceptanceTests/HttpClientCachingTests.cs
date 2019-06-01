@@ -1,14 +1,14 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Net;
     using Configuration;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
     using Requester;
     using Shouldly;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Net;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -122,7 +122,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl,  int statusCode, string responseBody)
+        private void GivenThereIsAServiceRunningOn(string baseUrl, int statusCode, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
             {

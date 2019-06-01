@@ -1,17 +1,16 @@
 ﻿namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using Infrastructure;
     using Logging;
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.Responses;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
-    using Ocelot.Middleware;
+    using Ocelot.Infrastructure.Claims.Parser;
     using Ocelot.Request.Middleware;
+    using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class AddHeadersToRequest : IAddHeadersToRequest
     {
@@ -49,7 +48,7 @@
 
             return new OkResponse();
         }
-        
+
         public void SetHeadersOnDownstreamRequest(IEnumerable<AddHeader> headers, HttpContext context)
         {
             var requestHeader = context.Request.Headers;

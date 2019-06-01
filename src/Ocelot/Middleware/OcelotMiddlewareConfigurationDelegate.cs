@@ -1,7 +1,7 @@
 ﻿namespace Ocelot.Middleware
 {
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Builder;
+    using System.Threading.Tasks;
 
     public delegate Task OcelotMiddlewareConfigurationDelegate(IApplicationBuilder builder);
 }

@@ -1,22 +1,22 @@
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Configuration.Setter;
     using Ocelot.DependencyInjection;
+    using Ocelot.Middleware.Multiplexer;
     using Ocelot.Requester;
     using Ocelot.UnitTests.Requester;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
-    using Ocelot.Middleware.Multiplexer;
 
     public class OcelotBuilderTests
     {

@@ -1,10 +1,10 @@
 ﻿namespace Ocelot.Provider.Eureka
 {
+    using ServiceDiscovery.Providers;
+    using Steeltoe.Common.Discovery;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using ServiceDiscovery.Providers;
-    using Steeltoe.Common.Discovery;
     using Values;
 
     public class Eureka : IServiceDiscoveryProvider

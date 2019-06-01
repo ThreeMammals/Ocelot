@@ -1,19 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Configuration.Setter;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using TestStack.BDDfy;
 using Xunit;
-using Shouldly;
 using static Ocelot.Infrastructure.Wait;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Configuration
 {
@@ -44,20 +43,21 @@ namespace Ocelot.UnitTests.Configuration
             _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
             _poller.StartAsync(new CancellationToken());
         }
-    
+
         [Fact]
         public void should_start()
         {
-           this.Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
-                .BDDfy();
+            this.Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
+                 .BDDfy();
         }
 
         [Fact]
         public void should_call_setter_when_gets_new_config()
         {
-            var newConfig = new FileConfiguration {
+            var newConfig = new FileConfiguration
+            {
                 ReRoutes = new List<FileReRoute>
-                {   
+                {
                     new FileReRoute
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -143,14 +143,15 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
         {
-            var result = WaitFor(4000).Until(() => {
+            var result = WaitFor(4000).Until(() =>
+            {
                 try
                 {
                     _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.Exactly(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.Exactly(times));
                     return true;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     return false;
                 }
@@ -160,14 +161,15 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
         {
-            var result = WaitFor(4000).Until(() => {
+            var result = WaitFor(4000).Until(() =>
+            {
                 try
                 {
                     _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.AtLeast(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.AtLeast(times));
                     return true;
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     return false;
                 }

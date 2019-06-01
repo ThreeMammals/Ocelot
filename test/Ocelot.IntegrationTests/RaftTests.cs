@@ -1,13 +1,5 @@
 ﻿namespace Ocelot.IntegrationTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Administration;
     using Configuration.File;
     using DependencyInjection;
@@ -17,14 +9,19 @@
     using Microsoft.Extensions.DependencyInjection;
     using Middleware;
     using Newtonsoft.Json;
+    using Ocelot.Provider.Rafty;
+    using Rafty.Infrastructure;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Xunit;
     using Xunit.Abstractions;
-    using Ocelot.Administration;
-    using Ocelot.IntegrationTests;
-    using Ocelot.Provider.Rafty;
-    using Ocelot.Infrastructure;
-    using Rafty.Infrastructure;
     using Wait = Rafty.Infrastructure.Wait;
 
     public class RaftTests : IDisposable

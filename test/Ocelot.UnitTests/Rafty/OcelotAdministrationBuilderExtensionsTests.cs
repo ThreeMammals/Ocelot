@@ -1,7 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Rafty
 {
-    using System;
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
@@ -10,6 +8,8 @@
     using Ocelot.DependencyInjection;
     using Provider.Rafty;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 

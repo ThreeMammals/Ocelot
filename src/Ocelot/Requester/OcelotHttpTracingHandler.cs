@@ -1,11 +1,11 @@
 ﻿namespace Ocelot.Requester
 {
     using Logging;
+    using Ocelot.Infrastructure.RequestData;
     using System;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
 
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Ocelot.Responses;
+using System;
 using System.Text.RegularExpressions;
-using Ocelot.Errors;
-using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {

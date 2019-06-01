@@ -1,9 +1,5 @@
 ﻿namespace Ocelot.Provider.Polly
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Configuration;
     using DependencyInjection;
     using Errors;
@@ -12,6 +8,10 @@
     using Logging;
     using Microsoft.Extensions.DependencyInjection;
     using Requester;
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     public static class OcelotBuilderExtensions
     {
@@ -31,7 +31,7 @@
                 return new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(reRoute, logger), logger);
             }
 
-            builder.Services.AddSingleton((QosDelegatingHandlerDelegate) QosDelegatingHandlerDelegate);
+            builder.Services.AddSingleton((QosDelegatingHandlerDelegate)QosDelegatingHandlerDelegate);
             return builder;
         }
     }

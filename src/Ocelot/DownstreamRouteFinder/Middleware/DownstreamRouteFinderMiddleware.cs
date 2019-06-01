@@ -1,11 +1,10 @@
-using System.Threading.Tasks;
-using System.Linq;
-using Ocelot.Configuration.Repository;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
@@ -19,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             IOcelotLoggerFactory loggerFactory,
             IDownstreamRouteProviderFactory downstreamRouteFinder,
             IMultiplexer multiplexer)
-                :base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
+                : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
             _multiplexer = multiplexer;
             _next = next;
@@ -46,10 +45,10 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;
-            }            
-            
+            }
+
             var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
-            
+
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;

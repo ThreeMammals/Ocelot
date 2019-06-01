@@ -1,6 +1,5 @@
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
@@ -8,6 +7,7 @@ namespace Ocelot.UnitTests.Configuration
     using Ocelot.Configuration.File;
     using Ocelot.DependencyInjection;
     using Shouldly;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 

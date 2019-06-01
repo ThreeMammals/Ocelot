@@ -1,20 +1,20 @@
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
-    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
+    using Moq;
+    using Ocelot.Infrastructure;
     using Ocelot.LoadBalancer.LoadBalancers;
+    using Ocelot.Middleware;
     using Ocelot.Responses;
+    using Ocelot.UnitTests.Responder;
     using Ocelot.Values;
     using Shouldly;
-    using Xunit;
-    using Moq;
-    using Microsoft.AspNetCore.Http;
-    using System.Collections.Generic;
+    using System;
     using System.Collections;
-    using Ocelot.Middleware;
-    using Ocelot.UnitTests.Responder;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
-    using Ocelot.Infrastructure;
+    using Xunit;
 
     public class CookieStickySessionsTests
     {

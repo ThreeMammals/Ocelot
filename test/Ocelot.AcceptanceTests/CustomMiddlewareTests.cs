@@ -1,14 +1,14 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Ocelot.Middleware;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Net;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Ocelot.Middleware;
-    using Shouldly;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -284,7 +284,7 @@
                 .And(x => x.ThenTheCounterIs(1))
                 .BDDfy();
         }
-        
+
         [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
         public void should_fix_issue_237()
         {
@@ -293,7 +293,7 @@
                 var httpContext = (HttpContext)state;
 
                 if (httpContext.Response.StatusCode > 400)
-                {                    
+                {
                     Debug.WriteLine("COUNT CALLED");
                     Console.WriteLine("COUNT CALLED");
                 }
@@ -362,8 +362,8 @@
         public class FakeMiddleware
         {
             private readonly RequestDelegate _next;
-            private readonly Func<object, Task> _callback; 
-            
+            private readonly Func<object, Task> _callback;
+
             public FakeMiddleware(RequestDelegate next, Func<object, Task> callback)
             {
                 _next = next;
@@ -373,7 +373,7 @@
             public async Task Invoke(HttpContext context)
             {
                 await _next(context);
-                
+
                 context.Response.OnCompleted(_callback, context);
             }
         }

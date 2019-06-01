@@ -1,17 +1,17 @@
 namespace Ocelot.Provider.Polly
 {
-    using System;
-    using System.Net.Http;
     using global::Polly;
     using global::Polly.CircuitBreaker;
     using global::Polly.Timeout;
     using Ocelot.Configuration;
     using Ocelot.Logging;
+    using System;
+    using System.Net.Http;
 
     public class PollyQoSProvider
     {
-        private readonly CircuitBreakerPolicy _circuitBreakerPolicy;
-        private readonly TimeoutPolicy _timeoutPolicy;
+        private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
+        private readonly AsyncTimeoutPolicy _timeoutPolicy;
         private readonly IOcelotLogger _logger;
 
         public PollyQoSProvider(DownstreamReRoute reRoute, IOcelotLoggerFactory loggerFactory)

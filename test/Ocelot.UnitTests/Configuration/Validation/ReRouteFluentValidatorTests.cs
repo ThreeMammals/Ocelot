@@ -1,8 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Configuration.Validation
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using FluentValidation.Results;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Http;
@@ -11,6 +8,9 @@
     using Ocelot.Configuration.Validator;
     using Ocelot.Requester;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -342,7 +342,7 @@
             _result.Errors.ShouldContain(x => x.ErrorMessage == expected);
         }
 
-        class FakeAutheHandler : IAuthenticationHandler
+        private class FakeAutheHandler : IAuthenticationHandler
         {
             public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
             {

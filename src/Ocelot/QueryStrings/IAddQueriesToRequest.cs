@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using Ocelot.Responses;
-using System.Net.Http;
-using System.Security.Claims;
+﻿using Ocelot.Configuration;
 using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Ocelot.QueryStrings
 {

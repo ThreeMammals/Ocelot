@@ -1,14 +1,14 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
     using Configuration.File;
     using Consul;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
     using TestStack.BDDfy;
     using Xunit;
 

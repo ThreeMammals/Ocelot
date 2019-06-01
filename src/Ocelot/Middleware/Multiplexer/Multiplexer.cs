@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
 
 namespace Ocelot.Middleware.Multiplexer
 {

@@ -1,16 +1,16 @@
 namespace Ocelot.UnitTests.Logging
 {
-    using Moq;
-    using Xunit;
-    using Ocelot.Logging;
     using Microsoft.Extensions.Logging;
+    using Moq;
     using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
     using System;
+    using Xunit;
 
     public class AspDotNetLoggerTests
     {
         private readonly Mock<ILogger<object>> _coreLogger;
-        private readonly AspDotNetLogger _logger; 
+        private readonly AspDotNetLogger _logger;
         private Mock<IRequestScopedDataRepository> _repo;
         private readonly string _b;
         private readonly string _a;
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Logging
                 x => x.Log(
                     expectedLogLevel,
                     It.IsAny<EventId>(),
-                    It.Is<object>(o => o.ToString() == expected), 
+                    It.Is<object>(o => o.ToString() == expected),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<object, Exception, string>>()), Times.Once);
         }

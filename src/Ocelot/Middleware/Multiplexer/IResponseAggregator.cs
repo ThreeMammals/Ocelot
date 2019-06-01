@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.Configuration;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ocelot.Configuration;
 
 namespace Ocelot.Middleware.Multiplexer
 {

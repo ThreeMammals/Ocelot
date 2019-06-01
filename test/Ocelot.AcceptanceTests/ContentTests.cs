@@ -1,11 +1,11 @@
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration.File;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -122,7 +122,6 @@ namespace Ocelot.AcceptanceTests
                         }
                     }
             };
-
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51359", "/", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))

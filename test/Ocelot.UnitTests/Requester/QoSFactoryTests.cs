@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Requester
 {
-    using System.Net.Http;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
@@ -9,6 +8,7 @@
     using Ocelot.Requester;
     using Ocelot.Requester.QoS;
     using Shouldly;
+    using System.Net.Http;
     using Xunit;
 
     public class QoSFactoryTests
@@ -48,7 +48,7 @@
             handler.Data.ShouldBeOfType<FakeDelegatingHandler>();
         }
 
-        class FakeDelegatingHandler : DelegatingHandler
+        private class FakeDelegatingHandler : DelegatingHandler
         {
         }
     }

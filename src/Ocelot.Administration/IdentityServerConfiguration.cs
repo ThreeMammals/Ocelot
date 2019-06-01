@@ -5,11 +5,11 @@ namespace Ocelot.Administration
     public class IdentityServerConfiguration : IIdentityServerConfiguration
     {
         public IdentityServerConfiguration(
-            string apiName, 
-            bool requireHttps, 
+            string apiName,
+            bool requireHttps,
             string apiSecret,
             List<string> allowedScopes,
-            string credentialsSigningCertificateLocation, 
+            string credentialsSigningCertificateLocation,
             string credentialsSigningCertificatePassword)
         {
             ApiName = apiName;

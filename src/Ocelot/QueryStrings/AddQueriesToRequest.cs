@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
-using Ocelot.Responses;
-using System.Security.Claims;
-using System.Net.Http;
-using System;
 using Ocelot.Request.Middleware;
-using Microsoft.Extensions.Primitives;
+using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace Ocelot.QueryStrings
@@ -65,7 +62,7 @@ namespace Ocelot.QueryStrings
             var builder = new StringBuilder();
 
             builder.Append("?");
-            
+
             int outerCount = 0;
 
             foreach (var query in queryDictionary)
@@ -74,13 +71,13 @@ namespace Ocelot.QueryStrings
                 {
                     builder.Append($"{query.Key}={query.Value[innerCount]}");
 
-                    if(innerCount < (query.Value.Count - 1))
+                    if (innerCount < (query.Value.Count - 1))
                     {
                         builder.Append("&");
                     }
                 }
 
-                if(outerCount < (queryDictionary.Count - 1))
+                if (outerCount < (queryDictionary.Count - 1))
                 {
                     builder.Append("&");
                 }

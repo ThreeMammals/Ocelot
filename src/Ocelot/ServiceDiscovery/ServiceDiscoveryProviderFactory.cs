@@ -1,15 +1,14 @@
 namespace Ocelot.ServiceDiscovery
 {
-    using System.Collections.Generic;
+    using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Configuration;
     using Ocelot.Logging;
+    using Ocelot.Responses;
     using Ocelot.ServiceDiscovery.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
     using Ocelot.Values;
     using System;
-    using System.Linq;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Responses;
+    using System.Collections.Generic;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
@@ -55,7 +54,7 @@ namespace Ocelot.ServiceDiscovery
             {
                 var provider = _delegates?.Invoke(_provider, config, key);
 
-                if(provider.GetType().Name.ToLower() == config.Type.ToLower())
+                if (provider.GetType().Name.ToLower() == config.Type.ToLower())
                 {
                     return new OkResponse<IServiceDiscoveryProvider>(provider);
                 }

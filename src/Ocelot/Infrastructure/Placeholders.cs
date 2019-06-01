@@ -1,12 +1,12 @@
 namespace Ocelot.Infrastructure
 {
-    using System;
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.Responses;
+    using System;
+    using System.Collections.Generic;
 
     public class Placeholders : IPlaceholders
     {

@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Responder.Middleware
 {
@@ -17,12 +17,12 @@ namespace Ocelot.Responder.Middleware
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
-        public ResponderMiddleware(OcelotRequestDelegate next, 
+        public ResponderMiddleware(OcelotRequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
             IErrorsToHttpStatusCodeMapper codeMapper
            )
-            :base(loggerFactory.CreateLogger<ResponderMiddleware>())
+            : base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
             _responder = responder;
@@ -30,13 +30,13 @@ namespace Ocelot.Responder.Middleware
         }
 
         public async Task Invoke(DownstreamContext context)
-        {           
+        {
             await _next.Invoke(context);
 
             if (context.IsError)
             {
                 Logger.LogWarning($"{context.Errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{context.HttpContext.Request.Path}, request method: {context.HttpContext.Request.Method}");
-                
+
                 SetErrorResponse(context.HttpContext, context.Errors);
             }
             else

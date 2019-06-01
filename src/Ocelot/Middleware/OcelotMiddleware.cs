@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 using Ocelot.Logging;
+using System.Collections.Generic;
 
 namespace Ocelot.Middleware
 {
     public abstract class OcelotMiddleware
-    {        
+    {
         protected OcelotMiddleware(IOcelotLogger logger)
         {
             Logger = logger;
@@ -18,7 +18,7 @@ namespace Ocelot.Middleware
 
         public void SetPipelineError(DownstreamContext context, List<Error> errors)
         {
-            foreach(var error in errors)
+            foreach (var error in errors)
             {
                 SetPipelineError(context, error);
             }

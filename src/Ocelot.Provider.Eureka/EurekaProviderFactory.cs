@@ -2,7 +2,6 @@
 {
     using Microsoft.Extensions.DependencyInjection;
     using ServiceDiscovery;
-    using ServiceDiscovery.Providers;
     using Steeltoe.Common.Discovery;
 
     public static class EurekaProviderFactory

@@ -1,14 +1,14 @@
-using System.Collections.Generic;
-using System.Linq;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 {
-    public class UrlPathPlaceholderNameAndValueFinderTests 
+    public class UrlPathPlaceholderNameAndValueFinderTests
     {
         private readonly IPlaceholderNameAndValueFinder _finder;
         private string _downstreamUrlPath;
@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_nothing_then_placeholder_no_value_is_blank()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{url}", "")
             };
@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_nothing_then_placeholder_value_is_test()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{url}", "test")
             };
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void should_match_everything_in_path_with_query()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{everything}", "test/toot")
             };
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void should_match_everything_in_path()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{everything}", "test/toot")
             };
@@ -95,7 +95,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_forward_slash_then_placeholder_no_value_is_blank()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{url}", "")
             };
@@ -110,7 +110,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_forward_slash()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
             };
 
@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_forward_slash_then_placeholder_then_another_value()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{url}", "1")
             };
@@ -264,7 +264,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_one_place_holder()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{productId}", "1")
             };
@@ -279,7 +279,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_two_place_holders()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{productId}", "1"),
                 new PlaceholderNameAndValue("{categoryId}", "2")
@@ -295,7 +295,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_two_place_holders_seperated_by_something()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{productId}", "1"),
                 new PlaceholderNameAndValue("{categoryId}", "2")
@@ -311,7 +311,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_three_place_holders_seperated_by_something()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{productId}", "1"),
                 new PlaceholderNameAndValue("{categoryId}", "2"),
@@ -328,7 +328,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url_with_downstream_template_with_three_place_holders()
         {
-            var expectedTemplates = new List<PlaceholderNameAndValue> 
+            var expectedTemplates = new List<PlaceholderNameAndValue>
             {
                 new PlaceholderNameAndValue("{productId}", "1"),
                 new PlaceholderNameAndValue("{categoryId}", "2")
@@ -385,4 +385,4 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
             _query = query;
         }
     }
-} 
+}

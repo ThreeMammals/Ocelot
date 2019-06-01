@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using System.Net.Http;
-using Ocelot.Values;
-using System.Linq;
 using Ocelot.Configuration.Creator;
+using Ocelot.Values;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -39,6 +39,7 @@ namespace Ocelot.Configuration.Builder
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
         private SecurityOptions _securityOptions;
+
         public DownstreamReRouteBuilder()
         {
             _downstreamAddresses = new List<DownstreamHostAndPort>();
@@ -55,7 +56,7 @@ namespace Ocelot.Configuration.Builder
 
         public DownstreamReRouteBuilder WithLoadBalancerOptions(LoadBalancerOptions loadBalancerOptions)
         {
-          _loadBalancerOptions = loadBalancerOptions;
+            _loadBalancerOptions = loadBalancerOptions;
             return this;
         }
 
@@ -142,7 +143,7 @@ namespace Ocelot.Configuration.Builder
             _qosOptions = input;
             return this;
         }
-       
+
         public DownstreamReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
@@ -239,26 +240,26 @@ namespace Ocelot.Configuration.Builder
                 _key,
                 _upstreamTemplatePattern,
                 _upstreamHeaderFindAndReplace,
-                _downstreamHeaderFindAndReplace, 
+                _downstreamHeaderFindAndReplace,
                 _downstreamAddresses,
-                _serviceName, 
-                _httpHandlerOptions, 
-                _useServiceDiscovery, 
-                _enableRateLimiting, 
+                _serviceName,
+                _httpHandlerOptions,
+                _useServiceDiscovery,
+                _enableRateLimiting,
                 _qosOptions,
-                _downstreamScheme, 
-                _requestIdHeaderKey, 
-                _isCached, 
-                _fileCacheOptions, 
-                _loadBalancerOptions, 
+                _downstreamScheme,
+                _requestIdHeaderKey,
+                _isCached,
+                _fileCacheOptions,
+                _loadBalancerOptions,
                 _rateLimitOptions,
-                _routeClaimRequirement, 
-                _claimToQueries, 
-                _claimsToHeaders, 
+                _routeClaimRequirement,
+                _claimToQueries,
+                _claimsToHeaders,
                 _claimToClaims,
-                _isAuthenticated, 
-                _isAuthorised, 
-                _authenticationOptions, 
+                _isAuthenticated,
+                _isAuthorised,
+                _authenticationOptions,
                 new DownstreamPathTemplate(_downstreamPathTemplate),
                 _loadBalancerKey,
                 _delegatingHandlers,

@@ -1,33 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Middleware;
-using Ocelot.DependencyInjection;
-using System.Net.Http;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes.Jobs;
-using Ocelot.Configuration.Repository;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Errors.Middleware;
-using Microsoft.Extensions.DependencyInjection;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Validators;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.Middleware.Multiplexer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Benchmarks
 {
@@ -57,17 +45,18 @@ namespace Ocelot.Benchmarks
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
             var multiplexer = services.GetService<IMultiplexer>();
 
-            _next = async context => {
+            _next = async context =>
+            {
                 await Task.CompletedTask;
                 throw new Exception("BOOM");
             };
-            
+
             _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer);
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test");
             httpContext.Request.QueryString = new QueryString("?a=b");
             httpContext.Request.Headers.Add("Host", "most");
-            
+
             _downstreamContext = new DownstreamContext(httpContext)
             {
                 Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null)

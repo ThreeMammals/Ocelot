@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
+using System.Collections.Generic;
 
 namespace Ocelot.Responder
 {

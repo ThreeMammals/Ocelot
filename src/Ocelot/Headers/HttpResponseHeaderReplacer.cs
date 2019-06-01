@@ -1,12 +1,12 @@
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using Ocelot.Configuration;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Extensions;
     using Ocelot.Middleware;
     using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
@@ -27,12 +27,12 @@ namespace Ocelot.Headers
                 var dict = response.Headers.ToDictionary(x => x.Key);
 
                 //if the response headers contain a matching find and replace
-                if(dict.TryGetValue(f.Key, out var values))
+                if (dict.TryGetValue(f.Key, out var values))
                 {
                     //check to see if it is a placeholder in the find...
                     var placeholderValue = _placeholders.Get(f.Find, request);
 
-                    if(!placeholderValue.IsError)
+                    if (!placeholderValue.IsError)
                     {
                         //if it is we need to get the value of the placeholder
                         var replaced = values.Values.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());

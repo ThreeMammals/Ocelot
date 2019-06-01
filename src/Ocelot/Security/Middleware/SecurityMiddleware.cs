@@ -10,6 +10,7 @@ namespace Ocelot.Security.Middleware
         private readonly OcelotRequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IEnumerable<ISecurityPolicy> _securityPolicies;
+
         public SecurityMiddleware(IOcelotLoggerFactory loggerFactory,
             IEnumerable<ISecurityPolicy> securityPolicies,
             OcelotRequestDelegate next)

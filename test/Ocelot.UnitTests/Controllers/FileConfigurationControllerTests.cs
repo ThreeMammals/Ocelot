@@ -1,14 +1,14 @@
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
+using Shouldly;
+using System;
 using TestStack.BDDfy;
 using Xunit;
-using Shouldly;
-using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Controllers
 {
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Controllers
             _setter = new Mock<IFileConfigurationSetter>();
             _controller = new FileConfigurationController(_repo.Object, _setter.Object, _provider.Object);
         }
-        
+
         [Fact]
         public void should_get_file_configuration()
         {
@@ -47,12 +47,12 @@ namespace Ocelot.UnitTests.Controllers
         {
             var expected = new Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
-             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-                .When(x => x.WhenIGetTheFileConfiguration())
-                .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-                .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
-                .BDDfy();
-        } 
+            this.Given(x => x.GivenTheGetConfigurationReturns(expected))
+               .When(x => x.WhenIGetTheFileConfiguration())
+               .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
+               .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
+               .BDDfy();
+        }
 
         [Fact]
         public void should_post_file_configuration()
@@ -104,7 +104,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void ThenTheResponseIs<T>()
         {
-           _result.ShouldBeOfType<T>();
+            _result.ShouldBeOfType<T>();
         }
 
         private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
@@ -121,11 +121,11 @@ namespace Ocelot.UnitTests.Controllers
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()
         {
-               _repo
-                .Verify(x => x.Get(), Times.Once);
+            _repo
+             .Verify(x => x.Get(), Times.Once);
         }
 
-        class FakeError : Error
+        private class FakeError : Error
         {
             public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError)
             {

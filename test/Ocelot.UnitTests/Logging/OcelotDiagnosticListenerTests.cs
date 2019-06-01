@@ -1,13 +1,11 @@
-using Ocelot.Logging;
-using Moq;
-using TestStack.BDDfy;
-using Butterfly.Client.Tracing;
-using Ocelot.Requester;
-using Xunit;
-using Ocelot.Middleware;
 using Microsoft.AspNetCore.Http;
-using System;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.Logging
 {
@@ -63,7 +61,7 @@ namespace Ocelot.UnitTests.Logging
                 .BDDfy();
         }
 
-       [Fact]
+        [Fact]
         public void should_trace_middleware_started()
         {
             this.Given(_ => GivenAMiddlewareName())

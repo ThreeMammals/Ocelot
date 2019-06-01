@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Configuration
                     Type = "ServiceFabric",
                     Token = "testtoken",
                     ConfigurationKey = "woo",
-                    Namespace ="default"
+                    Namespace = "default"
                 }
             };
 
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheConfigIs(expected))
                 .BDDfy();
-        }     
+        }
 
         private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration fileGlobalConfig)
         {

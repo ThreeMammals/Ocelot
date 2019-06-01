@@ -1,8 +1,5 @@
 ﻿namespace Ocelot.Provider.Rafty
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
     using global::Rafty.Concensus.Messages;
     using global::Rafty.Concensus.Node;
     using global::Rafty.FiniteStateMachine;
@@ -11,6 +8,9 @@
     using Microsoft.AspNetCore.Mvc;
     using Middleware;
     using Newtonsoft.Json;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
 
     [Authorize]
     [Route("raft")]

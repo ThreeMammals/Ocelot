@@ -1,14 +1,13 @@
 ﻿namespace Ocelot.DownstreamRouteFinder.Finder
 {
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
     using Configuration;
     using Configuration.Builder;
     using Configuration.Creator;
-    using Configuration.File;
     using LoadBalancer.LoadBalancers;
     using Responses;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
     using UrlMatcher;
 
     public class DownstreamRouteCreator : IDownstreamRouteProvider
@@ -23,12 +22,12 @@
         }
 
         public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
-        {            
+        {
             var serviceName = GetServiceName(upstreamUrlPath);
 
             var downstreamPath = GetDownstreamPath(upstreamUrlPath);
 
-            if(HasQueryString(downstreamPath))
+            if (HasQueryString(downstreamPath))
             {
                 downstreamPath = RemoveQueryString(downstreamPath);
             }
@@ -37,7 +36,7 @@
 
             var loadBalancerKey = CreateLoadBalancerKey(downstreamPathForKeys, upstreamHttpMethod, configuration.LoadBalancerOptions);
 
-            if(_cache.TryGetValue(loadBalancerKey, out var downstreamRoute))
+            if (_cache.TryGetValue(loadBalancerKey, out var downstreamRoute))
             {
                 return downstreamRoute;
             }
@@ -57,31 +56,31 @@
                 .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
                 .WithUpstreamPathTemplate(upstreamPathTemplate);
 
-                var rateLimitOptions = configuration.ReRoutes != null 
-                    ? configuration.ReRoutes
-                        .SelectMany(x => x.DownstreamReRoute)
-                        .FirstOrDefault(x => x.ServiceName == serviceName) 
-                    : null;
+            var rateLimitOptions = configuration.ReRoutes != null
+                ? configuration.ReRoutes
+                    .SelectMany(x => x.DownstreamReRoute)
+                    .FirstOrDefault(x => x.ServiceName == serviceName)
+                : null;
 
-                if(rateLimitOptions != null)
-                {
-                    downstreamReRouteBuilder
-                        .WithRateLimitOptions(rateLimitOptions.RateLimitOptions)
-                        .WithEnableRateLimiting(true);
-                }
-                
-                var downstreamReRoute = downstreamReRouteBuilder.Build();
+            if (rateLimitOptions != null)
+            {
+                downstreamReRouteBuilder
+                    .WithRateLimitOptions(rateLimitOptions.RateLimitOptions)
+                    .WithEnableRateLimiting(true);
+            }
+
+            var downstreamReRoute = downstreamReRouteBuilder.Build();
 
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamReRoute(downstreamReRoute)
-                .WithUpstreamHttpMethod(new List<string>(){ upstreamHttpMethod })
+                .WithUpstreamHttpMethod(new List<string>() { upstreamHttpMethod })
                 .WithUpstreamPathTemplate(upstreamPathTemplate)
                 .Build();
 
             downstreamRoute = new OkResponse<DownstreamRoute>(new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute));
 
             _cache.AddOrUpdate(loadBalancerKey, downstreamRoute, (x, y) => downstreamRoute);
-        
+
             return downstreamRoute;
         }
 
@@ -98,7 +97,7 @@
 
         private static string GetDownstreamPath(string upstreamUrlPath)
         {
-            if(upstreamUrlPath.IndexOf('/', 1) == -1)
+            if (upstreamUrlPath.IndexOf('/', 1) == -1)
             {
                 return "/";
             }
@@ -109,7 +108,7 @@
 
         private static string GetServiceName(string upstreamUrlPath)
         {
-            if(upstreamUrlPath.IndexOf('/', 1) == -1)
+            if (upstreamUrlPath.IndexOf('/', 1) == -1)
             {
                 return upstreamUrlPath
                     .Substring(1);

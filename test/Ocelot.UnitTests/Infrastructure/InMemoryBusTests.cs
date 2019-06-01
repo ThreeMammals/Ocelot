@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
 using Ocelot.Infrastructure;
 using Shouldly;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
@@ -18,7 +18,8 @@ namespace Ocelot.UnitTests.Infrastructure
         public async Task should_publish_with_delay()
         {
             var called = false;
-            _bus.Subscribe(x => {
+            _bus.Subscribe(x =>
+            {
                 called = true;
             });
             _bus.Publish(new object(), 1);
@@ -30,7 +31,8 @@ namespace Ocelot.UnitTests.Infrastructure
         public void should_not_be_publish_yet_as_no_delay_in_caller()
         {
             var called = false;
-            _bus.Subscribe(x => {
+            _bus.Subscribe(x =>
+            {
                 called = true;
             });
             _bus.Publish(new object(), 1);

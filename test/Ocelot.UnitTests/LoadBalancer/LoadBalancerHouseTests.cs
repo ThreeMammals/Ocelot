@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
@@ -8,6 +6,8 @@ using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
+using System;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _factory = new Mock<ILoadBalancerFactory>();
             _loadBalancerHouse = new LoadBalancerHouse(_factory.Object);
-            _serviceProviderConfig = new ServiceProviderConfiguration("myType","myHost",123, string.Empty, "configKey", 0);
+            _serviceProviderConfig = new ServiceProviderConfiguration("myType", "myHost", 123, string.Empty, "configKey", 0);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
                 .WithLoadBalancerKey("test")
                 .Build();
-            
+
             var reRouteTwo = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("FakeRoundRobinLoadBalancer", "", 0))
                 .WithLoadBalancerKey("testtwo")
@@ -115,7 +115,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig).Result;
         }
 
-         private void ThenAnErrorIsReturned()
+        private void ThenAnErrorIsReturned()
         {
             _getResult.IsError.ShouldBeTrue();
             _getResult.Errors[0].ShouldBeOfType<UnableToFindLoadBalancerError>();
@@ -153,7 +153,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _factory.Verify(x => x.Get(_reRoute, _serviceProviderConfig), Times.Once);
         }
 
-        class FakeLoadBalancer : ILoadBalancer
+        private class FakeLoadBalancer : ILoadBalancer
         {
             public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
             {
@@ -166,7 +166,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             }
         }
 
-        class FakeRoundRobinLoadBalancer : ILoadBalancer
+        private class FakeRoundRobinLoadBalancer : ILoadBalancer
         {
             public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
             {

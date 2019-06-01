@@ -1,14 +1,14 @@
 namespace Ocelot.Requester
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
     using Logging;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.Configuration;
     using Ocelot.Responses;
     using QoS;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
 
     public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {

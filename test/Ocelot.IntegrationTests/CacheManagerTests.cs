@@ -1,13 +1,5 @@
-using Xunit;
-
 namespace Ocelot.IntegrationTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
     using Configuration.File;
     using DependencyInjection;
     using global::CacheManager.Core;
@@ -15,13 +7,18 @@ namespace Ocelot.IntegrationTests
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Ocelot.Administration;
+    using Ocelot.Cache.CacheManager;
     using Ocelot.Middleware;
     using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Administration;
-    using Ocelot.IntegrationTests;
-    using Ocelot.Cache.CacheManager;
 
     public class CacheManagerTests : IDisposable
     {
@@ -107,7 +104,7 @@ namespace Ocelot.IntegrationTests
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent))
                 .BDDfy();
         }
-    
+
         private void GivenIHaveAddedATokenToMyRequest()
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
@@ -219,6 +216,5 @@ namespace Ocelot.IntegrationTests
             _httpClient?.Dispose();
             _identityServerBuilder?.Dispose();
         }
-
     }
 }

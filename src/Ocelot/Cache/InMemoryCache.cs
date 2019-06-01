@@ -35,7 +35,7 @@
             }
             else
             {
-                _regions.Add(region, new List<string>{ key });
+                _regions.Add(region, new List<string> { key });
             }
         }
 

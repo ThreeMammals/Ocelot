@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Eureka
 {
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Builder.Internal;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
@@ -11,6 +10,7 @@
     using Responses;
     using Shouldly;
     using Steeltoe.Common.Discovery;
+    using System.Threading.Tasks;
     using Xunit;
 
     public class EurekaMiddlewareConfigurationProviderTests

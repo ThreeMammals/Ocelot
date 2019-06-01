@@ -1,7 +1,5 @@
 ﻿namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
@@ -11,13 +9,14 @@
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
-    using Ocelot.Responses;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.Configuration.Repository;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Responses;
+    using Shouldly;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class DownstreamRouteFinderMiddlewareTests
     {
@@ -53,12 +52,12 @@
 
             var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
                 new DownstreamRoute(
-                    new List<PlaceholderNameAndValue>(), 
+                    new List<PlaceholderNameAndValue>(),
                     new ReRouteBuilder()
                         .WithDownstreamReRoute(downstreamReRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })

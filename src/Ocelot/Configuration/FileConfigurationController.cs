@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration
 {
@@ -29,7 +29,7 @@ namespace Ocelot.Configuration
         {
             var response = await _repo.Get();
 
-            if(response.IsError)
+            if (response.IsError)
             {
                 return new BadRequestObjectResult(response.Errors);
             }
@@ -51,7 +51,7 @@ namespace Ocelot.Configuration
 
                 return new OkObjectResult(fileConfiguration);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new BadRequestObjectResult($"{e.Message}:{e.StackTrace}");
             }

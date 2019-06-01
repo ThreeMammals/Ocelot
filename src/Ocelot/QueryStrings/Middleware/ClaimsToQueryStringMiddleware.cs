@@ -1,12 +1,9 @@
 ﻿namespace Ocelot.QueryStrings.Middleware
 {
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public class ClaimsToQueryStringMiddleware : OcelotMiddleware
     {
@@ -15,7 +12,7 @@
 
         public ClaimsToQueryStringMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IAddQueriesToRequest addQueriesToRequest) 
+            IAddQueriesToRequest addQueriesToRequest)
                 : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
         {
             _next = next;
