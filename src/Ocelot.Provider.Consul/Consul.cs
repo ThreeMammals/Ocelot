@@ -34,7 +34,16 @@
             {
                 if (IsValid(serviceEntry))
                 {
-                    services.Add(BuildService(serviceEntry));
+                    var nodes = await _consul.Catalog.Nodes();
+                    if (nodes.Response == null)
+                    {
+                        services.Add(BuildService(serviceEntry, null));
+                    }
+                    else
+                    {
+                        var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
+                        services.Add(BuildService(serviceEntry, serviceNode));
+                    }
                 }
                 else
                 {
@@ -45,11 +54,11 @@
             return services.ToList();
         }
 
-        private Service BuildService(ServiceEntry serviceEntry)
+        private Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
         {
             return new Service(
                 serviceEntry.Service.Service,
-                new ServiceHostAndPort(serviceEntry.Service.Address, serviceEntry.Service.Port),
+                new ServiceHostAndPort(serviceNode == null ? serviceEntry.Service.Address : serviceNode.Name, serviceEntry.Service.Port),
                 serviceEntry.Service.ID,
                 GetVersionFromStrings(serviceEntry.Service.Tags),
                 serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
