@@ -54,6 +54,7 @@ kubernetes service name. We also need to set up the ServiceDiscoveryProvider in 
     }
   }
 }
+    
 Service deployment in Namespace Dev , ServiceDiscoveryProvider type is kube, you also can set pollkube ServiceDiscoveryProvider type.
   Note: Host、 Port and Token are no longer in use。
 
