@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests.Consul
+﻿using Ocelot.Configuration.Builder;
+
+namespace Ocelot.UnitTests.Consul
 {
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
@@ -29,7 +31,11 @@
         [Fact]
         public void should_return_ConsulServiceDiscoveryProvider()
         {
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", 1, "", "", 1), "");
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("")
+                .Build();
+
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", 1, "", "", 1), reRoute);
             provider.ShouldBeOfType<Consul>();
         }
 
@@ -37,7 +43,12 @@
         public void should_return_PollingConsulServiceDiscoveryProvider()
         {
             var stopsPollerFromPolling = 10000;
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "", 1, "", "", stopsPollerFromPolling), "");
+
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("")
+                .Build();
+
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "", 1, "", "", stopsPollerFromPolling), reRoute);
             provider.ShouldBeOfType<PollConsul>();
         }
     }
