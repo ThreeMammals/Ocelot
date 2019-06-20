@@ -38,6 +38,7 @@ namespace Ocelot.Configuration.File
         public FileCacheOptions FileCacheOptions { get; set; }
         public bool ReRouteIsCaseSensitive { get; set; }
         public string ServiceName { get; set; }
+        public string ServiceNamespace { get; set; }
         public string DownstreamScheme { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }

@@ -24,11 +24,7 @@ namespace Ocelot.Provider.Kubernetes
 
         public async Task<List<Service>> Get()
         {
-            var shouldOverrideNamespace = kubeRegistryConfiguration.KeyOfServiceInK8s.Contains(".");
-            var kubeNamespace = shouldOverrideNamespace ? kubeRegistryConfiguration.KeyOfServiceInK8s.Split('.')[0] : kubeRegistryConfiguration.KubeNamespace;
-            var kubeServiceName = shouldOverrideNamespace ? kubeRegistryConfiguration.KeyOfServiceInK8s.Split('.')[1] : kubeRegistryConfiguration.KeyOfServiceInK8s;
-            
-            var service = await kubeApi.ServicesV1().Get(kubeServiceName, kubeNamespace);
+            var service = await kubeApi.ServicesV1().Get(kubeRegistryConfiguration.KeyOfServiceInK8s, kubeRegistryConfiguration.KubeNamespace);
             var services = new List<Service>();
             if (IsValid(service))
             {

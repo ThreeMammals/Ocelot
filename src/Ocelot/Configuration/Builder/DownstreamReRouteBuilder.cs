@@ -30,6 +30,7 @@ namespace Ocelot.Configuration.Builder
         private RateLimitOptions _rateLimitOptions;
         private bool _useServiceDiscovery;
         private string _serviceName;
+        private string _serviceNamespace;
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
@@ -185,6 +186,12 @@ namespace Ocelot.Configuration.Builder
             _serviceName = serviceName;
             return this;
         }
+        
+        public DownstreamReRouteBuilder WithServiceNamespace(string serviceNamespace)
+        {
+            _serviceNamespace = serviceNamespace;
+            return this;
+        }
 
         public DownstreamReRouteBuilder WithUpstreamHeaderFindAndReplace(List<HeaderFindAndReplace> upstreamHeaderFindAndReplace)
         {
@@ -243,6 +250,7 @@ namespace Ocelot.Configuration.Builder
                 _downstreamHeaderFindAndReplace,
                 _downstreamAddresses,
                 _serviceName,
+                _serviceNamespace,
                 _httpHandlerOptions,
                 _useServiceDiscovery,
                 _enableRateLimiting,
