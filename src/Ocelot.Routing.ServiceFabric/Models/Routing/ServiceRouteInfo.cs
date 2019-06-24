@@ -30,6 +30,7 @@ namespace Ocelot.Routing.ServiceFabric.Models.Routing
                     DownstreamScheme = this.DownstreamScheme,
                     UpstreamPathTemplate = routeTemplateParts.First(),
                     RequestIdKey = this.RequestTrackingHeader,
+                    DangerousAcceptAnyServerCertificateValidator = true,
                     ServiceName = this.ServiceName,
                 };
 
