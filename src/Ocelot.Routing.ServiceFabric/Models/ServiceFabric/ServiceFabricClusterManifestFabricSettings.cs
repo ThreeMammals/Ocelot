@@ -7,7 +7,7 @@ namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
     public class ServiceFabricClusterManifestFabricSettings
     {
-        [XmlArray(ElementName = "Section")]
+        [XmlElement(ElementName = "Section")]
         public ServiceFabricClusterManifestFabricSettingsSection[] Sections { get; set; }
     }
 }

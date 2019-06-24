@@ -10,7 +10,7 @@ namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; }
 
-        [XmlArray(ElementName = "Parameter")]
+        [XmlElement(ElementName = "Parameter")]
         public ServiceFabricClusterManifestFabricSettingsSectionParameter[] Parameters { get; set; }
     }
 }
