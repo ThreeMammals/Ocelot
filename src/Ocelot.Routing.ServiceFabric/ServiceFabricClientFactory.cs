@@ -87,7 +87,7 @@ namespace Ocelot.Routing.ServiceFabric
                         searchString = "CN=" + searchString;
                     }
 
-                    X509Certificate2Collection certCollection = x509Store.Certificates.Find(X509FindType.FindBySubjectName, searchString, validOnly: false);
+                    X509Certificate2Collection certCollection = x509Store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, searchString, validOnly: false);
 
                     if (certCollection.Count == 0)
                     {
@@ -103,7 +103,7 @@ namespace Ocelot.Routing.ServiceFabric
                         () => new X509SecuritySettings(
                             clusterCertificate, 
                             new RemoteX509SecuritySettings(
-                                new List<X509Name> { new X509Name(clusterCertificate.Subject) }
+                                new List<string> { clusterCertificate.Thumbprint }
                             ))));
             }
             else

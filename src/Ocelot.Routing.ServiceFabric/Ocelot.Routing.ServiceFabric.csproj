@@ -10,7 +10,7 @@
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
     <PackageTags>API Gateway;.NET core; Service Fabric</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.3</Version>
+    <Version>1.1.5</Version>
   </PropertyGroup>
 
   <ItemGroup>
