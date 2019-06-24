@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.ServiceFabric.Client;
+using Microsoft.ServiceFabric.Common.Security;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using SFClientLib = Microsoft.ServiceFabric.Client;
@@ -61,19 +63,48 @@ namespace Ocelot.Routing.ServiceFabric
         {
             if (clientFactoryOptions.IsSecuredCluster)
             {
-                ////return SFClientLib.ServiceFabricClientFactory.Create(
-                ////    new Uri(clientFactoryOptions.ClusterManagementEndpoint),
-                ////    new ClientSettings
-                ////    {
-                ////        SecuritySettings = () =>
-                ////        {
-                ////            return Microsoft.ServiceFabric.Common.Security.X509SecuritySettings
-                ////            {
+                X509Certificate2 clusterCertificate = null;
+                X509Store x509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+                x509Store.Open(OpenFlags.ReadOnly);
 
-                ////            }
-                ////        }
-                ////    });
-                return null;
+                if (!string.IsNullOrEmpty(clientFactoryOptions.ClusterCertificateThumbprint))
+                {
+                    X509Certificate2Collection certCollection = x509Store.Certificates.Find(X509FindType.FindByThumbprint, clientFactoryOptions.ClusterCertificateThumbprint, validOnly: false);
+
+                    if (certCollection.Count == 0)
+                    {
+                        throw new ArgumentException("Failed to find Cluster certificate for the given thumbprint");
+                    }
+
+                    clusterCertificate = certCollection[0];
+                }
+                else if (!string.IsNullOrEmpty(clientFactoryOptions.ClusterCertificateSubjectName))
+                {
+                    string searchString = clientFactoryOptions.ClusterCertificateSubjectName;
+
+                    if (!searchString.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        searchString = "CN=" + searchString;
+                    }
+
+                    X509Certificate2Collection certCollection = x509Store.Certificates.Find(X509FindType.FindBySubjectName, searchString, validOnly: false);
+
+                    if (certCollection.Count == 0)
+                    {
+                        throw new ArgumentException("Failed to find Cluster certificate for the given subject name");
+                    }
+
+                    clusterCertificate = certCollection[0];
+                }
+
+                return SFClientLib.ServiceFabricClientFactory.Create(
+                    new Uri(clientFactoryOptions.ClusterManagementEndpoint),
+                    new ClientSettings(
+                        () => new X509SecuritySettings(
+                            clusterCertificate, 
+                            new RemoteX509SecuritySettings(
+                                new List<X509Name> { new X509Name(clusterCertificate.Subject) }
+                            ))));
             }
             else
             {
