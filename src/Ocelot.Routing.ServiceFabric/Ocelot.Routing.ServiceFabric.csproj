@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>RamjotSingh</Authors>
+    <Company />
+    <Product>Ocelot</Product>
+    <Description>Configuration extension for Ocelot to dynamically figure out routes based on ServiceManifest of deployed services.</Description>
+    <PackageIconUrl>http://threemammals.com/images/ocelot_logo.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageTags>API Gateway;.NET core; Service Fabric</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric.Client.Http" Version="1.0.0-preview58" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+
+</Project>

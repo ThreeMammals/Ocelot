@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -56,7 +56,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Rafty", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Routing.ServiceFabric", "src\Ocelot.Routing.ServiceFabric\Ocelot.Routing.ServiceFabric.csproj", "{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +122,10 @@ Global
 		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +145,7 @@ Global
 		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{72C8E528-B4F5-45CE-8A06-CD3787364856} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{1575F8E6-CB7E-4AC8-A52E-B2E923C774B7} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}
