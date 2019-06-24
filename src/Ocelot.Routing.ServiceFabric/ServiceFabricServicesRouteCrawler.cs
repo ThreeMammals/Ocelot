@@ -18,6 +18,8 @@ namespace Ocelot.Routing.ServiceFabric
     /// </summary>
     internal class ServiceFabricServicesRouteCrawler : IServiceFabricServicesRouteCrawler
     {
+        private const string ClusterManifestGatewaySectionName = "ApplicationGateway/Http";
+
         private readonly IServiceFabricClientFactory serviceFabricClientFactory;
 
         /// <summary>
@@ -37,6 +39,16 @@ namespace Ocelot.Routing.ServiceFabric
         {
             IServiceFabricClient serviceFabricClient = await this.serviceFabricClientFactory.GetServiceFabricClientAsync().ConfigureAwait(false);
             List<ApplicationInfo> applicationCollection = await ServiceFabricServicesRouteCrawler.GetApplicationCollectionAsync(serviceFabricClient).ConfigureAwait(false);
+
+            ClusterManifest clusterManifest = await serviceFabricClient.Cluster.GetClusterManifestAsync().ConfigureAwait(false);
+            XmlSerializer clusterManifestSerializer = new XmlSerializer(typeof(ServiceFabricClusterManifest));
+            ServiceFabricClusterManifest serviceFabricClusterManifest = clusterManifestSerializer.Deserialize(new StringReader(clusterManifest.Manifest)) as ServiceFabricClusterManifest;
+
+            // If Reverse Proxy is turned off, no point in proceeding since we won't be able to route requests.
+            if (!ServiceFabricServicesRouteCrawler.IsReverseProxyEnabled(serviceFabricClusterManifest))
+            {
+                return Array.Empty<ServiceRouteInfo>();
+            }
 
             Dictionary<ApplicationInfo, IEnumerable<ServiceInfo>> servicesMap = new Dictionary<ApplicationInfo, IEnumerable<ServiceInfo>>();
 
@@ -62,6 +74,7 @@ namespace Ocelot.Routing.ServiceFabric
                     {
                         ServiceRouteInfo serviceRouteInfo = await ServiceFabricServicesRouteCrawler.GetServiceRouteInfoAsync(
                             serviceFabricClient,
+                            serviceFabricClusterManifest,
                             servicesEntry.Key,
                             service).ConfigureAwait(false);
 
@@ -117,6 +130,7 @@ namespace Ocelot.Routing.ServiceFabric
 
         private static async Task<ServiceRouteInfo> GetServiceRouteInfoAsync(
             IServiceFabricClient serviceFabricClient,
+            ServiceFabricClusterManifest serviceFabricClusterManifest,
             ApplicationInfo applicationInfo,
             ServiceInfo serviceInfo)
         {
@@ -125,14 +139,14 @@ namespace Ocelot.Routing.ServiceFabric
                 applicationInfo.TypeVersion,
                 serviceInfo.TypeName).ConfigureAwait(false);
 
-            XmlSerializer manifestSerializer = new XmlSerializer(typeof(ServiceFabricManifest));
+            XmlSerializer manifestSerializer = new XmlSerializer(typeof(ServiceFabricServiceManifest));
 
             ServiceTypeManifest serviceManifest = await serviceFabricClient.ServiceTypes.GetServiceManifestAsync(
                 applicationInfo.TypeName,
                 applicationInfo.TypeVersion,
                 serviceTypeInfo.ServiceManifestName).ConfigureAwait(false);
 
-            ServiceFabricManifest manifest = manifestSerializer.Deserialize(new StringReader(serviceManifest.Manifest)) as ServiceFabricManifest;
+            ServiceFabricServiceManifest manifest = manifestSerializer.Deserialize(new StringReader(serviceManifest.Manifest)) as ServiceFabricServiceManifest;
 
             if (!(manifest?.ServiceTypes?.StatelessServiceType?.Extensions?.Any()).GetValueOrDefault())
             {
@@ -144,7 +158,7 @@ namespace Ocelot.Routing.ServiceFabric
                 return null;
             }
 
-            ServiceFabricManifestExtension ocelotExtension = manifest.ServiceTypes.StatelessServiceType.Extensions.FirstOrDefault(extension =>
+            ServiceFabricServiceManifestExtension ocelotExtension = manifest.ServiceTypes.StatelessServiceType.Extensions.FirstOrDefault(extension =>
                 extension.Name.Equals(OcelotRoutingLabels.OcelotRoutingExtensionName, StringComparison.OrdinalIgnoreCase));
 
             if (ocelotExtension == null)
@@ -179,9 +193,45 @@ namespace Ocelot.Routing.ServiceFabric
             }
 
             serviceRouteInfo.ServiceName = serviceInfo.Name.GetId();
-            serviceRouteInfo.DownstreamScheme = manifest.Resources.Endpoints.First().Protocol;
+            serviceRouteInfo.DownstreamScheme = ServiceFabricServicesRouteCrawler.ReverseProxyUsesHttps(serviceFabricClusterManifest) ? "https" : "http";
 
             return serviceRouteInfo;
+        }
+
+        private static bool ReverseProxyUsesHttps(ServiceFabricClusterManifest serviceFabricClusterManifest)
+        {
+            ServiceFabricClusterManifestFabricSettingsSection gatewaySection =
+                serviceFabricClusterManifest.FabricSettings.Sections.First(section => 
+                    section.Name == ServiceFabricServicesRouteCrawler.ClusterManifestGatewaySectionName);
+
+            // More info at https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cluster-fabric-settings#applicationgatewayhttp
+            ServiceFabricClusterManifestFabricSettingsSectionParameter gatewayCredsParam =
+                gatewaySection.Parameters?.FirstOrDefault(parameter => parameter.Name == "GatewayAuthCredentialType");
+
+            return !(gatewayCredsParam == null || gatewayCredsParam.Value == "None");
+        }
+
+        private static bool IsReverseProxyEnabled(ServiceFabricClusterManifest serviceFabricClusterManifest)
+        {
+            ServiceFabricClusterManifestFabricSettingsSection gatewaySection =
+                serviceFabricClusterManifest.FabricSettings.Sections.FirstOrDefault(section =>
+                    section.Name == ServiceFabricServicesRouteCrawler.ClusterManifestGatewaySectionName);
+
+            if (gatewaySection == null)
+            {
+                return false;
+            }
+
+            // More info at https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cluster-fabric-settings#applicationgatewayhttp
+            ServiceFabricClusterManifestFabricSettingsSectionParameter gatewayCredsParam =
+                gatewaySection.Parameters?.FirstOrDefault(parameter => parameter.Name == "IsEnabled");
+
+            if (gatewayCredsParam == null)
+            {
+                return false;
+            }
+
+            return bool.Parse(gatewayCredsParam.Value);
         }
     }
 }

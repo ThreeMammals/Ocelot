@@ -5,9 +5,9 @@ using System.Xml.Serialization;
 
 namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
-    public class ServiceFabricManifestServiceTypes
+    public class ServiceFabricServiceManifestServiceTypes
     {
         [XmlElement(ElementName = "StatelessServiceType")]
-        public ServiceFabricManifestStatelessServiceType StatelessServiceType { get; set; }
+        public ServiceFabricServiceManifestStatelessServiceType StatelessServiceType { get; set; }
     }
 }

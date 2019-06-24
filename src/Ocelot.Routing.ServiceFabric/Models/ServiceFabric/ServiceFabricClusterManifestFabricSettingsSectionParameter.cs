@@ -5,12 +5,12 @@ using System.Xml.Serialization;
 
 namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
-    public class ServiceFabricManifestExtensionLabel
+    public class ServiceFabricClusterManifestFabricSettingsSectionParameter
     {
-        [XmlAttribute(AttributeName = "Key")]
-        public string Key { get; set; }
+        [XmlAttribute(AttributeName = "Name")]
+        public string Name { get; set; }
 
-        [XmlText]
+        [XmlAttribute(AttributeName = "Value")]
         public string Value { get; set; }
     }
 }

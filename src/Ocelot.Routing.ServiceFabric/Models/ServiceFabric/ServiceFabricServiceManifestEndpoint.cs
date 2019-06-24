@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
-    public class ServiceFabricManifestEndpoint
+    public class ServiceFabricServiceManifestEndpoint
     {
         [XmlAttribute(AttributeName = "Protocol")]
         public string Protocol { get; set; }

@@ -5,10 +5,10 @@ using System.Xml.Serialization;
 
 namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
-    public class ServiceFabricManifestResourceCollection
+    public class ServiceFabricServiceManifestResourceCollection
     {
         [XmlArray(ElementName = "Endpoints")]
         [XmlArrayItem("Endpoint", IsNullable = false)]
-        public ServiceFabricManifestEndpoint[] Endpoints { get; set; }
+        public ServiceFabricServiceManifestEndpoint[] Endpoints { get; set; }
     }
 }

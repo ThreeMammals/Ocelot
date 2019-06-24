@@ -5,13 +5,13 @@ using System.Xml.Serialization;
 
 namespace Ocelot.Routing.ServiceFabric.Models.ServiceFabric
 {
-    public class ServiceFabricManifestStatelessServiceType
+    public class ServiceFabricServiceManifestStatelessServiceType
     {
         [XmlAttribute(AttributeName = "ServiceTypeName")]
         public string ServiceName { get; set; }
 
         [XmlArray(ElementName = "Extensions")]
         [XmlArrayItem("Extension", IsNullable = false)]
-        public ServiceFabricManifestExtension[] Extensions { get; set; }
+        public ServiceFabricServiceManifestExtension[] Extensions { get; set; }
     }
 }
