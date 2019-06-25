@@ -27,7 +27,10 @@
             var services = new ServiceCollection();
             services.AddSingleton<IDiscoveryClient>(client.Object);
             var sp = services.BuildServiceProvider();
-            var provider = EurekaProviderFactory.Get(sp, config, null);
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("")
+                .Build();
+            var provider = EurekaProviderFactory.Get(sp, config, reRoute);
             provider.ShouldBeOfType<Eureka>();
         }
     }

@@ -126,6 +126,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRateLimitOptions(rateLimitOption)
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
+                .WithServiceNamespace(fileReRoute.ServiceNamespace)
                 .WithUseServiceDiscovery(fileReRouteOptions.UseServiceDiscovery)
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)

@@ -13,6 +13,7 @@ namespace Ocelot.Configuration
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
             List<DownstreamHostAndPort> downstreamAddresses,
             string serviceName,
+            string serviceNamespace,
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
             bool enableEndpointEndpointRateLimiting,
@@ -47,6 +48,7 @@ namespace Ocelot.Configuration
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
             ServiceName = serviceName;
+            ServiceNamespace = serviceNamespace;
             HttpHandlerOptions = httpHandlerOptions;
             UseServiceDiscovery = useServiceDiscovery;
             EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
@@ -76,6 +78,7 @@ namespace Ocelot.Configuration
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; }
         public List<DownstreamHostAndPort> DownstreamAddresses { get; }
         public string ServiceName { get; }
+        public string ServiceNamespace { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
         public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }

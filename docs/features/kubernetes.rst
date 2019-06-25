@@ -75,3 +75,21 @@ The polling interval is in milliseconds and tells Ocelot how often to call kuber
 
 Please note there are tradeoffs here. If you poll kubernetes it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling kubernetes per request. 
 There is no way for Ocelot to work these out for you. 
+
+If your downstream service resides in a different namespace you can override the global setting at the ReRoute level by specifying a ServiceNamespace
+
+
+.. code-block:: json
+
+{
+  "ReRoutes": [
+    {
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/values",
+      "ServiceName": "downstreamservice",
+      "ServiceNamespace": "downstream-namespace",
+      "UpstreamHttpMethod": [ "Get" ]     
+    }
+  ]
+}
