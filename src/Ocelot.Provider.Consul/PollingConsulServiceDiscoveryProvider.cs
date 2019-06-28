@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Provider.Consul
+﻿using System;
+
+namespace Ocelot.Provider.Consul
 {
     using Logging;
     using ServiceDiscovery.Providers;
@@ -7,7 +9,7 @@
     using System.Threading.Tasks;
     using Values;
 
-    public class PollConsul : IServiceDiscoveryProvider
+    public class PollConsul : IServiceDiscoveryProvider, IDisposable
     {
         private readonly IOcelotLogger _logger;
         private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
@@ -41,7 +43,17 @@
 
         private async Task Poll()
         {
+            if (_consulServiceDiscoveryProvider == null)
+            {
+                return;
+            }
+
             _services = await _consulServiceDiscoveryProvider.Get();
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

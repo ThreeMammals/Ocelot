@@ -59,7 +59,7 @@
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -85,7 +85,7 @@
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -108,7 +108,7 @@
                     Address = "http://localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -120,7 +120,7 @@
                     Address = "http://localhost",
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -143,7 +143,7 @@
                     Address = "",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -155,7 +155,7 @@
                     Address = null,
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -178,7 +178,7 @@
                     Address = "localhost",
                     Port = -1,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -190,7 +190,7 @@
                     Address = "localhost",
                     Port = 0,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -261,6 +261,11 @@
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
+            if (_fakeConsulBuilder != null)
+            {
+                return;
+            }
+
             _fakeConsulBuilder = new WebHostBuilder()
                 .UseUrls(url)
                 .UseKestrel()
