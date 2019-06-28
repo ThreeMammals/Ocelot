@@ -12,7 +12,7 @@
     using Values;
     using Xunit;
 
-    public class PollingConsulServiceDiscoveryProviderTests
+    public class PollingConsulServiceDiscoveryProviderTests : IDisposable
     {
         private readonly int _delay;
         private PollConsul _provider;
@@ -77,6 +77,11 @@
             });
 
             result.ShouldBeTrue();
+        }
+
+        public void Dispose()
+        {
+            _provider?.Dispose();
         }
     }
 }
