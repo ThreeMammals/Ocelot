@@ -1,9 +1,8 @@
-﻿using System;
-
-namespace Ocelot.Provider.Consul
+﻿namespace Ocelot.Provider.Consul
 {
     using Logging;
     using ServiceDiscovery.Providers;
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
