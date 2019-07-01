@@ -48,7 +48,29 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        public void should_add_type_specific_delegating_handlers_transient()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandler)))
+                .And(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandlerTwo)))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => ThenTheSpecificHandlersAreTransient())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_add_global_delegating_handlers_transient()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
+                .And(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => ThenTheGlobalHandlersAreTransient())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_global_type_delegating_handlers_transient()
         {
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
@@ -154,6 +176,16 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : DelegatingHandler
         {
             _ocelotBuilder.AddDelegatingHandler<T>();
+        }
+
+        private void AddTypeTransientGlobalDelegatingHandler(Type type)
+        {
+            _ocelotBuilder.AddDelegatingHandler(type, true);
+        }
+
+        private void AddTypeSpecificTransientDelegatingHandler(Type type)
+        {
+            _ocelotBuilder.AddDelegatingHandler(type);
         }
 
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()

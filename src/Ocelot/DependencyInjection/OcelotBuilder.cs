@@ -35,6 +35,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Security;
     using Ocelot.Security.IPSecurity;
     using Ocelot.ServiceDiscovery;
+    using System;
     using System.Net.Http;
     using System.Reflection;
 
@@ -163,6 +164,28 @@ namespace Ocelot.DependencyInjection
         {
             Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
             Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
+        }
+
+        public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
+        {
+            if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType)) throw new ArgumentOutOfRangeException(nameof(delegateType), delegateType.Name, "It is not a delegatin handler");
+
+            if (global)
+            {
+                Services.AddTransient(delegateType);
+                Services.AddTransient<GlobalDelegatingHandler>(s =>
+                {
+
+                    var service = s.GetService(delegateType) as DelegatingHandler;
+                    return new GlobalDelegatingHandler(service);
+                });
+            }
+            else
+            {
+                Services.AddTransient(typeof(DelegatingHandler), delegateType);
+            }
+
+            return this;
         }
 
         public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
