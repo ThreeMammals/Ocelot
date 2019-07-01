@@ -1,5 +1,5 @@
 #This is the base image used for any ran images
-FROM microsoft/dotnet:2.1-aspnetcore-runtime AS base
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim AS base
 WORKDIR /app
 EXPOSE 80
 
@@ -7,7 +7,7 @@ EXPOSE 80
 #It can also be used to run other CLI commands on the project, such as packing/deploying nuget packages. Some examples:
 #Run tests: docker build --target builder -t ocelot-build . && docker run ocelot-build test --logger:trx;LogFileName=results.trx
 #Run benchmarks: docker build --target builder --build-arg build_configuration=Release -t ocelot-build . && docker run ocelot-build run -c Release --project test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj
-FROM microsoft/dotnet:2.1.502-sdk AS builder
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS builder
 WORKDIR /build
 #First we add only the project files so that we can cache nuget packages with dotnet restore
 COPY Ocelot.sln Ocelot.sln
