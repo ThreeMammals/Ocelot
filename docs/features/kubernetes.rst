@@ -25,7 +25,7 @@ If you have services deployed in kubernetes you will normally use the naming ser
 You can replicate a Permissive. Using RBAC role bindings.
 `Permissive RBAC Permissions <https://kubernetes.io/docs/reference/access-authn-authz/rbac/#permissive-rbac-permissions>`_, k8s api server and token will read from pod .
 
-.. code-block::json
+.. code-block::bash
 kubectl create clusterrolebinding permissive-binding  --clusterrole=cluster-admin  --user=admin  --user=kubelet --group=system:serviceaccounts
 
 The following example shows how to set up a ReRoute that will work in kubernetes. The most important thing is the ServiceName which is made up of the 
