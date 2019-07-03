@@ -61,21 +61,6 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_error_response_when_using_delimiter_and_index_equal_length()
-        {
-            this.Given(x => x.GivenAClaimOf(new Claim("Subject", "registered|4321")))
-                .And(x => x.GivenTheDelimiterIs("|"))
-                .And(x => x.GivenTheIndexIs(2))
-                .And(x => x.GivenTheKeyIs("Subject"))
-                .When(x => x.WhenICallTheParser())
-                .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
-                {
-                    new CannotFindClaimError($"Cannot find claim for key: {_key}")
-                })))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_return_error_response_if_index_too_large()
         {
             this.Given(x => x.GivenAClaimOf(new Claim("Subject", "registered|4321")))
