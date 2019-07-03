@@ -1,4 +1,4 @@
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
