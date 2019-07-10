@@ -139,6 +139,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
         {
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
@@ -196,6 +197,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
         {
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            _result.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
@@ -243,6 +245,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
+                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }
@@ -278,6 +281,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
+                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }
