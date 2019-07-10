@@ -7,6 +7,9 @@ using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Ocelot.Middleware;
+using Ocelot.Values;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -18,6 +21,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly LoadBalancerFactory _factory;
         private Response<ILoadBalancer> _result;
         private readonly Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
+        private readonly IEnumerable<ILoadBalancerCreator> _loadBalancerCreators;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private ServiceProviderConfiguration _serviceProviderConfig;
 
@@ -25,7 +29,13 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _serviceProviderFactory = new Mock<IServiceDiscoveryProviderFactory>();
             _serviceProvider = new Mock<IServiceDiscoveryProvider>();
-            _factory = new LoadBalancerFactory(_serviceProviderFactory.Object);
+            _loadBalancerCreators = new ILoadBalancerCreator[]
+            {
+                new FakeLoadBalancerCreator<FakeLoadBalancerOne>(),
+                new FakeLoadBalancerCreator<FakeLoadBalancerTwo>(),
+                new FakeLoadBalancerCreator<FakeNoLoadBalancer>(nameof(NoLoadBalancer)),
+            };
+            _factory = new LoadBalancerFactory(_serviceProviderFactory.Object, _loadBalancerCreators);
         }
 
         [Fact]
@@ -39,15 +49,15 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<NoLoadBalancer>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<FakeNoLoadBalancer>())
                 .BDDfy();
         }
 
         [Fact]
-        public void should_return_round_robin_load_balancer()
+        public void should_return_matching_load_balancer()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerTwo", "", 0))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
@@ -55,31 +65,15 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<RoundRobin>())
+                .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancerTwo>())
                 .BDDfy();
         }
-
-        [Fact]
-        public void should_return_round_least_connection_balancer()
-        {
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build();
-
-            this.Given(x => x.GivenAReRoute(reRoute))
-                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-                .And(x => x.GivenTheServiceProviderFactoryReturns())
-                .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<LeastConnection>())
-                .BDDfy();
-        }
-
+        
         [Fact]
         public void should_call_service_provider()
         {
             var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", "", 0))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
@@ -88,22 +82,6 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => x.GivenTheServiceProviderFactoryReturns())
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_sticky_session()
-        {
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("CookieStickySessions", "", 0))
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build();
-
-            this.Given(x => x.GivenAReRoute(reRoute))
-                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-                .And(x => x.GivenTheServiceProviderFactoryReturns())
-                .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<CookieStickySessions>())
                 .BDDfy();
         }
 
@@ -138,6 +116,67 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenTheLoadBalancerIsReturned<T>()
         {
             _result.Data.ShouldBeOfType<T>();
+        }
+
+        private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator
+            where T : ILoadBalancer, new()
+        {
+
+            public FakeLoadBalancerCreator()
+            {
+                Type = typeof(T).Name;
+            }
+
+            public FakeLoadBalancerCreator(string type)
+            {
+                Type = type;
+            }
+
+            public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+            {
+                return new T();
+            }
+            
+            public string Type { get; }
+        }
+
+        private class FakeLoadBalancerOne : ILoadBalancer
+        {
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+        private class FakeLoadBalancerTwo : ILoadBalancer
+        {
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+        private class FakeNoLoadBalancer : ILoadBalancer
+        {
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }
