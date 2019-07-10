@@ -38,8 +38,8 @@
             _serviceName = "test";
             _port = 8500;
             _consulHost = "localhost";
-            _consulScheme = "https";
-            _fakeConsulServiceDiscoveryUrl = $"http://{_consulHost}:{_port}";
+            _consulScheme = "http";
+            _fakeConsulServiceDiscoveryUrl = $"{_consulScheme}://{_consulHost}:{_port}";
             _serviceEntries = new List<ServiceEntry>();
             _factory = new Mock<IOcelotLoggerFactory>();
             _clientFactory = new ConsulClientFactory();
