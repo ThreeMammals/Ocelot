@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
         
         [Fact]
-        public void should_return_expected_name()
+        public void should_return_instance_of_expected_load_balancer_type()
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .Build();
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
                 
         [Fact]
-        public void should_return_instance_of_expected_load_balancer_type()
+        public void should_return_expected_name()
         {
             this.When(x => x.WhenIGetTheLoadBalancerTypeName())
                 .Then(x => x.ThenTheLoadBalancerTypeIs("RoundRobin"))
