@@ -8,6 +8,7 @@ using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using Ocelot.Values;
 using TestStack.BDDfy;
@@ -39,7 +40,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public void should_return_no_load_balancer()
+        public void should_return_no_load_balancer_by_default()
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -85,6 +86,22 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_error_response_when_call_to_service_provider_fails()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", "", 0))
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build();
+
+            this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
+                .And(x => x.GivenTheServiceProviderFactoryFails())
+                .When(x => x.WhenIGetTheLoadBalancer())
+                .Then(x => x.ThenAnErrorResponseIsReturned())
+                .BDDfy();
+        }
+
         private void GivenAServiceProviderConfig(ServiceProviderConfiguration serviceProviderConfig)
         {
             _serviceProviderConfig = serviceProviderConfig;
@@ -95,6 +112,13 @@ namespace Ocelot.UnitTests.LoadBalancer
             _serviceProviderFactory
                 .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()))
                 .Returns(new OkResponse<IServiceDiscoveryProvider>(_serviceProvider.Object));
+        }
+
+        private void GivenTheServiceProviderFactoryFails()
+        {
+            _serviceProviderFactory
+                .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()))
+                .Returns(new ErrorResponse<IServiceDiscoveryProvider>(new CannotFindDataError("For tests")));
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()
@@ -116,6 +140,11 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenTheLoadBalancerIsReturned<T>()
         {
             _result.Data.ShouldBeOfType<T>();
+        }
+
+        private void ThenAnErrorResponseIsReturned()
+        {
+            _result.IsError.ShouldBeTrue();
         }
 
         private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator
