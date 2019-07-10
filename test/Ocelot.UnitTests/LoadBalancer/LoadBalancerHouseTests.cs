@@ -164,6 +164,8 @@ namespace Ocelot.UnitTests.LoadBalancer
             {
                 throw new NotImplementedException();
             }
+
+            public string Name => GetType().Name;
         }
 
         private class FakeRoundRobinLoadBalancer : ILoadBalancer
@@ -177,6 +179,8 @@ namespace Ocelot.UnitTests.LoadBalancer
             {
                 throw new NotImplementedException();
             }
+
+            public string Name => GetType().Name;
         }
     }
 }
