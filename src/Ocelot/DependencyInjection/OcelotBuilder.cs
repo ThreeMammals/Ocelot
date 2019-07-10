@@ -1,3 +1,5 @@
+using Ocelot.ServiceDiscovery.Providers;
+
 using Ocelot.Configuration.ChangeTracking;
 
 namespace Ocelot.DependencyInjection
@@ -170,6 +172,47 @@ namespace Ocelot.DependencyInjection
             where T : class, IDefinedAggregator
         {
             Services.AddTransient<IDefinedAggregator, T>();
+            return this;
+        }
+
+        public IOcelotBuilder AddCustomLoadBalancer<T>()
+            where T : ILoadBalancer, new()
+        {
+            AddCustomLoadBalancer((provider, reRoute, serviceDiscoveryProvider) => new T());
+            return this;
+        }
+        
+        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<T> loadBalancerFactoryFunc) 
+            where T : ILoadBalancer
+        {
+            AddCustomLoadBalancer((provider, reRoute, serviceDiscoveryProvider) =>
+                loadBalancerFactoryFunc());
+            return this;
+        }
+
+        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, T> loadBalancerFactoryFunc) 
+            where T : ILoadBalancer
+        {
+            AddCustomLoadBalancer((provider, reRoute, serviceDiscoveryProvider) =>
+                loadBalancerFactoryFunc(provider));
+            return this;
+        }
+
+        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer
+        {
+            AddCustomLoadBalancer((provider, reRoute, serviceDiscoveryProvider) =>
+                loadBalancerFactoryFunc(reRoute, serviceDiscoveryProvider));
+            return this;
+        }
+
+        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer
+        {
+            Services.AddSingleton<ILoadBalancerCreator>(provider =>
+                new DelegateInvokingLoadBalancerCreator<T>(
+                    (reRoute, serviceDiscoveryProvider) => 
+                        loadBalancerFactoryFunc(provider, reRoute, serviceDiscoveryProvider)));
             return this;
         }
 

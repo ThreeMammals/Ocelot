@@ -1,6 +1,8 @@
-using Ocelot.Configuration;
+using System.Threading.Tasks;
 using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
@@ -166,7 +168,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void should_add_custom_load_balancer_creators()
         {
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddSingletonLoadBalancerCreator<FakeCustomLoadBalancerCreator>())
+                .When(x => AddCustomLoadBalancer<FakeCustomLoadBalancer>())
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
         }
@@ -177,10 +179,10 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
         
-        private void AddSingletonLoadBalancerCreator<T>()
-            where T : class, ILoadBalancerCreator
+        private void AddCustomLoadBalancer<T>()
+            where T : ILoadBalancer, new()
         {
-            _ocelotBuilder.Services.AddSingleton<ILoadBalancerCreator, T>();
+            _ocelotBuilder.AddCustomLoadBalancer<T>();
         }
 
         private void AddTransientDefinedAggregator<T>()
@@ -266,7 +268,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             creators.Count(c => c.GetType() == typeof(RoundRobinCreator)).ShouldBe(1);
             creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
             creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
-            creators.Count(c => c.GetType() == typeof(FakeCustomLoadBalancerCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>)).ShouldBe(1);
         }
 
         private void ThenTheAggregatorsAreTransient<TOne, TWo>()
@@ -354,14 +356,17 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ex.ShouldBeNull();
         }
 
-        private class FakeCustomLoadBalancerCreator : ILoadBalancerCreator
+        private class FakeCustomLoadBalancer : ILoadBalancer
         {
-            public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
             {
                 throw new NotImplementedException();
             }
 
-            public string Type { get; }
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
