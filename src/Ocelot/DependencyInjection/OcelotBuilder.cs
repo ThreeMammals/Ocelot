@@ -87,6 +87,10 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
             Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
             Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
+            Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
+            Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
+            Services.AddSingleton<ILoadBalancerCreator, CookieStickySessionsCreator>();
+            Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
             Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
             Services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();

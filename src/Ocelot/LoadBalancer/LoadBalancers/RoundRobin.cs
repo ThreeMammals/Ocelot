@@ -1,12 +1,12 @@
-﻿using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Ocelot.LoadBalancer.LoadBalancers
+﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
+    using Ocelot.Middleware;
+    using Ocelot.Responses;
+    using Ocelot.Values;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;

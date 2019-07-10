@@ -1,3 +1,7 @@
+using Ocelot.Configuration;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.ServiceDiscovery.Providers;
+
 namespace Ocelot.UnitTests.DependencyInjection
 {
     using Microsoft.AspNetCore.Hosting;
@@ -158,10 +162,25 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_custom_load_balancer_creators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddSingletonLoadBalancerCreator<FakeCustomLoadBalancerCreator>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
         private void AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
+        }
+        
+        private void AddSingletonLoadBalancerCreator<T>()
+            where T : class, ILoadBalancerCreator
+        {
+            _ocelotBuilder.Services.AddSingleton<ILoadBalancerCreator, T>();
         }
 
         private void AddTransientDefinedAggregator<T>()
@@ -237,6 +256,17 @@ namespace Ocelot.UnitTests.DependencyInjection
             var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
+        }
+        
+        private void ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var creators = _serviceProvider.GetServices<ILoadBalancerCreator>().ToList();
+            creators.Count(c => c.GetType() == typeof(NoLoadBalancerCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(RoundRobinCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(FakeCustomLoadBalancerCreator)).ShouldBe(1);
         }
 
         private void ThenTheAggregatorsAreTransient<TOne, TWo>()
@@ -322,6 +352,16 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void ThenAnExceptionIsntThrown()
         {
             _ex.ShouldBeNull();
+        }
+
+        private class FakeCustomLoadBalancerCreator : ILoadBalancerCreator
+        {
+            public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Type { get; }
         }
     }
 }
