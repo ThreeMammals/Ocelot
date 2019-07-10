@@ -38,7 +38,5 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         public void Release(ServiceHostAndPort hostAndPort)
         {
         }
-
-        public string Name => GetType().Name;
     }
 }
