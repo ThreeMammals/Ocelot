@@ -71,8 +71,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
         }
 
-        public string Name => GetType().Name;
-
         private Lease AddConnection(Lease lease)
         {
             return new Lease(lease.HostAndPort, lease.Connections + 1);
