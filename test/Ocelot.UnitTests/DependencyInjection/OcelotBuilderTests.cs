@@ -143,10 +143,46 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_add_custom_load_balancer_creators()
+        public void should_add_custom_load_balancer_creators_by_default_ctor()
         {
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => AddCustomLoadBalancer<FakeCustomLoadBalancer>())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer<FakeCustomLoadBalancer>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_factory_method()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer(() => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_di_factory_method()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer(provider => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_factory_method_with_arguments()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_di_factory_method_with_arguments()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
         }
@@ -157,12 +193,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
         
-        private void AddCustomLoadBalancer<T>()
-            where T : ILoadBalancer, new()
-        {
-            _ocelotBuilder.AddCustomLoadBalancer<T>();
-        }
-
         private void AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
