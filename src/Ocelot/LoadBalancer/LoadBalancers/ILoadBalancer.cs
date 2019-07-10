@@ -10,5 +10,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context);
 
         void Release(ServiceHostAndPort hostAndPort);
+
+        string Name { get; }
     }
 }
