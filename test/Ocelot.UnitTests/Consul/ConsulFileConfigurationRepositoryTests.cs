@@ -246,6 +246,7 @@
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
+                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }

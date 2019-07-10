@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var reRoutes = new List<ReRoute>
             {
                 new ReRouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
@@ -66,9 +66,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
+        public void should_return_downstream_route_finder_as_no_service_discovery_given_no_scheme()
+        {
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("").WithHost("test").WithPort(50).Build();
+            var reRoutes = new List<ReRoute>();
+
+            this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
+                .When(_ => WhenIGet())
+                .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_downstream_route_finder_as_no_service_discovery_given_no_host()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("").WithPort(50).Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("").WithPort(50).Build();
             var reRoutes = new List<ReRoute>();
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
@@ -80,7 +92,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_given_no_service_discovery_port()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("localhost").WithPort(0).Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(0).Build();
             var reRoutes = new List<ReRoute>();
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
@@ -92,7 +104,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_given_no_service_discovery_type()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("localhost").WithPort(50).WithType("").Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(50).WithType("").Build();
             var reRoutes = new List<ReRoute>();
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
@@ -104,7 +116,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_creator()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var reRoutes = new List<ReRoute>();
 
             this.Given(_ => GivenTheReRoutes(reRoutes, spConfig))
@@ -116,7 +128,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_creator_with_dynamic_re_route()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithHost("test").WithPort(50).WithType("test").Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var reRoutes = new List<ReRoute>
             {
                 new ReRouteBuilder().Build()

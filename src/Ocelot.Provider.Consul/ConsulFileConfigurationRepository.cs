@@ -39,8 +39,12 @@
                     internalConfig.Data.ServiceProviderConfiguration.ConfigurationKey : _configurationKey;
             }
 
-            var config = new ConsulRegistryConfiguration(internalConfig.Data.ServiceProviderConfiguration.Host,
-                internalConfig.Data.ServiceProviderConfiguration.Port, _configurationKey, token);
+            var config = new ConsulRegistryConfiguration(
+                internalConfig.Data.ServiceProviderConfiguration.Scheme, 
+                internalConfig.Data.ServiceProviderConfiguration.Host,
+                internalConfig.Data.ServiceProviderConfiguration.Port, 
+                _configurationKey, 
+                token);
 
             _consul = factory.Get(config);
         }

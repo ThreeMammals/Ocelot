@@ -79,6 +79,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -134,6 +135,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -177,6 +179,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     },
@@ -240,6 +243,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     },
@@ -298,6 +302,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
                         Token = token
@@ -366,6 +371,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -431,6 +437,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
                         Type = "PollConsul",
