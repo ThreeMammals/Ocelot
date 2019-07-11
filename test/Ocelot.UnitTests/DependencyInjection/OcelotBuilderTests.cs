@@ -390,11 +390,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
             {
+                // Not relevant for these tests
                 throw new NotImplementedException();
             }
 
             public void Release(ServiceHostAndPort hostAndPort)
             {
+                // Not relevant for these tests
                 throw new NotImplementedException();
             }
         }
