@@ -22,6 +22,7 @@ namespace Ocelot.Configuration.File
             DelegatingHandlers = new List<string>();
             LoadBalancerOptions = new FileLoadBalancerOptions();
             SecurityOptions = new FileSecurityOptions();
+            UpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions();
             Priority = 1;
         }
 
@@ -53,5 +54,6 @@ namespace Ocelot.Configuration.File
         public int Timeout { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
+        public FileUpstreamHeaderRoutingOptions UpstreamHeaderRoutingOptions { get; set; }
     }
 }

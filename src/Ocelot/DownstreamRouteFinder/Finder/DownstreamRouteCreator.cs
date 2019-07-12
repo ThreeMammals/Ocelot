@@ -8,6 +8,7 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using Microsoft.AspNetCore.Http;
     using UrlMatcher;
 
     public class DownstreamRouteCreator : IDownstreamRouteProvider
@@ -21,7 +22,13 @@
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRoute>>();
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(
+            string upstreamUrlPath,
+            string upstreamQueryString,
+            string upstreamHttpMethod,
+            IInternalConfiguration configuration,
+            string upstreamHost,
+            IHeaderDictionary requestHeaders)
         {
             var serviceName = GetServiceName(upstreamUrlPath);
 

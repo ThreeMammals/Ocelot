@@ -3,6 +3,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
@@ -17,12 +18,18 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(
+            string upstreamUrlPath,
+            string upstreamQueryString,
+            string httpMethod,
+            IInternalConfiguration configuration,
+            string upstreamHost,
+            IHeaderDictionary requestHeaders)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
             var applicableReRoutes = configuration.ReRoutes
-                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
+                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost, requestHeaders))
                 .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
             foreach (var reRoute in applicableReRoutes)
@@ -46,10 +53,29 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
         }
 
-        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
+        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost, IHeaderDictionary requestHeaders)
         {
-            return (reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
-                   (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost);
+            return (reRoute.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(reRoute, httpMethod)) &&
+                   (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost) &&
+                   (reRoute.UpstreamHeaderRoutingOptions.Headers.Empty() || RouteHasRequiredUpstreamHeaders(reRoute, requestHeaders));
+        }
+
+        private bool RouteHasHttpMethod(ReRoute reRoute, string httpMethod)
+        {
+            return reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower());
+        }
+
+        private bool RouteHasRequiredUpstreamHeaders(ReRoute reRoute, IHeaderDictionary requestHeaders)
+        {
+            switch (reRoute.UpstreamHeaderRoutingOptions.Mode)
+            {
+                case UpstreamHeaderRoutingCombinationMode.Any:
+                    return reRoute.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders);
+                case UpstreamHeaderRoutingCombinationMode.All:
+                    return reRoute.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
+            }
+
+            return false;
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, string query, ReRoute reRoute)

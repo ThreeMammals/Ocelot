@@ -22,6 +22,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
         private readonly IReRouteKeyCreator _reRouteKeyCreator;
         private readonly ISecurityOptionsCreator _securityOptionsCreator;
+        private readonly IUpstreamHeaderRoutingOptionsCreator _upstreamHeaderRoutingOptionsCreator;
 
         public ReRoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -37,7 +38,8 @@ namespace Ocelot.Configuration.Creator
             IDownstreamAddressesCreator downstreamAddressesCreator,
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IReRouteKeyCreator reRouteKeyCreator,
-            ISecurityOptionsCreator securityOptionsCreator
+            ISecurityOptionsCreator securityOptionsCreator,
+            IUpstreamHeaderRoutingOptionsCreator upstreamHeaderRoutingOptionsCreator
             )
         {
             _reRouteKeyCreator = reRouteKeyCreator;
@@ -55,6 +57,7 @@ namespace Ocelot.Configuration.Creator
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _securityOptionsCreator = securityOptionsCreator;
+            _upstreamHeaderRoutingOptionsCreator = upstreamHeaderRoutingOptionsCreator;
         }
 
         public List<ReRoute> Create(FileConfiguration fileConfiguration)
@@ -144,11 +147,14 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileReRoute);
 
+            var upstreamHeaderRoutingOptions = _upstreamHeaderRoutingOptionsCreator.Create(fileReRoute.UpstreamHeaderRoutingOptions);
+
             var reRoute = new ReRouteBuilder()
                 .WithUpstreamHttpMethod(fileReRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamReRoute(downstreamReRoutes)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .WithUpstreamHeaderRoutingOptions(upstreamHeaderRoutingOptions)
                 .Build();
 
             return reRoute;

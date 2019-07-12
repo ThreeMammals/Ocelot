@@ -12,7 +12,8 @@
             List<HttpMethod> upstreamHttpMethod,
             UpstreamPathTemplate upstreamTemplatePattern,
             string upstreamHost,
-            string aggregator)
+            string aggregator,
+            UpstreamHeaderRoutingOptions upstreamHeaderRoutingOptions)
         {
             UpstreamHost = upstreamHost;
             DownstreamReRoute = downstreamReRoute;
@@ -20,6 +21,7 @@
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             Aggregator = aggregator;
+            UpstreamHeaderRoutingOptions = upstreamHeaderRoutingOptions;
         }
 
         public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
@@ -28,5 +30,6 @@
         public List<DownstreamReRoute> DownstreamReRoute { get; private set; }
         public List<AggregateReRouteConfig> DownstreamReRouteConfig { get; private set; }
         public string Aggregator { get; private set; }
+        public UpstreamHeaderRoutingOptions UpstreamHeaderRoutingOptions { get; private set; }
     }
 }

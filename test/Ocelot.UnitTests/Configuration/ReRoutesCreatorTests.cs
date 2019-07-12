@@ -30,6 +30,7 @@
         private Mock<ILoadBalancerOptionsCreator> _lboCreator;
         private Mock<IReRouteKeyCreator> _rrkCreator;
         private Mock<ISecurityOptionsCreator> _soCreator;
+        private Mock<IUpstreamHeaderRoutingOptionsCreator> _uhroCreator;
         private FileConfiguration _fileConfig;
         private ReRouteOptions _rro;
         private string _requestId;
@@ -46,6 +47,7 @@
         private LoadBalancerOptions _lbo;
         private List<ReRoute> _result;
         private SecurityOptions _securityOptions;
+        private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
 
         public ReRoutesCreatorTests()
         {
@@ -63,6 +65,7 @@
             _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
             _rrkCreator = new Mock<IReRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
+            _uhroCreator = new Mock<IUpstreamHeaderRoutingOptionsCreator>();
 
             _creator = new ReRoutesCreator(
                 _cthCreator.Object,
@@ -78,7 +81,8 @@
                 _daCreator.Object,
                 _lboCreator.Object,
                 _rrkCreator.Object,
-                _soCreator.Object
+                _soCreator.Object,
+                _uhroCreator.Object
                 );
         }
 

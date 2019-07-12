@@ -37,7 +37,11 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var provider = _factory.Get(context.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
+            var downstreamRoute = provider.Get(
+                upstreamUrlPath, upstreamQueryString,
+                context.HttpContext.Request.Method,
+                context.Configuration, upstreamHost,
+                context.HttpContext.Request.Headers);
 
             if (downstreamRoute.IsError)
             {

@@ -8,6 +8,7 @@ using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -26,12 +27,14 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamHttpMethod;
         private string _upstreamHost;
         private string _upstreamQuery;
+        private IHeaderDictionary _requestHeaders;
 
         public DownstreamRouteFinderTests()
         {
             _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _finder = new Mock<IPlaceholderNameAndValueFinder>();
             _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockMatcher.Object, _finder.Object);
+            _requestHeaders = new HeaderDictionary();
         }
 
         [Fact]
@@ -749,7 +752,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICallTheFinder()
         {
-            _result = _downstreamRouteFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost);
+            _result = _downstreamRouteFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _requestHeaders);
         }
 
         private void ThenTheFollowingIsReturned(DownstreamRoute expected)

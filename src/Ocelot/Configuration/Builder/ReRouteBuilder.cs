@@ -14,6 +14,7 @@
         private List<DownstreamReRoute> _downstreamReRoutes;
         private List<AggregateReRouteConfig> _downstreamReRoutesConfig;
         private string _aggregator;
+        private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
 
         public ReRouteBuilder()
         {
@@ -63,6 +64,12 @@
             return this;
         }
 
+        public ReRouteBuilder WithUpstreamHeaderRoutingOptions(UpstreamHeaderRoutingOptions routingOptions)
+        {
+            _upstreamHeaderRoutingOptions = routingOptions;
+            return this;
+        }
+
         public ReRoute Build()
         {
             return new ReRoute(
@@ -71,8 +78,8 @@
                 _upstreamHttpMethod,
                 _upstreamTemplatePattern,
                 _upstreamHost,
-                _aggregator
-                );
+                _aggregator,
+                _upstreamHeaderRoutingOptions);
         }
     }
 }
