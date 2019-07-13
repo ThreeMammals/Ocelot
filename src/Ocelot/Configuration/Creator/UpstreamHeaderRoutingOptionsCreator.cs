@@ -16,7 +16,8 @@ namespace Ocelot.Configuration.Creator
                     Enum.Parse(typeof(UpstreamHeaderRoutingCombinationMode), options.CombinationMode, true);
             }
 
-            Dictionary<string, HashSet<string>> headers = options.Headers.ToDictionary(kv => kv.Key.ToLowerInvariant(), kv => kv.Value);
+            Dictionary<string, HashSet<string>> headers = options.Headers.ToDictionary(
+                kv => kv.Key.ToLowerInvariant(), kv => new HashSet<string>(kv.Value));
 
             return new UpstreamHeaderRoutingOptions(headers, mode);
         }

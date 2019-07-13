@@ -10,9 +10,7 @@ namespace Ocelot.UnitTests.Configuration
     public class UpstreamRoutingHeadersTests
     {
         private Dictionary<string, HashSet<string>> _headersDictionary;
-
         private UpstreamRoutingHeaders _upstreamRoutingHeaders;
-
         private IHeaderDictionary _requestHeaders;
 
         [Fact]

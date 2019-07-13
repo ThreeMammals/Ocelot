@@ -48,6 +48,40 @@ namespace Ocelot.Configuration
             return true;
         }
 
-        private Dictionary<string, HashSet<string>> Headers;
+        public override bool Equals(object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+
+            if (!(obj is UpstreamRoutingHeaders))
+            {
+                return false;
+            }
+
+            UpstreamRoutingHeaders another = (UpstreamRoutingHeaders)obj;
+            if (Headers.Count != another.Headers.Count)
+            {
+                return false;
+            }
+
+            foreach (var item in Headers)
+            {
+                if (!another.Headers.TryGetValue(item.Key, out var anotherValue))
+                {
+                    return false;
+                }
+
+                if (!item.Value.SetEquals(anotherValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public Dictionary<string, HashSet<string>> Headers { get; private set; }
     }
 }
