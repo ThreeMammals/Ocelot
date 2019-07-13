@@ -10,6 +10,8 @@ namespace Ocelot.Configuration
             Mode = mode;
         }
 
+        public bool Enabled() => !Headers.Empty();
+
         public UpstreamRoutingHeaders Headers { get; private set; }
 
         public UpstreamHeaderRoutingCombinationMode Mode { get; private set; }

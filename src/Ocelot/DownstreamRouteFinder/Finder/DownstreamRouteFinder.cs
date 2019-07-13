@@ -57,7 +57,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             return (reRoute.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(reRoute, httpMethod)) &&
                    (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost) &&
-                   (reRoute.UpstreamHeaderRoutingOptions.Headers.Empty() || RouteHasRequiredUpstreamHeaders(reRoute, requestHeaders));
+                   (reRoute.UpstreamHeaderRoutingOptions == null || !reRoute.UpstreamHeaderRoutingOptions.Enabled() || RouteHasRequiredUpstreamHeaders(reRoute, requestHeaders));
         }
 
         private bool RouteHasHttpMethod(ReRoute reRoute, string httpMethod)
