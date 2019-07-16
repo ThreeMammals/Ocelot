@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration;
@@ -43,8 +44,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Headers = new Dictionary<string, List<string>>()
                 {
-                    { "header1", new List<string>() { "value1", "value2" }},
-                    { "header2", new List<string>() { "value3" }},
+                    { "Header1", new List<string>() { "Value1", "Value2" }},
+                    { "Header2", new List<string>() { "Value3" }},
                 },
                 CombinationMode = "all",
             };
@@ -57,7 +58,13 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheCreatedMatchesThis(UpstreamHeaderRoutingOptions expected)
         {
-            _upstreamHeaderRoutingOptions.Headers.ShouldBe(expected.Headers);
+            _upstreamHeaderRoutingOptions.Headers.Headers.Count.ShouldBe(expected.Headers.Headers.Count);
+            foreach (KeyValuePair<string, HashSet<string>> pair in _upstreamHeaderRoutingOptions.Headers.Headers)
+            {
+                expected.Headers.Headers.TryGetValue(pair.Key, out var expectedValue).ShouldBe(true);
+                expectedValue.SetEquals(pair.Value).ShouldBe(true);
+            }
+
             _upstreamHeaderRoutingOptions.Mode.ShouldBe(expected.Mode);
         }
     }

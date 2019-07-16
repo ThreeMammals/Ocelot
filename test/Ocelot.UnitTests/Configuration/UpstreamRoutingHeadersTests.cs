@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 using TestStack.BDDfy;
+using Shouldly;
 using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Configuration
@@ -84,8 +86,8 @@ namespace Ocelot.UnitTests.Configuration
         {
             _headersDictionary = new Dictionary<string, HashSet<string>>()
             {
-                { "testHeader1", new HashSet<string>() { "testHeader1Value1", "testHeader1Value2" } },
-                { "testHeader2", new HashSet<string>() { "testHeader1Value1", "testHeader2Value2" } },
+                { "testheader1", new HashSet<string>() { "testheader1value1", "testheader1value2" } },
+                { "testheader2", new HashSet<string>() { "testheader1Value1", "testheader2value2" } },
             };
         }
 
@@ -125,17 +127,17 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenEmptyIs(bool expected)
         {
-            Assert.True(_upstreamRoutingHeaders.Empty() == expected);
+            _upstreamRoutingHeaders.Empty().ShouldBe(expected);
         }
 
         private void ThenHasAnyOfIs(bool expected)
         {
-            Assert.True(_upstreamRoutingHeaders.HasAnyOf(_requestHeaders) == expected);
+            _upstreamRoutingHeaders.HasAnyOf(_requestHeaders).ShouldBe(expected);
         }
 
         private void ThenHasAllOfIs(bool expected)
         {
-            Assert.True(_upstreamRoutingHeaders.HasAllOf(_requestHeaders) == expected);
+            _upstreamRoutingHeaders.HasAllOf(_requestHeaders).ShouldBe(expected);
         }
     }
 }

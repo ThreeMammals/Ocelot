@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Ocelot.Configuration
 {
@@ -14,9 +16,10 @@ namespace Ocelot.Configuration
 
         public bool HasAnyOf(IHeaderDictionary requestHeaders)
         {
+            IHeaderDictionary lowerCaseHeaders = GetLowerCaseHeaders(requestHeaders);
             foreach (KeyValuePair<string, HashSet<string>> h in Headers)
             {
-                if (requestHeaders.TryGetValue(h.Key, out var values))
+                if (lowerCaseHeaders.TryGetValue(h.Key, out var values))
                 {
                     HashSet<string> requestHeaderValues = new HashSet<string>(values);
                     if (h.Value.Overlaps(requestHeaderValues))
@@ -31,9 +34,10 @@ namespace Ocelot.Configuration
 
         public bool HasAllOf(IHeaderDictionary requestHeaders)
         {
+            IHeaderDictionary lowerCaseHeaders = GetLowerCaseHeaders(requestHeaders);
             foreach (KeyValuePair<string, HashSet<string>> h in Headers)
             {
-                if (!requestHeaders.TryGetValue(h.Key, out var values))
+                if (!lowerCaseHeaders.TryGetValue(h.Key, out var values))
                 {
                     return false;
                 }
@@ -48,38 +52,17 @@ namespace Ocelot.Configuration
             return true;
         }
 
-        public override bool Equals(object obj)
+        private IHeaderDictionary GetLowerCaseHeaders(IHeaderDictionary headers)
         {
-            if (this == obj)
+            IHeaderDictionary lowerCaseHeaders = new HeaderDictionary();
+            foreach (KeyValuePair<string, StringValues> kv in headers)
             {
-                return true;
+                string key = kv.Key.ToLowerInvariant();
+                StringValues values = new StringValues(kv.Value.Select(v => v.ToLowerInvariant()).ToArray());
+                lowerCaseHeaders.Add(key, values);
             }
 
-            if (!(obj is UpstreamRoutingHeaders))
-            {
-                return false;
-            }
-
-            UpstreamRoutingHeaders another = (UpstreamRoutingHeaders)obj;
-            if (Headers.Count != another.Headers.Count)
-            {
-                return false;
-            }
-
-            foreach (var item in Headers)
-            {
-                if (!another.Headers.TryGetValue(item.Key, out var anotherValue))
-                {
-                    return false;
-                }
-
-                if (!item.Value.SetEquals(anotherValue))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return lowerCaseHeaders;
         }
 
         public Dictionary<string, HashSet<string>> Headers { get; private set; }

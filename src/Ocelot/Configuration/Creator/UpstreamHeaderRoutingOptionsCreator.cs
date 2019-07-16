@@ -17,7 +17,8 @@ namespace Ocelot.Configuration.Creator
             }
 
             Dictionary<string, HashSet<string>> headers = options.Headers.ToDictionary(
-                kv => kv.Key.ToLowerInvariant(), kv => new HashSet<string>(kv.Value));
+                kv => kv.Key.ToLowerInvariant(),
+                kv => new HashSet<string>(kv.Value.Select(v => v.ToLowerInvariant())));
 
             return new UpstreamHeaderRoutingOptions(headers, mode);
         }
