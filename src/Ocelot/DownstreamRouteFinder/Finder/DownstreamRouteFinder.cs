@@ -67,15 +67,18 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private bool RouteHasRequiredUpstreamHeaders(ReRoute reRoute, IHeaderDictionary requestHeaders)
         {
+            bool result = false;
             switch (reRoute.UpstreamHeaderRoutingOptions.Mode)
             {
                 case UpstreamHeaderRoutingCombinationMode.Any:
-                    return reRoute.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders);
+                    result = reRoute.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders);
+                    break;
                 case UpstreamHeaderRoutingCombinationMode.All:
-                    return reRoute.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
+                    result = reRoute.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
+                    break;
             }
 
-            return false;
+            return result;
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, string query, ReRoute reRoute)
