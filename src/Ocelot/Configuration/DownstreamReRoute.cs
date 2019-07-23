@@ -28,6 +28,7 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries,
             List<ClaimToThing> claimsToHeaders,
             List<ClaimToThing> claimsToClaims,
+            List<ClaimToThing> claimsToPath,
             bool isAuthenticated,
             bool isAuthorised,
             AuthenticationOptions authenticationOptions,
@@ -63,6 +64,7 @@ namespace Ocelot.Configuration
             ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
             ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
+            ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
             IsAuthenticated = isAuthenticated;
             IsAuthorised = isAuthorised;
             AuthenticationOptions = authenticationOptions;
@@ -93,6 +95,7 @@ namespace Ocelot.Configuration
         public List<ClaimToThing> ClaimsToQueries { get; }
         public List<ClaimToThing> ClaimsToHeaders { get; }
         public List<ClaimToThing> ClaimsToClaims { get; }
+        public List<ClaimToThing> ClaimsToPath { get; }
         public bool IsAuthenticated { get; }
         public bool IsAuthorised { get; }
         public AuthenticationOptions AuthenticationOptions { get; }

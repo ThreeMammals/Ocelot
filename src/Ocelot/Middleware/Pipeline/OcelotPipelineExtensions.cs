@@ -7,6 +7,7 @@ using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer.Middleware;
+using Ocelot.PathManipulation.Middleware;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.RateLimit.Middleware;
 using Ocelot.Request.Middleware;
@@ -117,6 +118,8 @@ namespace Ocelot.Middleware.Pipeline
 
             // Now we can run any claims to query string transformation middleware
             builder.UseClaimsToQueryStringMiddleware();
+
+            builder.UseClaimsToDownstreamPathMiddleware();
 
             // Get the load balancer for this request
             builder.UseLoadBalancingMiddleware();
