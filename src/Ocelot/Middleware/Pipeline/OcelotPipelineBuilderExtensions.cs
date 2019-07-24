@@ -79,12 +79,12 @@ namespace Ocelot.Middleware.Pipeline
                     var diagnosticListener = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
                     var middlewareName = ocelotDelegate.Target.GetType().Name;
 
-                    OcelotRequestDelegate wrapped = context =>
+                    OcelotRequestDelegate wrapped = async context =>
                     {
                         try
                         {
                             Write(diagnosticListener, "Ocelot.MiddlewareStarted", middlewareName, context);
-                            return ocelotDelegate(context);
+                            await ocelotDelegate(context);
                         }
                         catch (Exception ex)
                         {
