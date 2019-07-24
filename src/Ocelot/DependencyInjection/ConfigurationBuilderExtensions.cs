@@ -42,14 +42,14 @@ namespace Ocelot.DependencyInjection
 
             string subConfigPattern = $@"^ocelot\.([a-zA-Z0-9]+|[a-zA-Z0-9]+\.{env?.EnvironmentName})\.json$";
 
-            var reg = new System.Text.RegularExpressions.Regex(subConfigPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
+            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
                 .Where(fi => reg.IsMatch(fi.Name))
                 .ToList();
 
-            var fileConfiguration = new Ocelot.Configuration.File.FileConfiguration();
+            var fileConfiguration = new FileConfiguration();
 
             foreach (var file in files)
             {
@@ -60,7 +60,7 @@ namespace Ocelot.DependencyInjection
 
                 var lines = File.ReadAllText(file.FullName);
 
-                var config = Newtonsoft.Json.JsonConvert.DeserializeObject<Ocelot.Configuration.File.FileConfiguration>(lines);
+                var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
                 if (file.Name.Equals(globalConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
@@ -71,7 +71,7 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.ReRoutes.AddRange(config.ReRoutes);
             }
 
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(fileConfiguration);
+            var json = JsonConvert.SerializeObject(fileConfiguration);
 
             File.WriteAllText(primaryConfigFile, json);
 
