@@ -34,11 +34,16 @@
             return new OkResponse<string>(value);
         }
 
-        public Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType)
+        public Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType, string delimiter = null)
         {
             List<string> values = new List<string>();
 
             values.AddRange(claims.Where(x => x.Type == claimType).Select(x => x.Value).ToList());
+
+            if (!string.IsNullOrEmpty(delimiter))
+            {
+                values = values.SelectMany(delimitedValue => delimitedValue.Split(delimiter.ToCharArray())).ToList();
+            }
 
             return new OkResponse<List<string>>(values);
         }

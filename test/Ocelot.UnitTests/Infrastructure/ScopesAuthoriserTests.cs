@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_match_scopes_and_return_ok_result()
+        public void should_match_scope_and_return_ok_result()
         {
             var claimsPrincipal = new ClaimsPrincipal();
             var allowedScopes = new List<string>() { "someScope" };
@@ -69,6 +69,21 @@ namespace Ocelot.UnitTests.Infrastructure
             .When(_ => WhenIAuthorise())
             .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
             .BDDfy();
+        }
+
+        [Fact]
+        public void should_match_single_scope_from_multiscope_claim_and_return_ok_result()
+        {
+            var claimsPrincipal = new ClaimsPrincipal();
+            var allowedScopes = new List<string>() { "someScope" };
+            var scopesFromClaims = new List<string>() { "someOtherScope1", "someScope", "someOtherScope2" };
+
+            this.Given(_ => GivenTheFollowing(claimsPrincipal))
+                .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(scopesFromClaims)))
+                .And(_ => GivenTheFollowing(allowedScopes))
+                .When(_ => WhenIAuthorise())
+                .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
+                .BDDfy();
         }
 
         [Fact]
@@ -89,7 +104,7 @@ namespace Ocelot.UnitTests.Infrastructure
 
         private void GivenTheParserReturns(Response<List<string>> response)
         {
-            _parser.Setup(x => x.GetValuesByClaimType(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>())).Returns(response);
+            _parser.Setup(x => x.GetValuesByClaimType(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>(), It.IsAny<string>())).Returns(response);
         }
 
         private void GivenTheFollowing(ClaimsPrincipal principal)

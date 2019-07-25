@@ -24,7 +24,7 @@ namespace Ocelot.Authorisation
                 return new OkResponse<bool>(true);
             }
 
-            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, _scope);
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, _scope, " ");
 
             if (values.IsError)
             {
