@@ -40,13 +40,15 @@ namespace Ocelot.DependencyInjection
 
             const string globalConfigFile = "ocelot.global.json";
 
-            string subConfigPattern = $@"^ocelot\.([a-zA-Z0-9]+|[a-zA-Z0-9]+\.{env?.EnvironmentName})\.json$";
+            const string subConfigPattern = @"^ocelot\.[a-zA-Z0-9]+\.json$";
+
+            string excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
             var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
-                .Where(fi => reg.IsMatch(fi.Name))
+                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
                 .ToList();
 
             var fileConfiguration = new FileConfiguration();
