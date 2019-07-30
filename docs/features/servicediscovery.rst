@@ -22,12 +22,13 @@ Then add the following to your ConfigureServices method.
     s.AddOcelot()
         .AddConsul();
 
-The following is required in the GlobalConfiguration. The Provider is required and if you do not specify a host and port the Consul default
+The following is required in the GlobalConfiguration. The Provider is required and if you do not specify a scheme, host and port the Consul default
 will be used.
 
 .. code-block:: json
 
     "ServiceDiscoveryProvider": {
+        "Scheme": "http",
         "Host": "localhost",
         "Port": 8500,
         "Type": "Consul"
@@ -59,6 +60,7 @@ A lot of people have asked me to implement a feature where Ocelot polls Consul f
 .. code-block:: json
 
     "ServiceDiscoveryProvider": {
+        "Scheme": "http",
         "Host": "localhost",
         "Port": 8500,
         "Type": "PollConsul",
@@ -102,6 +104,7 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
 .. code-block:: json
 
     "ServiceDiscoveryProvider": {
+        "Scheme": "http",
         "Host": "localhost",
         "Port": 8500,
         "Token": "footoken",
@@ -177,6 +180,7 @@ The config might look something like
         "GlobalConfiguration": {
             "RequestIdKey": null,
             "ServiceDiscoveryProvider": {
+                "Scheme": "http",
                 "Host": "localhost",
                 "Port": 8500,
                 "Type": "Consul",
@@ -230,6 +234,7 @@ Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting r
         "GlobalConfiguration": {
             "RequestIdKey": null,
             "ServiceDiscoveryProvider": {
+                "Scheme": "http",
                 "Host": "localhost",
                 "Port": 8523,
                 "Type": "Consul"

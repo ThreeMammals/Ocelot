@@ -156,6 +156,7 @@ finds your Consul agent and interacts to load and store the configuration from C
 
     "GlobalConfiguration": {
         "ServiceDiscoveryProvider": {
+            "Scheme": "http",
             "Host": "localhost",
             "Port": 9500
         }
@@ -185,6 +186,7 @@ If you are using Consul for configuration (or other providers in the future) you
 
     "GlobalConfiguration": {
         "ServiceDiscoveryProvider": {
+            "Scheme": "http",
             "Host": "localhost",
             "Port": 9500,
             "ConfigurationKey": "Oceolot_A"
