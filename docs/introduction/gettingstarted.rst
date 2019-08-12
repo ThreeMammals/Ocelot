@@ -42,6 +42,9 @@ AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot m
 
 .. code-block:: csharp
 
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
+    
     public class Program
     {
         public static void Main(string[] args)
