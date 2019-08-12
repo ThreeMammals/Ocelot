@@ -25,6 +25,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Multiplexer;
+    using Ocelot.PathManipulation;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;
     using Ocelot.Request.Creator;
@@ -92,6 +93,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
             Services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
             Services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
+            Services.TryAddSingleton<IChangeDownstreamPathTemplate, ChangeDownstreamPathTemplate>();
             Services.TryAddSingleton<IClaimsParser, ClaimsParser>();
             Services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();

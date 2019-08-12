@@ -19,6 +19,7 @@ namespace Ocelot.Configuration.Builder
         private Dictionary<string, string> _routeClaimRequirement;
         private bool _isAuthorised;
         private List<ClaimToThing> _claimToQueries;
+        private List<ClaimToThing> _claimToDownstreamPath;
         private string _requestIdHeaderKey;
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
@@ -127,6 +128,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithClaimsToDownstreamPath(List<ClaimToThing> input)
+        {
+            _claimToDownstreamPath = input;
+            return this;
+        }
+
         public DownstreamReRouteBuilder WithIsCached(bool input)
         {
             _isCached = input;
@@ -186,7 +193,7 @@ namespace Ocelot.Configuration.Builder
             _serviceName = serviceName;
             return this;
         }
-        
+
         public DownstreamReRouteBuilder WithServiceNamespace(string serviceNamespace)
         {
             _serviceNamespace = serviceNamespace;
@@ -265,6 +272,7 @@ namespace Ocelot.Configuration.Builder
                 _claimToQueries,
                 _claimsToHeaders,
                 _claimToClaims,
+                _claimToDownstreamPath,
                 _isAuthenticated,
                 _isAuthorised,
                 _authenticationOptions,
