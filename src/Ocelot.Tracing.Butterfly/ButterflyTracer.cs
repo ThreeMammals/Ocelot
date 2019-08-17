@@ -6,10 +6,12 @@
     using Infrastructure.Extensions;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -17,14 +19,22 @@
     {
         private readonly IServiceTracer _tracer;
         private const string PrefixSpanId = "ot-spanId";
+        private readonly ButterflyOptions _options;
 
         public ButterflyTracer(IServiceProvider services)
         {
             _tracer = services.GetService<IServiceTracer>();
+            _options = services.GetService<IOptions<ButterflyOptions>>().Value;
         }
 
         public void Event(HttpContext httpContext, string @event)
         {
+            //IgnoredRoutesRegexPatterns 选项过滤
+            var patterns = _options.IgnoredRoutesRegexPatterns;
+            if (patterns == null || patterns.Any(x => Regex.IsMatch(httpContext.Request.Path, x)))
+            {
+                return;
+            }
             // todo - if the user isnt using tracing the code gets here and will blow up on
             // _tracer.Tracer.TryExtract..
             if (_tracer == null)
