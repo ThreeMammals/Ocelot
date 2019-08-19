@@ -24,7 +24,7 @@
         public ButterflyTracer(IServiceProvider services)
         {
             _tracer = services.GetService<IServiceTracer>();
-            _options = services.GetService<IOptions<ButterflyOptions>>().Value;
+            _options = services.GetService<IOptions<ButterflyOptions>>()?.Value;
         }
 
         public void Event(HttpContext httpContext, string @event)
