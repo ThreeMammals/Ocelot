@@ -30,7 +30,7 @@
         public void Event(HttpContext httpContext, string @event)
         {
             //IgnoredRoutesRegexPatterns 选项过滤
-            var patterns = _options.IgnoredRoutesRegexPatterns;
+            var patterns = _options?.IgnoredRoutesRegexPatterns;
             if (patterns == null || patterns.Any(x => Regex.IsMatch(httpContext.Request.Path, x)))
             {
                 return;
