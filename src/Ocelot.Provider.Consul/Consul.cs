@@ -26,11 +26,11 @@
 
         public async Task<List<Service>> Get()
         {
-            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
+            var queryResult = await _consul?.Health?.Service(_config?.KeyOfServiceInConsul, string.Empty, true);
 
             var services = new List<Service>();
 
-            foreach (var serviceEntry in queryResult.Response)
+            foreach (var serviceEntry in queryResult?.Response ?? new ServiceEntry[] { })
             {
                 if (IsValid(serviceEntry))
                 {
