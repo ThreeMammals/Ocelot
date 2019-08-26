@@ -20,7 +20,7 @@ In your ocelot.json set the following in the GlobalConfiguration section. This w
     "RequestIdKey": "OcRequestId"
   }
 
-I reccomend using the GlobalConfiguration unless you really need it to be ReRoute specific.
+I recommend using the GlobalConfiguration unless you really need it to be ReRoute specific.
 
 *ReRoute*
 
