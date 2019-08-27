@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using Ocelot.Infrastructure;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
@@ -136,6 +137,16 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_replace_iplaceholder()
+        {
+            this.Given(x => x.WhenISetUpOcelotServices())
+                .When(x => AddConfigPlaceholders())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .And(x => ThenTheIPlaceholderInstanceIsReplaced())
+                .BDDfy();
+        }
+
         private void AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
@@ -146,6 +157,11 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddTransientDefinedAggregator<T>();
+        }
+
+        private void AddConfigPlaceholders()
+        {
+            _ocelotBuilder.AddConfigPlaceholders();
         }
 
         private void ThenTheSpecificHandlersAreTransient()
@@ -233,6 +249,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void ThenAnOcelotBuilderIsReturned()
         {
             _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
+        }
+
+        private void ThenTheIPlaceholderInstanceIsReplaced()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var placeholders = _serviceProvider.GetService<IPlaceholders>();
+            placeholders.ShouldBeOfType<ConfigAwarePlaceholders>();
         }
 
         private void WhenISetUpOcelotServices()

@@ -37,6 +37,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.Security.IPSecurity;
     using Ocelot.ServiceDiscovery;
     using System;
+    using System.Linq;
     using System.Net.Http;
     using System.Reflection;
 
@@ -207,6 +208,22 @@ namespace Ocelot.DependencyInjection
                 Services.AddTransient<DelegatingHandler, THandler>();
             }
 
+            return this;
+        }
+
+        public IOcelotBuilder AddConfigPlaceholders()
+        {
+            var service = Services.First(x => x.ServiceType == typeof(IPlaceholders));
+            var placeholders = (IPlaceholders)service.ImplementationInstance;
+
+            var descriptor = new ServiceDescriptor(
+                typeof(IPlaceholders),
+                serviceProvider =>
+                    new ConfigAwarePlaceholders(serviceProvider.GetService<IConfiguration>(), placeholders),
+                ServiceLifetime.Singleton
+            );
+
+            Services.Replace(descriptor);
             return this;
         }
     }
