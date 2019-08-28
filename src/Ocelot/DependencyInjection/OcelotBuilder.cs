@@ -213,18 +213,36 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddConfigPlaceholders()
         {
-            var service = Services.First(x => x.ServiceType == typeof(IPlaceholders));
-            var placeholders = (IPlaceholders)service.ImplementationInstance;
+            // see: https://greatrexpectations.com/2018/10/25/decorators-in-net-core-with-dependency-injection
+            var wrappedDescriptor = Services.First(x => x.ServiceType == typeof(IPlaceholders));
+            
+            var objectFactory = ActivatorUtilities.CreateFactory(
+                typeof(ConfigAwarePlaceholders),
+                new[] { typeof(IPlaceholders) });
 
-            var descriptor = new ServiceDescriptor(
+            Services.Replace(ServiceDescriptor.Describe(
                 typeof(IPlaceholders),
-                serviceProvider =>
-                    new ConfigAwarePlaceholders(serviceProvider.GetService<IConfiguration>(), placeholders),
-                ServiceLifetime.Singleton
-            );
+                s => (IPlaceholders) objectFactory(s,
+                    new[] {CreateInstance(s, wrappedDescriptor)}),
+                wrappedDescriptor.Lifetime
+            ));
 
-            Services.Replace(descriptor);
             return this;
+        }
+        
+        private static object CreateInstance(IServiceProvider services, ServiceDescriptor descriptor)
+        {
+            if (descriptor.ImplementationInstance != null)
+            {
+                return descriptor.ImplementationInstance;
+            }
+
+            if (descriptor.ImplementationFactory != null)
+            {
+                return descriptor.ImplementationFactory(services);
+            }
+
+            return ActivatorUtilities.GetServiceOrCreateInstance(services, descriptor.ImplementationType);
         }
     }
 }
