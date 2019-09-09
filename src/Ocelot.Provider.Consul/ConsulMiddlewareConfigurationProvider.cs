@@ -29,7 +29,7 @@
 
         private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
         {
-            return fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository);
+            return typeof(IFileConfigurationRepository).IsInstanceOfType(fileConfigRepo);
         }
 
         private static async Task SetFileConfigInConsul(IApplicationBuilder builder,
