@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Description>This package provides methods to integrate Butterfly tracing with Ocelot.</Description>
     <AssemblyTitle>Ocelot.Tracing.Butterfly</AssemblyTitle>

@@ -61,7 +61,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -69,8 +69,8 @@ namespace Ocelot.IntegrationTests
                         UpstreamPathTemplate = "/",
                         FileCacheOptions = new FileCacheOptions
                         {
-                            TtlSeconds = 10
-                        }
+                            TtlSeconds = 10,
+                        },
                     },
                     new FileReRoute()
                     {
@@ -80,7 +80,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -88,10 +88,10 @@ namespace Ocelot.IntegrationTests
                         UpstreamPathTemplate = "/test",
                         FileCacheOptions = new FileCacheOptions
                         {
-                            TtlSeconds = 10
-                        }
-                    }
-                }
+                            TtlSeconds = 10,
+                        },
+                    },
+                },
             };
 
             var regionToClear = "gettest";
@@ -118,7 +118,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("client_id", "admin"),
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("grant_type", "client_credentials")
+                new KeyValuePair<string, string>("grant_type", "client_credentials"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -152,7 +152,7 @@ namespace Ocelot.IntegrationTests
                     {
                         s.WithMicrosoftLogging(log =>
                             {
-                                log.AddConsole(LogLevel.Debug);
+                                //log.AddConsole(LogLevel.Debug);
                             })
                             .WithDictionaryHandle();
                     };
