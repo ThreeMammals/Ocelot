@@ -30,6 +30,7 @@ namespace Ocelot.UnitTests.Middleware
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
             _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            _services.AddSingleton<IConfiguration>(_configRoot);
             _services.AddOcelot();
         }
 
