@@ -1,18 +1,18 @@
-﻿namespace Ocelot.Administration
-{
-    using DependencyInjection;
-    using IdentityServer4.AccessTokenValidation;
-    using IdentityServer4.Models;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-    using Ocelot.Middleware;
-    using System;
-    using System.Collections.Generic;
-    using System.IdentityModel.Tokens.Jwt;
-    using System.Security.Cryptography.X509Certificates;
+﻿using Ocelot.DependencyInjection;
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Ocelot.Middleware;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography.X509Certificates;
 
+namespace Ocelot.Administration
+{
     public static class OcelotBuilderExtensions
     {
         public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, string secret)
@@ -86,7 +86,7 @@
             else
             {
                 //todo - refactor so calls method?
-                var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword);
+                var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
                 identityServerBuilder.AddSigningCredential(cert);
             }
         }
