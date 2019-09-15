@@ -44,5 +44,7 @@ namespace Ocelot.DependencyInjection
         IOcelotBuilder AddCustomLoadBalancer<T>(
             Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer;
+
+        IOcelotBuilder AddConfigPlaceholders();
     }
 }

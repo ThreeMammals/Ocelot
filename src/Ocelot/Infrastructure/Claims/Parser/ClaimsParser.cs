@@ -24,7 +24,7 @@
 
             var splits = claimResponse.Data.Split(delimiter.ToCharArray());
 
-            if (splits.Length < index || index < 0)
+            if (splits.Length <= index || index < 0)
             {
                 return new ErrorResponse<string>(new CannotFindClaimError($"Cannot find claim for key: {key}, delimiter: {delimiter}, index: {index}"));
             }

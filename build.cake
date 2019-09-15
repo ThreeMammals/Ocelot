@@ -1,7 +1,7 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
-#addin nuget:?package=Newtonsoft.Json&version=9.0.1
+#addin nuget:?package=Newtonsoft.Json
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
@@ -363,8 +363,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			Information("Release url " + releaseUrl);
 
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
-				.GetValue("assets_url")
-				.Value<string>();
+				.Value<string>("assets_url");
 
 			Information("Assets url " + assets_url);
 
@@ -372,7 +371,7 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			Information("Assets " + assets_url);
 
-			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(assets))
+			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(assets))
 			{
 				Information("In the loop..");
 

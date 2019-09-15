@@ -86,6 +86,8 @@ namespace Ocelot.Configuration.Creator
 
             var claimsToQueries = _claimsToThingCreator.Create(fileReRoute.AddQueriesToRequest);
 
+            var claimsToDownstreamPath = _claimsToThingCreator.Create(fileReRoute.ChangeDownstreamPathTemplate);
+
             var qosOptions = _qosOptionsCreator.Create(fileReRoute.QoSOptions, fileReRoute.UpstreamPathTemplate, fileReRoute.UpstreamHttpMethod);
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute.RateLimitOptions, globalConfiguration);
@@ -114,6 +116,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRouteClaimsRequirement(fileReRoute.RouteClaimsRequirement)
                 .WithIsAuthorised(fileReRouteOptions.IsAuthorised)
                 .WithClaimsToQueries(claimsToQueries)
+                .WithClaimsToDownstreamPath(claimsToDownstreamPath)
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileReRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
