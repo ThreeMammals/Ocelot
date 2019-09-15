@@ -31,8 +31,8 @@
             {
                 var serviceProvider = serviceProviderFactoryResponse.Data;
                 var requestedType = reRoute.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
-                var applicableCreator = _loadBalancerCreators.Single(c => c.Type == requestedType);
-                var createdLoadBalancer = applicableCreator.Create(reRoute, serviceProvider);
+                var creator = _loadBalancerCreators.Single(c => c.Type == requestedType);
+                var createdLoadBalancer = creator.Create(reRoute, serviceProvider);
                 response = new OkResponse<ILoadBalancer>(createdLoadBalancer);
             }
 
