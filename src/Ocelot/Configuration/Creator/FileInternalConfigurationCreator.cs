@@ -70,9 +70,9 @@ namespace Ocelot.Configuration.Creator
             _fileReRouteOptionsCreator = fileReRouteOptionsCreator;
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         }
-        
+
         public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
-        {     
+        {
             var config = await SetUpConfiguration(fileConfiguration);
             return config;
         }
@@ -93,7 +93,7 @@ namespace Ocelot.Configuration.Creator
                 var downstreamReRoute = SetUpDownstreamReRoute(reRoute, fileConfiguration.GlobalConfiguration);
 
                 var ocelotReRoute = SetUpReRoute(reRoute, downstreamReRoute);
-                
+
                 reRoutes.Add(ocelotReRoute);
             }
 
@@ -104,7 +104,7 @@ namespace Ocelot.Configuration.Creator
             }
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
-            
+
             var config = new InternalConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
 
             return new OkResponse<IInternalConfiguration>(config);
@@ -131,6 +131,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoutes(applicableReRoutes)
                 .WithUpstreamHost(aggregateReRoute.UpstreamHost)
+                .WithUpstreamScheme(aggregateReRoute.UpstreamScheme)
                 .WithAggregator(aggregateReRoute.Aggregator)
                 .Build();
 
@@ -147,6 +148,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamTemplatePattern(upstreamTemplatePattern)
                 .WithDownstreamReRoute(downstreamReRoutes)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .WithUpstreamScheme(fileReRoute.UpstreamScheme)
                 .Build();
 
             return reRoute;
@@ -217,6 +219,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
                 .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .WithUpstreamScheme(fileReRoute.UpstreamScheme)
                 .WithDelegatingHandlers(fileReRoute.DelegatingHandlers)
                 .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
                 .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)

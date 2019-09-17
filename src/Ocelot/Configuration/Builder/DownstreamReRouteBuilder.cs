@@ -42,6 +42,7 @@ namespace Ocelot.Configuration.Builder
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
         private string _qosKey;
+        private string _upstreamScheme;
 
         public DownstreamReRouteBuilder()
         {
@@ -60,6 +61,12 @@ namespace Ocelot.Configuration.Builder
         public DownstreamReRouteBuilder WithUpstreamHost(string upstreamAddresses)
         {
             _upstreamHost = upstreamAddresses;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithUpstreamScheme(string upstreamScheme)
+        {
+            _upstreamScheme = upstreamScheme;
             return this;
         }
 
@@ -164,7 +171,7 @@ namespace Ocelot.Configuration.Builder
             _qosOptions = input;
             return this;
         }
-       
+
         public DownstreamReRouteBuilder WithReRouteKey(string reRouteKey)
         {
             _reRouteKey = reRouteKey;
@@ -261,27 +268,27 @@ namespace Ocelot.Configuration.Builder
                 _key,
                 new PathTemplate(_upstreamTemplate),
                 _upstreamHeaderFindAndReplace,
-                _downstreamHeaderFindAndReplace, 
+                _downstreamHeaderFindAndReplace,
                 _downstreamAddresses,
-                _serviceName, 
-                _httpHandlerOptions, 
-                _useServiceDiscovery, 
-                _enableRateLimiting, 
-                _useQos, 
+                _serviceName,
+                _httpHandlerOptions,
+                _useServiceDiscovery,
+                _enableRateLimiting,
+                _useQos,
                 _qosOptions,
-                _downstreamScheme, 
-                _requestIdHeaderKey, 
-                _isCached, 
-                _fileCacheOptions, 
-                _loadBalancerOptions, 
+                _downstreamScheme,
+                _requestIdHeaderKey,
+                _isCached,
+                _fileCacheOptions,
+                _loadBalancerOptions,
                 _rateLimitOptions,
-                _routeClaimRequirement, 
-                _claimToQueries, 
-                _claimsToHeaders, 
+                _routeClaimRequirement,
+                _claimToQueries,
+                _claimsToHeaders,
                 _claimToClaims,
-                _isAuthenticated, 
-                _isAuthorised, 
-                _authenticationOptions, 
+                _isAuthenticated,
+                _isAuthorised,
+                _authenticationOptions,
                 new PathTemplate(_downstreamPathTemplate),
                 _reRouteKey,
                 _delegatingHandlers,

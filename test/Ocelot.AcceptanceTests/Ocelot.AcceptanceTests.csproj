@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -54,6 +54,6 @@
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="Consul" Version="0.7.2.4" />
     <PackageReference Include="xunit" Version="2.3.1" />
-     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /> 
+     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
   </ItemGroup>
 </Project>

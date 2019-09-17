@@ -15,7 +15,7 @@ namespace Ocelot.Configuration.Validator
         {
             RuleFor(configuration => configuration.ReRoutes)
                 .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider));
-                
+
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
@@ -60,7 +60,7 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
-        private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute, 
+        private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute,
             List<FileReRoute> reRoutes)
         {
             var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
@@ -68,12 +68,13 @@ namespace Ocelot.Configuration.Validator
             return reRoutesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }
 
-        private static bool IsNotDuplicateIn(FileReRoute reRoute, 
+        private static bool IsNotDuplicateIn(FileReRoute reRoute,
             List<FileReRoute> reRoutes)
         {
             var matchingReRoutes = reRoutes
-                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate 
-                            && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null))
+                .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
+                            && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null)
+                            && (r.UpstreamScheme != reRoute.UpstreamScheme || reRoute.UpstreamScheme == null))
                 .ToList();
 
             if(matchingReRoutes.Count == 1)
@@ -102,7 +103,8 @@ namespace Ocelot.Configuration.Validator
         {
             var duplicate = aggregateReRoutes
                 .Any(a => a.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
-                            && a.UpstreamHost == reRoute.UpstreamHost
+                          && a.UpstreamHost == reRoute.UpstreamHost
+                          && a.UpstreamScheme == reRoute.UpstreamScheme
                             && reRoute.UpstreamHttpMethod.Select(x => x.ToLower()).Contains("get"));
 
             return !duplicate;

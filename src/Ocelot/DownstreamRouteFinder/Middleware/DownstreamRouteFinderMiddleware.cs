@@ -34,6 +34,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             var upstreamUrlPath = context.HttpContext.Request.Path.ToString();
 
             var upstreamHost = context.HttpContext.Request.Headers["Host"];
+            var upstreamScheme = context.HttpContext.Request.Scheme;
 
             var configuration = _repo.Get();
 
@@ -48,7 +49,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
-            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost);
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.HttpContext.Request.Method, configuration.Data, upstreamHost, upstreamScheme);
 
             if (downstreamRoute.IsError)
             {
@@ -56,8 +57,8 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
                 SetPipelineError(context, downstreamRoute.Errors);
                 return;
-            }            
-            
+            }
+
             var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 

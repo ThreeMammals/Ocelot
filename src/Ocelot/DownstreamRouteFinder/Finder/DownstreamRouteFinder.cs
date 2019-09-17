@@ -18,12 +18,12 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> FindDownstreamRoute(string path, string httpMethod, IInternalConfiguration configuration, string upstreamHost, string upstreamScheme)
         {
             var downstreamRoutes = new List<DownstreamRoute>();
 
             var applicableReRoutes = configuration.ReRoutes
-                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
+                .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost, upstreamScheme))
                 .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
             foreach (var reRoute in applicableReRoutes)
@@ -47,9 +47,11 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(path, httpMethod));
         }
 
-        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
+        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost, string upstreamScheme)
         {
-            return reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower()) && !(!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost);
+            return reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower()) &&
+                   !(!string.IsNullOrEmpty(reRoute.UpstreamHost) && reRoute.UpstreamHost != upstreamHost) &&
+                   !(!string.IsNullOrEmpty(reRoute.UpstreamScheme) && reRoute.UpstreamScheme != upstreamScheme);
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, ReRoute reRoute)

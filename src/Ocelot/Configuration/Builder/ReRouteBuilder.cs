@@ -13,6 +13,7 @@ namespace Ocelot.Configuration.Builder
         private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private string _upstreamHost;
+        private string _upstreamScheme;
         private List<DownstreamReRoute> _downstreamReRoutes;
         private string _aggregator;
 
@@ -36,6 +37,12 @@ namespace Ocelot.Configuration.Builder
         public ReRouteBuilder WithUpstreamHost(string upstreamAddresses)
         {
             _upstreamHost = upstreamAddresses;
+            return this;
+        }
+
+        public ReRouteBuilder WithUpstreamScheme(string upstreamScheme)
+        {
+            _upstreamScheme = upstreamScheme;
             return this;
         }
 
@@ -66,11 +73,12 @@ namespace Ocelot.Configuration.Builder
         public ReRoute Build()
         {
             return new ReRoute(
-                _downstreamReRoutes, 
-                new PathTemplate(_upstreamTemplate), 
-                _upstreamHttpMethod, 
-                _upstreamTemplatePattern, 
+                _downstreamReRoutes,
+                new PathTemplate(_upstreamTemplate),
+                _upstreamHttpMethod,
+                _upstreamTemplatePattern,
                 _upstreamHost,
+                _upstreamScheme,
                 _aggregator
                 );
         }

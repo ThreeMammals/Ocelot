@@ -46,6 +46,7 @@ namespace Ocelot.Configuration.File
         public bool UseServiceDiscovery { get;set; }
         public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
         public string UpstreamHost { get; set; }
+        public string UpstreamScheme { get; set; }
         public string Key { get;set; }
         public List<string> DelegatingHandlers {get;set;}
         public int Priority { get;set; }
