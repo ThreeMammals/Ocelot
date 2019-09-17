@@ -2,10 +2,11 @@ using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using System.Collections.Generic;
-using Ocelot.ServiceDiscovery.Providers;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private DownstreamReRoute _reRoute;
         private readonly LoadBalancerFactory _factory;
-        private ILoadBalancer _result;
+        private Response<ILoadBalancer> _result;
         private readonly Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private ServiceProviderConfiguration _serviceProviderConfig;
@@ -47,7 +48,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -63,7 +64,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -79,7 +80,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("RoundRobin", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -95,7 +96,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var reRoute = new DownstreamReRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("CookieStickySessions", "", 0))
-                .WithUpstreamHttpMethod(new List<string> {"Get"})
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenAReRoute(reRoute))
@@ -115,7 +116,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _serviceProviderFactory
                 .Setup(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamReRoute>()))
-                .Returns(_serviceProvider.Object);
+                .Returns(new OkResponse<IServiceDiscoveryProvider>(_serviceProvider.Object));
         }
 
         private void ThenTheServiceProviderIsCalledCorrectly()
@@ -136,7 +137,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void ThenTheLoadBalancerIsReturned<T>()
         {
-            _result.ShouldBeOfType<T>();
+            _result.Data.ShouldBeOfType<T>();
         }
     }
 }

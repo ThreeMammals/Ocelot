@@ -19,6 +19,7 @@ namespace Ocelot.Request.Middleware
             Headers = _request.Headers;
             AbsolutePath = _request.RequestUri.AbsolutePath;
             Query = _request.RequestUri.Query;
+            Content = _request.Content;
         }
 
         public HttpRequestHeaders Headers { get; }
@@ -37,6 +38,8 @@ namespace Ocelot.Request.Middleware
 
         public string Query { get; set; }
 
+        public HttpContent Content { get; set; }
+
         public HttpRequestMessage ToHttpRequestMessage()
         {
             var uriBuilder = new UriBuilder
@@ -44,7 +47,7 @@ namespace Ocelot.Request.Middleware
                 Port = Port,
                 Host = Host,
                 Path = AbsolutePath,
-                Query = Query,
+                Query = RemoveLeadingQuestionMark(Query),
                 Scheme = Scheme
             };
 
@@ -59,16 +62,26 @@ namespace Ocelot.Request.Middleware
                 Port = Port,
                 Host = Host,
                 Path = AbsolutePath,
-                Query = Query,
+                Query = RemoveLeadingQuestionMark(Query),
                 Scheme = Scheme
             };
 
             return uriBuilder.Uri.AbsoluteUri;
         }
 
-        public override string ToString() 
+        public override string ToString()
         {
             return ToUri();
+        }
+
+        private string RemoveLeadingQuestionMark(string query)
+        {
+            if (!string.IsNullOrEmpty(query) && query.StartsWith("?"))
+            {
+                return query.Substring(1);
+            }
+
+            return query;
         }
     }
 }

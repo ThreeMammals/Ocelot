@@ -1,11 +1,11 @@
 ﻿#tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
-#addin nuget:?package=Newtonsoft.Json&version=9.0.1
+#addin nuget:?package=Newtonsoft.Json
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
-#tool coveralls.net
-#addin Cake.Coveralls
+#tool "nuget:?package=coveralls.net&version=0.7.0"
+#addin Cake.Coveralls&version=0.7.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -17,7 +17,7 @@ var artifactsDir = Directory("artifacts");
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 82d;
+var minCodeCoverage = 80d;
 var coverallsRepoToken = "coveralls-repo-token-ocelot";
 var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
 
@@ -263,14 +263,31 @@ Task("CreatePackages")
 	.Does(() => 
 	{
 		EnsureDirectoryExists(packagesDir);
-		CopyFiles("./src/**/Ocelot.*.nupkg", packagesDir);
+
+		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
 		//GenerateReleaseNotes(releaseNotesFile);
 
-        System.IO.File.WriteAllLines(artifactsFile, new[]{
-            "nuget:Ocelot." + buildVersion + ".nupkg",
-            //"releaseNotes:releasenotes.md"
-        });
+		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+
+		foreach(var projectFile in projectFiles)
+		{
+			System.IO.File.AppendAllLines(artifactsFile, new[]{
+				projectFile.GetFilename().FullPath,
+				//"releaseNotes:releasenotes.md"
+			});
+		}
+
+		var artifacts = System.IO.File
+			.ReadAllLines(artifactsFile)
+			.Distinct();
+		
+		foreach(var artifact in artifacts)
+		{
+			var codePackage = packagesDir + File(artifact);
+
+			Information("Created package " + codePackage);
+		}
 
 		if (AppVeyor.IsRunningOnAppVeyor)
 		{
@@ -345,11 +362,8 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			Information("Release url " + releaseUrl);
 
-			//var releaseJson = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl));            
-
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
-				.GetValue("assets_url")
-				.Value<string>();
+				.Value<string>("assets_url");
 
 			Information("Assets url " + assets_url);
 
@@ -357,7 +371,7 @@ Task("DownloadGitHubReleaseArtifacts")
 
 			Information("Assets " + assets_url);
 
-			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<JArray>(assets))
+			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(assets))
 			{
 				Information("In the loop..");
 
@@ -451,21 +465,23 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 {
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
-            .Select(l => l.Split(':'))
-            .ToDictionary(v => v[0], v => v[1]);
-
-		var codePackage = packagesDir + File(artifacts["nuget"]);
-
-		Information("Pushing package " + codePackage);
+			.Distinct();
 		
-		Information("Calling NuGetPush");
+		foreach(var artifact in artifacts)
+		{
+			var codePackage = packagesDir + File(artifact);
 
-        NuGetPush(
-            codePackage,
-            new NuGetPushSettings {
-                ApiKey = feedApiKey,
-                Source = codeFeedUrl
-            });
+			Information("Pushing package " + codePackage);
+			
+			Information("Calling NuGetPush");
+
+			NuGetPush(
+				codePackage,
+				new NuGetPushSettings {
+					ApiKey = feedApiKey,
+					Source = codeFeedUrl
+				});
+		}
 }
 
 /// gets the resource from the specified url

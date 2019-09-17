@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -47,7 +46,7 @@ namespace Ocelot.UnitTests.Configuration
                     new FileHostAndPort
                     {
                         Host = "test",
-                        Port = 80                    
+                        Port = 80
                     }
                 },
             };
@@ -88,7 +87,7 @@ namespace Ocelot.UnitTests.Configuration
                 new DownstreamHostAndPort("test", 80),
                 new DownstreamHostAndPort("west", 443)
             };
-            
+
             this.Given(x => GivenTheFollowingReRoute(reRoute))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))

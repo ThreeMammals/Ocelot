@@ -1,54 +1,27 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace Ocelot.Requester
+﻿namespace Ocelot.Requester
 {
+    using Configuration;
+    using System;
+    using System.Collections.Concurrent;
+
     public class MemoryHttpClientCache : IHttpClientCache
     {
-        private readonly ConcurrentDictionary<string, ConcurrentQueue<IHttpClient>> _httpClientsCache = new ConcurrentDictionary<string, ConcurrentQueue<IHttpClient>>();
+        private readonly ConcurrentDictionary<DownstreamReRoute, IHttpClient> _httpClientsCache;
 
-        public void Set(string id, IHttpClient client, TimeSpan expirationTime)
+        public MemoryHttpClientCache()
         {
-            ConcurrentQueue<IHttpClient> connectionQueue;
-            if (_httpClientsCache.TryGetValue(id, out connectionQueue))
-            {
-                connectionQueue.Enqueue(client);
-            }
-            else
-            {
-                connectionQueue = new ConcurrentQueue<IHttpClient>();
-                connectionQueue.Enqueue(client);
-                _httpClientsCache.TryAdd(id, connectionQueue);
-            }
+            _httpClientsCache = new ConcurrentDictionary<DownstreamReRoute, IHttpClient>();
         }
 
-        public bool Exists(string id)
+        public void Set(DownstreamReRoute key, IHttpClient client, TimeSpan expirationTime)
         {
-            ConcurrentQueue<IHttpClient> connectionQueue;
-            return _httpClientsCache.TryGetValue(id, out connectionQueue);
+            _httpClientsCache.AddOrUpdate(key, client, (k, oldValue) => client);
         }
 
-        public IHttpClient Get(string id)
+        public IHttpClient Get(DownstreamReRoute key)
         {
-            IHttpClient client= null;
-            ConcurrentQueue<IHttpClient> connectionQueue;
-            if (_httpClientsCache.TryGetValue(id, out connectionQueue))
-            {
-                connectionQueue.TryDequeue(out client);
-            }
-
-            return client;
+            //todo handle error?
+            return _httpClientsCache.TryGetValue(key, out var client) ? client : null;
         }
-
-        public void Remove(string id)
-        {
-            ConcurrentQueue<IHttpClient> connectionQueue;
-            _httpClientsCache.TryRemove(id, out connectionQueue);
-        }        
     }
 }

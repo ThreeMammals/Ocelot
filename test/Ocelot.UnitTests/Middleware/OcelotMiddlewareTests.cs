@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.UnitTests.Responder;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -66,7 +65,7 @@ namespace Ocelot.UnitTests.Middleware
 
     public class FakeMiddleware : OcelotMiddleware
     {
-        public FakeMiddleware(IOcelotLogger logger) 
+        public FakeMiddleware(IOcelotLogger logger)
             : base(logger)
         {
         }

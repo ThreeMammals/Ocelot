@@ -1,14 +1,15 @@
 namespace Ocelot.DependencyInjection
 {
-    using System;
-    using System.Collections.Generic;
+    using Configuration.File;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Configuration.Memory;
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using Configuration.File;
-    using Newtonsoft.Json;
 
     public static class ConfigurationBuilderExtensions
     {
@@ -28,32 +29,42 @@ namespace Ocelot.DependencyInjection
             return builder;
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IHostingEnvironment env)
         {
-            const string pattern = "(?i)ocelot.([a-zA-Z0-9]*).json";
+            return builder.AddOcelot(".", env);
+        }
 
-            var reg = new Regex(pattern);
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IHostingEnvironment env)
+        {
+            const string primaryConfigFile = "ocelot.json";
 
-            var files = Directory.GetFiles(".")
-                .Where(path => reg.IsMatch(path))
+            const string globalConfigFile = "ocelot.global.json";
+
+            const string subConfigPattern = @"^ocelot\.[a-zA-Z0-9]+\.json$";
+
+            string excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
+
+            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var files = new DirectoryInfo(folder)
+                .EnumerateFiles()
+                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
                 .ToList();
 
             var fileConfiguration = new FileConfiguration();
 
             foreach (var file in files)
             {
-                // windows and unix sigh...
-                if(files.Count > 1 && (file == "./ocelot.json" || file == ".\\ocelot.json"))
+                if (files.Count > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                var lines = File.ReadAllText(file);
-                
+                var lines = File.ReadAllText(file.FullName);
+
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
-                // windows and unix sigh...
-                if (file == "./ocelot.global.json" || file == ".\\ocelot.global.json")
+                if (file.Name.Equals(globalConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
                 }
@@ -64,9 +75,9 @@ namespace Ocelot.DependencyInjection
 
             var json = JsonConvert.SerializeObject(fileConfiguration);
 
-            File.WriteAllText("ocelot.json", json);
+            File.WriteAllText(primaryConfigFile, json);
 
-            builder.AddJsonFile("ocelot.json");
+            builder.AddJsonFile(primaryConfigFile, false, false);
 
             return builder;
         }

@@ -1,9 +1,9 @@
 ﻿namespace Ocelot.Request.Mapper
 {
-    using System.Net.Http;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Responses;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     public interface IRequestMapper
     {

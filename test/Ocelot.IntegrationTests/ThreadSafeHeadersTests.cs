@@ -1,23 +1,20 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Shouldly;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Shouldly;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using CacheManager.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 
 namespace Ocelot.IntegrationTests
 {
@@ -106,25 +103,14 @@ namespace Ocelot.IntegrationTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(x =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (s) =>
-                    {
-                        s.WithMicrosoftLogging(log =>
-                            {
-                                log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithDictionaryHandle();
-                    };
-
-                    x.AddOcelot()
-                        .AddCacheManager(settings)
-                        .AddAdministration("/administration", "secret");
+                    x.AddOcelot();
                 })
                 .Configure(app =>
                 {
@@ -190,7 +176,7 @@ namespace Ocelot.IntegrationTests
 
         private void ThenTheSameHeaderValuesAreReturnedByTheDownstreamService()
         {
-            foreach(var result in _results)
+            foreach (var result in _results)
             {
                 result.Result.ShouldBe(result.Random);
             }
@@ -203,7 +189,7 @@ namespace Ocelot.IntegrationTests
             _downstreamBuilder?.Dispose();
         }
 
-        class ThreadSafeHeadersTestResult
+        private class ThreadSafeHeadersTestResult
         {
             public ThreadSafeHeadersTestResult(int result, int random)
             {

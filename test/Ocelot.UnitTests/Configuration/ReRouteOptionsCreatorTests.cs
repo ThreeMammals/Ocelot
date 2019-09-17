@@ -1,17 +1,17 @@
-using System.Collections.Generic;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Configuration
 {
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Shouldly;
+    using System.Collections.Generic;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class ReRouteOptionsCreatorTests
     {
-        private ReRouteOptionsCreator _creator;
+        private readonly ReRouteOptionsCreator _creator;
         private FileReRoute _reRoute;
         private ReRouteOptions _result;
 
@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _creator = new ReRouteOptionsCreator();
         }
-        
+
         [Fact]
         public void should_create_re_route_options()
         {
@@ -28,11 +28,6 @@ namespace Ocelot.UnitTests.Configuration
                 RateLimitOptions = new FileRateLimitRule
                 {
                     EnableRateLimiting = true
-                },
-                QoSOptions = new FileQoSOptions
-                {
-                    ExceptionsAllowedBeforeBreaking = 1,
-                    TimeoutValue = 1
                 },
                 AuthenticationOptions = new FileAuthenticationOptions()
                 {
@@ -45,15 +40,16 @@ namespace Ocelot.UnitTests.Configuration
                 FileCacheOptions = new FileCacheOptions
                 {
                     TtlSeconds = 1
-                }
+                },
+                ServiceName = "west"
             };
 
             var expected = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(true)
                 .WithIsAuthorised(true)
                 .WithIsCached(true)
-                .WithIsQos(true)
                 .WithRateLimiting(true)
+                .WithUseServiceDiscovery(true)
                 .Build();
 
             this.Given(x => x.GivenTheFollowing(reRoute))
@@ -76,9 +72,9 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
             _result.IsAuthorised.ShouldBe(expected.IsAuthorised);
-            _result.IsQos.ShouldBe(expected.IsQos);
             _result.IsCached.ShouldBe(expected.IsCached);
             _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+            _result.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
         }
     }
 }

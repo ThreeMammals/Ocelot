@@ -1,13 +1,9 @@
-﻿using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 using System.Linq;
 using System.Threading.Tasks;
-using Ocelot.Infrastructure.RequestData;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Logging;
-using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.Middleware;
 
 namespace Ocelot.RateLimit.Middleware
 {
@@ -20,7 +16,7 @@ namespace Ocelot.RateLimit.Middleware
         public ClientRateLimitMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRateLimitCounterHandler counterHandler)
-                :base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
+                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
             _counterHandler = counterHandler;
@@ -30,7 +26,7 @@ namespace Ocelot.RateLimit.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             var options = context.DownstreamReRoute.RateLimitOptions;
-            
+
             // check if rate limiting is enabled
             if (!context.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
@@ -66,9 +62,12 @@ namespace Ocelot.RateLimit.Middleware
                     LogBlockedRequest(context.HttpContext, identity, counter, rule, context.DownstreamReRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    
+
                     // break execution
                     await ReturnQuotaExceededResponse(context.HttpContext, options, retrystring);
+
+                    // Set Error
+                    context.Errors.Add(new QuotaExceededError(this.GetResponseMessage(options)));
 
                     return;
                 }
@@ -112,12 +111,12 @@ namespace Ocelot.RateLimit.Middleware
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamReRoute downstreamReRoute)
         {
             Logger.LogInformation(
-                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.Value }, TraceIdentifier {httpContext.TraceIdentifier}.");
+                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.OriginalValue }, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
-        
+
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
-            var message = string.IsNullOrEmpty(option.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}." : option.QuotaExceededMessage;
+            var message = this.GetResponseMessage(option);
 
             if (!option.DisableRateLimitHeaders)
             {
@@ -126,6 +125,14 @@ namespace Ocelot.RateLimit.Middleware
 
             httpContext.Response.StatusCode = option.HttpStatusCode;
             return httpContext.Response.WriteAsync(message);
+        }
+
+        private string GetResponseMessage(RateLimitOptions option)
+        {
+            var message = string.IsNullOrEmpty(option.QuotaExceededMessage)
+                ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
+                : option.QuotaExceededMessage;
+            return message;
         }
 
         private Task SetRateLimitHeaders(object rateLimitHeaders)

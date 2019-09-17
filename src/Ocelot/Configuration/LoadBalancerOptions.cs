@@ -1,10 +1,12 @@
+using Ocelot.LoadBalancer.LoadBalancers;
+
 namespace Ocelot.Configuration
 {
     public class LoadBalancerOptions
     {
         public LoadBalancerOptions(string type, string key, int expiryInMs)
         {
-            Type = type;
+            Type = string.IsNullOrWhiteSpace(type) ? nameof(NoLoadBalancer) : type;
             Key = key;
             ExpiryInMs = expiryInMs;
         }
@@ -12,7 +14,7 @@ namespace Ocelot.Configuration
         public string Type { get; }
 
         public string Key { get; }
-        
-        public int ExpiryInMs { get; } 
+
+        public int ExpiryInMs { get; }
     }
 }

@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using Moq;
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.QueryStrings;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using TestStack.BDDfy;
 using Xunit;
-using System.Net.Http;
-using System;
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
@@ -161,8 +161,8 @@ namespace Ocelot.UnitTests.QueryStrings
             _parser
                 .Setup(
                     x =>
-                        x.GetValue(It.IsAny<IEnumerable<Claim>>(), 
-                        It.IsAny<string>(), 
+                        x.GetValue(It.IsAny<IEnumerable<Claim>>(),
+                        It.IsAny<string>(),
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                 .Returns(_claimValue);
@@ -183,9 +183,9 @@ namespace Ocelot.UnitTests.QueryStrings
             _result.IsError.ShouldBe(true);
         }
 
-        class AnyError : Error
+        private class AnyError : Error
         {
-            public AnyError() 
+            public AnyError()
                 : base("blahh", OcelotErrorCode.UnknownError)
             {
             }

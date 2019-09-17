@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using Ocelot.Configuration;
-using Ocelot.Logging;
-using Ocelot.Middleware;
 
 namespace Ocelot.Requester
 {
@@ -13,14 +13,14 @@ namespace Ocelot.Requester
         private readonly IDelegatingHandlerHandlerFactory _factory;
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
-        private string _cacheKey;
+        private DownstreamReRoute _cacheKey;
         private HttpClient _httpClient;
         private IHttpClient _client;
         private readonly TimeSpan _defaultTimeout;
 
         public HttpClientBuilder(
-            IDelegatingHandlerHandlerFactory factory, 
-            IHttpClientCache cacheHandlers, 
+            IDelegatingHandlerHandlerFactory factory,
+            IHttpClientCache cacheHandlers,
             IOcelotLogger logger)
         {
             _factory = factory;
@@ -34,35 +34,31 @@ namespace Ocelot.Requester
 
         public IHttpClient Create(DownstreamContext context)
         {
-            _cacheKey = GetCacheKey(context);
+            _cacheKey = context.DownstreamReRoute;
 
             var httpClient = _cacheHandlers.Get(_cacheKey);
 
             if (httpClient != null)
             {
+                _client = httpClient;
                 return httpClient;
             }
 
-            var httpclientHandler = new HttpClientHandler
-            {
-                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                CookieContainer = new CookieContainer()
-            };
+            var handler = CreateHandler(context);
 
-            if(context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
             {
-                httpclientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");
             }
 
-            var timeout = context.DownstreamReRoute.QosOptionsOptions.TimeoutValue == 0
-                ? _defaultTimeout 
-                : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptionsOptions.TimeoutValue);
+            var timeout = context.DownstreamReRoute.QosOptions.TimeoutValue == 0
+                ? _defaultTimeout
+                : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptions.TimeoutValue);
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(httpclientHandler, context.DownstreamReRoute))
+            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, context.DownstreamReRoute))
             {
                 Timeout = timeout
             };
@@ -70,6 +66,43 @@ namespace Ocelot.Requester
             _client = new HttpClientWrapper(_httpClient);
 
             return _client;
+        }
+
+        private HttpClientHandler CreateHandler(DownstreamContext context)
+        {
+            // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
+            // under .Net Full Framework
+            bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
+
+            if (useCookies)
+            {
+                return UseCookiesHandler(context);
+            }
+            else
+            {
+                return UseNonCookiesHandler(context);
+            }
+        }
+
+        private HttpClientHandler UseNonCookiesHandler(DownstreamContext context)
+        {
+            return new HttpClientHandler
+            {
+                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy
+            };
+        }
+
+        private HttpClientHandler UseCookiesHandler(DownstreamContext context)
+        {
+            return new HttpClientHandler
+            {
+                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
+                CookieContainer = new CookieContainer()
+            };
         }
 
         public void Save()
@@ -93,15 +126,6 @@ namespace Ocelot.Requester
                     httpMessageHandler = delegatingHandler;
                 });
             return httpMessageHandler;
-        }
-
-        private string GetCacheKey(DownstreamContext request)
-        {
-            var cacheKey = $"{request.DownstreamRequest.Method}:{request.DownstreamRequest.OriginalString}";
-
-            this._logger.LogDebug($"Cache key for request is {cacheKey}");
-
-            return cacheKey;
         }
     }
 }

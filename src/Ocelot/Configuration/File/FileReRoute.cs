@@ -11,6 +11,7 @@ namespace Ocelot.Configuration.File
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
             AddQueriesToRequest = new Dictionary<string, string>();
+            ChangeDownstreamPathTemplate = new Dictionary<string, string>();
             DownstreamHeaderTransform = new Dictionary<string, string>();
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
@@ -21,6 +22,7 @@ namespace Ocelot.Configuration.File
             DownstreamHostAndPorts = new List<FileHostAndPort>();
             DelegatingHandlers = new List<string>();
             LoadBalancerOptions = new FileLoadBalancerOptions();
+            SecurityOptions = new FileSecurityOptions();
             Priority = 1;
         }
 
@@ -33,24 +35,26 @@ namespace Ocelot.Configuration.File
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
+        public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
         public string RequestIdKey { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public bool ReRouteIsCaseSensitive { get; set; }
         public string ServiceName { get; set; }
-        public string DownstreamScheme {get;set;}
+        public string ServiceNamespace { get; set; }
+        public string DownstreamScheme { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
         public FileRateLimitRule RateLimitOptions { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
-        public bool UseServiceDiscovery { get;set; }
-        public List<FileHostAndPort> DownstreamHostAndPorts {get;set;}
+        public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
         public string UpstreamHost { get; set; }
         public string UpstreamScheme { get; set; }
-        public string Key { get;set; }
-        public List<string> DelegatingHandlers {get;set;}
-        public int Priority { get;set; }
+        public string Key { get; set; }
+        public List<string> DelegatingHandlers { get; set; }
+        public int Priority { get; set; }
         public int Timeout { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
+        public FileSecurityOptions SecurityOptions { get; set; }
     }
 }

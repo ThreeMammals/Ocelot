@@ -1,23 +1,23 @@
 namespace Ocelot.Configuration
 {
-    using System.Collections.Generic;
     using Creator;
+    using System.Collections.Generic;
     using Values;
 
     public class DownstreamReRoute
     {
         public DownstreamReRoute(
             string key,
-            PathTemplate upstreamPathTemplate,
+            UpstreamPathTemplate upstreamPathTemplate,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
             List<DownstreamHostAndPort> downstreamAddresses,
             string serviceName,
+            string serviceNamespace,
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
             bool enableEndpointEndpointRateLimiting,
-            bool isQos,
-            QoSOptions qosOptionsOptions,
+            QoSOptions qosOptions,
             string downstreamScheme,
             string requestIdKey,
             bool isCached,
@@ -28,16 +28,17 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries,
             List<ClaimToThing> claimsToHeaders,
             List<ClaimToThing> claimsToClaims,
+            List<ClaimToThing> claimsToPath,
             bool isAuthenticated,
             bool isAuthorised,
             AuthenticationOptions authenticationOptions,
-            PathTemplate downstreamPathTemplate,
+            DownstreamPathTemplate downstreamPathTemplate,
             string loadBalancerKey,
             List<string> delegatingHandlers,
             List<AddHeader> addHeadersToDownstream,
             List<AddHeader> addHeadersToUpstream,
             bool dangerousAcceptAnyServerCertificateValidator,
-            string qosKey)
+            SecurityOptions securityOptions)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -48,11 +49,11 @@ namespace Ocelot.Configuration
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
             ServiceName = serviceName;
+            ServiceNamespace = serviceNamespace;
             HttpHandlerOptions = httpHandlerOptions;
             UseServiceDiscovery = useServiceDiscovery;
             EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
-            IsQos = isQos;
-            QosOptionsOptions = qosOptionsOptions;
+            QosOptions = qosOptions;
             DownstreamScheme = downstreamScheme;
             RequestIdKey = requestIdKey;
             IsCached = isCached;
@@ -63,27 +64,27 @@ namespace Ocelot.Configuration
             ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
             ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
+            ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
             IsAuthenticated = isAuthenticated;
             IsAuthorised = isAuthorised;
             AuthenticationOptions = authenticationOptions;
             DownstreamPathTemplate = downstreamPathTemplate;
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
-            QosKey = qosKey;
+            SecurityOptions = securityOptions;
         }
 
-        public string QosKey { get; }
         public string Key { get; }
-        public PathTemplate UpstreamPathTemplate { get; }
+        public UpstreamPathTemplate UpstreamPathTemplate { get; }
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace { get; }
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; }
         public List<DownstreamHostAndPort> DownstreamAddresses { get; }
         public string ServiceName { get; }
+        public string ServiceNamespace { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
         public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }
-        public bool IsQos { get; }
-        public QoSOptions QosOptionsOptions { get; }
+        public QoSOptions QosOptions { get; }
         public string DownstreamScheme { get; }
         public string RequestIdKey { get; }
         public bool IsCached { get; }
@@ -94,14 +95,16 @@ namespace Ocelot.Configuration
         public List<ClaimToThing> ClaimsToQueries { get; }
         public List<ClaimToThing> ClaimsToHeaders { get; }
         public List<ClaimToThing> ClaimsToClaims { get; }
+        public List<ClaimToThing> ClaimsToPath { get; }
         public bool IsAuthenticated { get; }
         public bool IsAuthorised { get; }
         public AuthenticationOptions AuthenticationOptions { get; }
-        public PathTemplate DownstreamPathTemplate { get; }
+        public DownstreamPathTemplate DownstreamPathTemplate { get; }
         public string LoadBalancerKey { get; }
         public List<string> DelegatingHandlers { get; }
         public List<AddHeader> AddHeadersToDownstream { get; }
         public List<AddHeader> AddHeadersToUpstream { get; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
+        public SecurityOptions SecurityOptions { get; }
     }
 }

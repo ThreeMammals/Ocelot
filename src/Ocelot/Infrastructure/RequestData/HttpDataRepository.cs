@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Errors;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
+using System;
 
 namespace Ocelot.Infrastructure.RequestData
 {
@@ -45,14 +43,14 @@ namespace Ocelot.Infrastructure.RequestData
         {
             object obj;
 
-            if(_httpContextAccessor.HttpContext == null || _httpContextAccessor.HttpContext.Items == null)
+            if (_httpContextAccessor.HttpContext == null || _httpContextAccessor.HttpContext.Items == null)
             {
                 return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null"));
             }
 
-            if(_httpContextAccessor.HttpContext.Items.TryGetValue(key, out obj))
+            if (_httpContextAccessor.HttpContext.Items.TryGetValue(key, out obj))
             {
-                var data = (T) obj;
+                var data = (T)obj;
                 return new OkResponse<T>(data);
             }
 

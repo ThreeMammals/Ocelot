@@ -1,17 +1,16 @@
-using System.Collections.Generic;
-using System.Net.Http;
-using Ocelot.Values;
-using System.Linq;
 using Ocelot.Configuration.Creator;
+using Ocelot.Values;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace Ocelot.Configuration.Builder
 {
     public class DownstreamReRouteBuilder
     {
         private AuthenticationOptions _authenticationOptions;
-        private string _reRouteKey;
+        private string _loadBalancerKey;
         private string _downstreamPathTemplate;
-        private string _upstreamTemplate;
         private UpstreamPathTemplate _upstreamTemplatePattern;
         private List<HttpMethod> _upstreamHttpMethod;
         private bool _isAuthenticated;
@@ -20,29 +19,28 @@ namespace Ocelot.Configuration.Builder
         private Dictionary<string, string> _routeClaimRequirement;
         private bool _isAuthorised;
         private List<ClaimToThing> _claimToQueries;
+        private List<ClaimToThing> _claimToDownstreamPath;
         private string _requestIdHeaderKey;
         private bool _isCached;
         private CacheOptions _fileCacheOptions;
         private string _downstreamScheme;
         private LoadBalancerOptions _loadBalancerOptions;
-        private bool _useQos;
         private QoSOptions _qosOptions;
         private HttpHandlerOptions _httpHandlerOptions;
         private bool _enableRateLimiting;
         private RateLimitOptions _rateLimitOptions;
         private bool _useServiceDiscovery;
         private string _serviceName;
+        private string _serviceNamespace;
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
-        private string _upstreamHost;
         private string _key;
         private List<string> _delegatingHandlers;
         private List<AddHeader> _addHeadersToDownstream;
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
-        private string _qosKey;
-        private string _upstreamScheme;
+        private SecurityOptions _securityOptions;
 
         public DownstreamReRouteBuilder()
         {
@@ -58,21 +56,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithUpstreamHost(string upstreamAddresses)
-        {
-            _upstreamHost = upstreamAddresses;
-            return this;
-        }
-
-        public DownstreamReRouteBuilder WithUpstreamScheme(string upstreamScheme)
-        {
-            _upstreamScheme = upstreamScheme;
-            return this;
-        }
-
         public DownstreamReRouteBuilder WithLoadBalancerOptions(LoadBalancerOptions loadBalancerOptions)
         {
-          _loadBalancerOptions = loadBalancerOptions;
+            _loadBalancerOptions = loadBalancerOptions;
             return this;
         }
 
@@ -88,13 +74,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithUpstreamPathTemplate(string input)
-        {
-            _upstreamTemplate = input;
-            return this;
-        }
-
-        public DownstreamReRouteBuilder WithUpstreamTemplatePattern(UpstreamPathTemplate input)
+        public DownstreamReRouteBuilder WithUpstreamPathTemplate(UpstreamPathTemplate input)
         {
             _upstreamTemplatePattern = input;
             return this;
@@ -148,6 +128,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithClaimsToDownstreamPath(List<ClaimToThing> input)
+        {
+            _claimToDownstreamPath = input;
+            return this;
+        }
+
         public DownstreamReRouteBuilder WithIsCached(bool input)
         {
             _isCached = input;
@@ -160,27 +146,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithIsQos(bool input)
-        {
-            _useQos = input;
-            return this;
-        }
-
         public DownstreamReRouteBuilder WithQosOptions(QoSOptions input)
         {
             _qosOptions = input;
             return this;
         }
 
-        public DownstreamReRouteBuilder WithReRouteKey(string reRouteKey)
+        public DownstreamReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
         {
-            _reRouteKey = reRouteKey;
-            return this;
-        }
-
-        public DownstreamReRouteBuilder WithQosKey(string qosKey)
-        {
-            _qosKey = qosKey;
+            _loadBalancerKey = loadBalancerKey;
             return this;
         }
 
@@ -217,6 +191,12 @@ namespace Ocelot.Configuration.Builder
         public DownstreamReRouteBuilder WithServiceName(string serviceName)
         {
             _serviceName = serviceName;
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithServiceNamespace(string serviceNamespace)
+        {
+            _serviceNamespace = serviceNamespace;
             return this;
         }
 
@@ -262,19 +242,25 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithSecurityOptions(SecurityOptions securityOptions)
+        {
+            _securityOptions = securityOptions;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
                 _key,
-                new PathTemplate(_upstreamTemplate),
+                _upstreamTemplatePattern,
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace,
                 _downstreamAddresses,
                 _serviceName,
+                _serviceNamespace,
                 _httpHandlerOptions,
                 _useServiceDiscovery,
                 _enableRateLimiting,
-                _useQos,
                 _qosOptions,
                 _downstreamScheme,
                 _requestIdHeaderKey,
@@ -286,16 +272,17 @@ namespace Ocelot.Configuration.Builder
                 _claimToQueries,
                 _claimsToHeaders,
                 _claimToClaims,
+                _claimToDownstreamPath,
                 _isAuthenticated,
                 _isAuthorised,
                 _authenticationOptions,
-                new PathTemplate(_downstreamPathTemplate),
-                _reRouteKey,
+                new DownstreamPathTemplate(_downstreamPathTemplate),
+                _loadBalancerKey,
                 _delegatingHandlers,
                 _addHeadersToDownstream,
                 _addHeadersToUpstream,
                 _dangerousAcceptAnyServerCertificateValidator,
-                _qosKey);
+                _securityOptions);
         }
     }
 }

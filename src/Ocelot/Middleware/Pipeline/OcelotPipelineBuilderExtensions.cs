@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Removed code and changed RequestDelete to OcelotRequestDelete, HttpContext to DownstreamContext, removed some exception handling messages
 
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Middleware.Pipeline
 {
@@ -80,13 +79,14 @@ namespace Ocelot.Middleware.Pipeline
                     var diagnosticListener = (DiagnosticListener)app.ApplicationServices.GetService(typeof(DiagnosticListener));
                     var middlewareName = ocelotDelegate.Target.GetType().Name;
 
-                    OcelotRequestDelegate wrapped = context => {
+                    OcelotRequestDelegate wrapped = async context =>
+                    {
                         try
                         {
                             Write(diagnosticListener, "Ocelot.MiddlewareStarted", middlewareName, context);
-                            return ocelotDelegate(context);
+                            await ocelotDelegate(context);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             WriteException(diagnosticListener, ex, "Ocelot.MiddlewareException", middlewareName, context);
                             throw ex;
@@ -117,7 +117,7 @@ namespace Ocelot.Middleware.Pipeline
 
         private static void Write(DiagnosticListener diagnosticListener, string message, string middlewareName, DownstreamContext context)
         {
-            if(diagnosticListener != null)
+            if (diagnosticListener != null)
             {
                 diagnosticListener.Write(message, new { name = middlewareName, context = context });
             }
@@ -125,7 +125,7 @@ namespace Ocelot.Middleware.Pipeline
 
         private static void WriteException(DiagnosticListener diagnosticListener, Exception exception, string message, string middlewareName, DownstreamContext context)
         {
-            if(diagnosticListener != null)
+            if (diagnosticListener != null)
             {
                 diagnosticListener.Write(message, new { name = middlewareName, context = context, exception = exception });
             }
@@ -156,6 +156,30 @@ namespace Ocelot.Middleware.Pipeline
             {
                 Predicate = predicate,
                 Branch = branch,
+            };
+            return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
+        }
+
+        public static IOcelotPipelineBuilder MapWhen(this IOcelotPipelineBuilder app, Func<IOcelotPipelineBuilder, Predicate> pipelineBuilderFunc)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (pipelineBuilderFunc == null)
+            {
+                throw new ArgumentNullException(nameof(pipelineBuilderFunc));
+            }
+
+            var branchBuilder = app.New();
+            var predicate = pipelineBuilderFunc.Invoke(branchBuilder);
+            var branch = branchBuilder.Build();
+
+            var options = new MapWhenOptions
+            {
+                Predicate = predicate,
+                Branch = branch
             };
             return app.Use(next => new MapWhenMiddleware(next, options).Invoke);
         }

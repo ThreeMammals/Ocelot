@@ -1,23 +1,38 @@
 Release process
 ===============
 
-This section defines the release process for the maintainers of the project.
-* Merge pull requests to the `release` branch.
+Ocelot uses the following process to accept work into the NuGet packages.
 
-* Every commit pushed to the Origin repo will kick off the `ocelot-build <https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb>`_ project in AppVeyor. This performs the same tasks as the command line build, and in addition pushes the packages to the unstable nuget feed.
+1. User creates an issue or picks up an existing issue in GitHub. 
 
-* When you're ready for a release, create a release branch. You'll probably want to update the committed `./ReleaseNotes.md` based on the contents of the equivalent file in the `./artifacts` directory.
+2. User creates a fork and branches from this (unless a member of core team, they can just create a branch on the main repo) e.g. feat/xxx, fix/xxx etc. It doesn't really matter what the xxx is. It might make sense to use the issue number and maybe a short description. I don't care as long as it has (feat, fix, refactor)/xxx :) 
 
-* When the `release` branch has built successfully in Appveyor, select the build and then Deploy to the `GitHub Release` environment. This will create a new release in GitHub.
+3. When the user is happy with their work they can create a pull request in GitHub with their changes. The user must follow the `SemVer <https://semver.org/>`_ support for this is provided by `GitVersion <https://gitversion.readthedocs.io/en/latest/>`_. So if you need to make breaking changes please make sure you use the correct commit message so GitVersion uses the correct semver tags. Do not manually tag the Ocelot repo this will break things.
 
-* In Github, navigate to the `release <https://github.com/TomPallister/Ocelot/releases>`_. Modify the release name and tag as desired.
+4. The Ocelot team will review the PR and if all is good merge it, else they will suggest feedback that the user will need to act on. In order to speed up getting a PR the user should think about the following.
+    - Have I covered all my changes with tests at unit and acceptance level?
+    - Have I updated any documentation that my changes may have affected?
+    - Does my feature make sense, have I checked all of Ocelot's other features to make sure it doesn't already exist?
+In order for a PR to be merged the following must have occured.
+    - All new code is covered by unit tests.
+    - All new code has at least 1 acceptance test covering the happy path.
+    - Builds for Windows, Mac and Linux must have passed.
+    - Builds for Windows, Mac and Linux must not have slowed down dramatically.
+    - The main Ocelot package must not have taken on any non MS dependencies.
 
-* When you're ready, publish the release. This will tag the commit with the specified release number.
+5. After the PR is merged the GitHub issue must be labelled as merged. The merge will trigger an alpha build on the develop branch with these changes that will get pushed to NuGet. You can import this and test it manually should you wish.
 
-* The `ocelot-release <https://ci.appveyor.com/project/TomPallister/ocelot-ayj4w>`_ project will detect the newly created tag and kick off the release process. This will download the artifacts from GitHub, and publish the packages to the stable nuget feed.
+6. When the Ocelot team is ready to create a release they will checkout a new release branch with the version from the latest develop build. So look in AppVeyor for the latest develop semver number and checkout a new branch e.g. git checkout -b release/13.1.0 and push this to the remote. Wait for it to build and then merge this branch back into master.
 
-* When you have a final stable release build, merge the `release` branch into `master` and `develop`. Deploy the master branch to github and following the full release process as described above. Don't forget to uncheck the "This is a pre-release" checkbox in GitHub before publishing.
+7. Wait for the master build to complete. When it has go to the AppVeyor UI and find the build and click the Deploy link in the top right hand corner. Select release preparation from the environment drop down and click deploy. This will send the release information to GitHub releases. 
 
-* Note - because the release builds are initiated by tagging a commit, if for some reason a release build fails in AppVeyor you'll need to delete the tag from the repo and republish the release in GitHub.
+8. Go to GitHub releases and find the version you have just released. It will look something like 13.0.0+31.build.1783. Remove +31.build.1783 (or whatever you get) from all the input fields so you are just left with 13.0.0. Untick This is a pre release and click release. This will trigger a build from AppVeyor that downloads the release artifacts from GitHub and publishes them to the stable NuGet feed. All being well you should find your new package on NuGet within 30 minutes. You might also want to manually add the issue numbers of what has been merged so people can see what changed in this release.
 
+9. The final step is to go back to GitHub and close any issues that were labelled as merged. You should see something like this in`GitHub <https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0>`_ and this in `NuGet <https://www.nuget.org/packages/Ocelot/13.0.0>`_.
 
+Notes
+-----
+
+All NuGet package builds are done with AppVeyor `here <https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb>_` and all releases are done from `here <https://ci.appveyor.com/project/TomPallister/ocelot-ayj4w>_`. We also build Ocelot on Travis `here <https://travis-ci.org/ThreeMammals/Ocelot>`_ but this is only to make sure it is building on multiple OS.
+
+Only Ocelot core team members can merge PRs and create release branches. Only TomPallister can merge releases into master at the moment. This is to ensure there is a final quality gate in place. Tom is mainly looking for security issues on the final merge.

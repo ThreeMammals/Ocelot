@@ -1,16 +1,17 @@
 ﻿namespace Ocelot.Configuration
 {
     /// <summary>
-    /// Describes configuration parameters for http handler, 
+    /// Describes configuration parameters for http handler,
     /// that is created to handle a request to service
     /// </summary>
     public class HttpHandlerOptions
     {
-        public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing)
+        public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy)
         {
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
             UseTracing = useTracing;
+            UseProxy = useProxy;
         }
 
         /// <summary>
@@ -23,9 +24,14 @@
         /// </summary>
         public bool UseCookieContainer { get; private set; }
 
-        // <summary>
+        /// <summary>
         /// Specify is handler has to use a opentracing
         /// </summary>
         public bool UseTracing { get; private set; }
+
+        /// <summary>
+        /// Specify if handler has to use a proxy
+        /// </summary>
+        public bool UseProxy { get; private set; }
     }
 }

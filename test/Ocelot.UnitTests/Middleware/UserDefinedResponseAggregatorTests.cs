@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
@@ -13,6 +7,11 @@ using Ocelot.Middleware.Multiplexer;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -43,11 +42,11 @@ namespace Ocelot.UnitTests.Middleware
             {
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }
             };
 
@@ -71,12 +70,12 @@ namespace Ocelot.UnitTests.Middleware
             var contexts = new List<DownstreamContext>
             {
                 new DownstreamContext(new DefaultHttpContext())
-                { 
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                {
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
                 new DownstreamContext(new DefaultHttpContext())
                 {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>())
+                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }
             };
 
@@ -140,13 +139,13 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<DownstreamResponse> Aggregate(List<DownstreamResponse> responses)
+            public async Task<DownstreamResponse> Aggregate(List<DownstreamContext> responses)
             {
-                var tom = await responses[0].Content.ReadAsStringAsync();
-                var laura = await responses[1].Content.ReadAsStringAsync();
+                var tom = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
+                var laura = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
-                var headers = responses.SelectMany(x => x.Headers).ToList();
-                return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers);
+                var headers = responses.SelectMany(x => x.DownstreamResponse.Headers).ToList();
+                return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers, "some reason");
             }
         }
     }

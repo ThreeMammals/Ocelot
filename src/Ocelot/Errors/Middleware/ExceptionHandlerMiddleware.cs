@@ -1,14 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Ocelot.Configuration.Repository;
-using Ocelot.Infrastructure.Extensions;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-
 namespace Ocelot.Errors.Middleware
 {
+    using Configuration;
+    using Ocelot.Configuration.Repository;
+    using Ocelot.Infrastructure.Extensions;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
@@ -20,7 +21,7 @@ namespace Ocelot.Errors.Middleware
 
         public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IInternalConfigurationRepository configRepo, 
+            IInternalConfigurationRepository configRepo,
             IRequestScopedDataRepository repo)
                 : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
@@ -32,12 +33,34 @@ namespace Ocelot.Errors.Middleware
         public async Task Invoke(DownstreamContext context)
         {
             try
-            {               
-                TrySetGlobalRequestId(context);
+            {
+                context.HttpContext.RequestAborted.ThrowIfCancellationRequested();
+
+                //try and get the global request id and set it for logs...
+                //should this basically be immutable per request...i guess it should!
+                //first thing is get config
+                var configuration = _configRepo.Get();
+
+                if (configuration.IsError)
+                {
+                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
+                }
+
+                TrySetGlobalRequestId(context, configuration.Data);
+
+                context.Configuration = configuration.Data;
 
                 Logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(context);
+            }
+            catch (OperationCanceledException e) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                Logger.LogDebug("operation canceled");
+                if (!context.HttpContext.Response.HasStarted)
+                {
+                    context.HttpContext.Response.StatusCode = 499;
+                }
             }
             catch (Exception e)
             {
@@ -46,26 +69,16 @@ namespace Ocelot.Errors.Middleware
                 var message = CreateMessage(context, e);
 
                 Logger.LogError(message, e);
-                
+
                 SetInternalServerErrorOnResponse(context);
             }
 
             Logger.LogDebug("ocelot pipeline finished");
         }
 
-        private void TrySetGlobalRequestId(DownstreamContext context)
+        private void TrySetGlobalRequestId(DownstreamContext context, IInternalConfiguration configuration)
         {
-            //try and get the global request id and set it for logs...
-            //should this basically be immutable per request...i guess it should!
-            //first thing is get config
-            var configuration = _configRepo.Get(); 
-            
-            if(configuration.IsError)
-            {
-                throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
-            }
-
-            var key = configuration.Data.RequestId;
+            var key = configuration.RequestId;
 
             if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {

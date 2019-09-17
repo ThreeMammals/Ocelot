@@ -7,16 +7,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3FA7C349-DBE8-4904-A2CE-015B8869CE6C}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.gitignore = .gitignore
 		build-and-release-unstable.ps1 = build-and-release-unstable.ps1
 		build-and-run-tests.ps1 = build-and-run-tests.ps1
 		build.cake = build.cake
 		build.ps1 = build.ps1
 		codeanalysis.ruleset = codeanalysis.ruleset
+		docker-compose.yaml = docker-compose.yaml
+		Dockerfile = Dockerfile
 		GitVersion.yml = GitVersion.yml
 		global.json = global.json
 		LICENSE.md = LICENSE.md
-		ocelot.postman_collection.json = ocelot.postman_collection.json
 		README.md = README.md
 		release.ps1 = release.ps1
 		ReleaseNotes.md = ReleaseNotes.md
@@ -39,6 +41,22 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Benchmarks", "test\Ocelot.Benchmarks\Ocelot.Benchmarks.csproj", "{106B49E6-95F6-4A7B-B81C-96BFA74AF035}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.csproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Administration", "src\Ocelot.Administration\Ocelot.Administration.csproj", "{F69CEF43-27D2-4940-A47A-FCA879E371BC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Cache.CacheManager", "src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj", "{EB9F438F-062E-499F-B6EA-4412BEF6D74C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Consul", "src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj", "{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Eureka", "src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj", "{9BBD3586-145C-4FA0-91C5-9ED58287D753}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Polly", "src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Rafty", "src\Ocelot.Provider.Rafty\Ocelot.Provider.Rafty.csproj", "{AC153C67-EF18-47E6-A230-F0D3CF5F0A98}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,6 +88,38 @@ Global
 		{D4575572-99CA-4530-8737-C296EDA326F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4575572-99CA-4530-8737-C296EDA326F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4575572-99CA-4530-8737-C296EDA326F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F69CEF43-27D2-4940-A47A-FCA879E371BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F69CEF43-27D2-4940-A47A-FCA879E371BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F69CEF43-27D2-4940-A47A-FCA879E371BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F69CEF43-27D2-4940-A47A-FCA879E371BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB9F438F-062E-499F-B6EA-4412BEF6D74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB9F438F-062E-499F-B6EA-4412BEF6D74C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB9F438F-062E-499F-B6EA-4412BEF6D74C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB9F438F-062E-499F-B6EA-4412BEF6D74C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BBD3586-145C-4FA0-91C5-9ED58287D753}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BBD3586-145C-4FA0-91C5-9ED58287D753}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BBD3586-145C-4FA0-91C5-9ED58287D753}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BBD3586-145C-4FA0-91C5-9ED58287D753}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72C8E528-B4F5-45CE-8A06-CD3787364856}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +131,14 @@ Global
 		{02BBF4C5-517E-4157-8D21-4B8B9E118B7A} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{106B49E6-95F6-4A7B-B81C-96BFA74AF035} = {5B401523-36DA-4491-B73A-7590A26E420B}
 		{D4575572-99CA-4530-8737-C296EDA326F8} = {5B401523-36DA-4491-B73A-7590A26E420B}
+		{F69CEF43-27D2-4940-A47A-FCA879E371BC} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{EB9F438F-062E-499F-B6EA-4412BEF6D74C} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{02F5AE4D-9C36-4E58-B7C6-012CBBDEFDE0} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{9BBD3586-145C-4FA0-91C5-9ED58287D753} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{AC153C67-EF18-47E6-A230-F0D3CF5F0A98} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
+		{72C8E528-B4F5-45CE-8A06-CD3787364856} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}

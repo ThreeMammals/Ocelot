@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Threading.Tasks;
 
 namespace Ocelot.Headers.Middleware
 {
@@ -17,8 +17,8 @@ namespace Ocelot.Headers.Middleware
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeadersToResponse,
-            IAddHeadersToRequest addHeadersToRequest) 
-                :base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
+            IAddHeadersToRequest addHeadersToRequest)
+                : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeadersToResponse = addHeadersToResponse;
             _addHeadersToRequest = addHeadersToRequest;
@@ -38,9 +38,14 @@ namespace Ocelot.Headers.Middleware
 
             await _next.Invoke(context);
 
+            if (context.IsError)
+            {
+                return;
+            }
+
             var postFAndRs = context.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(context.DownstreamResponse, postFAndRs, context.DownstreamRequest);
+            _postReplacer.Replace(context, postFAndRs);
 
             _addHeadersToResponse.Add(context.DownstreamReRoute.AddHeadersToDownstream, context.DownstreamResponse);
         }

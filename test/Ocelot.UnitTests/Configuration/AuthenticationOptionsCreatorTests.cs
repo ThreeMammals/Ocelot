@@ -1,9 +1,9 @@
-using System.Collections.Generic;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Shouldly;
+using System.Collections.Generic;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingConfigIsReturned(AuthenticationOptions expected)
         {
-           _result.AllowedScopes.ShouldBe(expected.AllowedScopes);
+            _result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             _result.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         }
     }

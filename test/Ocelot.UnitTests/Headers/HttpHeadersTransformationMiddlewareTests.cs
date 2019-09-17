@@ -1,22 +1,21 @@
 namespace Ocelot.UnitTests.Headers
 {
-    using Xunit;
-    using Ocelot.Logging;
-    using Ocelot.Headers.Middleware;
-    using TestStack.BDDfy;
     using Microsoft.AspNetCore.Http;
-    using System.Collections.Generic;
     using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Headers;
-    using System.Net.Http;
     using Ocelot.Authorisation.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.Headers;
+    using Ocelot.Headers.Middleware;
+    using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
-    using System.Threading.Tasks;
     using Ocelot.Request.Middleware;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
 
     public class HttpHeadersTransformationMiddlewareTests
     {
@@ -109,7 +108,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly()
         {
-            _postReplacer.Verify(x => x.Replace(It.IsAny<DownstreamResponse>(), It.IsAny<List<HeaderFindAndReplace>>(), It.IsAny<DownstreamRequest>()), Times.Once);
+            _postReplacer.Verify(x => x.Replace(It.IsAny<DownstreamContext>(), It.IsAny<List<HeaderFindAndReplace>>()), Times.Once);
         }
 
         private void GivenTheFollowingRequest()

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    using System.Collections.Generic;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.AspNetCore.Http;
@@ -14,6 +13,7 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.Middleware;
     using Ocelot.Middleware.Pipeline;
     using Shouldly;
+    using System.Collections.Generic;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -101,7 +101,7 @@ namespace Ocelot.UnitTests.Middleware
             private readonly OcelotRequestDelegate _next;
 
             public MultiParametersInvokeMiddleware(OcelotRequestDelegate next)
-                :base(new FakeLogger())
+                : base(new FakeLogger())
             {
                 _next = next;
             }
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Middleware
         }
     }
 
-    class FakeLogger : IOcelotLogger
+    internal class FakeLogger : IOcelotLogger
     {
         public void LogCritical(string message, Exception exception)
         {

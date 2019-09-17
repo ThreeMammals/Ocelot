@@ -7,14 +7,22 @@ namespace Ocelot.Configuration.Creator
     {
         public ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration)
         {
-            //todo log or return error here dont just default to something that wont work..
-            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var port = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var host = globalConfiguration?.ServiceDiscoveryProvider?.Host ?? "localhost";
+            var type = !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Type)
+                ? globalConfiguration?.ServiceDiscoveryProvider?.Type
+                : "consul";
+            var pollingInterval = globalConfiguration?.ServiceDiscoveryProvider?.PollingInterval ?? 0;
+            var k8snamespace = globalConfiguration?.ServiceDiscoveryProvider?.Namespace ?? string.Empty;
 
             return new ServiceProviderConfigurationBuilder()
-                .WithHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
-                .WithPort(serviceProviderPort)
-                .WithType(globalConfiguration?.ServiceDiscoveryProvider?.Type)
+                .WithHost(host)
+                .WithPort(port)
+                .WithType(type)
                 .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
+                .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)
+                .WithPollingInterval(pollingInterval)
+                .WithNamespace(k8snamespace)
                 .Build();
         }
     }

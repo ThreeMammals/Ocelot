@@ -2,20 +2,20 @@
 
 namespace Ocelot.UnitTests.Authorization
 {
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Authorisation;
     using Ocelot.Authorisation.Middleware;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
 
     public class AuthorisationMiddlewareTests
     {
@@ -42,8 +42,9 @@ namespace Ocelot.UnitTests.Authorization
         [Fact]
         public void should_call_authorisation_service()
         {
-            this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(), 
+            this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(),
                 new DownstreamReRouteBuilder()
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                     .WithIsAuthorised(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()))
@@ -67,15 +68,21 @@ namespace Ocelot.UnitTests.Authorization
         private void GivenTheAuthServiceReturns(Response<bool> expected)
         {
             _authService
-                .Setup(x => x.Authorise(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>()))
+                .Setup(x => x.Authorise(
+                           It.IsAny<ClaimsPrincipal>(),
+                           It.IsAny<Dictionary<string, string>>(),
+                           It.IsAny<List<PlaceholderNameAndValue>>()))
                 .Returns(expected);
         }
 
         private void ThenTheAuthServiceIsCalledCorrectly()
         {
             _authService
-                .Verify(x => x.Authorise(It.IsAny<ClaimsPrincipal>(),
-                It.IsAny<Dictionary<string, string>>()), Times.Once);
+                .Verify(x => x.Authorise(
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<Dictionary<string, string>>(),
+                    It.IsAny<List<PlaceholderNameAndValue>>())
+                        , Times.Once);
         }
     }
 }

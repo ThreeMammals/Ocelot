@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Ocelot.Configuration.Parser;
 using Ocelot.Logging;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -15,8 +15,8 @@ namespace Ocelot.Configuration.Creator
             _logger = loggerFactory.CreateLogger<ClaimsToThingCreator>();
             _claimToThingConfigParser = claimToThingConfigurationParser;
         }
-        
-        public List<ClaimToThing> Create(Dictionary<string,string> inputToBeParsed)
+
+        public List<ClaimToThing> Create(Dictionary<string, string> inputToBeParsed)
         {
             var claimsToThings = new List<ClaimToThing>();
 

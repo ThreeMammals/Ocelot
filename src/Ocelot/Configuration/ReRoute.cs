@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using Ocelot.Configuration.Creator;
-using Ocelot.Requester.QoS;
-using Ocelot.Values;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
+    using Ocelot.Configuration.File;
+    using Ocelot.Values;
+    using System.Collections.Generic;
+    using System.Net.Http;
+
     public class ReRoute
     {
         public ReRoute(List<DownstreamReRoute> downstreamReRoute,
-            PathTemplate upstreamPathTemplate,
+            List<AggregateReRouteConfig> downstreamReRouteConfig,
             List<HttpMethod> upstreamHttpMethod,
             UpstreamPathTemplate upstreamTemplatePattern,
             string upstreamHost,
@@ -19,18 +18,18 @@ namespace Ocelot.Configuration
             UpstreamHost = upstreamHost;
             UpstreamScheme = upstreamScheme;
             DownstreamReRoute = downstreamReRoute;
-            UpstreamPathTemplate = upstreamPathTemplate;
+            DownstreamReRouteConfig = downstreamReRouteConfig;
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             Aggregator = aggregator;
         }
 
-        public PathTemplate UpstreamPathTemplate { get; private set; }
         public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public string UpstreamHost { get; private set; }
         public string UpstreamScheme { get; private set; }
         public List<DownstreamReRoute> DownstreamReRoute { get; private set; }
-        public string Aggregator {get; private set;}
+        public List<AggregateReRouteConfig> DownstreamReRouteConfig { get; private set; }
+        public string Aggregator { get; private set; }
     }
 }

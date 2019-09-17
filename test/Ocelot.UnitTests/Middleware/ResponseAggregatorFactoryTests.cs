@@ -1,12 +1,12 @@
 namespace Ocelot.UnitTests.Middleware
 {
     using Moq;
+    using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Middleware.Multiplexer;
     using Shouldly;
-    using Xunit;
-    using Ocelot.Configuration;
     using TestStack.BDDfy;
+    using Xunit;
 
     public class ResponseAggregatorFactoryTests
     {
@@ -18,9 +18,10 @@ namespace Ocelot.UnitTests.Middleware
         public ResponseAggregatorFactoryTests()
         {
             _provider = new Mock<IDefinedAggregatorProvider>();
-            _factory = new InMemoryResponseAggregatorFactory(_provider.Object);
+            _aggregator = new SimpleJsonResponseAggregator();
+            _factory = new InMemoryResponseAggregatorFactory(_provider.Object, _aggregator);
         }
-        
+
         [Fact]
         public void should_return_simple_json_aggregator()
         {

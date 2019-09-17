@@ -1,7 +1,7 @@
 ## Expected Behavior / New Feature
 
 
-## Actual Behavior / Motivation for New Feautre
+## Actual Behavior / Motivation for New Feature
 
 
 ## Steps to Reproduce the Problem

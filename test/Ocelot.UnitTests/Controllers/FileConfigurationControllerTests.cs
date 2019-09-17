@@ -1,16 +1,14 @@
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
+using Shouldly;
+using System;
 using TestStack.BDDfy;
 using Xunit;
-using Shouldly;
-using Ocelot.Raft;
-using Rafty.Concensus;
-using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Controllers
 {
@@ -24,7 +22,6 @@ namespace Ocelot.UnitTests.Controllers
         private IActionResult _result;
         private FileConfiguration _fileConfiguration;
         private readonly Mock<IServiceProvider> _provider;
-        private Mock<INode> _node;
 
         public FileConfigurationControllerTests()
         {
@@ -33,7 +30,7 @@ namespace Ocelot.UnitTests.Controllers
             _setter = new Mock<IFileConfigurationSetter>();
             _controller = new FileConfigurationController(_repo.Object, _setter.Object, _provider.Object);
         }
-        
+
         [Fact]
         public void should_get_file_configuration()
         {
@@ -50,12 +47,12 @@ namespace Ocelot.UnitTests.Controllers
         {
             var expected = new Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
-             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-                .When(x => x.WhenIGetTheFileConfiguration())
-                .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-                .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
-                .BDDfy();
-        } 
+            this.Given(x => x.GivenTheGetConfigurationReturns(expected))
+               .When(x => x.WhenIGetTheFileConfiguration())
+               .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
+               .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
+               .BDDfy();
+        }
 
         [Fact]
         public void should_post_file_configuration()
@@ -70,33 +67,6 @@ namespace Ocelot.UnitTests.Controllers
         }
 
         [Fact]
-        public void should_post_file_configuration_using_raft_node()
-        {
-            var expected = new FileConfiguration();
-
-            this.Given(x => GivenTheFileConfiguration(expected))
-                .And(x => GivenARaftNodeIsRegistered())
-                .And(x => GivenTheNodeReturnsOK())
-                .And(x => GivenTheConfigSetterReturns(new OkResponse()))
-                .When(x => WhenIPostTheFileConfiguration())
-                .Then(x => x.ThenTheNodeIsCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_when_cannot_set_config_using_raft_node()
-        {
-            var expected = new FileConfiguration();
-
-            this.Given(x => GivenTheFileConfiguration(expected))
-                .And(x => GivenARaftNodeIsRegistered())
-                .And(x => GivenTheNodeReturnsError())
-                .When(x => WhenIPostTheFileConfiguration())
-                .Then(x => ThenTheResponseIs<BadRequestObjectResult>())
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_return_error_when_cannot_set_config()
         {
             var expected = new FileConfiguration();
@@ -107,33 +77,6 @@ namespace Ocelot.UnitTests.Controllers
                 .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
                 .And(x => ThenTheResponseIs<BadRequestObjectResult>())
                 .BDDfy();
-        }
-
-        private void ThenTheNodeIsCalledCorrectly()
-        {
-            _node.Verify(x => x.Accept(It.IsAny<UpdateFileConfiguration>()), Times.Once);
-        }
-
-        private void GivenARaftNodeIsRegistered()
-        {
-            _node = new Mock<INode>();
-            _provider
-                .Setup(x => x.GetService(typeof(INode)))
-                .Returns(_node.Object);
-        }
-
-        private void GivenTheNodeReturnsOK()
-        {
-            _node
-                .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .Returns(new Rafty.Concensus.OkResponse<UpdateFileConfiguration>(new UpdateFileConfiguration(new FileConfiguration())));
-        }
-
-        private void GivenTheNodeReturnsError()
-        {
-            _node
-                .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .Returns(new Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>("error", new UpdateFileConfiguration(new FileConfiguration())));
         }
 
         private void GivenTheConfigSetterReturns(Response response)
@@ -161,7 +104,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void ThenTheResponseIs<T>()
         {
-           _result.ShouldBeOfType<T>();
+            _result.ShouldBeOfType<T>();
         }
 
         private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
@@ -178,11 +121,11 @@ namespace Ocelot.UnitTests.Controllers
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()
         {
-               _repo
-                .Verify(x => x.Get(), Times.Once);
+            _repo
+             .Verify(x => x.Get(), Times.Once);
         }
 
-        class FakeError : Error
+        private class FakeError : Error
         {
             public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError)
             {

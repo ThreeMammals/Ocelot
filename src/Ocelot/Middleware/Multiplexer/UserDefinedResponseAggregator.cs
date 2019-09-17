@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Middleware.Multiplexer
 {
@@ -21,7 +20,7 @@ namespace Ocelot.Middleware.Multiplexer
             if (!aggregator.IsError)
             {
                 var aggregateResponse = await aggregator.Data
-                    .Aggregate(downstreamResponses.Select(x => x.DownstreamResponse).ToList());
+                    .Aggregate(downstreamResponses);
 
                 originalContext.DownstreamResponse = aggregateResponse;
             }

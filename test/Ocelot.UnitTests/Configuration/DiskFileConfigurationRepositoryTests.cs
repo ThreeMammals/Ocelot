@@ -1,32 +1,39 @@
 namespace Ocelot.UnitTests.Configuration
 {
+    using Microsoft.AspNetCore.Hosting;
+    using Moq;
+    using Newtonsoft.Json;
+    using Ocelot.Configuration.File;
+    using Ocelot.Configuration.Repository;
+    using Shouldly;
     using System;
     using System.Collections.Generic;
-    using Moq;
-    using Ocelot.Configuration.File;
-    using Shouldly;
+    using System.IO;
+    using System.Threading;
     using TestStack.BDDfy;
     using Xunit;
-    using Newtonsoft.Json;
-    using System.IO;
-    using Microsoft.AspNetCore.Hosting;
-    using Ocelot.Configuration.Repository;
 
-    public class DiskFileConfigurationRepositoryTests
+    public class DiskFileConfigurationRepositoryTests : IDisposable
     {
-        private readonly Mock<IHostingEnvironment> _hostingEnvironment = new Mock<IHostingEnvironment>();
+        private readonly Mock<IHostingEnvironment> _hostingEnvironment;
         private IFileConfigurationRepository _repo;
-        private string _configurationPath;
+        private string _environmentSpecificPath;
+        private string _ocelotJsonPath;
         private FileConfiguration _result;
         private FileConfiguration _fileConfiguration;
 
         // This is a bit dirty and it is dev.dev so that the ConfigurationBuilderExtensionsTests
-        // cant pick it up if they run in parralel..sigh these are not really unit 
-        // tests but whatever...
+        // cant pick it up if they run in parralel..and the semaphore stops them running at the same time...sigh
+        // these are not really unit tests but whatever...
         private string _environmentName = "DEV.DEV";
+
+        private static SemaphoreSlim _semaphore;
 
         public DiskFileConfigurationRepositoryTests()
         {
+            _semaphore = new SemaphoreSlim(1, 1);
+            _semaphore.Wait();
+            _hostingEnvironment = new Mock<IHostingEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
@@ -79,6 +86,33 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_environment_file_configuration_and_ocelot_file_configuration()
+        {
+            var config = FakeFileConfigurationForSet();
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+                .And(_ => GivenTheConfigurationIs(config))
+                .And(_ => GivenTheUserAddedOcelotJson())
+                .When(_ => WhenISetTheConfiguration())
+                .Then(_ => ThenTheConfigurationIsStoredAs(config))
+                .And(_ => ThenTheConfigurationJsonIsIndented(config))
+                .Then(_ => ThenTheOcelotJsonIsStoredAs(config))
+                .BDDfy();
+        }
+
+        private void GivenTheUserAddedOcelotJson()
+        {
+            _ocelotJsonPath = $"{AppContext.BaseDirectory}/ocelot.json";
+
+            if (File.Exists(_ocelotJsonPath))
+            {
+                File.Delete(_ocelotJsonPath);
+            }
+
+            File.WriteAllText(_ocelotJsonPath, "Doesnt matter");
+        }
+
         private void GivenTheEnvironmentNameIsUnavailable()
         {
             _environmentName = null;
@@ -103,7 +137,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for(var i = 0; i < _result.ReRoutes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
                 for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {
@@ -119,25 +153,32 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
+        private void ThenTheOcelotJsonIsStoredAs(FileConfiguration expecteds)
+        {
+            var resultText = File.ReadAllText(_ocelotJsonPath);
+            var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
+            resultText.ShouldBe(expectedText);
+        }
+
         private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
         {
-            _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+            _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
-            if (File.Exists(_configurationPath))
+            if (File.Exists(_environmentSpecificPath))
             {
-                File.Delete(_configurationPath);
+                File.Delete(_environmentSpecificPath);
             }
 
-            File.WriteAllText(_configurationPath, jsonConfiguration);
+            File.WriteAllText(_environmentSpecificPath, jsonConfiguration);
         }
 
         private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds)
         {
-            var path = !string.IsNullOrEmpty(_configurationPath) ? _configurationPath : _configurationPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
-            
-            var resultText = File.ReadAllText(_configurationPath);
+            var path = !string.IsNullOrEmpty(_environmentSpecificPath) ? _environmentSpecificPath : _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
+
+            var resultText = File.ReadAllText(path);
             var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
             resultText.ShouldBe(expectedText);
         }
@@ -153,7 +194,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for(var i = 0; i < _result.ReRoutes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
                 for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {
@@ -237,6 +278,11 @@ namespace Ocelot.UnitTests.Configuration
                 GlobalConfiguration = globalConfiguration,
                 ReRoutes = reRoutes
             };
+        }
+
+        public void Dispose()
+        {
+            _semaphore.Release();
         }
     }
 }

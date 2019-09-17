@@ -1,36 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
-using CacheManager.Core;
-using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using Shouldly;
-using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-using Ocelot.AcceptanceTests.Caching;
-using System.IO.Compression;
-using System.Text;
-using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
-using Ocelot.Requester;
-using Ocelot.Middleware.Multiplexer;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.Net.Http.Headers;
+    using Caching;
+    using Configuration.Repository;
+    using global::CacheManager.Core;
+    using IdentityServer4.AccessTokenValidation;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using Ocelot.Cache.CacheManager;
+    using Ocelot.Configuration.Creator;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Provider.Consul;
+    using Ocelot.Provider.Eureka;
+    using Ocelot.Provider.Polly;
+    using Ocelot.Tracing.Butterfly;
+    using Requester;
+    using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
     public class Steps : IDisposable
@@ -40,7 +47,6 @@ namespace Ocelot.AcceptanceTests
         private HttpResponseMessage _response;
         private HttpContent _postContent;
         private BearerToken _token;
-        public HttpClient OcelotClient => _ocelotClient;
         public string RequestIdKey = "OcRequestId";
         private readonly Random _random;
         private IWebHostBuilder _webHostBuilder;
@@ -50,6 +56,18 @@ namespace Ocelot.AcceptanceTests
         public Steps()
         {
             _random = new Random();
+        }
+
+        public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
+        {
+            var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+
+            var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+            var internalConfig = internalConfigRepo.Get();
+
+            var config = await internalConfigCreator.Create(fileConfig);
+
+            internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
         }
 
         public async Task StartFakeOcelotWithWebSockets()
@@ -67,9 +85,44 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    logging.AddConsole();
+                })
+                .Configure(app =>
+                {
+                    app.UseWebSockets();
+                    app.UseOcelot().Wait();
+                })
+                .UseIISIntegration();
+            _ocelotHost = _ocelotBuilder.Build();
+            await _ocelotHost.StartAsync();
+        }
+
+        public async Task StartFakeOcelotWithWebSocketsWithConsul()
+        {
+            _ocelotBuilder = new WebHostBuilder();
+            _ocelotBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_ocelotBuilder);
+                s.AddOcelot().AddConsul();
+            });
+            _ocelotBuilder.UseKestrel()
+                .UseUrls("http://localhost:5000")
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
@@ -95,7 +148,14 @@ namespace Ocelot.AcceptanceTests
 
             if (File.Exists(configurationPath))
             {
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
@@ -107,16 +167,26 @@ namespace Ocelot.AcceptanceTests
 
             if (File.Exists(configurationPath))
             {
-                File.Delete(configurationPath);
+                try
+                {
+                    File.Delete(configurationPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             File.WriteAllText(configurationPath, jsonConfiguration);
         }
 
-        /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-        /// </summary>
-        public void GivenOcelotIsRunning()
+        public void ThenTheResponseBodyHeaderIs(string key, string value)
+        {
+            var header = _response.Content.Headers.GetValues(key);
+            header.First().ShouldBe(value);
+        }
+
+        public void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
         {
             _webHostBuilder = new WebHostBuilder();
 
@@ -125,9 +195,9 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: shouldReload);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -144,6 +214,71 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunning()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithConsul()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot().AddConsul();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void ThenTheTraceHeaderIsSet(string key)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldNotBeNullOrEmpty();
+        }
+
         internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
         {
             _webHostBuilder = new WebHostBuilder();
@@ -153,15 +288,15 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
                 {
                     s.AddOcelot()
-                    .AddOpenTracing(option =>
+                    .AddButterfly(option =>
                     {
                         //this is the url that the butterfly collector server is running on...
                         option.CollectorUrl = butterflyUrl;
@@ -182,6 +317,163 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddCacheManager((x) =>
+                        {
+                            x.WithMicrosoftLogging(log =>
+                                {
+                                    log.AddConsole(LogLevel.Debug);
+                                })
+                                .WithJsonSerializer()
+                                .WithHandle(typeof(InMemoryJsonHandle<>));
+                        })
+                        .AddConsul()
+                        .AddConfigStoredInConsul();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot().AddConsul().AddConfigStoredInConsul();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
+        {
+            var result = Wait.WaitFor(2000).Until(() =>
+            {
+                try
+                {
+                    _response = _ocelotClient.GetAsync(url).Result;
+                    _response.EnsureSuccessStatusCode();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
+
+            result.ShouldBeTrue();
+        }
+
+        public void GivenOcelotIsRunningUsingJsonSerializedCache()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddCacheManager((x) =>
+                        {
+                            x.WithMicrosoftLogging(log =>
+                                {
+                                    log.AddConsole(LogLevel.Debug);
+                                })
+                                .WithJsonSerializer()
+                                .WithHandle(typeof(InMemoryJsonHandle<>));
+                        });
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithFakeHttpClientCache(IHttpClientCache cache)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<IHttpClientCache>(cache);
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        internal void GivenIWait(int wait)
+        {
+            Thread.Sleep(wait);
+        }
+
         public void GivenOcelotIsRunningWithMiddleareBeforePipeline<T>(Func<object, Task> callback)
         {
             _webHostBuilder = new WebHostBuilder();
@@ -191,9 +483,9 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -222,17 +514,17 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
                 {
                     s.AddSingleton(_webHostBuilder);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>()
-                        .AddSingletonDelegatingHandler<TWo>();
+                        .AddDelegatingHandler<TOne>()
+                        .AddDelegatingHandler<TWo>();
                 })
                 .Configure(a =>
                 {
@@ -255,9 +547,9 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -277,7 +569,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>() 
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>()
             where TOne : DelegatingHandler
             where TWo : DelegatingHandler
         {
@@ -288,17 +580,17 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
                 {
                     s.AddSingleton(_webHostBuilder);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>(true)
-                        .AddSingletonDelegatingHandler<TWo>(true);
+                        .AddDelegatingHandler<TOne>(true)
+                        .AddDelegatingHandler<TWo>(true);
                 })
                 .Configure(a =>
                 {
@@ -310,7 +602,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency) 
+        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>()
             where TOne : DelegatingHandler
         {
             _webHostBuilder = new WebHostBuilder();
@@ -320,9 +612,40 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddOcelot()
+                        .AddDelegatingHandler<TOne>(true);
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency)
+            where TOne : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -330,7 +653,7 @@ namespace Ocelot.AcceptanceTests
                     s.AddSingleton(_webHostBuilder);
                     s.AddSingleton<FakeDependency>(dependency);
                     s.AddOcelot()
-                        .AddSingletonDelegatingHandler<TOne>(true);
+                        .AddDelegatingHandler<TOne>(true);
                 })
                 .Configure(a =>
                 {
@@ -359,9 +682,9 @@ namespace Ocelot.AcceptanceTests
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -386,138 +709,9 @@ namespace Ocelot.AcceptanceTests
             header.First().ShouldBe(value);
         }
 
-        public void ThenTheTraceHeaderIsSet(string key)
+        public void ThenTheReasonPhraseIs(string expected)
         {
-            var header = _response.Headers.GetValues(key);
-            header.First().ShouldNotBeNullOrEmpty();
-        }
-
-        public void GivenOcelotIsRunningUsingJsonSerializedCache()
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot()
-                        .AddCacheManager((x) =>
-                        {
-                            x.WithMicrosoftLogging(log =>
-                                {
-                                    log.AddConsole(LogLevel.Debug);
-                                })
-                                .WithJsonSerializer()
-                                .WithHandle(typeof(InMemoryJsonHandle<>));
-                        });
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                }); 
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            _ocelotClient = _ocelotServer.CreateClient();
-        }
-
-        public void GivenOcelotIsRunningUsingConsulToStoreConfig()
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot().AddStoreOcelotConfigurationInConsul();
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                });
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            _ocelotClient = _ocelotServer.CreateClient();
-        }
-
-        public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    config.AddJsonFile("ocelot.json");
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot()
-                        .AddCacheManager((x) =>
-                        {
-                            x.WithMicrosoftLogging(log =>
-                                {
-                                    log.AddConsole(LogLevel.Debug);
-                                })
-                                .WithJsonSerializer()
-                                .WithHandle(typeof(InMemoryJsonHandle<>));
-                        })
-                        .AddStoreOcelotConfigurationInConsul();
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                }); 
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            _ocelotClient = _ocelotServer.CreateClient();
-        }
-
-        internal void ThenTheResponseShouldBe(FileConfiguration expecteds)
-        {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
-
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
-
-            for (var i = 0; i < response.ReRoutes.Count; i++)
-            {
-                for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
-                {
-                    var result = response.ReRoutes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
-                    result.Host.ShouldBe(expected.Host);
-                    result.Port.ShouldBe(expected.Port);
-                }
-
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.ReRoutes[i].UpstreamHttpMethod);
-            }
+            _response.ReasonPhrase.ShouldBe(expected);
         }
 
         /// <summary>
@@ -527,8 +721,8 @@ namespace Ocelot.AcceptanceTests
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile("ocelot.json")
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile("ocelot.json", false, false)
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
@@ -542,15 +736,6 @@ namespace Ocelot.AcceptanceTests
                 .UseConfiguration(configuration)
                 .ConfigureServices(s =>
                 {
-                    Action<ConfigurationBuilderCachePart> settings = (x) =>
-                    {
-                        x.WithMicrosoftLogging(log =>
-                        {
-                            log.AddConsole(LogLevel.Debug);
-                        })
-                        .WithDictionaryHandle();
-                    };
-
                     s.AddOcelot(configuration);
                 })
                 .ConfigureLogging(l =>
@@ -640,33 +825,73 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        public void GivenIHaveAnOcelotToken(string adminPath)
-        {
-            var tokenUrl = $"{adminPath}/connect/token";
-            var formData = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("client_id", "admin"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "admin"),
-                new KeyValuePair<string, string>("grant_type", "password")
-            };
-            var content = new FormUrlEncodedContent(formData);
-
-            var response = _ocelotClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-            response.EnsureSuccessStatusCode();
-            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-        }
-
         public void VerifyIdentiryServerStarted(string url)
         {
             using (var httpClient = new HttpClient())
             {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
+                var content = response.Content.ReadAsStringAsync().GetAwaiter();
                 response.EnsureSuccessStatusCode();
             }
+        }
+
+        public void GivenOcelotIsRunningWithEureka()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddEureka();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithPolly()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddPolly();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot()
+                        .Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url)
@@ -684,7 +909,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenIAddAHeader(string key, string value)
         {
-            _ocelotClient.DefaultRequestHeaders.Add(key, value);
+            _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
         }
 
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
@@ -701,7 +926,7 @@ namespace Ocelot.AcceptanceTests
             Task.WaitAll(tasks);
         }
 
-        public async Task WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+        public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
         {
             var tasks = new Task[times];
 
@@ -761,6 +986,11 @@ namespace Ocelot.AcceptanceTests
             _postContent = new StringContent(postcontent);
         }
 
+        public void GivenThePostHasContentType(string postcontent)
+        {
+            _postContent.Headers.ContentType = new MediaTypeHeaderValue(postcontent);
+        }
+
         public void GivenThePostHasGzipContent(object input)
         {
             var json = JsonConvert.SerializeObject(input);
@@ -781,6 +1011,11 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheResponseBodyShouldBe(string expectedBody)
         {
             _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
+        }
+
+        public void ThenTheContentLengthIs(int expected)
+        {
+            _response.Content.Headers.ContentLength.ShouldBe(expected);
         }
 
         public void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
@@ -809,11 +1044,6 @@ namespace Ocelot.AcceptanceTests
         public void ThenTheRequestIdIsReturned(string expected)
         {
             _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
-        }
-
-        public void ThenTheContentLengthIs(int expected)
-        {
-            _response.Content.Headers.ContentLength.ShouldBe(expected);
         }
 
         public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
@@ -860,6 +1090,35 @@ namespace Ocelot.AcceptanceTests
             var response = await _ocelotClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
             content.ShouldBe(expectedBody);
+        }
+
+        public void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<IFileConfigurationRepository>(fake);
+                    s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
         }
     }
 }

@@ -9,8 +9,11 @@ namespace Ocelot.Middleware.Pipeline
     public interface IOcelotPipelineBuilder
     {
         IServiceProvider ApplicationServices { get; }
-        OcelotPipelineBuilder Use(Func<OcelotRequestDelegate, OcelotRequestDelegate> middleware);
+
+        IOcelotPipelineBuilder Use(Func<OcelotRequestDelegate, OcelotRequestDelegate> middleware);
+
         OcelotRequestDelegate Build();
+
         IOcelotPipelineBuilder New();
     }
 }

@@ -1,20 +1,20 @@
-﻿using Moq;
+﻿using Microsoft.AspNetCore.Http;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Middleware;
+using System.Threading;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
-using Shouldly;
-using Ocelot.Request.Middleware;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace Ocelot.UnitTests.Requester
 {
@@ -27,6 +27,7 @@ namespace Ocelot.UnitTests.Requester
         private DownstreamContext _request;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
+        private Mock<IExceptionToErrorMapper> _mapper;
 
         public HttpClientHttpRequesterTest()
         {
@@ -38,19 +39,27 @@ namespace Ocelot.UnitTests.Requester
                 .Setup(x => x.CreateLogger<HttpClientHttpRequester>())
                 .Returns(_logger.Object);
             _cacheHandlers = new Mock<IHttpClientCache>();
+            _mapper = new Mock<IExceptionToErrorMapper>();
             _httpClientRequester = new HttpClientHttpRequester(
-                _loggerFactory.Object, 
-                _cacheHandlers.Object, 
-                _factory.Object);            
+                _loggerFactory.Object,
+                _cacheHandlers.Object,
+                _factory.Object,
+                _mapper.Object);
         }
 
         [Fact]
         public void should_call_request_correctly()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -60,9 +69,9 @@ namespace Ocelot.UnitTests.Requester
                 DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }),
             };
 
-            this.Given(x=>x.GivenTheRequestIs(context))
+            this.Given(x => x.GivenTheRequestIs(context))
                 .And(x => GivenTheHouseReturnsOkHandler())
-                .When(x=>x.WhenIGetResponse())
+                .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledCorrectly())
                 .BDDfy();
         }
@@ -70,10 +79,16 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
@@ -92,10 +107,16 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void http_client_request_times_out()
         {
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
             var reRoute = new DownstreamReRouteBuilder()
-                .WithIsQos(false)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false))
-                .WithReRouteKey("")
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
+                .WithLoadBalancerKey("")
+                .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 
@@ -115,12 +136,12 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheRequestIs(DownstreamContext request)
         {
-            _request = request;            
+            _request = request;
         }
 
         private void WhenIGetResponse()
         {
-            _response = _httpClientRequester.GetResponse(_request).Result;
+            _response = _httpClientRequester.GetResponse(_request).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseIsCalledCorrectly()
@@ -135,7 +156,8 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheErrorIsTimeout()
         {
-            _response.Errors[0].ShouldBeOfType<RequestTimedOutError>();
+            _mapper.Verify(x => x.Map(It.IsAny<Exception>()), Times.Once);
+            _response.Errors[0].ShouldBeOfType<UnableToCompleteRequestError>();
         }
 
         private void GivenTheHouseReturnsOkHandler()
@@ -156,9 +178,11 @@ namespace Ocelot.UnitTests.Requester
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+
+            _mapper.Setup(x => x.Map(It.IsAny<Exception>())).Returns(new UnableToCompleteRequestError(new Exception()));
         }
 
-        class OkDelegatingHandler : DelegatingHandler
+        private class OkDelegatingHandler : DelegatingHandler
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -166,7 +190,7 @@ namespace Ocelot.UnitTests.Requester
             }
         }
 
-        class TimeoutDelegatingHandler : DelegatingHandler
+        private class TimeoutDelegatingHandler : DelegatingHandler
         {
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -174,5 +198,5 @@ namespace Ocelot.UnitTests.Requester
                 return new HttpResponseMessage();
             }
         }
-    }  
+    }
 }

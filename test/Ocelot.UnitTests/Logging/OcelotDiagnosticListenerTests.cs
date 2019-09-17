@@ -1,12 +1,11 @@
-using Ocelot.Logging;
-using Moq;
-using TestStack.BDDfy;
-using Butterfly.Client.Tracing;
-using Ocelot.Requester;
-using Xunit;
-using Ocelot.Middleware;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 using System;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.Logging
 {
@@ -15,7 +14,8 @@ namespace Ocelot.UnitTests.Logging
         private readonly OcelotDiagnosticListener _listener;
         private Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
-        private IServiceTracer _tracer;
+        private IServiceCollection _serviceCollection;
+        private IServiceProvider _serviceProvider;
         private DownstreamContext _downstreamContext;
         private string _name;
         private Exception _exception;
@@ -24,9 +24,10 @@ namespace Ocelot.UnitTests.Logging
         {
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _tracer = new FakeServiceTracer();
+            _serviceCollection = new ServiceCollection();
+            _serviceProvider = _serviceCollection.BuildServiceProvider();
             _factory.Setup(x => x.CreateLogger<OcelotDiagnosticListener>()).Returns(_logger.Object);
-            _listener = new OcelotDiagnosticListener(_factory.Object, _tracer);
+            _listener = new OcelotDiagnosticListener(_factory.Object, _serviceProvider);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace Ocelot.UnitTests.Logging
                 .BDDfy();
         }
 
-       [Fact]
+        [Fact]
         public void should_trace_middleware_started()
         {
             this.Given(_ => GivenAMiddlewareName())

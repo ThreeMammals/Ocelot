@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>Ocelot.UnitTests</AssemblyName>
     <PackageId>Ocelot.UnitTests</PackageId>
     <OutputType>Exe</OutputType>
@@ -21,38 +20,70 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Kubernetes\KubeProviderFactoryTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Administration\Ocelot.Administration.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Rafty\Ocelot.Provider.Rafty.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="idsrv3test.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.500-preview2-1-003177" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.1" />
-    <PackageReference Include="Moq" Version="4.8.2" />
-    <PackageReference Include="Shouldly" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
-    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.7.0" />
+    <PackageReference Include="IdentityServer4" Version="2.4.0" />
+    <PackageReference Include="Pivotal.Discovery.ClientCore" Version="2.2.0" />
+    <PackageReference Include="Consul" Version="0.7.2.6" />
+    <PackageReference Include="CacheManager.Core" Version="1.2.0" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="1.2.0" />
+    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="1.2.0" />
+    <PackageReference Include="Polly" Version="7.1.0" />
+    <PackageReference Include="Rafty" Version="0.4.4" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="WebSockets\" />
   </ItemGroup>
-
 </Project>

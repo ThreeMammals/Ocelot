@@ -1,7 +1,7 @@
 Headers Transformation
 ======================
 
-Ocelot allows the user to transform headers pre and post downstream request. At the moment Ocelot only supports find and replace. This feature was requested `GitHub #190 <https://github.com/TomPallister/Ocelot/issues/190>`_ and I decided that it was going to be useful in various ways.
+Ocelot allows the user to transform headers pre and post downstream request. At the moment Ocelot only supports find and replace. This feature was requested `GitHub #190 <https://github.com/ThreeMammals/Ocelot/issues/190>`_ and I decided that it was going to be useful in various ways.
 
 Add to Request
 ^^^^^^^^^^^^^^
@@ -23,7 +23,7 @@ Placeholders are supported too (see below).
 Add to Response
 ^^^^^^^^^^^^^^^
 
-This feature was requested in `GitHub #280 <https://github.com/TomPallister/Ocelot/issues/280>`_.
+This feature was requested in `GitHub #280 <https://github.com/ThreeMammals/Ocelot/issues/280>`_.
 
 If you want to add a header to your downstream response please add the following to a ReRoute in ocelot.json..
 
@@ -81,6 +81,7 @@ Placeholders
 
 Ocelot allows placeholders that can be used in header transformation.
 
+{RemoteIpAddress} - This will find the clients IP address using _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString() so you will get back some IP.
 {BaseUrl} - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
 {DownstreamBaseUrl} - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for DownstreamHeaderTransform at the moment.
 {TraceId} - This will use the Butterfly APM Trace Id. This only works for DownstreamHeaderTransform at the moment.
@@ -119,6 +120,17 @@ finally if you are using a load balancer with Ocelot you will get multiple downs
      "HttpHandlerOptions": {
         "AllowAutoRedirect": false,
     },
+
+X-Forwarded-For
+^^^^^^^^^^^^^^^
+
+An example of using {RemoteIpAddress} placeholder...
+
+.. code-block:: json
+
+  "UpstreamHeaderTransform": {
+        "X-Forwarded-For": "{RemoteIpAddress}"
+    }
 
 Future
 ^^^^^^

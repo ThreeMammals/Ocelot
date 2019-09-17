@@ -1,20 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using Moq;
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Headers;
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using TestStack.BDDfy;
 using Xunit;
-using System.Net.Http;
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
+    using Ocelot.Infrastructure;
+    using Ocelot.Logging;
+
     public class AddHeadersToRequestClaimToThingTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
@@ -24,11 +27,15 @@ namespace Ocelot.UnitTests.Headers
         private List<ClaimToThing> _configuration;
         private Response _result;
         private Response<string> _claimValue;
+        private Mock<IPlaceholders> _placeholders;
+        private Mock<IOcelotLoggerFactory> _factory;
 
         public AddHeadersToRequestClaimToThingTests()
         {
             _parser = new Mock<IClaimsParser>();
-            _addHeadersToRequest = new AddHeadersToRequest(_parser.Object);
+            _placeholders = new Mock<IPlaceholders>();
+            _factory = new Mock<IOcelotLoggerFactory>();
+            _addHeadersToRequest = new AddHeadersToRequest(_parser.Object, _placeholders.Object, _factory.Object);
             _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
@@ -90,7 +97,7 @@ namespace Ocelot.UnitTests.Headers
                .Then(x => x.ThenTheResultIsError())
                .BDDfy();
         }
-        
+
         private void GivenClaims(List<Claim> claims)
         {
             _claims = claims;
@@ -112,8 +119,8 @@ namespace Ocelot.UnitTests.Headers
             _parser
                 .Setup(
                     x =>
-                        x.GetValue(It.IsAny<IEnumerable<Claim>>(), 
-                        It.IsAny<string>(), 
+                        x.GetValue(It.IsAny<IEnumerable<Claim>>(),
+                        It.IsAny<string>(),
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                 .Returns(_claimValue);
@@ -140,9 +147,9 @@ namespace Ocelot.UnitTests.Headers
             header.Value.First().ShouldBe(_claimValue.Data);
         }
 
-        class AnyError : Error
+        private class AnyError : Error
         {
-            public AnyError() 
+            public AnyError()
                 : base("blahh", OcelotErrorCode.UnknownError)
             {
             }

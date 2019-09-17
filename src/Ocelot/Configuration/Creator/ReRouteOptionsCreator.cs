@@ -10,28 +10,23 @@ namespace Ocelot.Configuration.Creator
             var isAuthenticated = IsAuthenticated(fileReRoute);
             var isAuthorised = IsAuthorised(fileReRoute);
             var isCached = IsCached(fileReRoute);
-            var isQos = IsQoS(fileReRoute);
             var enableRateLimiting = IsEnableRateLimiting(fileReRoute);
+            var useServiceDiscovery = !string.IsNullOrEmpty(fileReRoute.ServiceName);
 
             var options = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(isAuthenticated)
                 .WithIsAuthorised(isAuthorised)
                 .WithIsCached(isCached)
-                .WithIsQos(isQos)
                 .WithRateLimiting(enableRateLimiting)
+                .WithUseServiceDiscovery(useServiceDiscovery)
                 .Build();
-            
+
             return options;
         }
 
         private static bool IsEnableRateLimiting(FileReRoute fileReRoute)
         {
             return (fileReRoute.RateLimitOptions != null && fileReRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
-        }
-
-        private bool IsQoS(FileReRoute fileReRoute)
-        {
-            return fileReRoute.QoSOptions?.ExceptionsAllowedBeforeBreaking > 0 && fileReRoute.QoSOptions?.TimeoutValue > 0;
         }
 
         private bool IsAuthenticated(FileReRoute fileReRoute)

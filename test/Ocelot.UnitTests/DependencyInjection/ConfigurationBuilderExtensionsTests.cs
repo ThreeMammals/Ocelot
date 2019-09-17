@@ -1,12 +1,14 @@
 ﻿namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System.Collections.Generic;
-    using System.IO;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Moq;
     using Newtonsoft.Json;
     using Ocelot.Configuration.File;
-    using Microsoft.Extensions.Configuration;
     using Ocelot.DependencyInjection;
     using Shouldly;
+    using System.Collections.Generic;
+    using System.IO;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -19,6 +21,20 @@
         private FileConfiguration _reRouteA;
         private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
+        private FileConfiguration _envSpecific;
+        private Mock<IHostingEnvironment> _hostingEnvironment;
+
+        public ConfigurationBuilderExtensionsTests()
+        {
+            _hostingEnvironment = new Mock<IHostingEnvironment>();
+            // Clean up config files before each test
+            var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
+
+            foreach (var config in subConfigFiles)
+            {
+                config.Delete();
+            }
+        }
 
         [Fact]
         public void should_add_base_url_to_config()
@@ -32,14 +48,41 @@
         [Fact]
         public void should_merge_files()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles())
+            this.Given(_ => GivenMultipleConfigurationFiles("", false))
+                .And(_ => GivenTheEnvironmentIs(null))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
                 .BDDfy();
         }
 
-        private void GivenMultipleConfigurationFiles()
+        [Fact]
+        public void should_merge_files_except_env()
         {
+            this.Given(_ => GivenMultipleConfigurationFiles("", true))
+                .And(_ => GivenTheEnvironmentIs("Env"))
+                .When(_ => WhenIAddOcelotConfiguration())
+                .Then(_ => ThenTheConfigsAreMerged())
+                .And(_ => NotContainsEnvSpecificConfig())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_merge_files_in_specific_folder()
+        {
+            string configFolder = "ConfigFiles";
+            this.Given(_ => GivenMultipleConfigurationFiles(configFolder, false))
+                .When(_ => WhenIAddOcelotConfigurationWithSpecificFolder(configFolder))
+                .Then(_ => ThenTheConfigsAreMerged())
+                .BDDfy();
+        }
+
+        private void GivenMultipleConfigurationFiles(string folder, bool addEnvSpecificConfig)
+        {
+            if (!string.IsNullOrEmpty(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
             _globalConfig = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -140,7 +183,7 @@
                 {
                     new FileAggregateReRoute
                     {
-                        ReRouteKeys = new List<string> 
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -149,7 +192,7 @@
                     },
                     new FileAggregateReRoute
                     {
-                        ReRouteKeys = new List<string> 
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -159,16 +202,67 @@
                 }
             };
 
-            File.WriteAllText("ocelot.global.json", JsonConvert.SerializeObject(_globalConfig));
-            File.WriteAllText("ocelot.reRoutesA.json", JsonConvert.SerializeObject(_reRouteA));
-            File.WriteAllText("ocelot.reRoutesB.json", JsonConvert.SerializeObject(_reRouteB));
-            File.WriteAllText("ocelot.aggregates.json", JsonConvert.SerializeObject(_aggregate));
+            _envSpecific = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamScheme = "DownstreamSchemeSpec",
+                            DownstreamPathTemplate = "DownstreamPathTemplateSpec",
+                            Key = "KeySpec",
+                            UpstreamHost = "UpstreamHostSpec",
+                            UpstreamHttpMethod = new List<string>
+                            {
+                                "UpstreamHttpMethodSpec"
+                            },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "HostSpec",
+                                    Port = 80
+                                }
+                            }
+                        }
+                    }
+            };
+
+            string globalFilename = Path.Combine(folder, "ocelot.global.json");
+            string reroutesAFilename = Path.Combine(folder, "ocelot.reRoutesA.json");
+            string reroutesBFilename = Path.Combine(folder, "ocelot.reRoutesB.json");
+            string aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
+
+            File.WriteAllText(globalFilename, JsonConvert.SerializeObject(_globalConfig));
+            File.WriteAllText(reroutesAFilename, JsonConvert.SerializeObject(_reRouteA));
+            File.WriteAllText(reroutesBFilename, JsonConvert.SerializeObject(_reRouteB));
+            File.WriteAllText(aggregatesFilename, JsonConvert.SerializeObject(_aggregate));
+
+            if (addEnvSpecificConfig)
+            {
+                string envSpecificFilename = Path.Combine(folder, "ocelot.Env.json");
+                File.WriteAllText(envSpecificFilename, JsonConvert.SerializeObject(_envSpecific));
+            }
+        }
+
+        private void GivenTheEnvironmentIs(string env)
+        {
+            _hostingEnvironment.SetupGet(x => x.EnvironmentName).Returns(env);
         }
 
         private void WhenIAddOcelotConfiguration()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.AddOcelot();
+
+            builder.AddOcelot(_hostingEnvironment.Object);
+
+            _configRoot = builder.Build();
+        }
+
+        private void WhenIAddOcelotConfigurationWithSpecificFolder(string folder)
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.AddOcelot(folder, _hostingEnvironment.Object);
             _configRoot = builder.Build();
         }
 
@@ -208,12 +302,20 @@
             fc.Aggregates.Count.ShouldBe(_aggregate.Aggregates.Count);
         }
 
+        private void NotContainsEnvSpecificConfig()
+        {
+            var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldNotContain(x => x.Key == _envSpecific.ReRoutes[0].Key);
+        }
+
         private void GivenTheBaseUrl(string baseUrl)
         {
-            #pragma warning disable CS0618
+#pragma warning disable CS0618
             var builder = new ConfigurationBuilder()
                 .AddOcelotBaseUrl(baseUrl);
-            #pragma warning restore CS0618
+#pragma warning restore CS0618
             _configuration = builder.Build();
         }
 

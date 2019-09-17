@@ -1,4 +1,7 @@
-﻿namespace ApiGateway
+﻿using Ocelot.Provider.Eureka;
+using Ocelot.Provider.Polly;
+
+namespace ApiGateway
 {
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
@@ -22,12 +25,14 @@
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("ocelot.json")
+                        .AddJsonFile("ocelot.json", false, false)
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddOcelot();
+                    s.AddOcelot()
+                        .AddEureka()
+                        .AddPolly();
                 })
                 .Configure(a =>
                 {

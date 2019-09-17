@@ -1,12 +1,13 @@
-using System.Collections.Generic;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
     public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
     {
-        private const string RegExMatchEverything = "[0-9a-zA-Z].*";
+        private const string RegExMatchOneOrMoreOfEverything = ".+";
+        private const string RegExMatchOneOrMoreOfEverythingUntilNextForwardSlash = "[^/]+";
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
         private const string RegExForwardSlashOnly = "^/$";
@@ -28,39 +29,56 @@ namespace Ocelot.Configuration.Creator
                     placeholders.Add(placeHolderName);
 
                     //hack to handle /{url} case
-                    if(ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
+                    if (ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
                     {
-                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, 0);
+                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, 0, false, reRoute.UpstreamPathTemplate);
                     }
                 }
             }
 
-            foreach (var placeholder in placeholders)
+            var containsQueryString = false;
+
+            if (upstreamTemplate.Contains("?"))
             {
-                upstreamTemplate = upstreamTemplate.Replace(placeholder, RegExMatchEverything);
+                containsQueryString = true;
+                upstreamTemplate = upstreamTemplate.Replace("?", "\\?");
+            }
+
+            for (int i = 0; i < placeholders.Count; i++)
+            {
+                var indexOfPlaceholder = upstreamTemplate.IndexOf(placeholders[i]);
+                var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder);
+                if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf("?") < upstreamTemplate.IndexOf(placeholders[i])))
+                {
+                    upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverything);
+                }
+                else
+                {
+                    upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverythingUntilNextForwardSlash);
+                }
             }
 
             if (upstreamTemplate == "/")
             {
-                return new UpstreamPathTemplate(RegExForwardSlashOnly, reRoute.Priority);
+                return new UpstreamPathTemplate(RegExForwardSlashOnly, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
             }
 
-            if(upstreamTemplate.EndsWith("/"))
+            if (upstreamTemplate.EndsWith("/"))
             {
-                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length -1, 1) + "(/|)";
+                upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length - 1, 1) + "(/|)";
             }
 
-            var route = reRoute.ReRouteIsCaseSensitive 
-                ? $"^{upstreamTemplate}{RegExMatchEndString}" 
+            var route = reRoute.ReRouteIsCaseSensitive
+                ? $"^{upstreamTemplate}{RegExMatchEndString}"
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
-            return new UpstreamPathTemplate(route, reRoute.Priority);
+            return new UpstreamPathTemplate(route, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
         }
 
         private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
         {
-            if(upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
-            {   
+            if (upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
+            {
                 return true;
             }
 

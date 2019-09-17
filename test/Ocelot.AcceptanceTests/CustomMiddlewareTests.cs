@@ -1,29 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using Ocelot.Middleware;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration.File;
+    using Ocelot.Middleware;
+    using Shouldly;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Net;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class CustomMiddlewareTests : IDisposable
     {
         private readonly string _configurationPath;
-        private IWebHost _builder;
         private readonly Steps _steps;
         private int _counter;
+        private readonly ServiceHandler _serviceHandler;
 
         public CustomMiddlewareTests()
         {
+            _serviceHandler = new ServiceHandler();
             _counter = 0;
             _steps = new Steps();
             _configurationPath = "ocelot.json";
@@ -286,7 +284,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.ThenTheCounterIs(1))
                 .BDDfy();
         }
-        
+
         [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
         public void should_fix_issue_237()
         {
@@ -295,7 +293,7 @@ namespace Ocelot.AcceptanceTests
                 var httpContext = (HttpContext)state;
 
                 if (httpContext.Response.StatusCode > 400)
-                {                    
+                {
                     Debug.WriteLine("COUNT CALLED");
                     Console.WriteLine("COUNT CALLED");
                 }
@@ -340,45 +338,32 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string basePath)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+            {
+                if (string.IsNullOrEmpty(basePath))
                 {
-                    app.UsePathBase(basePath);
-                    app.Run(context =>
-                    {
-                        if(string.IsNullOrEmpty(basePath))
-                        {
-                            context.Response.StatusCode = statusCode;
-                        }
-                        else if(context.Request.Path.Value != basePath)
-                        {
-                            context.Response.StatusCode = 404;
-                        }
+                    context.Response.StatusCode = statusCode;
+                }
+                else if (context.Request.Path.Value != basePath)
+                {
+                    context.Response.StatusCode = 404;
+                }
 
-                        return Task.CompletedTask;
-                    });
-                })
-                .Build();
-
-            _builder.Start();
+                return Task.CompletedTask;
+            });
         }
 
         public void Dispose()
         {
-            _builder?.Dispose();
+            _serviceHandler?.Dispose();
             _steps.Dispose();
         }
 
         public class FakeMiddleware
         {
             private readonly RequestDelegate _next;
-            private readonly Func<object, Task> _callback; 
-            
+            private readonly Func<object, Task> _callback;
+
             public FakeMiddleware(RequestDelegate next, Func<object, Task> callback)
             {
                 _next = next;
@@ -388,7 +373,7 @@ namespace Ocelot.AcceptanceTests
             public async Task Invoke(HttpContext context)
             {
                 await _next(context);
-                
+
                 context.Response.OnCompleted(_callback, context);
             }
         }

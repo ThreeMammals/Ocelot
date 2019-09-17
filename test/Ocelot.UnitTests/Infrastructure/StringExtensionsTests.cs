@@ -1,6 +1,6 @@
-﻿using Xunit;
-using Ocelot.Infrastructure.Extensions;
+﻿using Ocelot.Infrastructure.Extensions;
 using Shouldly;
+using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {

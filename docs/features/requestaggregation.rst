@@ -1,11 +1,11 @@
 Request Aggregation
 ===================
 
-Ocelot allow's you to specify Aggregate ReRoutes that compose multiple normal ReRoutes and map their responses into one object. This is usual where you have 
+Ocelot allows you to specify Aggregate ReRoutes that compose multiple normal ReRoutes and map their responses into one object. This is usually where you have 
 a client that is making multiple requests to a server where it could just be one. This feature allows you to start implementing back end for a front end type 
 architecture with Ocelot.
 
-This feature was requested as part of `Issue 79 <https://github.com/TomPallister/Ocelot/pull/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/TomPallister/Ocelot/issue/298>`_.
+This feature was requested as part of `Issue 79 <https://github.com/ThreeMammals/Ocelot/pull/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/ThreeMammals/Ocelot/issue/298>`_.
 
 In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal ReRoutes and each one has a Key property. 
 We then specify an Aggregate that composes the two ReRoutes using their keys in the ReRouteKeys list and says then we have the UpstreamPathTemplate which works like a normal ReRoute.

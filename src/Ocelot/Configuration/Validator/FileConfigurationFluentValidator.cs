@@ -1,24 +1,42 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
-using Ocelot.Configuration.File;
-using Ocelot.Errors;
-using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Ocelot.Configuration.Validator
 {
+    using Errors;
+    using File;
+    using FluentValidation;
+    using Microsoft.Extensions.DependencyInjection;
+    using Responses;
+    using ServiceDiscovery;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        public FileConfigurationFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider)
-        {
-            RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(new ReRouteFluentValidator(authenticationSchemeProvider));
+        private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
+        public FileConfigurationFluentValidator(IServiceProvider provider, ReRouteFluentValidator reRouteFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
+        {
+            _serviceDiscoveryFinderDelegates = provider
+                .GetServices<ServiceDiscoveryFinderDelegate>()
+                .ToList();
+
+            RuleFor(configuration => configuration.ReRoutes)
+                .SetCollectionValidator(reRouteFluentValidator);
+
+            RuleFor(configuration => configuration.GlobalConfiguration)
+                .SetValidator(fileGlobalConfigurationFluentValidator);
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.ReRoutes))
                 .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicate");
+
+            RuleForEach(configuration => configuration.ReRoutes)
+                .Must((config, reRoute) => HaveServiceDiscoveryProviderRegistered(reRoute, config.GlobalConfiguration.ServiceDiscoveryProvider))
+                .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
+
+            RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
+                .Must(HaveServiceDiscoveryProviderRegistered)
+                .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
 
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => IsNotDuplicateIn(reRoute, config.Aggregates))
@@ -37,11 +55,34 @@ namespace Ocelot.Configuration.Validator
                 .WithMessage((config, aggregateReRoute) => $"{nameof(aggregateReRoute)} {aggregateReRoute.UpstreamPathTemplate} contains ReRoute with specific RequestIdKey, this is not possible with Aggregates");
         }
 
-        private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)
+        private bool HaveServiceDiscoveryProviderRegistered(FileReRoute reRoute, FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
-            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
+            if (string.IsNullOrEmpty(reRoute.ServiceName))
+            {
+                return true;
+            }
 
-            return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
+            if (serviceDiscoveryProvider?.Type?.ToLower() == "servicefabric")
+            {
+                return true;
+            }
+
+            return _serviceDiscoveryFinderDelegates.Any();
+        }
+
+        private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
+        {
+            if (serviceDiscoveryProvider == null)
+            {
+                return true;
+            }
+
+            if (serviceDiscoveryProvider?.Type?.ToLower() == "servicefabric")
+            {
+                return true;
+            }
+
+            return string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
@@ -60,6 +101,13 @@ namespace Ocelot.Configuration.Validator
             return new OkResponse<ConfigurationValidationResult>(result);
         }
 
+        private bool AllReRoutesForAggregateExist(FileAggregateReRoute fileAggregateReRoute, List<FileReRoute> reRoutes)
+        {
+            var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
+
+            return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
+        }
+
         private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute,
             List<FileReRoute> reRoutes)
         {
@@ -73,11 +121,11 @@ namespace Ocelot.Configuration.Validator
         {
             var matchingReRoutes = reRoutes
                 .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
-                            && (r.UpstreamHost != reRoute.UpstreamHost || reRoute.UpstreamHost == null)
+                            && (r.UpstreamHost == reRoute.UpstreamHost || reRoute.UpstreamHost == null)
                             && (r.UpstreamScheme != reRoute.UpstreamScheme || reRoute.UpstreamScheme == null))
                 .ToList();
 
-            if(matchingReRoutes.Count == 1)
+            if (matchingReRoutes.Count == 1)
             {
                 return true;
             }

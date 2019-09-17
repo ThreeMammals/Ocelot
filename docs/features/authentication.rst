@@ -93,14 +93,14 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
 Identity Server Bearer Tokens
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In order to use IdentityServer bearer tokens register your IdentityServer services as usual in ConfigureServices with a scheme (key). If you don't understand how to do this please consul the IdentityServer documentation.
+In order to use IdentityServer bearer tokens, register your IdentityServer services as usual in ConfigureServices with a scheme (key). If you don't understand how to do this please consult the IdentityServer documentation.
 
 .. code-block:: csharp
 
     public void ConfigureServices(IServiceCollection services)
     {
         var authenticationProviderKey = "TestKey";
-        var options = o =>
+        Action<IdentityServerAuthenticationOptions> options = o =>
             {
                 o.Authority = "https://whereyouridentityserverlives.com";
                 o.ApiName = "api";
@@ -135,6 +135,44 @@ Then map the authentication provider key to a ReRoute in your configuration e.g.
                 "AllowedScopes": []
             }
         }]
+
+Okta
+^^^^
+Add the following to your startup Configure method:
+
+.. code-block:: csharp
+
+    app
+        .UseAuthentication()
+        .UseOcelot()
+        .Wait();
+
+
+Add the following, at minimum, to your startup ConfigureServices method:
+
+.. code-block:: csharp
+
+     services
+         .AddAuthentication()
+         .AddJwtBearer(oktaProviderKey, options =>
+         {
+             options.Audience = configuration["Authentication:Okta:Audience"]; // Okta Authorization server Audience
+             options.Authority = configuration["Authentication:Okta:Server"]; // Okta Authorization Issuer URI URL e.g. https://{subdomain}.okta.com/oauth2/{authidentifier}
+         });
+    services.AddOcelot(configuration);
+
+
+NOTE: In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta "scp" claim to "scope"
+
+
+.. code-block:: csharp
+
+     // Map Okta scp to scope claims instead of http://schemas.microsoft.com/identity/claims/scope to allow ocelot to read/verify them
+     JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("scp");
+     JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Add("scp", "scope");
+
+
+`Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
 
 Allowed Scopes
 ^^^^^^^^^^^^^

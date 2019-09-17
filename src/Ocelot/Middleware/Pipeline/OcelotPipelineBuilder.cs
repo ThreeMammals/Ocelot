@@ -19,7 +19,7 @@ namespace Ocelot.Middleware.Pipeline
             _middlewares = new List<Func<OcelotRequestDelegate, OcelotRequestDelegate>>();
         }
 
-         public OcelotPipelineBuilder(IOcelotPipelineBuilder builder)
+        public OcelotPipelineBuilder(IOcelotPipelineBuilder builder)
         {
             ApplicationServices = builder.ApplicationServices;
             _middlewares = new List<Func<OcelotRequestDelegate, OcelotRequestDelegate>>();
@@ -27,7 +27,7 @@ namespace Ocelot.Middleware.Pipeline
 
         public IServiceProvider ApplicationServices { get; }
 
-        public OcelotPipelineBuilder Use(Func<OcelotRequestDelegate, OcelotRequestDelegate> middleware)
+        public IOcelotPipelineBuilder Use(Func<OcelotRequestDelegate, OcelotRequestDelegate> middleware)
         {
             _middlewares.Add(middleware);
             return this;
