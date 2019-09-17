@@ -8,7 +8,7 @@ namespace Ocelot.Configuration.File
         public List<AggregateReRouteConfig> ReRouteKeysConfig { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public string UpstreamHost { get; set; }
-        public string UpstreamScheme { get; set; } = "";
+        public string UpstreamScheme { get; set; } = null;
         public bool ReRouteIsCaseSensitive { get; set; }
         public string Aggregator { get; set; }
 

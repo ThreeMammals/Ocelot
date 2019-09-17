@@ -122,7 +122,7 @@ namespace Ocelot.Configuration.Validator
             var matchingReRoutes = reRoutes
                 .Where(r => r.UpstreamPathTemplate == reRoute.UpstreamPathTemplate
                             && (r.UpstreamHost == reRoute.UpstreamHost || reRoute.UpstreamHost == null)
-                            && (r.UpstreamScheme != reRoute.UpstreamScheme || reRoute.UpstreamScheme == null))
+                            && (r.UpstreamScheme == reRoute.UpstreamScheme || reRoute.UpstreamScheme == null))
                 .ToList();
 
             if (matchingReRoutes.Count == 1)

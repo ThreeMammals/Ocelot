@@ -37,8 +37,20 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             if (downstreamRoutes.Any())
             {
-                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
-                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost) && !string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
+                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost) && string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
+
+                if (!string.IsNullOrEmpty(upstreamHost) && string.IsNullOrEmpty(upstreamScheme))
+                {
+                    notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                    nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                }
+
+                if (!string.IsNullOrEmpty(upstreamScheme) && string.IsNullOrEmpty(upstreamHost))
+                {
+                    notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
+                    nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
+                }
 
                 return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
             }
@@ -50,7 +62,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             return (reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
                    (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost)&&
-                   (string.IsNullOrEmpty(reRoute.UpstreamScheme) || reRoute.UpstreamHost == upstreamScheme);
+                   (string.IsNullOrEmpty(reRoute.UpstreamScheme) || reRoute.UpstreamScheme == upstreamScheme);
         }
 
         private DownstreamRoute GetPlaceholderNamesAndValues(string path, string query, ReRoute reRoute)
