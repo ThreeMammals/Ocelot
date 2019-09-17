@@ -21,7 +21,7 @@
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRoute>>();
         }
 
-        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost, string upstreamScheme)
         {
             var serviceName = GetServiceName(upstreamUrlPath);
 
@@ -71,6 +71,7 @@
 
             var downstreamReRoute = downstreamReRouteBuilder.Build();
 
+            // We do not seem to track upstream host and scheme here. Is this intended?
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamReRoute(downstreamReRoute)
                 .WithUpstreamHttpMethod(new List<string>() { upstreamHttpMethod })
