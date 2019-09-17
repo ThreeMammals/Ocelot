@@ -37,20 +37,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
             if (downstreamRoutes.Any())
             {
-                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost) && !string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
-                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost) && string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
-
-                if (!string.IsNullOrEmpty(upstreamHost) && string.IsNullOrEmpty(upstreamScheme))
-                {
-                    notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
-                    nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
-                }
-
-                if (!string.IsNullOrEmpty(upstreamScheme) && string.IsNullOrEmpty(upstreamHost))
-                {
-                    notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
-                    nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamScheme));
-                }
+                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
 
                 return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
             }
