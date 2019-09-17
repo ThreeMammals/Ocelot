@@ -46,6 +46,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamReRoutes(applicableReRoutes)
                 .WithAggregateReRouteConfig(aggregateReRoute.ReRouteKeysConfig)
                 .WithUpstreamHost(aggregateReRoute.UpstreamHost)
+                .WithUpstreamScheme(aggregateReRoute.UpstreamScheme)
                 .WithAggregator(aggregateReRoute.Aggregator)
                 .Build();
 

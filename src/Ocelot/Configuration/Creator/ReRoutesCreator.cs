@@ -152,6 +152,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamReRoute(downstreamReRoutes)
                 .WithUpstreamHost(fileReRoute.UpstreamHost)
+                .WithUpstreamScheme(fileReRoute.UpstreamScheme)
                 .Build();
 
             return reRoute;
