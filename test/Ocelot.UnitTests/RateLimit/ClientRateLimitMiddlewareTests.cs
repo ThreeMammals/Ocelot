@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.RateLimit
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .When(x => x.WhenICallTheMiddlewareMultipleTime(2))
                 .Then(x => x.ThenresponseStatusCodeIs200())
-                .When(x => x.WhenICallTheMiddlewareMultipleTime(2))
+                .When(x => x.WhenICallTheMiddlewareMultipleTime(3))
                 .Then(x => x.ThenresponseStatusCodeIs429())
                 .BDDfy();
         }

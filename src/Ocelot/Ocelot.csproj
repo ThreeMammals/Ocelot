@@ -27,13 +27,12 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="3.0.0-preview9.19424.4" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.0.0-preview9.19423.4">
+    <PackageReference Include="FluentValidation" Version="8.5.0-preview5" />
+    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="3.0.0-rc1.19457.4" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.0.0-rc1.19456.10">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview9.19424.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-rc1.19457.4" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.66">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

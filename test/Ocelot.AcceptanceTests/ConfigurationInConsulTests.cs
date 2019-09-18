@@ -5,6 +5,7 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Ocelot.AcceptanceTests
 
     public class ConfigurationInConsulTests : IDisposable
     {
-        private IWebHost _builder;
+        private IHost _builder;
         private readonly Steps _steps;
-        private IWebHost _fakeConsulBuilder;
+        private IHost _fakeConsulBuilder;
         private FileConfiguration _config;
         private readonly List<ServiceEntry> _consulServices;
 
@@ -75,8 +76,10 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                            .UseUrls(url)
+            _fakeConsulBuilder = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder.UseUrls(url)
                             .UseKestrel()
                             .UseContentRoot(Directory.GetCurrentDirectory())
                             .UseIISIntegration()
@@ -122,8 +125,8 @@ namespace Ocelot.AcceptanceTests
                                         await context.Response.WriteJsonAsync(_consulServices);
                                     }
                                 });
-                            })
-                            .Build();
+                            });
+                }).Build();
 
             _fakeConsulBuilder.Start();
         }
@@ -146,22 +149,24 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _builder = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(webBuilder =>
                 {
-                    app.UsePathBase(basePath);
-
-                    app.Run(async context =>
+                    webBuilder.UseUrls(url)
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseUrls(url)
+                    .Configure(app =>
                     {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
+                        app.UsePathBase(basePath);
+                        app.Run(async context =>
+                        {
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(responseBody);
+                            });
+                        });
+                    })
                 .Build();
 
             _builder.Start();
