@@ -138,11 +138,25 @@ namespace Ocelot.DependencyInjection
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            this.MvcCoreBuilder = Services.AddMvcCore()
+            var builder = Services.AddMvcCore()
                   .AddApplicationPart(assembly)
                   .AddControllersAsServices()
-                  .AddAuthorization()
-                  .AddJsonFormatters();
+                  .AddAuthorization();
+
+            // For back compat with 3.0, try to load AddJsonFormatters via reflection.
+            var type = Type.GetType("Microsoft.Extensions.DependencyInjection.MvcJsonMvcCoreBuilderExtensions");
+            if (type != null)
+            {
+                var method = type.GetMethod("AddJsonFormatters",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { typeof(IMvcCoreBuilder) },
+                    null);
+
+                method.Invoke(null, new[] { builder });
+            }
+            
+            this.MvcCoreBuilder = builder;
 
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
