@@ -106,7 +106,9 @@ namespace Ocelot.AcceptanceTests
                                         {
                                             var reader = new StreamReader(context.Request.Body);
 
-                                            var json = reader.ReadToEnd();
+                                            // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+                                            // var json = reader.ReadToEnd();                                            
+                                            var json = await reader.ReadToEndAsync();
 
                                             _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
