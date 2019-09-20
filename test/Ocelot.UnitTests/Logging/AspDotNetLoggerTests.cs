@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Logging
         {
             _logger.LogError($"a message from {_a} to {_b}", _ex);
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Error, _ex);
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Error, _ex);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.Logging
         {
             _logger.LogCritical($"a message from {_a} to {_b}", _ex);
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura, exception: System.Exception: oh no", LogLevel.Critical, _ex);
+            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Critical, _ex);
         }
 
         private void ThenLevelIsLogged(string expected, LogLevel expectedLogLevel, Exception ex = null)
@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.Logging
                     default(EventId),
                     expected,
                     ex,
-                    It.IsAny<Func<object, Exception, string>>()), Times.Once);
+                    It.IsAny<Func<string, Exception, string>>()), Times.Once);
         }
     }
 }
