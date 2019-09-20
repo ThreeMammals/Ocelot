@@ -146,7 +146,8 @@ namespace Ocelot.UnitTests.RateLimit
     {
         public override void Flush()
         {
-            throw new System.NotImplementedException();
+            //do nothing
+            //throw new System.NotImplementedException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
