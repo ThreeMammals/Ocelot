@@ -164,7 +164,13 @@ namespace Ocelot.AcceptanceTests
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }
@@ -210,7 +216,13 @@ namespace Ocelot.AcceptanceTests
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }
@@ -273,13 +285,13 @@ namespace Ocelot.AcceptanceTests
 
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-                while (!result.CloseStatus.HasValue)
+                while (!result.CloseStatus.HasValue)                                
                 {
                     await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 }
-
+                
                 await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             catch (Exception e)
