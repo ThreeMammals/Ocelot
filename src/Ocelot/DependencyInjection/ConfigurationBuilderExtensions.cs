@@ -40,7 +40,7 @@ namespace Ocelot.DependencyInjection
 
             const string globalConfigFile = "ocelot.global.json";
 
-            const string subConfigPattern = @"^ocelot\.[a-zA-Z0-9]+\.json$";
+            const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
 
             string excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 

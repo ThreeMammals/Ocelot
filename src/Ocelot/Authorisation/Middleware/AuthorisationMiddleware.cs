@@ -25,7 +25,7 @@
 
         public async Task Invoke(DownstreamContext context)
         {
-            if (IsAuthenticatedRoute(context.DownstreamReRoute))
+            if (!IsOptionsHttpMethod(context) && IsAuthenticatedRoute(context.DownstreamReRoute))
             {
                 Logger.LogInformation("route is authenticated scopes must be checked");
 
@@ -52,7 +52,7 @@
                 }
             }
 
-            if (IsAuthorisedRoute(context.DownstreamReRoute))
+            if (!IsOptionsHttpMethod(context) && IsAuthorisedRoute(context.DownstreamReRoute))
             {
                 Logger.LogInformation("route is authorised");
 
@@ -98,6 +98,11 @@
         private static bool IsAuthorisedRoute(DownstreamReRoute reRoute)
         {
             return reRoute.IsAuthorised;
+        }
+
+        private static bool IsOptionsHttpMethod(DownstreamContext context)
+        {
+            return context.HttpContext.Request.Method.ToUpper() == "OPTIONS";
         }
     }
 }
