@@ -6,6 +6,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using Moq;
     using Ocelot.Configuration.Setter;
     using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Requester;
     using Ocelot.UnitTests.Requester;
@@ -14,11 +15,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-<<<<<<< HEAD
-    using Ocelot.Infrastructure;
-=======
     using System.Reflection;
->>>>>>> remotes/origin/netcore3.0
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
