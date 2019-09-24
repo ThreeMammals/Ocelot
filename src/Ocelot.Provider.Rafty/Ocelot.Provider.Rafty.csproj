@@ -28,7 +28,7 @@
     <ProjectReference Include="..\Ocelot.Administration\Ocelot.Administration.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SQLite" Version="3.0.0-rc1.19456.14" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="3.0.0" />
     <PackageReference Include="Rafty" Version="0.4.4" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.66">
       <PrivateAssets>all</PrivateAssets>
