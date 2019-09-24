@@ -181,7 +181,13 @@
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }
@@ -227,7 +233,13 @@
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }

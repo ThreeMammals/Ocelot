@@ -54,12 +54,12 @@ namespace Ocelot.IntegrationTests
                                 {
                                     Host = "localhost",
                                     Port = 51879,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
