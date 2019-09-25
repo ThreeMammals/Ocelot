@@ -8,7 +8,7 @@ sudo: required
 dist: bionic
 
 # OS X 10.12
-osx_image: xcode9.2
+osx_image: xcode9.4
 
 mono:
   - 6.0.0
