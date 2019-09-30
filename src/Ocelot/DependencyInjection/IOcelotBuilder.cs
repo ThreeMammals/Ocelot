@@ -24,5 +24,7 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator;
+
+        IOcelotBuilder AddConfigPlaceholders();
     }
 }
