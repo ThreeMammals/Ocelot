@@ -5,7 +5,7 @@ Ocelot supports one QoS capability at the current time. You can set on a per ReR
 want to use a circuit breaker when making requests to a downstream service. This uses an awesome
 .NET library called Polly check them out `here <https://github.com/App-vNext/Polly>`_.
 
-The first thing you need to do if you want to use the administration API is bring in the relevant NuGet package..
+The first thing you need to do if you want to use the administration API is bring in the relevant NuGet package.
 
 ``Install-Package Ocelot.Provider.Polly``
 
@@ -44,5 +44,5 @@ You can set the TimeoutValue in isolation of the ExceptionsAllowedBeforeBreaking
 
 There is no point setting the other two in isolation as they affect each other :)
 
-If you do not add a QoS section QoS will not be used however Ocelot will default to a 90 second timeout 
-on all downstream requests. If someone needs this to be configurable open an issue.
+If you do not add a QoS section, QoS will not be used. However, Ocelot will default to a 90 second timeout 
+on all downstream requests. If someone needs this to be configurable : open an issue.
