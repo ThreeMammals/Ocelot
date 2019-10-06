@@ -46,11 +46,8 @@
     <None Update="idsrv3test.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+  </ItemGroup>  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0" />
@@ -75,7 +72,7 @@
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.0" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4" Version="3.0.1" />
     <PackageReference Include="Pivotal.Discovery.ClientCore" Version="2.2.0" />
     <PackageReference Include="Consul" Version="0.7.2.6" />

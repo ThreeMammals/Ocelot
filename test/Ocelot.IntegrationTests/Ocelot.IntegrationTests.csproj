@@ -29,9 +29,7 @@
     <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Rafty\Ocelot.Provider.Rafty.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="Microsoft.Data.SQLite" Version="3.0.0" />
@@ -54,7 +52,7 @@
     <PackageReference Include="Shouldly" Version="4.0.0-beta0002" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="Microsoft.Data.SQLite" Version="3.0.0" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.0" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>

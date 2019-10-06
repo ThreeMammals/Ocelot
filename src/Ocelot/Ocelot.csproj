@@ -23,11 +23,9 @@
     <DebugType>full</DebugType>
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
+
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.5.0-preview5" />
+    <PackageReference Include="FluentValidation" Version="8.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.0.0">
       <NoWarn>NU1701</NoWarn>
