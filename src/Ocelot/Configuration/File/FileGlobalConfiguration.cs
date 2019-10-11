@@ -12,9 +12,7 @@
         }
 
         public string RequestIdKey { get; set; }
-
         public string Description { get; set; }
-
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
 
         public FileRateLimitOptions RateLimitOptions { get; set; }
