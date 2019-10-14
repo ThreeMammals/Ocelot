@@ -2,10 +2,9 @@
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
-#tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=0.7.0"
-#addin Cake.Coveralls&version=0.7.0
+#tool "nuget:?package=coveralls.net&version=1.0.0"
+#addin Cake.Coveralls&version=0.10.1
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -119,70 +118,51 @@ Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if (IsRunningOnWindows())
+		var testSettings = new DotNetCoreTestSettings
 		{
-			var coverageSummaryFile = artifactsForUnitTestsDir + File("coverage.xml");
-        
-			EnsureDirectoryExists(artifactsForUnitTestsDir);
-        
-			OpenCover(tool => 
-				{
-					tool.DotNetCoreTest(unitTestAssemblies);
-				},
-				new FilePath(coverageSummaryFile),
-				new OpenCoverSettings()
-				{
-					Register="user",
-					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode -excludebyattribute:*.ExcludeFromCoverage*")
-				}
-				.WithFilter("+[Ocelot*]*")
-				.WithFilter("-[xunit*]*")
-				.WithFilter("-[Ocelot*Tests]*")
-			);
-        
-			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		
-			if (AppVeyor.IsRunningOnAppVeyor)
-			{
-				var repoToken = EnvironmentVariable(coverallsRepoToken);
-				if (string.IsNullOrEmpty(repoToken))
-				{
-					throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
-				}
+			Configuration = compileConfig,
+			ResultsDirectory = artifactsForUnitTestsDir,
+			ArgumentCustomization = args => args
+				.Append("--settings test/Ocelot.UnitTests/UnitTests.runsettings")
+		};
 
-				Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-				CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-				{
-					RepoToken = repoToken
-				});
-			}
-			else
+		EnsureDirectoryExists(artifactsForUnitTestsDir);
+		DotNetCoreTest(unitTestAssemblies, testSettings);
+
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First() + File("/coverage.opencover.xml");
+		Console.WriteLine(coverageSummaryFile);
+	
+		ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
+	
+		if (AppVeyor.IsRunningOnAppVeyor)
+		{
+			var repoToken = EnvironmentVariable(coverallsRepoToken);
+			if (string.IsNullOrEmpty(repoToken))
 			{
-				Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
 			}
 
-			var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
-			var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
-
-			Information("Sequence Coverage: " + sequenceCoverage);
-		
-			if(double.Parse(sequenceCoverage) < minCodeCoverage)
+			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
+			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
 			{
-				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
-				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
-			};
-		
+				RepoToken = repoToken
+			});
 		}
 		else
 		{
-			var settings = new DotNetCoreTestSettings
-			{
-				Configuration = compileConfig,
-			};
-
-			EnsureDirectoryExists(artifactsForUnitTestsDir);
-			DotNetCoreTest(unitTestAssemblies, settings);
+			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
 		}
+
+		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
+
+		Information("Sequence Coverage: " + sequenceCoverage);
+	
+		if(double.Parse(sequenceCoverage) < minCodeCoverage)
+		{
+			var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
+			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+		};
 	});
 
 Task("RunAcceptanceTests")
