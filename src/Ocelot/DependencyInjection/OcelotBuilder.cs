@@ -1,3 +1,5 @@
+using Ocelot.Configuration.ChangeTracking;
+
 namespace Ocelot.DependencyInjection
 {
     using Microsoft.AspNetCore.Http;
@@ -112,6 +114,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
             Services.TryAddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
+            Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
 
             // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
             // could maybe use a scoped data repository
@@ -215,7 +218,7 @@ namespace Ocelot.DependencyInjection
         {
             // see: https://greatrexpectations.com/2018/10/25/decorators-in-net-core-with-dependency-injection
             var wrappedDescriptor = Services.First(x => x.ServiceType == typeof(IPlaceholders));
-            
+
             var objectFactory = ActivatorUtilities.CreateFactory(
                 typeof(ConfigAwarePlaceholders),
                 new[] { typeof(IPlaceholders) });
@@ -229,7 +232,7 @@ namespace Ocelot.DependencyInjection
 
             return this;
         }
-        
+
         private static object CreateInstance(IServiceProvider services, ServiceDescriptor descriptor)
         {
             if (descriptor.ImplementationInstance != null)

@@ -3,6 +3,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
 using System.Threading.Tasks;
+using Ocelot.Configuration.ChangeTracking;
 
 namespace Ocelot.Configuration.Setter
 {
@@ -11,15 +12,18 @@ namespace Ocelot.Configuration.Setter
         private readonly IInternalConfigurationRepository internalConfigRepo;
         private readonly IInternalConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
+        private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
 
         public FileAndInternalConfigurationSetter(
             IInternalConfigurationRepository configRepo,
             IInternalConfigurationCreator configCreator,
-            IFileConfigurationRepository repo)
+            IFileConfigurationRepository repo,
+            IOcelotConfigurationChangeTokenSource changeTokenSource)
         {
             internalConfigRepo = configRepo;
             _configCreator = configCreator;
             _repo = repo;
+            _changeTokenSource = changeTokenSource;
         }
 
         public async Task<Response> Set(FileConfiguration fileConfig)
@@ -36,6 +40,7 @@ namespace Ocelot.Configuration.Setter
             if (!config.IsError)
             {
                 internalConfigRepo.AddOrReplace(config.Data);
+                _changeTokenSource.Activate();
             }
 
             return new ErrorResponse(config.Errors);
