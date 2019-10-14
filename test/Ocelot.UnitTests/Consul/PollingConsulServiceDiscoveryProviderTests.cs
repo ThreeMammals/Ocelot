@@ -77,6 +77,8 @@
             });
 
             result.ShouldBeTrue();
+
+            _provider.Dispose();
         }
     }
 }
