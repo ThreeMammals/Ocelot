@@ -129,8 +129,7 @@ Task("RunUnitTests")
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First() + File("/coverage.opencover.xml");
-		Console.WriteLine(coverageSummaryFile);
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 	
 		ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 	
