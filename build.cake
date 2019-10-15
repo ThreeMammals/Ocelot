@@ -129,39 +129,41 @@ Task("RunUnitTests")
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
     
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
-	
-		ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-	
-		if (AppVeyor.IsRunningOnAppVeyor)
+		if (IsRunningOnWindows())
 		{
-			var repoToken = EnvironmentVariable(coverallsRepoToken);
-			if (string.IsNullOrEmpty(repoToken))
+			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
+			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
+		
+			if (AppVeyor.IsRunningOnAppVeyor)
 			{
-				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
+				var repoToken = EnvironmentVariable(coverallsRepoToken);
+				if (string.IsNullOrEmpty(repoToken))
+				{
+					throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
+				}
+
+				Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
+				CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+				{
+					RepoToken = repoToken
+				});
+			}
+			else
+			{
+				Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
 			}
 
-			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+			var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
+			var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
+
+			Information("Sequence Coverage: " + sequenceCoverage);
+		
+			if(double.Parse(sequenceCoverage) < minCodeCoverage)
 			{
-				RepoToken = repoToken
-			});
+				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
+				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+			};
 		}
-		else
-		{
-			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
-		}
-
-		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
-		var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
-
-		Information("Sequence Coverage: " + sequenceCoverage);
-	
-		if(double.Parse(sequenceCoverage) < minCodeCoverage)
-		{
-			var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
-			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
-		};
 	});
 
 Task("RunAcceptanceTests")
