@@ -43,10 +43,10 @@ namespace Ocelot.Configuration.ChangeTracking
             private readonly ICollection<CallbackWrapper> _callbacks;
             private readonly object _lock;
 
-            public CallbackWrapper(Action<object> callback, object state, ICollection<CallbackWrapper> callbacks, object lock_)
+            public CallbackWrapper(Action<object> callback, object state, ICollection<CallbackWrapper> callbacks, object @lock)
             {
                 _callbacks = callbacks;
-                _lock = lock_;
+                _lock = @lock;
                 Callback = callback;
                 State = state;
             }
