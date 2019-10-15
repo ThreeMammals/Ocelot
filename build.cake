@@ -3,7 +3,7 @@
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
 #tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=1.0.0"
+#tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
 
 // compile
@@ -128,7 +128,7 @@ Task("RunUnitTests")
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
-
+    
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 	
 		ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
