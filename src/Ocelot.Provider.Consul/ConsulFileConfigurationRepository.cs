@@ -28,10 +28,11 @@
             _cache = cache;
 
             var serviceDiscoveryProvider = fileConfiguration.Value.GlobalConfiguration.ServiceDiscoveryProvider;
+            _configurationKey = serviceDiscoveryProvider.ConfigurationKey ?? "InternalConfiguration";
+
             var config = new ConsulRegistryConfiguration(serviceDiscoveryProvider.Host,
                 serviceDiscoveryProvider.Port, _configurationKey, serviceDiscoveryProvider.Token);
 
-            _configurationKey = serviceDiscoveryProvider.ConfigurationKey ?? "InternalConfiguration";
             _consul = factory.Get(config);
         }
 
