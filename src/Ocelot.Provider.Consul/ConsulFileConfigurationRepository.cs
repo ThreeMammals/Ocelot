@@ -28,7 +28,8 @@
             _cache = cache;
 
             var serviceDiscoveryProvider = fileConfiguration.Value.GlobalConfiguration.ServiceDiscoveryProvider;
-            _configurationKey = serviceDiscoveryProvider.ConfigurationKey ?? "InternalConfiguration";
+            _configurationKey = string.IsNullOrWhiteSpace(serviceDiscoveryProvider.ConfigurationKey) ? "InternalConfiguration" :
+                serviceDiscoveryProvider.ConfigurationKey;
 
             var config = new ConsulRegistryConfiguration(serviceDiscoveryProvider.Host,
                 serviceDiscoveryProvider.Port, _configurationKey, serviceDiscoveryProvider.Token);
