@@ -8,12 +8,12 @@ sudo: required
 dist: bionic
 
 # OS X 10.12
-osx_image: xcode9.2
+osx_image: xcode9.4
 
 mono:
-  - 5.10.0
+  - 6.0.0
 
-dotnet: 2.2.105
+dotnet: 3.0.100
 
 before_install:
   - git fetch --unshallow # Travis always does a shallow clone, but GitVersion needs the full history including branches and tags

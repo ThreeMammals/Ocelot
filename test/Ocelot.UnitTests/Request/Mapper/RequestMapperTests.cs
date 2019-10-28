@@ -1,7 +1,6 @@
 ﻿namespace Ocelot.UnitTests.Request.Mapper
 {
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.Extensions.Primitives;
     using Ocelot.Request.Mapper;
     using Ocelot.Responses;
@@ -19,6 +18,7 @@
 
     public class RequestMapperTests
     {
+        private readonly HttpContext _httpContext;
         private readonly HttpRequest _inputRequest;
 
         private readonly RequestMapper _requestMapper;
@@ -29,8 +29,8 @@
 
         public RequestMapperTests()
         {
-            _inputRequest = new DefaultHttpRequest(new DefaultHttpContext());
-
+            _httpContext = new DefaultHttpContext();
+            _inputRequest = _httpContext.Request;
             _requestMapper = new RequestMapper();
         }
 

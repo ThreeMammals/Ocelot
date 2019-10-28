@@ -8,8 +8,8 @@ namespace Ocelot.DependencyInjection
     {
         public static IOcelotBuilder AddOcelot(this IServiceCollection services)
         {
-            var service = services.First(x => x.ServiceType == typeof(IConfiguration));
-            var configuration = (IConfiguration)service.ImplementationInstance;
+            var configuration = services.BuildServiceProvider()
+                .GetRequiredService<IConfiguration>();
             return new OcelotBuilder(services, configuration);
         }
 

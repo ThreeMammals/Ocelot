@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.Repository
         private static readonly object _lock = new object();
         private const string ConfigurationFileName = "ocelot";
 
-        public DiskFileConfigurationRepository(IHostingEnvironment hostingEnvironment)
+        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment)
         {
             _environmentFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
 

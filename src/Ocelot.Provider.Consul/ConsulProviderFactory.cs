@@ -6,13 +6,13 @@
 
     public static class ConsulProviderFactory
     {
-        public static ServiceDiscoveryFinderDelegate Get = (provider, config, name) =>
+        public static ServiceDiscoveryFinderDelegate Get = (provider, config, reRoute) =>
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
 
             var consulFactory = provider.GetService<IConsulClientFactory>();
 
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Host, config.Port, name, config.Token);
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Host, config.Port, reRoute.ServiceName, config.Token);
 
             var consulServiceDiscoveryProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
 
