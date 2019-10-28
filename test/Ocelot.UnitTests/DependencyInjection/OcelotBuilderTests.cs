@@ -1,11 +1,12 @@
 namespace Ocelot.UnitTests.DependencyInjection
 {
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Moq;
     using Ocelot.Configuration.Setter;
     using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Requester;
     using Ocelot.UnitTests.Requester;
@@ -14,7 +15,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-    using Ocelot.Infrastructure;
+    using System.Reflection;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
@@ -32,9 +33,19 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
             _maxRetries = 100;
+        }
+
+        private IWebHostEnvironment GetHostingEnvironment()
+        {
+            var environment = new Mock<IWebHostEnvironment>();
+            environment
+                .Setup(e => e.ApplicationName)
+                .Returns(typeof(OcelotBuilderTests).GetTypeInfo().Assembly.GetName().Name);
+
+            return environment.Object;
         }
 
         [Fact]

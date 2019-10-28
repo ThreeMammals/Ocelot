@@ -55,7 +55,7 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .And(x => ThenTheContentTypeShouldBeEmpty())
-                .And(x => ThenTheContentLengthShouldBeEmpty())
+                .And(x => ThenTheContentLengthShouldBeZero())
                 .BDDfy();
         }
 
@@ -139,9 +139,9 @@ namespace Ocelot.AcceptanceTests
             _contentType.ShouldBe(expected);
         }
 
-        private void ThenTheContentLengthShouldBeEmpty()
+        private void ThenTheContentLengthShouldBeZero()
         {
-            _contentLength.ShouldBeNull();
+            _contentLength.ShouldBeEquivalentTo(0L);
         }
 
         private void ThenTheContentLengthIs(int expected)
