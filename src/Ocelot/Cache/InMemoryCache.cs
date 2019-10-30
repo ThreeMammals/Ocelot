@@ -1,17 +1,18 @@
 ﻿namespace Ocelot.Cache
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
 
     public class InMemoryCache<T> : IOcelotCache<T>
     {
-        private readonly Dictionary<string, CacheObject<T>> _cache;
-        private readonly Dictionary<string, List<string>> _regions;
+        private readonly ConcurrentDictionary<string, CacheObject<T>> _cache;
+        private readonly ConcurrentDictionary<string, List<string>> _regions;
 
         public InMemoryCache()
         {
-            _cache = new Dictionary<string, CacheObject<T>>();
-            _regions = new Dictionary<string, List<string>>();
+            _cache = new ConcurrentDictionary<string, CacheObject<T>>();
+            _regions = new ConcurrentDictionary<string, List<string>>();
         }
 
         public void Add(string key, T value, TimeSpan ttl, string region)
@@ -23,7 +24,9 @@
 
             var expires = DateTime.UtcNow.Add(ttl);
 
-            _cache.Add(key, new CacheObject<T>(value, expires));
+            var cacheObject = new CacheObject<T>(value, expires);
+
+            _cache.AddOrUpdate(key, cacheObject, (x, y) => cacheObject);
 
             if (_regions.ContainsKey(region))
             {
@@ -35,7 +38,8 @@
             }
             else
             {
-                _regions.Add(region, new List<string> { key });
+                var keys = new List<string> { key };
+                _regions.AddOrUpdate(region, keys, (x, y) => keys);
             }
         }
 
@@ -43,7 +47,7 @@
         {
             if (_cache.ContainsKey(key))
             {
-                _cache.Remove(key);
+                _cache.TryRemove(key, out _);
             }
 
             Add(key, value, ttl, region);
@@ -56,7 +60,7 @@
                 var keys = _regions[region];
                 foreach (var key in keys)
                 {
-                    _cache.Remove(key);
+                    _cache.TryRemove(key, out _);
                 }
             }
         }
@@ -72,7 +76,7 @@
                     return cached.Value;
                 }
 
-                _cache.Remove(key);
+                _cache.TryRemove(key, out _);
             }
 
             return default(T);
