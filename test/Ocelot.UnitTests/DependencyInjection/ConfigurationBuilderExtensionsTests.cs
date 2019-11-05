@@ -22,11 +22,11 @@
         private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
         private FileConfiguration _envSpecific;
-        private Mock<IHostingEnvironment> _hostingEnvironment;
+        private Mock<IWebHostEnvironment> _hostingEnvironment;
 
         public ConfigurationBuilderExtensionsTests()
         {
-            _hostingEnvironment = new Mock<IHostingEnvironment>();
+            _hostingEnvironment = new Mock<IWebHostEnvironment>();
             // Clean up config files before each test
             var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
 

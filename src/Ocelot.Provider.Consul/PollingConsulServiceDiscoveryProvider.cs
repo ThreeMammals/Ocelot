@@ -2,16 +2,17 @@
 {
     using Logging;
     using ServiceDiscovery.Providers;
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Values;
 
-    public class PollConsul : IServiceDiscoveryProvider
+    public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     {
         private readonly IOcelotLogger _logger;
         private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
-        private readonly Timer _timer;
+        private Timer _timer;
         private bool _polling;
         private List<Service> _services;
 
@@ -32,6 +33,12 @@
                 await Poll();
                 _polling = false;
             }, null, pollingInterval, pollingInterval);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+            _timer = null;
         }
 
         public Task<List<Service>> Get()

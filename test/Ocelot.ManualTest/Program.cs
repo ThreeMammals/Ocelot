@@ -32,12 +32,12 @@ namespace Ocelot.ManualTest
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddAuthentication()
-                       .AddJwtBearer("TestKey", x =>
-                       {
-                           x.Authority = "test";
-                           x.Audience = "test";
-                       });
+                    s.AddAuthentication();
+                       //.AddJwtBearer("TestKey", x =>
+                       //{
+                       //    x.Authority = "test";
+                       //    x.Audience = "test";
+                       //});
 
                     s.AddSingleton<QosDelegatingHandlerDelegate>((x, t) => new FakeHandler());
                     s.AddOcelot()
