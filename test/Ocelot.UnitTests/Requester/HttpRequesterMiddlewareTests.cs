@@ -1,6 +1,7 @@
 namespace Ocelot.UnitTests.Requester
 {
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
@@ -57,6 +58,17 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_log_downstream_internal_server_error()
+        {
+            this.Given(x => x.GivenTheRequestIs())
+                    .And(x => x.GivenTheRequesterReturns(
+                        new OkResponse<HttpResponseMessage>(new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError))))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ErrorIsLogged())
+                .BDDfy();
+        }
+
         private void ThenTheErrorIsSet()
         {
             _downstreamContext.IsError.ShouldBeTrue();
@@ -97,6 +109,15 @@ namespace Ocelot.UnitTests.Requester
 
             _downstreamContext.DownstreamResponse.Content.ShouldBe(_response.Data.Content);
             _downstreamContext.DownstreamResponse.StatusCode.ShouldBe(_response.Data.StatusCode);
+        }
+
+        private void ErrorIsLogged()
+        {
+            _logger.Verify(
+                x => x.LogError(                 
+                    It.IsAny<string>(),
+                    It.IsAny<Exception>()
+                   ));
         }
     }
 }
