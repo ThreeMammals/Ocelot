@@ -2,14 +2,14 @@
 using Ocelot.Middleware;
 using System.Threading.Tasks;
 
-namespace Ocelot.DownstreamUrlCreator.Middleware
+namespace Ocelot.DownstreamMethodTransformer.Middleware
 {
-    public class DownstreamHttpMethodCreatorMiddleware : OcelotMiddleware
+    public class DownstreamMethodTransformerMiddleware : OcelotMiddleware
     {
         private readonly OcelotRequestDelegate _next;
 
-        public DownstreamHttpMethodCreatorMiddleware(OcelotRequestDelegate next, IOcelotLoggerFactory loggerFactory)
-            : base(loggerFactory.CreateLogger<DownstreamHttpMethodCreatorMiddleware>())
+        public DownstreamMethodTransformerMiddleware(OcelotRequestDelegate next, IOcelotLoggerFactory loggerFactory)
+            : base(loggerFactory.CreateLogger<DownstreamMethodTransformerMiddleware>())
         {
             _next = next;
         }

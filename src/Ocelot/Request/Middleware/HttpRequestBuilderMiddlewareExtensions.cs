@@ -9,7 +9,7 @@ namespace Ocelot.Request.Middleware
         public static IOcelotPipelineBuilder UseDownstreamRequestInitialiser(this IOcelotPipelineBuilder builder)
         {
             return builder.UseMiddleware<DownstreamRequestInitialiserMiddleware>()
-                .UseMiddleware<DownstreamHttpMethodCreatorMiddleware>();
+                .UseMiddleware<DownstreamMethodTransformerMiddleware>();
         }
     }
 }

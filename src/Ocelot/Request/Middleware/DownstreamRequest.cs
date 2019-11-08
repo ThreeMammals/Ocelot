@@ -53,7 +53,6 @@ namespace Ocelot.Request.Middleware
 
             _request.RequestUri = uriBuilder.Uri;
             _request.Method = new HttpMethod(Method);
-            _request.Content = Content;
             return _request;
         }
 
