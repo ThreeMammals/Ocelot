@@ -49,7 +49,9 @@ namespace Ocelot.UnitTests.Consul
                 .Build();
 
             var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "", 1, "", "", stopsPollerFromPolling), reRoute);
-            provider.ShouldBeOfType<PollConsul>();
+            var pollProvider = provider as PollConsul;
+            pollProvider.ShouldNotBeNull();
+            pollProvider.Dispose();
         }
     }
 }

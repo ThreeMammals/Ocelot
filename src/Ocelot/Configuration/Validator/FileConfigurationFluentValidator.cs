@@ -21,8 +21,8 @@
                 .GetServices<ServiceDiscoveryFinderDelegate>()
                 .ToList();
 
-            RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(reRouteFluentValidator);
+            RuleForEach(configuration => configuration.ReRoutes)
+                .SetValidator(reRouteFluentValidator);
 
             RuleFor(configuration => configuration.GlobalConfiguration)
                 .SetValidator(fileGlobalConfigurationFluentValidator);

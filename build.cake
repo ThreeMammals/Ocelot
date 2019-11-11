@@ -2,10 +2,9 @@
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
-#tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
-#addin Cake.Coveralls&version=0.7.0
+#addin Cake.Coveralls&version=0.10.1
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -119,27 +118,20 @@ Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
+		var testSettings = new DotNetCoreTestSettings
+		{
+			Configuration = compileConfig,
+			ResultsDirectory = artifactsForUnitTestsDir,
+			ArgumentCustomization = args => args
+				.Append("--settings test/Ocelot.UnitTests/UnitTests.runsettings")
+		};
+
+		EnsureDirectoryExists(artifactsForUnitTestsDir);
+		DotNetCoreTest(unitTestAssemblies, testSettings);
+    
 		if (IsRunningOnWindows())
 		{
-			var coverageSummaryFile = artifactsForUnitTestsDir + File("coverage.xml");
-        
-			EnsureDirectoryExists(artifactsForUnitTestsDir);
-        
-			OpenCover(tool => 
-				{
-					tool.DotNetCoreTest(unitTestAssemblies);
-				},
-				new FilePath(coverageSummaryFile),
-				new OpenCoverSettings()
-				{
-					Register="user",
-					ArgumentCustomization=args=>args.Append(@"-oldstyle -returntargetcode -excludebyattribute:*.ExcludeFromCoverage*")
-				}
-				.WithFilter("+[Ocelot*]*")
-				.WithFilter("-[xunit*]*")
-				.WithFilter("-[Ocelot*Tests]*")
-			);
-        
+			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		
 			if (AppVeyor.IsRunningOnAppVeyor)
@@ -171,17 +163,6 @@ Task("RunUnitTests")
 				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
 				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
 			};
-		
-		}
-		else
-		{
-			var settings = new DotNetCoreTestSettings
-			{
-				Configuration = compileConfig,
-			};
-
-			EnsureDirectoryExists(artifactsForUnitTestsDir);
-			DotNetCoreTest(unitTestAssemblies, settings);
 		}
 	});
 

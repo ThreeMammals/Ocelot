@@ -12,9 +12,7 @@
     {
         public static IOcelotBuilder AddEureka(this IOcelotBuilder builder)
         {
-            var service = builder.Services.First(x => x.ServiceType == typeof(IConfiguration));
-            var configuration = (IConfiguration)service.ImplementationInstance;
-            builder.Services.AddDiscoveryClient(configuration);
+            builder.Services.AddDiscoveryClient(builder.Configuration);
             builder.Services.AddSingleton<ServiceDiscoveryFinderDelegate>(EurekaProviderFactory.Get);
             builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(EurekaMiddlewareConfigurationProvider.Get);
             return builder;

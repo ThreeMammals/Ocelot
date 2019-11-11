@@ -1,14 +1,15 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Moq;
     using Ocelot.DependencyInjection;
     using Provider.Consul;
     using Shouldly;
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -24,8 +25,19 @@
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
+        }
+
+
+        private IWebHostEnvironment GetHostingEnvironment()
+        {
+            var environment = new Mock<IWebHostEnvironment>();
+            environment
+                .Setup(e => e.ApplicationName)
+                .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+
+            return environment.Object;
         }
 
         [Fact]

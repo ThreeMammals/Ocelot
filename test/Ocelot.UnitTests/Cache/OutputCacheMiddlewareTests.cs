@@ -29,6 +29,7 @@
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
 
+
         public OutputCacheMiddlewareTests()
         {
             _cache = new Mock<IOcelotCache<CachedResponse>>();

@@ -4,6 +4,7 @@
     using Configuration.Repository;
     using global::Consul;
     using Logging;
+    using Microsoft.Extensions.Options;
     using Newtonsoft.Json;
     using Responses;
     using System;
@@ -18,29 +19,20 @@
         private readonly IOcelotLogger _logger;
 
         public ConsulFileConfigurationRepository(
+            IOptions<FileConfiguration> fileConfiguration,
             Cache.IOcelotCache<FileConfiguration> cache,
-            IInternalConfigurationRepository repo,
             IConsulClientFactory factory,
             IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<ConsulFileConfigurationRepository>();
             _cache = cache;
 
-            var internalConfig = repo.Get();
+            var serviceDiscoveryProvider = fileConfiguration.Value.GlobalConfiguration.ServiceDiscoveryProvider;
+            _configurationKey = string.IsNullOrWhiteSpace(serviceDiscoveryProvider.ConfigurationKey) ? "InternalConfiguration" :
+                serviceDiscoveryProvider.ConfigurationKey;
 
-            _configurationKey = "InternalConfiguration";
-
-            string token = null;
-
-            if (!internalConfig.IsError)
-            {
-                token = internalConfig.Data.ServiceProviderConfiguration.Token;
-                _configurationKey = !string.IsNullOrEmpty(internalConfig.Data.ServiceProviderConfiguration.ConfigurationKey) ?
-                    internalConfig.Data.ServiceProviderConfiguration.ConfigurationKey : _configurationKey;
-            }
-
-            var config = new ConsulRegistryConfiguration(internalConfig.Data.ServiceProviderConfiguration.Host,
-                internalConfig.Data.ServiceProviderConfiguration.Port, _configurationKey, token);
+            var config = new ConsulRegistryConfiguration(serviceDiscoveryProvider.Host,
+                serviceDiscoveryProvider.Port, _configurationKey, serviceDiscoveryProvider.Token);
 
             _consul = factory.Get(config);
         }

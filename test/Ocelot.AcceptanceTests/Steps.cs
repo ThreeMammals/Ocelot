@@ -39,7 +39,7 @@
     using System.Threading.Tasks;
     using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-    using CookieHeaderValue = System.Net.Http.Headers.CookieHeaderValue;
+    using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
     public class Steps : IDisposable
@@ -340,7 +340,7 @@
                         {
                             x.WithMicrosoftLogging(log =>
                                 {
-                                    log.AddConsole(LogLevel.Debug);
+                                    //log.AddConsole(LogLevel.Debug);
                                 })
                                 .WithJsonSerializer()
                                 .WithHandle(typeof(InMemoryJsonHandle<>));
@@ -426,7 +426,7 @@
                         {
                             x.WithMicrosoftLogging(log =>
                                 {
-                                    log.AddConsole(LogLevel.Debug);
+                                    //log.AddConsole(LogLevel.Debug);
                                 })
                                 .WithJsonSerializer()
                                 .WithHandle(typeof(InMemoryJsonHandle<>));
