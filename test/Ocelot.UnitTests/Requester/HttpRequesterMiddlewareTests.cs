@@ -117,7 +117,8 @@ namespace Ocelot.UnitTests.Requester
                 x => x.LogError(                 
                     It.IsAny<string>(),
                     It.IsAny<Exception>()
-                   ));
+                   ),
+                Times.Once);
         }
     }
 }

@@ -22,9 +22,9 @@ namespace Ocelot.Requester.Middleware
         {
             var response = await _requester.GetResponse(context);
 
-            if (response.Data != null && response.Data.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+            if (response.Data?.StatusCode == System.Net.HttpStatusCode.InternalServerError)
             {
-                Logger.LogError("500 (Internal Server Error) status code, request uri: " + response.Data.RequestMessage?.RequestUri, null);
+                Logger.LogError($"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}", null);
             }
 
             if (response.IsError)
