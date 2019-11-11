@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
     using global::Consul;
+    using Microsoft.Extensions.Options;
     using Moq;
     using Newtonsoft.Json;
     using Ocelot.Cache;
@@ -23,8 +24,8 @@
     public class ConsulFileConfigurationRepositoryTests
     {
         private ConsulFileConfigurationRepository _repo;
+        private Mock<IOptions<FileConfiguration>> _options;
         private Mock<IOcelotCache<FileConfiguration>> _cache;
-        private Mock<IInternalConfigurationRepository> _internalRepo;
         private Mock<IConsulClientFactory> _factory;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IConsulClient> _client;
@@ -36,9 +37,9 @@
         public ConsulFileConfigurationRepositoryTests()
         {
             _cache = new Mock<IOcelotCache<FileConfiguration>>();
-            _internalRepo = new Mock<IInternalConfigurationRepository>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
 
+            _options = new Mock<IOptions<FileConfiguration>>();
             _factory = new Mock<IConsulClientFactory>();
             _client = new Mock<IConsulClient>();
             _kvEndpoint = new Mock<IKVEndpoint>();
@@ -51,11 +52,9 @@
                 .Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>()))
                 .Returns(_client.Object);
 
-            _internalRepo
-                .Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "", new ServiceProviderConfigurationBuilder().Build(), "", It.IsAny<LoadBalancerOptions>(), It.IsAny<string>(), It.IsAny<QoSOptions>(), It.IsAny<HttpHandlerOptions>())));
-
-            _repo = new ConsulFileConfigurationRepository(_cache.Object, _internalRepo.Object, _factory.Object, _loggerFactory.Object);
+            _options
+                .SetupGet(x => x.Value)
+                .Returns(() => _fileConfiguration);
         }
 
         [Fact]
@@ -85,7 +84,10 @@
         [Fact]
         public void should_get_null_config()
         {
-            this.Given(_ => GivenFetchFromConsulReturnsNull())
+            var config = FakeFileConfiguration();
+
+            this.Given(_ => GivenIHaveAConfiguration(config))
+               .Given(_ => GivenFetchFromConsulReturnsNull())
                .When(_ => WhenIGetTheConfiguration())
                .Then(_ => ThenTheConfigurationIsNull())
                .BDDfy();
@@ -136,14 +138,8 @@
 
         private void GivenTheConfigKeyComesFromFileConfig(string key)
         {
-            _internalRepo
-                .Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(new List<ReRoute>(), "",
-                    new ServiceProviderConfigurationBuilder().WithConfigurationKey(key).Build(), "",
-                    new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(),
-                    new HttpHandlerOptionsBuilder().Build())));
-
-            _repo = new ConsulFileConfigurationRepository(_cache.Object, _internalRepo.Object, _factory.Object, _loggerFactory.Object);
+            _fileConfiguration.GlobalConfiguration.ServiceDiscoveryProvider.ConfigurationKey = key;
+            _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
         }
 
         private void ThenTheConfigurationIsNull()
@@ -221,6 +217,8 @@
         private void GivenIHaveAConfiguration(FileConfiguration config)
         {
             _fileConfiguration = config;
+
+            _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
         }
 
         private FileConfiguration FakeFileConfiguration()

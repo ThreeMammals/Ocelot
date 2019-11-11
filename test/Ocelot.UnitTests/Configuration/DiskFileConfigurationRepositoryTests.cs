@@ -15,7 +15,7 @@ namespace Ocelot.UnitTests.Configuration
 
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
-        private readonly Mock<IHostingEnvironment> _hostingEnvironment;
+        private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
         private string _ocelotJsonPath;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _semaphore = new SemaphoreSlim(1, 1);
             _semaphore.Wait();
-            _hostingEnvironment = new Mock<IHostingEnvironment>();
+            _hostingEnvironment = new Mock<IWebHostEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }

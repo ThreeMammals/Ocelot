@@ -33,7 +33,7 @@
         public OutputCacheMiddlewareRealCacheTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
+            _logger = new Mock<IOcelotLogger>();            
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
             {

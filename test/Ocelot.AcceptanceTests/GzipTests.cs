@@ -73,7 +73,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         using (var sr = new StreamReader(decompress))
                         {
-                            text = sr.ReadToEnd();
+                            // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+                            // text = sr.ReadToEnd();
+                            text = await sr.ReadToEndAsync();
                         }
                     }
 
