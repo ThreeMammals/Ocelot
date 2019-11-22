@@ -47,9 +47,9 @@ namespace Ocelot.UnitTests.Responder
 
         [Theory]
         [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
-        public void should_return_internal_server_error(OcelotErrorCode errorCode)
+        public void should_return_bad_gateway_error(OcelotErrorCode errorCode)
         {
-            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.InternalServerError);
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.BadGateway);
         }
 
         [Theory]

@@ -42,7 +42,7 @@ namespace Ocelot.Responder
 
             if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError))
             {
-                return 500;
+                return 502;
             }
 
             return 404;
