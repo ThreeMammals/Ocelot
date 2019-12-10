@@ -19,7 +19,7 @@
             var useTracing = _tracer != null && options.UseTracing;
 
             return new HttpHandlerOptions(options.AllowAutoRedirect,
-                options.UseCookieContainer, useTracing, options.UseProxy);
+                options.UseCookieContainer, useTracing, options.UseProxy, options.MaxConnectionsPerServer);
         }
     }
 }
