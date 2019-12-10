@@ -18,8 +18,11 @@
         {
             var useTracing = _tracer != null && options.UseTracing;
 
+            //be sure that maxConnectionPerServer is in correct range of values
+            int maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? maxConnectionPerServer = options.MaxConnectionsPerServer : maxConnectionPerServer = int.MaxValue;
+
             return new HttpHandlerOptions(options.AllowAutoRedirect,
-                options.UseCookieContainer, useTracing, options.UseProxy, options.MaxConnectionsPerServer);
+                options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer);
         }
     }
 }
