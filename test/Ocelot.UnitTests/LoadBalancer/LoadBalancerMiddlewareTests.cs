@@ -1,3 +1,5 @@
+using System;
+using System.Linq.Expressions;
 using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.LoadBalancer
@@ -108,6 +110,26 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_set_scheme()
+        {
+            var downstreamRoute = new DownstreamReRouteBuilder()
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build();
+
+            var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
+                .And(x => GivenTheConfigurationIs(serviceProviderConfig))
+                .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
+                .And(x => x.GivenTheLoadBalancerHouseReturns())
+                .And(x => x.GivenTheLoadBalancerReturnsOk())
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenAnHostAndPortIsSetOnPipeline())
+                .BDDfy();
+        }
+
         private void WhenICallTheMiddleware()
         {
             _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
@@ -133,6 +155,13 @@ namespace Ocelot.UnitTests.LoadBalancer
             _loadBalancer
                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
                .ReturnsAsync(_getHostAndPortError);
+        }
+
+        private void GivenTheLoadBalancerReturnsOk()
+        {
+            _loadBalancer
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("abc", 123, "https")));
         }
 
         private void GivenTheLoadBalancerReturns()
@@ -184,6 +213,13 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _downstreamContext.IsError.ShouldBeTrue();
             _downstreamContext.Errors.ShouldBe(_getHostAndPortError.Errors);
+        }
+
+        private void ThenAnHostAndPortIsSetOnPipeline()
+        {
+            _downstreamContext.DownstreamRequest.Host.ShouldBeEquivalentTo("abc");
+            _downstreamContext.DownstreamRequest.Port.ShouldBeEquivalentTo(123);
+            _downstreamContext.DownstreamRequest.Scheme.ShouldBeEquivalentTo("https");
         }
 
         private void ThenTheDownstreamUrlIsReplacedWith(string expectedUri)
