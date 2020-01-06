@@ -1,10 +1,9 @@
-using Ocelot.Configuration.ChangeTracking;
-
 namespace Ocelot.UnitTests.Configuration
 {
     using Microsoft.AspNetCore.Hosting;
     using Moq;
     using Newtonsoft.Json;
+    using Ocelot.Configuration.ChangeTracking;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Repository;
     using Shouldly;
@@ -36,7 +35,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _semaphore = new SemaphoreSlim(1, 1);
             _semaphore.Wait();
-            _hostingEnvironment = new Mock<IHostingEnvironment>();
+            _hostingEnvironment = new Mock<IWebHostEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
             _changeTokenSource.Setup(m => m.Activate());

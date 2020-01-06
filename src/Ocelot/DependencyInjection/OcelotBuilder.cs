@@ -147,7 +147,7 @@ namespace Ocelot.DependencyInjection
                   .AddApplicationPart(assembly)
                   .AddControllersAsServices()
                   .AddAuthorization()
-                  .AddJsonFormatters();
+                  .AddNewtonsoftJson(); 
 
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();

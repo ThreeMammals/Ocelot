@@ -80,8 +80,8 @@
 
             When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () =>
             {
-                RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
-                    .SetCollectionValidator(hostAndPortValidator);
+                RuleForEach(reRoute => reRoute.DownstreamHostAndPorts)
+                    .SetValidator(hostAndPortValidator);
             });
         }
 
