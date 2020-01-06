@@ -1,3 +1,5 @@
+using Ocelot.Configuration.ChangeTracking;
+
 namespace Ocelot.UnitTests.Configuration
 {
     using Microsoft.AspNetCore.Hosting;
@@ -16,6 +18,7 @@ namespace Ocelot.UnitTests.Configuration
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
         private readonly Mock<IHostingEnvironment> _hostingEnvironment;
+        private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
         private string _ocelotJsonPath;
@@ -35,7 +38,9 @@ namespace Ocelot.UnitTests.Configuration
             _semaphore.Wait();
             _hostingEnvironment = new Mock<IHostingEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
+            _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
+            _changeTokenSource.Setup(m => m.Activate());
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
         }
 
         [Fact]
@@ -70,6 +75,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(_ => WhenISetTheConfiguration())
                 .Then(_ => ThenTheConfigurationIsStoredAs(config))
                 .And(_ => ThenTheConfigurationJsonIsIndented(config))
+                .And(x => AndTheChangeTokenIsActivated())
                 .BDDfy();
         }
 
@@ -117,7 +123,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _environmentName = null;
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration fileConfiguration)
@@ -210,6 +216,11 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
+        private void AndTheChangeTokenIsActivated()
+        {
+            _changeTokenSource.Verify(m => m.Activate(), Times.Once);
+        }
+
         private FileConfiguration FakeFileConfigurationForSet()
         {
             var reRoutes = new List<FileReRoute>
@@ -222,11 +233,11 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             Host = "123.12.12.12",
                             Port = 80,
-                        }
+                        },
                     },
                     DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}"
-                }
+                    DownstreamPathTemplate = "/asdfs/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration

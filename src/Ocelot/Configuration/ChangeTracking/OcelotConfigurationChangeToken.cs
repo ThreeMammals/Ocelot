@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.ChangeTracking
 
     public class OcelotConfigurationChangeToken : IChangeToken
     {
-        private static double PollingIntervalSeconds = 1;
+        public const double PollingIntervalSeconds = 1;
 
         private readonly ICollection<CallbackWrapper> _callbacks = new List<CallbackWrapper>();
         private readonly object _lock = new object();
@@ -34,6 +34,8 @@ namespace Ocelot.Configuration.ChangeTracking
             }
         }
 
+        // Token stays active for PollingIntervalSeconds after a change (could be parameterised) - otherwise HasChanged would be true forever.
+        // Taking suggestions for better ways to reset HasChanged back to false.
         public bool HasChanged => _timeChanged.HasValue && (DateTime.UtcNow - _timeChanged.Value).TotalSeconds < PollingIntervalSeconds;
 
         public bool ActiveChangeCallbacks => true;

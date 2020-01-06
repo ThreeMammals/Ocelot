@@ -24,16 +24,13 @@ namespace Ocelot.UnitTests.Configuration
         private Response<IInternalConfiguration> _configuration;
         private object _result;
         private Mock<IFileConfigurationRepository> _repo;
-        private Mock<IOcelotConfigurationChangeTokenSource> _changeTokenActivator;
 
         public FileConfigurationSetterTests()
         {
             _repo = new Mock<IFileConfigurationRepository>();
             _configRepo = new Mock<IInternalConfigurationRepository>();
             _configCreator = new Mock<IInternalConfigurationCreator>();
-            _changeTokenActivator = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
-            _changeTokenActivator.Setup(m => m.Activate());
-            _configSetter = new FileAndInternalConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object, _changeTokenActivator.Object);
+            _configSetter = new FileAndInternalConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
         }
 
         [Fact]
@@ -48,7 +45,6 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config)))
                 .When(x => WhenISetTheConfiguration())
                 .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
-                .And(x => AndTheChangeTokenIsActivated())
                 .BDDfy();
         }
 
@@ -109,13 +105,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationRepositoryIsCalledCorrectly()
         {
-            _configRepo
-                .Verify(x => x.AddOrReplace(_configuration.Data), Times.Once);
-        }
-
-        private void AndTheChangeTokenIsActivated()
-        {
-            _changeTokenActivator.Verify(m => m.Activate(), Times.Once);
+            _configRepo.Verify(x => x.AddOrReplace(_configuration.Data), Times.Once);
         }
     }
 }
