@@ -40,7 +40,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 58814,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -51,7 +51,7 @@ namespace Ocelot.AcceptanceTests
 
             var cache = new FakeHttpClientCache();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:58814", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithFakeHttpClientCache(cache))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -80,7 +80,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 58817,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -95,7 +95,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 58817,
                             }
                         },
                         UpstreamPathTemplate = "/two",
@@ -106,7 +106,7 @@ namespace Ocelot.AcceptanceTests
 
             var cache = new FakeHttpClientCache();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:58817", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithFakeHttpClientCache(cache))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
