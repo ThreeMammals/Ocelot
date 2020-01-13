@@ -1,4 +1,4 @@
-﻿#tool "nuget:?package=GitVersion.CommandLine"
+﻿#tool "nuget:?package=GitVersion.CommandLine&version=5.0.1"
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
