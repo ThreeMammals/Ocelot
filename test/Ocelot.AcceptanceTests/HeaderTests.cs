@@ -327,7 +327,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 52866,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -336,7 +336,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Accept"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:52866", "/", 200, "Accept"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
@@ -362,7 +362,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51874,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -371,7 +371,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Accept"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51874", "/", 200, "Accept"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIAddAHeader("Accept", "text/html"))
