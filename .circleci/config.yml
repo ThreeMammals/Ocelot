@@ -5,4 +5,4 @@ jobs:
       - image: mijitt0m/ocelot-build:0.0.1
     steps:
       - checkout
-      - run: ./build.sh
+      - run: make build

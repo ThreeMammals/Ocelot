@@ -6,4 +6,4 @@ COPY ./. .
 
 RUN chmod u+x build.sh
 
-RUN /bin/bash -c "/src/build.sh"
+RUN make build
