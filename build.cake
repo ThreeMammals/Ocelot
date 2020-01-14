@@ -225,6 +225,17 @@ Task("CreatePackages")
 
 			Information("Created package " + codePackage);
 		}
+
+		if (IsRunningOnCircleCI())
+		{
+			var path = packagesDir.ToString() + @"/**/*";
+
+			foreach (var file in GetFiles(path))
+			{
+				// todo - upload to github releases?
+				// AppVeyor.UploadArtifact(file.FullPath);
+			}
+		}
 	});
 
 Task("EnsureStableReleaseRequirements")
