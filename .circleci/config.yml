@@ -6,3 +6,23 @@ jobs:
     steps:
       - checkout
       - run: make build
+  release:
+    docker:
+      - image: mijitt0m/ocelot-build:0.0.1
+    steps:
+      - checkout
+      - run: make release
+workflows:
+  version: 2
+  master:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+  pr:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: master

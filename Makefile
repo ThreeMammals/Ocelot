@@ -3,9 +3,6 @@ NAME ?= ocelot
 build:
 	./build.sh
 
-build_and_release_unstable:
-	./build.ps1 -target BuildAndReleaseUnstable && exit $LASTEXITCODE
-
 build_and_run_tests:
 	./build.ps1 -target RunTests && exit $LASTEXITCODE
 

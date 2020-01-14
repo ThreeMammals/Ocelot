@@ -8,6 +8,7 @@
 
 // compile
 var compileConfig = Argument("configuration", "Release");
+
 var slnFile = "./Ocelot.sln";
 
 // build artifacts
@@ -37,11 +38,6 @@ var packagesDir = artifactsDir + Directory("Packages");
 var releaseNotesFile = packagesDir + File("releasenotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
-// unstable releases
-var nugetFeedUnstableKey = EnvironmentVariable("nuget-apikey-unstable");
-var nugetFeedUnstableUploadUrl = "https://www.nuget.org/api/v2/package";
-var nugetFeedUnstableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
-
 // stable releases
 var tagsUrl = "https://api.github.com/repos/tompallister/ocelot/releases/tags/";
 var nugetFeedStableKey = EnvironmentVariable("nuget-apikey-stable");
@@ -53,12 +49,10 @@ var releaseTag = "";
 string committedVersion = "0.0.0-dev";
 var buildVersion = committedVersion;
 GitVersion versioning = null;
-var nugetFeedUnstableBranchFilter = "^(develop)$|^(PullRequest/)";
 
 var target = Argument("target", "Default");
 
-
-Information("target is " +target);
+Information("target is " + target);
 Information("Build configuration is " + compileConfig);	
 
 Task("Default")
@@ -67,10 +61,6 @@ Task("Default")
 Task("Build")
 	.IsDependentOn("RunTests")
 	.IsDependentOn("CreatePackages");
-
-Task("BuildAndReleaseUnstable")
-	.IsDependentOn("Build")
-	.IsDependentOn("ReleasePackagesToUnstableFeed");
 	
 Task("Clean")
 	.Does(() =>
@@ -89,7 +79,7 @@ Task("Version")
 		var nugetVersion = versioning.NuGetVersion;
 		Information("SemVer version number: " + nugetVersion);
 
-		if (AppVeyor.IsRunningOnAppVeyor)
+		if (IsRunningOnCircleCI())
 		{
 			Information("Persisting version number...");
 			PersistVersion(committedVersion, nugetVersion);
@@ -134,7 +124,7 @@ Task("RunUnitTests")
 			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		
-			if (AppVeyor.IsRunningOnAppVeyor)
+			if (IsRunningOnCircleCI())
 			{
 				var repoToken = EnvironmentVariable(coverallsRepoToken);
 				if (string.IsNullOrEmpty(repoToken))
@@ -160,7 +150,7 @@ Task("RunUnitTests")
 		
 			if(double.Parse(sequenceCoverage) < minCodeCoverage)
 			{
-				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
+				var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
 				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
 			};
 		}
@@ -170,24 +160,6 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if(TravisCI.IsRunningOnTravisCI)
-		{
-			Information(
-				@"Job:
-				JobId: {0}
-				JobNumber: {1}
-				OSName: {2}",
-				BuildSystem.TravisCI.Environment.Job.JobId,
-				BuildSystem.TravisCI.Environment.Job.JobNumber,
-				BuildSystem.TravisCI.Environment.Job.OSName
-			);
-
-			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
-			{
-				return;
-			}
-		}
-
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -204,24 +176,6 @@ Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if(TravisCI.IsRunningOnTravisCI)
-		{
-			Information(
-				@"Job:
-				JobId: {0}
-				JobNumber: {1}
-				OSName: {2}",
-				BuildSystem.TravisCI.Environment.Job.JobId,
-				BuildSystem.TravisCI.Environment.Job.JobNumber,
-				BuildSystem.TravisCI.Environment.Job.OSName
-			);
-
-			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
-			{
-				return;
-			}
-		}
-
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -247,6 +201,7 @@ Task("CreatePackages")
 
 		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
+		// todo fix this for docker build
 		//GenerateReleaseNotes(releaseNotesFile);
 
 		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
@@ -255,6 +210,7 @@ Task("CreatePackages")
 		{
 			System.IO.File.AppendAllLines(artifactsFile, new[]{
 				projectFile.GetFilename().FullPath,
+				// todo fix this for docker build
 				//"releaseNotes:releasenotes.md"
 			});
 		}
@@ -269,52 +225,27 @@ Task("CreatePackages")
 
 			Information("Created package " + codePackage);
 		}
-
-		if (AppVeyor.IsRunningOnAppVeyor)
-		{
-			var path = packagesDir.ToString() + @"/**/*";
-
-			foreach (var file in GetFiles(path))
-			{
-				AppVeyor.UploadArtifact(file.FullPath);
-			}
-		}
-	});
-
-Task("ReleasePackagesToUnstableFeed")
-	.IsDependentOn("CreatePackages")
-	.Does(() =>
-	{
-		if (ShouldPublishToUnstableFeed(nugetFeedUnstableBranchFilter, versioning.BranchName))
-		{
-			PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
-		}
 	});
 
 Task("EnsureStableReleaseRequirements")
-    .Does(() =>
+    .Does(() =>	
     {
 		Information("Check if stable release...");
 
-        if (!AppVeyor.IsRunningOnAppVeyor)
+        if (!IsRunningOnCircleCI())
 		{
-           throw new Exception("Stable release should happen via appveyor");
+           throw new Exception("Stable release should happen via circleci");
 		}
 
-		Information("Running on AppVeyor...");
+		// todo how this on circle?
+		// var isTag =
+        //    AppVeyor.Environment.Repository.Tag.IsTag &&
+        //    !string.IsNullOrWhiteSpace(AppVeyor.Environment.Repository.Tag.Name);
 
-		Information("IsTag = " + AppVeyor.Environment.Repository.Tag.IsTag);
-
-		Information("Name = " + AppVeyor.Environment.Repository.Tag.Name);
-
-		var isTag =
-           AppVeyor.Environment.Repository.Tag.IsTag &&
-           !string.IsNullOrWhiteSpace(AppVeyor.Environment.Repository.Tag.Name);
-
-        if (!isTag)
-		{
-           throw new Exception("Stable release should happen from a published GitHub release");
-		}
+        // if (!isTag)
+		// {
+        //    throw new Exception("Stable release should happen from a published GitHub release");
+		// }
 
 		Information("Release is stable...");
     });
@@ -323,8 +254,8 @@ Task("UpdateVersionInfo")
     .IsDependentOn("EnsureStableReleaseRequirements")
     .Does(() =>
     {
+		// todo need a way to get the tag
         releaseTag = AppVeyor.Environment.Repository.Tag.Name;
-        AppVeyor.UpdateBuildVersion(releaseTag);
     });
 
 Task("DownloadGitHubReleaseArtifacts")
@@ -495,17 +426,7 @@ private string GetResource(string url)
 	}
 }
 
-private bool ShouldPublishToUnstableFeed(string filter, string branchName)
+private bool IsRunningOnCircleCI()
 {
-	var regex = new System.Text.RegularExpressions.Regex(filter);
-	var publish = regex.IsMatch(branchName);
-	if (publish)
-	{
-		Information("Branch " + branchName + " will be published to the unstable feed");
-	}
-	else
-	{
-		Information("Branch " + branchName + " will not be published to the unstable feed");
-	}
-	return publish;	
+    return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
