@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot)
 
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=master)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=master)
 
 
 

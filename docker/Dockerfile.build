@@ -1,3 +1,6 @@
+# call from ocelot repo root with
+# docker build -f ./docker/Dockerfile.build .
+
 FROM mijitt0m/ocelot-build:0.0.1
 
 WORKDIR /src
