@@ -4,16 +4,17 @@ build:
 	./build.sh
 
 build_and_run_tests:
-	./build.ps1 -target RunTests && exit $LASTEXITCODE
+	./build.sh --target=RunTests
 
 release:
-	./build.ps1 -target Release && exit $LASTEXITCODE
+	./build.sh --target=Release
 
 run_acceptance_tests:
-	./build -target RunAcceptanceTests && exit $LASTEXITCODE
+	./build.sh --target=RunAcceptanceTests
 
 run_benchmarks:
-	./build.ps1 -target RunBenchmarkTests && exit $LASTEXITCODE
+	./build.sh --target=RunBenchmarkTests
 
 run_unit_tests:
-	./build.ps1 -target RunUnitTests && exit $LASTEXITCODE
+	./build.sh --target=RunUnitTests
+	

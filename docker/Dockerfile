@@ -1,3 +1,4 @@
+# this is the dockerfile that create the ocelot build container
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS build
 
 RUN apt install gnupg ca-certificates

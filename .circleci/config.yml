@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -16,7 +16,7 @@ workflows:
   version: 2
   master:
     jobs:
-      - build:
+      - release:
           filters:
             branches:
               only: master
@@ -25,4 +25,6 @@ workflows:
       - build:
           filters:
             branches:
-              ignore: master
+              ignore: 
+                - master
+                - develop
