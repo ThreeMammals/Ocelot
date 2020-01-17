@@ -19,7 +19,7 @@ var artifactsDir = Directory("artifacts");
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var minCodeCoverage = 80d;
-var coverallsRepoToken = "coveralls-repo-token-ocelot";
+var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
 var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
 
 // acceptance testing
@@ -124,47 +124,49 @@ Task("RunUnitTests")
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
 			ArgumentCustomization = args => args
+				// this create the code coverage report
 				.Append("--settings test/Ocelot.UnitTests/UnitTests.runsettings")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
-    
-		if (IsRunningOnWindows())
+
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
+		Information(coverageSummaryFile);
+		Information(artifactsForUnitTestsDir);
+		// todo bring back report generator to get a friendly report
+		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
+		// https://github.com/danielpalme/ReportGenerator
+	
+		if (IsRunningOnCircleCI())
 		{
-			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
-			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		
-			if (IsRunningOnCircleCI())
+			var repoToken = EnvironmentVariable(coverallsRepoToken);
+			if (string.IsNullOrEmpty(repoToken))
 			{
-				var repoToken = EnvironmentVariable(coverallsRepoToken);
-				if (string.IsNullOrEmpty(repoToken))
-				{
-					throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
-				}
-
-				Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-				CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-				{
-					RepoToken = repoToken
-				});
-			}
-			else
-			{
-				Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
 			}
 
-			var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
-			var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
-
-			Information("Sequence Coverage: " + sequenceCoverage);
-		
-			if(double.Parse(sequenceCoverage) < minCodeCoverage)
+			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
+			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
 			{
-				var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
-				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
-			};
+				RepoToken = repoToken
+			});
 		}
+		else
+		{
+			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+		}
+
+		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
+
+		Information("Sequence Coverage: " + sequenceCoverage);
+	
+		if(double.Parse(sequenceCoverage) < minCodeCoverage)
+		{
+			var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
+			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+		};
 	});
 
 Task("RunAcceptanceTests")
