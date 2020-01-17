@@ -130,8 +130,8 @@ Task("RunUnitTests")
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
     
-		if (IsRunningOnWindows())
-		{
+		// if (IsRunningOnWindows())
+		// {
 			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		
@@ -164,7 +164,7 @@ Task("RunUnitTests")
 				var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
 				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
 			};
-		}
+		// }
 	});
 
 Task("RunAcceptanceTests")
