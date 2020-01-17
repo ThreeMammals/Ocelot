@@ -1,11 +1,10 @@
 # call from ocelot repo root with
-# docker build -f ./docker/Dockerfile.build .
-
+# docker build --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
 FROM mijitt0m/ocelot-build:0.0.1
 
-ARG OCELOT_GITHUB_API_KEY
+ARG OCELOT_COVERALLS_TOKEN
 
-ENV OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY
+ENV OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN
 
 WORKDIR /src
 
