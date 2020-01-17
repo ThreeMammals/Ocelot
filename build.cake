@@ -440,7 +440,8 @@ private void UploadFileToGitHubRelease(FilePath file)
 private void CompleteGitHubRelease()
 {
 	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"todo: notes coming\", \"draft\": false, \"prerelease\": false }}";
-	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
+	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using(var client = new System.Net.Http.HttpClient())
 	{	
@@ -452,7 +453,7 @@ private void CompleteGitHubRelease()
 
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
-		var result = client.PatchAsync($"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}", content).Result;
+		var result = client.SendAsync(request).Result;
 		if(result.StatusCode != System.Net.HttpStatusCode.OK) 
 		{
 			throw new Exception("CompleteGitHubRelease result.StatusCode = " + result.StatusCode);
