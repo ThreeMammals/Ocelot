@@ -20,7 +20,7 @@ var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var minCodeCoverage = 80d;
 var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
-var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
+var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
@@ -40,7 +40,7 @@ var releaseNotesFile = packagesDir + File("releasenotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
 // stable releases
-var tagsUrl = "https://api.github.com/repos/tompallister/ocelot/releases/tags/";
+var tagsUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/";
 var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUTGET_API_KEY");
 var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
