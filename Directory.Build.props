@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot</RepositoryUrl>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
@@ -11,6 +10,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All"/>
+    <!-- <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/> -->
   </ItemGroup>
 </Project>
