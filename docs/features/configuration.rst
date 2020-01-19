@@ -62,7 +62,8 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "HttpHandlerOptions": {
                 "AllowAutoRedirect": true,
                 "UseCookieContainer": true,
-                "UseTracing": true
+                "UseTracing": true,
+                "MaxConnectionsPerServer": 100
             },
             "DangerousAcceptAnyServerCertificateValidator": false
         }
@@ -222,3 +223,8 @@ If you want to ignore SSL warnings / errors set the following in your ReRoute co
     "DangerousAcceptAnyServerCertificateValidator": true
 
 I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
+
+MaxConnectionsPerServer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+This controls how many connections the internal HttpClient will open. This can be set at ReRoute or global level.
