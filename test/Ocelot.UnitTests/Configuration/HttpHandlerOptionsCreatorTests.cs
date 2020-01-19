@@ -175,6 +175,25 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_create_options_fixing_specified_MaxConnectionsPerServer_range_when_zero()
+        {
+            var fileReRoute = new FileReRoute
+            {
+                HttpHandlerOptions = new FileHttpHandlerOptions
+                {
+                    MaxConnectionsPerServer = 0
+                }
+            };
+
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
+
+            this.Given(x => GivenTheFollowing(fileReRoute))
+                .When(x => WhenICreateHttpHandlerOptions())
+                .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
+                .BDDfy();
+        }
+
         private void GivenTheFollowing(FileReRoute fileReRoute)
         {
             _fileReRoute = fileReRoute;
