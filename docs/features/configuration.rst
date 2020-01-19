@@ -62,7 +62,8 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "HttpHandlerOptions": {
                 "AllowAutoRedirect": true,
                 "UseCookieContainer": true,
-                "UseTracing": true
+                "UseTracing": true,
+                "MaxConnectionsPerServer": 100
             },
             "DangerousAcceptAnyServerCertificateValidator": false
         }
