@@ -10,12 +10,14 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Moq;
     using Newtonsoft.Json;
     using Ocelot.Cache.CacheManager;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
     using Ocelot.DependencyInjection;
     using Ocelot.Infrastructure;
+    using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Provider.Consul;
@@ -1119,6 +1121,61 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithLogger()
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();
+                    s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void ThenWarningShouldBeLogged()
+        {
+            MockLoggerFactory loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+            loggerFactory.Verify();
+        }
+
+        internal class MockLoggerFactory : IOcelotLoggerFactory
+        {
+            private Mock<IOcelotLogger> _logger;
+
+            public IOcelotLogger CreateLogger<T>()
+            {
+                if (_logger == null)
+                {
+                    _logger = new Mock<IOcelotLogger>();
+                    _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
+                }
+                return _logger.Object;
+            }
+
+            public void Verify()
+            {
+                _logger.Verify(x => x.LogWarning(It.IsAny<string>()), Times.Once);
+            }
         }
     }
 }

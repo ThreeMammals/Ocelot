@@ -9,23 +9,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
 		.gitignore = .gitignore
-		build-and-release-unstable.ps1 = build-and-release-unstable.ps1
-		build-and-run-tests.ps1 = build-and-run-tests.ps1
 		build.cake = build.cake
 		build.ps1 = build.ps1
 		codeanalysis.ruleset = codeanalysis.ruleset
-		docker-compose.yaml = docker-compose.yaml
-		Dockerfile = Dockerfile
 		GitVersion.yml = GitVersion.yml
-		global.json = global.json
 		LICENSE.md = LICENSE.md
 		README.md = README.md
-		release.ps1 = release.ps1
 		ReleaseNotes.md = ReleaseNotes.md
-		run-acceptance-tests.ps1 = run-acceptance-tests.ps1
-		run-benchmarks.ps1 = run-benchmarks.ps1
-		run-unit-tests.ps1 = run-unit-tests.ps1
-		version.ps1 = version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5B401523-36DA-4491-B73A-7590A26E420B}"
