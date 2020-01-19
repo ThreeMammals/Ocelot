@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Builder
 {
@@ -7,6 +8,7 @@ namespace Ocelot.Configuration.Builder
         private bool _enableRateLimiting;
         private string _clientIdHeader;
         private List<string> _clientWhitelist;
+        private Func<List<string>> _getClientWhitelist;
         private bool _disableRateLimitHeaders;
         private string _quotaExceededMessage;
         private string _rateLimitCounterPrefix;
@@ -19,15 +21,15 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public RateLimitOptionsBuilder WithClientIdHeader(string clientIdheader)
+        public RateLimitOptionsBuilder WithClientIdHeader(string clientIdHeader)
         {
-            _clientIdHeader = clientIdheader;
+            _clientIdHeader = clientIdHeader;
             return this;
         }
 
-        public RateLimitOptionsBuilder WithClientWhiteList(List<string> clientWhitelist)
+        public RateLimitOptionsBuilder WithClientWhiteList(Func<List<string>> getClientWhitelist)
         {
-            _clientWhitelist = clientWhitelist;
+            _getClientWhitelist = getClientWhitelist;
             return this;
         }
 
@@ -63,7 +65,7 @@ namespace Ocelot.Configuration.Builder
 
         public RateLimitOptions Build()
         {
-            return new RateLimitOptions(_enableRateLimiting, _clientIdHeader, _clientWhitelist,
+            return new RateLimitOptions(_enableRateLimiting, _clientIdHeader, _getClientWhitelist,
                 _disableRateLimitHeaders, _quotaExceededMessage, _rateLimitCounterPrefix,
                 _rateLimitRule, _httpStatusCode);
         }

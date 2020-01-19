@@ -50,7 +50,7 @@ namespace Ocelot.UnitTests.Configuration
             };
             var expected = new RateLimitOptionsBuilder()
                 .WithClientIdHeader("ClientIdHeader")
-                .WithClientWhiteList(fileReRoute.RateLimitOptions.ClientWhitelist)
+                .WithClientWhiteList(() => fileReRoute.RateLimitOptions.ClientWhitelist)
                 .WithDisableRateLimitHeaders(true)
                 .WithEnableRateLimiting(true)
                 .WithHttpStatusCode(200)
