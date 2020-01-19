@@ -41,14 +41,14 @@ namespace Ocelot.UnitTests.Configuration
             _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
             _internalConfigCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse<IInternalConfiguration>(_internalConfig));
             _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
-            _poller.StartAsync(new CancellationToken());
         }
 
         [Fact]
         public void should_start()
         {
-            this.Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
-                 .BDDfy();
+            this.Given(x => GivenPollerHasStarted())
+                .Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
+                .BDDfy();
         }
 
         [Fact]
@@ -71,7 +71,8 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenTheConfigIsChanged(newConfig, 0))
+            this.Given(x => GivenPollerHasStarted())
+                .Given(x => WhenTheConfigIsChanged(newConfig, 0))
                 .Then(x => ThenTheSetterIsCalledAtLeast(newConfig, 1))
                 .BDDfy();
         }
@@ -96,7 +97,8 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenTheConfigIsChanged(newConfig, 10))
+            this.Given(x => GivenPollerHasStarted())
+                .Given(x => WhenTheConfigIsChanged(newConfig, 10))
                 .Then(x => ThenTheSetterIsCalled(newConfig, 1))
                 .BDDfy();
         }
@@ -121,9 +123,22 @@ namespace Ocelot.UnitTests.Configuration
                 }
             };
 
-            this.Given(x => WhenProviderErrors())
+            this.Given(x => GivenPollerHasStarted())
+                .Given(x => WhenProviderErrors())
                 .Then(x => ThenTheSetterIsCalled(newConfig, 0))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_dispose_cleanly_without_starting()
+        {
+            this.When(x => WhenPollerIsDisposed())
+                .BDDfy();
+        }
+
+        private void GivenPollerHasStarted()
+        {
+            _poller.StartAsync(CancellationToken.None);
         }
 
         private void WhenProviderErrors()
@@ -139,6 +154,11 @@ namespace Ocelot.UnitTests.Configuration
                 .Setup(x => x.Get())
                 .Callback(() => Thread.Sleep(delay))
                 .ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
+        }
+
+        private void WhenPollerIsDisposed()
+        {
+            _poller.Dispose();
         }
 
         private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
