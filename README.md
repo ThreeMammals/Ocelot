@@ -4,6 +4,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=master)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=master)
 
+[Slack](threemammals.slack.com)
 
 # Ocelot
 
