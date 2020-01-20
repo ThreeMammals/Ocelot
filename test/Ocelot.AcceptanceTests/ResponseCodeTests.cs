@@ -34,7 +34,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51092,
                                 }
                             },
                             UpstreamPathTemplate = "/{everything}",
@@ -43,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/inline.132.bundle.js", 304))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51092", "/inline.132.bundle.js", 304))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
