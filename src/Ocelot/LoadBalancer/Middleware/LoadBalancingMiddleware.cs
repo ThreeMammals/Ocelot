@@ -45,6 +45,11 @@ namespace Ocelot.LoadBalancer.Middleware
                 context.DownstreamRequest.Port = hostAndPort.Data.DownstreamPort;
             }
 
+            if (!string.IsNullOrEmpty(hostAndPort.Data.Scheme))
+            {
+                context.DownstreamRequest.Scheme = hostAndPort.Data.Scheme;
+            }
+
             try
             {
                 await _next.Invoke(context);

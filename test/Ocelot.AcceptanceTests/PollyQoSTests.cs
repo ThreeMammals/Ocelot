@@ -166,7 +166,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51872,
+                                Port = 51870,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -196,7 +196,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51872", "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51870", "Hello from Laura"))
                 .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())

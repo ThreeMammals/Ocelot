@@ -1,13 +1,15 @@
-﻿#tool "nuget:?package=GitVersion.CommandLine"
+#tool "nuget:?package=GitVersion.CommandLine&version=5.0.1"
 #tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
+#addin nuget:?package=System.Net.Http
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
 
 // compile
 var compileConfig = Argument("configuration", "Release");
+
 var slnFile = "./Ocelot.sln";
 
 // build artifacts
@@ -17,8 +19,8 @@ var artifactsDir = Directory("artifacts");
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var minCodeCoverage = 80d;
-var coverallsRepoToken = "coveralls-repo-token-ocelot";
-var coverallsRepo = "https://coveralls.io/github/TomPallister/Ocelot";
+var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
+var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
@@ -37,41 +39,54 @@ var packagesDir = artifactsDir + Directory("Packages");
 var releaseNotesFile = packagesDir + File("releasenotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
-// unstable releases
-var nugetFeedUnstableKey = EnvironmentVariable("nuget-apikey-unstable");
-var nugetFeedUnstableUploadUrl = "https://www.nuget.org/api/v2/package";
-var nugetFeedUnstableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
-
 // stable releases
-var tagsUrl = "https://api.github.com/repos/tompallister/ocelot/releases/tags/";
-var nugetFeedStableKey = EnvironmentVariable("nuget-apikey-stable");
+var tagsUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/";
+var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUTGET_API_KEY");
 var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
 // internal build variables - don't change these.
-var releaseTag = "";
 string committedVersion = "0.0.0-dev";
-var buildVersion = committedVersion;
 GitVersion versioning = null;
-var nugetFeedUnstableBranchFilter = "^(develop)$|^(PullRequest/)";
+int releaseId = 0;
+string gitHubUsername = "TomPallister";
+string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
 
-
-Information("target is " +target);
+Information("target is " + target);
 Information("Build configuration is " + compileConfig);	
 
 Task("Default")
 	.IsDependentOn("Build");
 
 Task("Build")
-	.IsDependentOn("RunTests")
-	.IsDependentOn("CreatePackages");
+	.IsDependentOn("RunTests");
 
-Task("BuildAndReleaseUnstable")
+Task("RunTests")
+	.IsDependentOn("RunUnitTests")
+	.IsDependentOn("RunAcceptanceTests")
+	.IsDependentOn("RunIntegrationTests");
+
+Task("Release")
 	.IsDependentOn("Build")
-	.IsDependentOn("ReleasePackagesToUnstableFeed");
-	
+	.IsDependentOn("CreateArtifacts")
+	.IsDependentOn("PublishGitHubRelease")
+    .IsDependentOn("PublishToNuget");
+
+Task("Compile")
+	.IsDependentOn("Clean")
+	.IsDependentOn("Version")
+	.Does(() =>
+	{	
+		var settings = new DotNetCoreBuildSettings
+		{
+			Configuration = compileConfig,
+		};
+		
+		DotNetCoreBuild(slnFile, settings);
+	});
+
 Task("Clean")
 	.Does(() =>
 	{
@@ -89,29 +104,15 @@ Task("Version")
 		var nugetVersion = versioning.NuGetVersion;
 		Information("SemVer version number: " + nugetVersion);
 
-		if (AppVeyor.IsRunningOnAppVeyor)
+		if (IsRunningOnCircleCI())
 		{
 			Information("Persisting version number...");
 			PersistVersion(committedVersion, nugetVersion);
-			buildVersion = nugetVersion;
 		}
 		else
 		{
 			Information("We are not running on build server, so we won't persist the version number.");
 		}
-	});
-
-Task("Compile")
-	.IsDependentOn("Clean")
-	.IsDependentOn("Version")
-	.Does(() =>
-	{	
-		var settings = new DotNetCoreBuildSettings
-		{
-			Configuration = compileConfig,
-		};
-		
-		DotNetCoreBuild(slnFile, settings);
 	});
 
 Task("RunUnitTests")
@@ -123,71 +124,55 @@ Task("RunUnitTests")
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
 			ArgumentCustomization = args => args
+				// this create the code coverage report
 				.Append("--settings test/Ocelot.UnitTests/UnitTests.runsettings")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
-    
-		if (IsRunningOnWindows())
+
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
+		Information(coverageSummaryFile);
+		Information(artifactsForUnitTestsDir);
+		// todo bring back report generator to get a friendly report
+		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
+		// https://github.com/danielpalme/ReportGenerator
+	
+		if (IsRunningOnCircleCI())
 		{
-			var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
-			ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		
-			if (AppVeyor.IsRunningOnAppVeyor)
+			var repoToken = EnvironmentVariable(coverallsRepoToken);
+			if (string.IsNullOrEmpty(repoToken))
 			{
-				var repoToken = EnvironmentVariable(coverallsRepoToken);
-				if (string.IsNullOrEmpty(repoToken))
-				{
-					throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
-				}
-
-				Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-				CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-				{
-					RepoToken = repoToken
-				});
-			}
-			else
-			{
-				Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
 			}
 
-			var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
-			var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
-
-			Information("Sequence Coverage: " + sequenceCoverage);
-		
-			if(double.Parse(sequenceCoverage) < minCodeCoverage)
+			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
+			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
 			{
-				var whereToCheck = !AppVeyor.IsRunningOnAppVeyor ? coverallsRepo : artifactsForUnitTestsDir;
-				throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
-			};
+				RepoToken = repoToken
+			});
 		}
+		else
+		{
+			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+		}
+
+		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
+
+		Information("Sequence Coverage: " + sequenceCoverage);
+	
+		if(double.Parse(sequenceCoverage) < minCodeCoverage)
+		{
+			var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
+			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+		};
 	});
 
 Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if(TravisCI.IsRunningOnTravisCI)
-		{
-			Information(
-				@"Job:
-				JobId: {0}
-				JobNumber: {1}
-				OSName: {2}",
-				BuildSystem.TravisCI.Environment.Job.JobId,
-				BuildSystem.TravisCI.Environment.Job.JobNumber,
-				BuildSystem.TravisCI.Environment.Job.OSName
-			);
-
-			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
-			{
-				return;
-			}
-		}
-
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -204,24 +189,6 @@ Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		if(TravisCI.IsRunningOnTravisCI)
-		{
-			Information(
-				@"Job:
-				JobId: {0}
-				JobNumber: {1}
-				OSName: {2}",
-				BuildSystem.TravisCI.Environment.Job.JobId,
-				BuildSystem.TravisCI.Environment.Job.JobNumber,
-				BuildSystem.TravisCI.Environment.Job.OSName
-			);
-
-			if(TravisCI.Environment.Job.OSName.ToLower() == "osx")
-			{
-				return;
-			}
-		}
-
 		var settings = new DotNetCoreTestSettings
 		{
 			Configuration = compileConfig,
@@ -234,12 +201,7 @@ Task("RunIntegrationTests")
 		DotNetCoreTest(integrationTestAssemblies, settings);
 	});
 
-Task("RunTests")
-	.IsDependentOn("RunUnitTests")
-	.IsDependentOn("RunAcceptanceTests")
-	.IsDependentOn("RunIntegrationTests");
-
-Task("CreatePackages")
+Task("CreateArtifacts")
 	.IsDependentOn("Compile")
 	.Does(() => 
 	{
@@ -247,6 +209,7 @@ Task("CreatePackages")
 
 		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
+		// todo fix this for docker build
 		//GenerateReleaseNotes(releaseNotesFile);
 
 		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
@@ -255,6 +218,7 @@ Task("CreatePackages")
 		{
 			System.IO.File.AppendAllLines(artifactsFile, new[]{
 				projectFile.GetFilename().FullPath,
+				// todo fix this for docker build
 				//"releaseNotes:releasenotes.md"
 			});
 		}
@@ -269,101 +233,60 @@ Task("CreatePackages")
 
 			Information("Created package " + codePackage);
 		}
+	});
 
-		if (AppVeyor.IsRunningOnAppVeyor)
+Task("PublishGitHubRelease")
+	.IsDependentOn("CreateArtifacts")
+	.Does(() => 
+	{
+		if (IsRunningOnCircleCI())
 		{
 			var path = packagesDir.ToString() + @"/**/*";
 
+			CreateGitHubRelease();
+
 			foreach (var file in GetFiles(path))
 			{
-				AppVeyor.UploadArtifact(file.FullPath);
+				UploadFileToGitHubRelease(file);
 			}
-		}
-	});
 
-Task("ReleasePackagesToUnstableFeed")
-	.IsDependentOn("CreatePackages")
-	.Does(() =>
-	{
-		if (ShouldPublishToUnstableFeed(nugetFeedUnstableBranchFilter, versioning.BranchName))
-		{
-			PublishPackages(packagesDir, artifactsFile, nugetFeedUnstableKey, nugetFeedUnstableUploadUrl, nugetFeedUnstableSymbolsUploadUrl);
+			CompleteGitHubRelease();
 		}
 	});
 
 Task("EnsureStableReleaseRequirements")
-    .Does(() =>
+    .Does(() =>	
     {
 		Information("Check if stable release...");
 
-        if (!AppVeyor.IsRunningOnAppVeyor)
+        if (!IsRunningOnCircleCI())
 		{
-           throw new Exception("Stable release should happen via appveyor");
-		}
-
-		Information("Running on AppVeyor...");
-
-		Information("IsTag = " + AppVeyor.Environment.Repository.Tag.IsTag);
-
-		Information("Name = " + AppVeyor.Environment.Repository.Tag.Name);
-
-		var isTag =
-           AppVeyor.Environment.Repository.Tag.IsTag &&
-           !string.IsNullOrWhiteSpace(AppVeyor.Environment.Repository.Tag.Name);
-
-        if (!isTag)
-		{
-           throw new Exception("Stable release should happen from a published GitHub release");
+           throw new Exception("Stable release should happen via circleci");
 		}
 
 		Information("Release is stable...");
     });
 
-Task("UpdateVersionInfo")
-    .IsDependentOn("EnsureStableReleaseRequirements")
-    .Does(() =>
-    {
-        releaseTag = AppVeyor.Environment.Repository.Tag.Name;
-        AppVeyor.UpdateBuildVersion(releaseTag);
-    });
-
 Task("DownloadGitHubReleaseArtifacts")
-    .IsDependentOn("UpdateVersionInfo")
     .Does(() =>
     {
+
 		try
 		{
-			Information("DownloadGitHubReleaseArtifacts");
-
 			EnsureDirectoryExists(packagesDir);
 
-			Information("Directory exists...");
-
-			var releaseUrl = tagsUrl + releaseTag;
-
-			Information("Release url " + releaseUrl);
+			var releaseUrl = tagsUrl + versioning.NuGetVersion;
 
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
 				.Value<string>("assets_url");
 
-			Information("Assets url " + assets_url);
-
 			var assets = GetResource(assets_url);
-
-			Information("Assets " + assets_url);
 
 			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(assets))
 			{
-				Information("In the loop..");
-
 				var file = packagesDir + File(asset.Value<string>("name"));
-
-				Information("Downloading " + file);
-				
 				DownloadFile(asset.Value<string>("browser_download_url"), file);
 			}
-
-			Information("Out of the loop...");
 		}
 		catch(Exception exception)
 		{
@@ -372,15 +295,15 @@ Task("DownloadGitHubReleaseArtifacts")
 		}
     });
 
-Task("ReleasePackagesToStableFeed")
+Task("PublishToNuget")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		if (IsRunningOnCircleCI())
+		{
+			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		}
     });
-
-Task("Release")
-    .IsDependentOn("ReleasePackagesToStableFeed");
 
 RunTarget(target);
 
@@ -444,6 +367,7 @@ private void GenerateReleaseNotes(ConvertableFilePath file)
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
+		Information("PublishPackages");
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
 			.Distinct();
@@ -464,6 +388,81 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 				});
 		}
 }
+
+private void CreateGitHubRelease()
+{
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"todo: notes coming\", \"draft\": true, \"prerelease\": true }}";
+	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+	using(var client = new System.Net.Http.HttpClient())
+	{	
+			client.DefaultRequestHeaders.Authorization = 
+    new System.Net.Http.Headers.AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(
+            System.Text.ASCIIEncoding.ASCII.GetBytes(
+               $"{gitHubUsername}:{gitHubPassword}")));
+
+		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
+
+		var result = client.PostAsync("https://api.github.com/repos/ThreeMammals/Ocelot/releases", content).Result;
+		if(result.StatusCode != System.Net.HttpStatusCode.Created) 
+		{
+			throw new Exception("CreateGitHubRelease result.StatusCode = " + result.StatusCode);
+		}
+		var returnValue = result.Content.ReadAsStringAsync().Result;
+		dynamic test = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(returnValue);
+		releaseId = test.id;
+	}
+}
+
+private void UploadFileToGitHubRelease(FilePath file)
+{
+	var data = System.IO.File.ReadAllBytes(file.FullPath);
+	var content = new System.Net.Http.ByteArrayContent(data);
+	content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+	using(var client = new System.Net.Http.HttpClient())
+	{	
+			client.DefaultRequestHeaders.Authorization = 
+    new System.Net.Http.Headers.AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(
+            System.Text.ASCIIEncoding.ASCII.GetBytes(
+               $"{gitHubUsername}:{gitHubPassword}")));
+
+		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
+
+		var result = client.PostAsync($"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={file.GetFilename()}", content).Result;
+		if(result.StatusCode != System.Net.HttpStatusCode.Created) 
+		{
+			throw new Exception("UploadFileToGitHubRelease result.StatusCode = " + result.StatusCode);
+		}
+	}
+}
+
+private void CompleteGitHubRelease()
+{
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"todo: notes coming\", \"draft\": false, \"prerelease\": false }}";
+	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
+	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+	using(var client = new System.Net.Http.HttpClient())
+	{	
+			client.DefaultRequestHeaders.Authorization = 
+    new System.Net.Http.Headers.AuthenticationHeaderValue(
+        "Basic", Convert.ToBase64String(
+            System.Text.ASCIIEncoding.ASCII.GetBytes(
+               $"{gitHubUsername}:{gitHubPassword}")));
+
+		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
+
+		var result = client.SendAsync(request).Result;
+		if(result.StatusCode != System.Net.HttpStatusCode.OK) 
+		{
+			throw new Exception("CompleteGitHubRelease result.StatusCode = " + result.StatusCode);
+		}
+	}
+}
+
 
 /// gets the resource from the specified url
 private string GetResource(string url)
@@ -495,17 +494,7 @@ private string GetResource(string url)
 	}
 }
 
-private bool ShouldPublishToUnstableFeed(string filter, string branchName)
+private bool IsRunningOnCircleCI()
 {
-	var regex = new System.Text.RegularExpressions.Regex(filter);
-	var publish = regex.IsMatch(branchName);
-	if (publish)
-	{
-		Information("Branch " + branchName + " will be published to the unstable feed");
-	}
-	else
-	{
-		Information("Branch " + branchName + " will not be published to the unstable feed");
-	}
-	return publish;	
+    return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }

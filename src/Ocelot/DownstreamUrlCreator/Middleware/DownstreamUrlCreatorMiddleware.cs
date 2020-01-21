@@ -37,7 +37,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            context.DownstreamRequest.Scheme = context.DownstreamReRoute.DownstreamScheme;
+            if (!string.IsNullOrEmpty(context.DownstreamReRoute.DownstreamScheme))
+            {
+                context.DownstreamRequest.Scheme = context.DownstreamReRoute.DownstreamScheme;
+            }
 
             if (ServiceFabricRequest(context))
             {
