@@ -40,5 +40,6 @@
         CannotRemovePlaceholderError = 35,
         QuotaExceededError = 36,
         RequestCanceled = 37,
+        ConnectionToDownstreamServiceError = 38,
     }
 }

@@ -40,9 +40,14 @@ namespace Ocelot.Responder
                 return 404;
             }
 
-            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError))
+            if (errors.Any(e => e.Code == OcelotErrorCode.ConnectionToDownstreamServiceError))
             {
                 return 502;
+            }
+
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError))
+            {
+                return 500;
             }
 
             return 404;
