@@ -1,6 +1,6 @@
 namespace Ocelot.Requester
 {
-    using Errors;
+    using Ocelot.Errors;
     using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Ocelot.Requester
                 return _mappers[type](exception);
             }
 
-            if (type == typeof(OperationCanceledException))
+            if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
             {
                 return new RequestCanceledError(exception.Message);
             }

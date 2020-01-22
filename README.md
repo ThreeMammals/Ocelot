@@ -1,14 +1,10 @@
 [<img src="https://threemammals.com/ocelot_logo.png">](https://threemammals.com/ocelot)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/r6sv51qx36sis1je?branch=develop&svg=true)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb) Windows (AppVeyor)
+[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master)
 
-[![Build Status](https://travis-ci.org/ThreeMammals/Ocelot.svg?branch=develop)](https://travis-ci.org/ThreeMammals/Ocelot) Linux & OSX (Travis)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=master)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=master)
 
-[![Windows Build history](https://buildstats.info/appveyor/chart/TomPallister/ocelot-fcfpb?branch=develop&includeBuildsFromPullRequest=false)](https://ci.appveyor.com/project/TomPallister/ocelot-fcfpb/history?branch=develop)
-
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
-
-
+[Slack](threemammals.slack.com)
 
 # Ocelot
 
@@ -59,7 +55,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET Core only and it targets `netstandard2.0`. This means it can be used anywhere `.NET Standard 2.0` is supported, including `.NET Core 2.1` and `.NET Framework 4.7.2` and up. [This](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) documentation may prove helpful when working out if Ocelot would be suitable for you.
+Ocelot is designed to work with ASP.NET Core only and it targets `netstandard2.0`. This means it can be used anywhere `.NET Standard 2.0` is supported, including `.NET Core 3.1` and `.NET Framework 4.8` and up. [This](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) documentation may prove helpful when working out if Ocelot would be suitable for you.
 
 Install Ocelot and it's dependencies using NuGet. 
 

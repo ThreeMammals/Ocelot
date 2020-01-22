@@ -1341,6 +1341,32 @@
                 .BDDfy();
         }
 
+        [Fact]
+        public void configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/bar/{everything}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort> 
+                        { 
+                            new FileHostAndPort() { Host = "a.b.cd" },
+                        },
+                        UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "reRoute /foo/bar/{everything}/{everything} has duplicated placeholder"))
+                .BDDfy();
+        }
+
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
             _fileConfiguration = fileConfiguration;
