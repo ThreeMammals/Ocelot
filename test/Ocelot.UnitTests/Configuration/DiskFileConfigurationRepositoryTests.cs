@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
 
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
-        private readonly Mock<IHostingEnvironment> _hostingEnvironment;
+        private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
         private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
