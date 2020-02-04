@@ -105,7 +105,8 @@ namespace Ocelot.Configuration.Repository
 
         public void Dispose()
         {
-            _timer.Dispose();
+            _timer?.Dispose();
+            _timer = null;
         }
     }
 }

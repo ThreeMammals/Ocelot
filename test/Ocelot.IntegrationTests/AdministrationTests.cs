@@ -20,8 +20,8 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Ocelot.Configuration.ChangeTracking;
 using TestStack.BDDfy;
+using Ocelot.Configuration.ChangeTracking;
 using Xunit;
 
 namespace Ocelot.IntegrationTests
@@ -108,7 +108,7 @@ namespace Ocelot.IntegrationTests
                 .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
                 .And(x => GivenOcelotIsRunning())
                 .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5007"))
+                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5017"))
                 .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();

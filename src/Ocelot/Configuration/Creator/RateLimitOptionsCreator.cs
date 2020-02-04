@@ -11,7 +11,7 @@ namespace Ocelot.Configuration.Creator
             {
                 return new RateLimitOptionsBuilder()
                     .WithClientIdHeader(globalConfiguration.RateLimitOptions.ClientIdHeader)
-                    .WithClientWhiteList(fileRateLimitRule.ClientWhitelist)
+                    .WithClientWhiteList(() => fileRateLimitRule.ClientWhitelist)
                     .WithDisableRateLimitHeaders(globalConfiguration.RateLimitOptions.DisableRateLimitHeaders)
                     .WithEnableRateLimiting(fileRateLimitRule.EnableRateLimiting)
                     .WithHttpStatusCode(globalConfiguration.RateLimitOptions.HttpStatusCode)
