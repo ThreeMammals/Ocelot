@@ -1,9 +1,9 @@
 Configuration
-============
+=============
 
 An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/develop/test/Ocelot.ManualTest/ocelot.json>`_.
-There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
-The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
+There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration.
+The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global
 configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
 if you don't want to manage lots of ReRoute specific settings.
 
@@ -72,8 +72,8 @@ More information on how to use these options is below..
 Multiple environments
 ^^^^^^^^^^^^^^^^^^^^^
 
-Like any other asp.net core project Ocelot supports configuration file names such as configuration.dev.json, configuration.test.json etc. In order to implement this add the following 
-to you 
+Like any other asp.net core project Ocelot supports configuration file names such as configuration.dev.json, configuration.test.json etc. In order to implement this add the following
+to you
 
 .. code-block:: csharp
 
@@ -97,7 +97,7 @@ Merging configuration files
 
 This feature was requested in `Issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_ and allows users to have multiple configuration files to make managing large configurations easier.
 
-Instead of adding the configuration directly e.g. AddJsonFile("ocelot.json") you can call AddOcelot() like below. 
+Instead of adding the configuration directly e.g. AddJsonFile("ocelot.json") you can call AddOcelot() like below.
 
 .. code-block:: csharp
 
@@ -111,7 +111,7 @@ Instead of adding the configuration directly e.g. AddJsonFile("ocelot.json") you
                 .AddEnvironmentVariables();
         })
 
-In this scenario Ocelot will look for any files that match the pattern (?i)ocelot.([a-zA-Z0-9]*).json and then merge these together. If you want to set the GlobalConfiguration property you must have a file called ocelot.global.json. 
+In this scenario Ocelot will look for any files that match the pattern (?i)ocelot.([a-zA-Z0-9]*).json and then merge these together. If you want to set the GlobalConfiguration property you must have a file called ocelot.global.json.
 
 The way Ocelot merges the files is basically load them, loop over them, add any ReRoutes, add any AggregateReRoutes and if the file is called ocelot.global.json add the GlobalConfiguration aswell as any ReRoutes or AggregateReRoutes. Ocelot will then save the merged configuration to a file called ocelot.json and this will be used as the source of truth while ocelot is running.
 
@@ -131,7 +131,7 @@ You can also give Ocelot a specific path to look in for the configuration files 
                 .AddEnvironmentVariables();
         })
 
-Ocelot needs the HostingEnvironment so it knows to exclude anything environment specific from the algorithm. 
+Ocelot needs the HostingEnvironment so it knows to exclude anything environment specific from the algorithm.
 
 Store configuration in consul
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,7 +161,7 @@ finds your Consul agent and interacts to load and store the configuration from C
         }
     }
 
-I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! 
+I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this!
 I guess it means if you want to use Ocelot to its fullest you take on Consul as a dependency for now.
 
 This feature has a 3 second ttl cache before making a new request to your local consul agent.
@@ -195,22 +195,22 @@ In this example Ocelot will use Oceolot_A as the key for your configuration when
 
 If you do not set the ConfigurationKey Ocelot will use the string InternalConfiguration as the key.
 
-Follow Redirects / Use CookieContainer 
+Follow Redirects / Use CookieContainer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
 
-1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically 
+1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically
 follow redirection responses from the Downstream resource; otherwise false. The default value is false.
 
-2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer 
+2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer
 property to store server cookies and uses these cookies when sending requests. The default value is false. Please note
 that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests
 to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user
 noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients
 that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight
-requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting 
-UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
+requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting
+UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request!
 
 SSL Errors
 ^^^^^^^^^^
@@ -222,3 +222,62 @@ If you want to ignore SSL warnings / errors set the following in your ReRoute co
     "DangerousAcceptAnyServerCertificateValidator": true
 
 I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
+
+
+React to Configuration Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Resolve IOcelotConfigurationChangeTokenSource from the DI container if you wish to react to changes to the Ocelot configuration via the Ocelot.Administration API or ocelot.json being reloaded from the disk. You may either poll the change token's HasChanged property, or register a callback with the RegisterChangeCallback method.
+
+Polling the HasChanged property
+-------------------------------
+
+.. code-block:: csharp
+
+    public class ConfigurationNotifyingService : BackgroundService
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly ILogger _logger;
+
+        public ConfigurationNotifyingService(IOcelotConfigurationChangeTokenSource tokenSource, ILogger logger)
+        {
+            _tokenSource = tokenSource;
+            _logger = logger;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (_tokenSource.ChangeToken.HasChanged)
+                {
+                    _logger.LogInformation("Configuration updated");
+                }
+
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+
+Registering a callback
+----------------------
+
+.. code-block:: csharp
+
+    public class MyDependencyInjectedClass : IDisposable
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly IDisposable _callbackHolder;
+
+        public MyClass(IOcelotConfigurationChangeTokenSource tokenSource)
+        {
+            _tokenSource    = tokenSource;
+            _callbackHolder = tokenSource.ChangeToken.RegisterChangeCallback(_ => Console.WriteLine("Configuration changed"), null);
+        }
+
+        public void Dispose()
+        {
+            _callbackHolder.Dispose();
+        }
+    }
+
