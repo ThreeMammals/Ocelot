@@ -1,14 +1,19 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Ocelot.Administration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using System.IO;
+using Ocelot.Administration;
 
 namespace AdministrationApi
 {
-    public class Program
+  public class Program
 {
     public static void Main(string[] args)
     {
