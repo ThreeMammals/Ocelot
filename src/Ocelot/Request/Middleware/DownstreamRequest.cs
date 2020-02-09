@@ -24,7 +24,7 @@ namespace Ocelot.Request.Middleware
 
         public HttpRequestHeaders Headers { get; }
 
-        public string Method { get; }
+        public string Method { get; set; }
 
         public string OriginalString { get; }
 
@@ -52,6 +52,7 @@ namespace Ocelot.Request.Middleware
             };
 
             _request.RequestUri = uriBuilder.Uri;
+            _request.Method = new HttpMethod(Method);
             return _request;
         }
 
