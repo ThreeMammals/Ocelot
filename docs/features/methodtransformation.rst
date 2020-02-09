@@ -7,21 +7,21 @@ This achieved by setting the following ReRoute configuration:
 
 .. code-block:: json
 
-{
-    "DownstreamPathTemplate": "/{url}",
-    "UpstreamPathTemplate": "/{url}",
-    "UpstreamHttpMethod": [
-        "Get"
-    ],
-    "DownstreamHttpMethod": "POST",
-    "DownstreamScheme": "http",
-    "DownstreamHostAndPorts": [
-        {
-            "Host": "localhost",
-            "Port": 53271
-        }
-    ],
-}
+    {
+        "DownstreamPathTemplate": "/{url}",
+        "UpstreamPathTemplate": "/{url}",
+        "UpstreamHttpMethod": [
+            "Get"
+        ],
+        "DownstreamHttpMethod": "POST",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+            {
+                "Host": "localhost",
+                "Port": 53271
+            }
+        ],
+    }
 
 The key property here is DownstreamHttpMethod which is set as POST and the ReRoute will only match on GET as set by UpstreamHttpMethod.
 
