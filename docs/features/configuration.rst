@@ -24,7 +24,7 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "UpstreamHttpMethod": [
                 "Get"
             ],
-            "DownstreamHttpMethod": "".
+            "DownstreamHttpMethod": "",
             "AddHeadersToRequest": {},
             "AddClaimsToRequest": {},
             "RouteClaimsRequirement": {},
@@ -229,3 +229,53 @@ MaxConnectionsPerServer
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 This controls how many connections the internal HttpClient will open. This can be set at ReRoute or global level.
+
+React to Configuration Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Resolve IOcelotConfigurationChangeTokenSource from the DI container if you wish to react to changes to the Ocelot configuration via the Ocelot.Administration API or ocelot.json being reloaded from the disk. You may either poll the change token's HasChanged property, or register a callback with the RegisterChangeCallback method.
+
+Polling the HasChanged property
+-------------------------------
+
+.. code-block:: csharp
+    public class ConfigurationNotifyingService : BackgroundService
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly ILogger _logger;
+        public ConfigurationNotifyingService(IOcelotConfigurationChangeTokenSource tokenSource, ILogger logger)
+        {
+            _tokenSource = tokenSource;
+            _logger = logger;
+        }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (_tokenSource.ChangeToken.HasChanged)
+                {
+                    _logger.LogInformation("Configuration updated");
+                }
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+    
+Registering a callback
+----------------------
+
+.. code-block:: csharp
+    public class MyDependencyInjectedClass : IDisposable
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly IDisposable _callbackHolder;
+        public MyClass(IOcelotConfigurationChangeTokenSource tokenSource)
+        {
+            _tokenSource    = tokenSource;
+            _callbackHolder = tokenSource.ChangeToken.RegisterChangeCallback(_ => Console.WriteLine("Configuration changed"), null);
+        }
+        public void Dispose()
+        {
+            _callbackHolder.Dispose();
+        }
+    }

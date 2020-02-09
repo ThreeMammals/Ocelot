@@ -1,4 +1,6 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using Ocelot.Configuration.ChangeTracking;
+
+namespace Ocelot.AcceptanceTests
 {
     using Caching;
     using Configuration.Repository;
@@ -54,6 +56,7 @@
         private IWebHostBuilder _webHostBuilder;
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
+        private IOcelotConfigurationChangeTokenSource _changeToken;
 
         public Steps()
         {
@@ -214,6 +217,11 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenIHaveAChangeToken()
+        {
+            _changeToken = _ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
         }
 
         /// <summary>
@@ -1135,6 +1143,11 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void TheChangeTokenShouldBeActive(bool itShouldBeActive)
+        {
+            _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
+        }
+        
         public void GivenOcelotIsRunningWithLogger()
         {
             _webHostBuilder = new WebHostBuilder();
