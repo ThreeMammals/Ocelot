@@ -24,6 +24,7 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "UpstreamHttpMethod": [
                 "Get"
             ],
+            "DownstreamHttpMethod": "",
             "AddHeadersToRequest": {},
             "AddClaimsToRequest": {},
             "RouteClaimsRequirement": {},

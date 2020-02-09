@@ -909,6 +909,18 @@ namespace Ocelot.AcceptanceTests
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) {Content = content};
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        }
+
+        public void WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        }
+
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
         {
             var request = _ocelotServer.CreateRequest(url);

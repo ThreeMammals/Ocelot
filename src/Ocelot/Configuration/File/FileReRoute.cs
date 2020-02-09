@@ -29,6 +29,7 @@ namespace Ocelot.Configuration.File
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
+        public string DownstreamHttpMethod { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
