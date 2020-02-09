@@ -48,7 +48,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 * Retry policies / QoS
 * Load Balancing
 * Logging / Tracing / Correlation
-* Headers / Query String / Claims Transformation
+* Headers / Method / Query String / Claims Transformation
 * Custom Middleware / Delegating Handlers
 * Configuration / Administration REST API
 * Platform / Cloud Agnostic
