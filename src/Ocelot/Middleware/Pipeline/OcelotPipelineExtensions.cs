@@ -2,7 +2,6 @@
 using Ocelot.Authorisation.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
-using Ocelot.DownstreamMethodTransformer.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
@@ -68,9 +67,6 @@ namespace Ocelot.Middleware.Pipeline
 
             // Initialises downstream request
             builder.UseDownstreamRequestInitialiser();
-
-            //change Http Method
-            builder.UseMiddleware<DownstreamMethodTransformerMiddleware>();
 
             // We check whether the request is ratelimit, and if there is no continue processing
             builder.UseRateLimiting();

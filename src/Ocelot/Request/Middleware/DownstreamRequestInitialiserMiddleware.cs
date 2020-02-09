@@ -34,6 +34,11 @@ namespace Ocelot.Request.Middleware
 
             context.DownstreamRequest = _creator.Create(downstreamRequest.Data);
 
+            if (!string.IsNullOrEmpty(context.DownstreamReRoute?.DownstreamHttpMethod))
+            {
+                context.DownstreamRequest.Method = context.DownstreamReRoute.DownstreamHttpMethod;
+            }
+
             await _next.Invoke(context);
         }
     }

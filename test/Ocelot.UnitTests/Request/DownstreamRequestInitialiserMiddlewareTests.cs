@@ -1,6 +1,4 @@
-﻿using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.Request
+﻿namespace Ocelot.UnitTests.Request
 {
     using Microsoft.AspNetCore.Http;
     using Moq;
@@ -9,6 +7,8 @@ namespace Ocelot.UnitTests.Request
     using Ocelot.Request.Creator;
     using Ocelot.Request.Mapper;
     using Ocelot.Request.Middleware;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Middleware;
     using Ocelot.Responses;
     using Shouldly;
     using System.Net.Http;
@@ -65,6 +65,24 @@ namespace Ocelot.UnitTests.Request
                 .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
                 .And(_ => ThenTheDownstreamRequestIsStored())
                 .And(_ => ThenTheNextMiddlewareIsInvoked())
+                .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData("POST", "POST")]
+        [InlineData(null, "GET")]
+        [InlineData("", "GET")]
+        public void Should_map_downstream_reroute_method_to_downstream_request(string input, string expected)
+        {
+            this.Given(_ => GivenTheHttpContextContainsARequest())
+                .And(_ => GivenTheDownstreamReRouteMethodIs(input))
+                .And(_ => GivenTheMapperWillReturnAMappedRequest())
+                .When(_ => WhenTheMiddlewareIsInvoked())
+                .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
+                .And(_ => ThenTheDownstreamRequestIsStored())
+                .And(_ => ThenTheNextMiddlewareIsInvoked())
+                .And(_ => ThenTheDownstreamRequestMethodIs(expected))
                 .BDDfy();
         }
 
@@ -78,6 +96,16 @@ namespace Ocelot.UnitTests.Request
                 .And(_ => ThenAPipelineErrorIsStored())
                 .And(_ => ThenTheNextMiddlewareIsNotInvoked())
                 .BDDfy();
+        }
+
+        private void GivenTheDownstreamReRouteMethodIs(string input)
+        {
+            _downstreamContext.DownstreamReRoute = new DownstreamReRouteBuilder().WithDownStreamHttpMethod(input).Build();
+        }
+
+        private void ThenTheDownstreamRequestMethodIs(string expected)
+        {
+            _downstreamContext.DownstreamRequest.Method.ShouldBe(expected);
         }
 
         private void GivenTheHttpContextContainsARequest()
