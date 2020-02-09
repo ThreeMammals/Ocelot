@@ -24,7 +24,7 @@ namespace Ocelot.Request.Middleware
 
         public HttpRequestHeaders Headers { get; }
 
-        public string Method { get; set; }
+        public string Method { get; }
 
         public string OriginalString { get; }
 

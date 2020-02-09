@@ -13,6 +13,8 @@
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -26,6 +28,8 @@
         private Response<HttpRequestMessage> _mappedRequest;
 
         private List<KeyValuePair<string, StringValues>> _inputHeaders = null;
+
+        private DownstreamReRoute _downstreamReRoute;
 
         public RequestMapperTests()
         {
@@ -79,6 +83,21 @@
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasMethod(method))
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData("", "GET")]
+        [InlineData(null, "GET")]
+        [InlineData("POST", "POST")]
+        public void Should_use_downstream_reroute_method_if_set(string input, string expected)
+        {
+            this.Given(_ => GivenTheInputRequestHasMethod("GET"))
+                .And(_ => GivenTheDownstreamReRouteMethodIs(input))
+                .And(_ => GivenTheInputRequestHasAValidUri())
+                .When(_ => WhenMapped())
+                .Then(_ => ThenNoErrorIsReturned())
+                .And(_ => ThenTheMappedRequestHasMethod(expected))
                 .BDDfy();
         }
 
@@ -154,16 +173,6 @@
                 .BDDfy();
         }
 
-        private void GivenTheInputRequestHasNoContentLength()
-        {
-            _inputRequest.ContentLength = null;
-        }
-
-        private void GivenTheInputRequestHasNoContentType()
-        {
-            _inputRequest.ContentType = null;
-        }
-
         [Fact]
         public void Should_map_content_headers()
         {
@@ -211,6 +220,22 @@
                 .And(_ => ThenTheOtherContentTypeHeadersAreNotMapped())
                 .BDDfy();
         }
+
+        private void GivenTheDownstreamReRouteMethodIs(string input)
+        {
+            _downstreamReRoute = new DownstreamReRouteBuilder().WithDownStreamHttpMethod(input).Build();
+        }
+
+        private void GivenTheInputRequestHasNoContentLength()
+        {
+            _inputRequest.ContentLength = null;
+        }
+
+        private void GivenTheInputRequestHasNoContentType()
+        {
+            _inputRequest.ContentType = null;
+        }
+
 
         private void ThenTheContentHeadersAreNotAddedToNonContentHeaders()
         {
@@ -380,7 +405,7 @@
 
         private async Task WhenMapped()
         {
-            _mappedRequest = await _requestMapper.Map(_inputRequest);
+            _mappedRequest = await _requestMapper.Map(_inputRequest, _downstreamReRoute);
         }
 
         private void ThenNoErrorIsReturned()

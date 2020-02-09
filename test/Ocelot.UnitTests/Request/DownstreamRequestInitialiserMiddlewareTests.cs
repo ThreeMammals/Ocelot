@@ -12,6 +12,7 @@
     using Ocelot.Responses;
     using Shouldly;
     using System.Net.Http;
+    using Ocelot.Configuration;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -69,20 +70,16 @@
                 .BDDfy();
         }
 
-        [Theory]
-        [InlineData("POST", "POST")]
-        [InlineData(null, "GET")]
-        [InlineData("", "GET")]
-        public void Should_map_downstream_reroute_method_to_downstream_request(string input, string expected)
+        [Fact]
+        public void Should_map_downstream_reroute_method_to_downstream_request()
         {
             this.Given(_ => GivenTheHttpContextContainsARequest())
-                .And(_ => GivenTheDownstreamReRouteMethodIs(input))
                 .And(_ => GivenTheMapperWillReturnAMappedRequest())
                 .When(_ => WhenTheMiddlewareIsInvoked())
                 .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
                 .And(_ => ThenTheDownstreamRequestIsStored())
                 .And(_ => ThenTheNextMiddlewareIsInvoked())
-                .And(_ => ThenTheDownstreamRequestMethodIs(expected))
+                .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
                 .BDDfy();
         }
 
@@ -96,11 +93,6 @@
                 .And(_ => ThenAPipelineErrorIsStored())
                 .And(_ => ThenTheNextMiddlewareIsNotInvoked())
                 .BDDfy();
-        }
-
-        private void GivenTheDownstreamReRouteMethodIs(string input)
-        {
-            _downstreamContext.DownstreamReRoute = new DownstreamReRouteBuilder().WithDownStreamHttpMethod(input).Build();
         }
 
         private void ThenTheDownstreamRequestMethodIs(string expected)
@@ -120,7 +112,7 @@
             _mappedRequest = new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "http://www.bbc.co.uk"));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -129,7 +121,7 @@
             _mappedRequest = new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(new System.Exception("boooom!")));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -140,7 +132,7 @@
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
         {
-            _requestMapper.Verify(rm => rm.Map(_httpRequest.Object), Times.Once);
+            _requestMapper.Verify(rm => rm.Map(_httpRequest.Object, _downstreamContext.DownstreamReRoute), Times.Once);
         }
 
         private void ThenTheDownstreamRequestIsStored()
