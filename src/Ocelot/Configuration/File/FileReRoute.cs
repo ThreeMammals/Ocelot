@@ -56,5 +56,6 @@ namespace Ocelot.Configuration.File
         public int Timeout { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
+        public string DownstreamHttpVersion { get; set; }
     }
 }
