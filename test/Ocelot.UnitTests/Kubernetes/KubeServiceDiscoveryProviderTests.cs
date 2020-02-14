@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Kubernetes
     {
         private IWebHost _fakeKubeBuilder;
         private ServiceV1 _serviceEntries;
-        private Kube _provider;
+        private readonly Kube _provider;
         private readonly string _serviceName;
         private readonly string _namespaces;
         private readonly int _port;
@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _serviceName = "test";
             _namespaces = "dev";
-            _port = 8001;
+            _port = 86;
             _kubeHost = "localhost";
             _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
             _serviceEntries = new ServiceV1();
