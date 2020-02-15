@@ -54,7 +54,7 @@ namespace Ocelot.Errors.Middleware
 
                 await _next.Invoke(context);
             }
-            catch (OperationCanceledException e) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
             {
                 Logger.LogDebug("operation canceled");
                 if (!context.HttpContext.Response.HasStarted)
