@@ -136,6 +136,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
+            Services.TryAddSingleton<IVersionCreator, VersionCreator>();
 
             //add security
             this.AddSecurity();

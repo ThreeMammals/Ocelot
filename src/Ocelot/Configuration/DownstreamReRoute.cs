@@ -41,7 +41,7 @@ namespace Ocelot.Configuration
             bool dangerousAcceptAnyServerCertificateValidator,
             SecurityOptions securityOptions,
             string downstreamHttpMethod,
-            string downstreamHttpVersion)
+            Version downstreamHttpVersion)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -112,6 +112,6 @@ namespace Ocelot.Configuration
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
         public SecurityOptions SecurityOptions { get; }
         public string DownstreamHttpMethod { get; }
-        public string DownstreamHttpVersion { get;  }
+        public Version DownstreamHttpVersion { get;  }
     }
 }

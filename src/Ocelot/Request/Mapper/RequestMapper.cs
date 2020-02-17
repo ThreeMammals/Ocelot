@@ -20,17 +20,12 @@
         {
             try
             {
-                if (!Version.TryParse(downstreamReRoute.DownstreamHttpVersion, out Version version))
-                {
-                    version = new Version(1, 1);
-                }
-                
                 var requestMessage = new HttpRequestMessage()
                 {
                     Content = await MapContent(request),
                     Method = MapMethod(request, downstreamReRoute),
                     RequestUri = MapUri(request),
-                    Version = version,
+                    Version = downstreamReRoute.DownstreamHttpVersion,
                 };
 
                 MapHeaders(request, requestMessage);

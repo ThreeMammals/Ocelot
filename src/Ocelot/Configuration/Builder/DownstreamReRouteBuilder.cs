@@ -43,7 +43,7 @@ namespace Ocelot.Configuration.Builder
         private bool _dangerousAcceptAnyServerCertificateValidator;
         private SecurityOptions _securityOptions;
         private string _downstreamHttpMethod;
-        private string _downstreamHttpVersion;
+        private Version _downstreamHttpVersion;
 
         public DownstreamReRouteBuilder()
         {
@@ -257,9 +257,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithHttpVersion(string httpVersion)
+        public DownstreamReRouteBuilder WithHttpVersion(Version downstreamHttpVersion)
         {
-            _downstreamHttpVersion = httpVersion;
+            _downstreamHttpVersion = downstreamHttpVersion;
             return this;
         }
 
