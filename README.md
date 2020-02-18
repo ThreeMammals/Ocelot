@@ -55,7 +55,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET Core only and it targets `netstandard2.0`. This means it can be used anywhere `.NET Standard 2.0` is supported, including `.NET Core 3.1` and `.NET Framework 4.8` and up. [This](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) documentation may prove helpful when working out if Ocelot would be suitable for you.
+Ocelot is designed to work with ASP.NET Core only and as of version 13.8.0 of Ocelot it targets `netcoreapp3.0` exclusively. If you want to use Ocelot with ASP.NET Core on .NET Framework you'll have to use an older version of Ocelot.
 
 Install Ocelot and it's dependencies using NuGet. 
 
