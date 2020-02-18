@@ -321,7 +321,7 @@
 
         private void WhenIGet(string key)
         {
-            _result = _configuration.GetValue("BaseUrl", "");
+            _result = _configuration.GetValue(key, "");
         }
 
         private void ThenTheResultIs(string expected)
