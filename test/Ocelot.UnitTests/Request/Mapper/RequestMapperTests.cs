@@ -51,6 +51,7 @@
                 .And(_ => GivenTheInputRequestHasHost(host))
                 .And(_ => GivenTheInputRequestHasPath(path))
                 .And(_ => GivenTheInputRequestHasQueryString(queryString))
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasUri(expectedUri))
@@ -80,6 +81,7 @@
         {
             this.Given(_ => GivenTheInputRequestHasMethod(method))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasMethod(method))
@@ -107,6 +109,7 @@
             this.Given(_ => GivenTheInputRequestHasHeaders())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasEachHeader())
@@ -119,6 +122,7 @@
             this.Given(_ => GivenTheInputRequestHasNoHeaders())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasNoHeaders())
@@ -131,6 +135,7 @@
             this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasContent("This is my content"))
@@ -143,6 +148,7 @@
             this.Given(_ => GivenTheInputRequestHasNullContent())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasNoContent())
@@ -155,6 +161,7 @@
             this.Given(_ => GivenTheInputRequestHasNoContentType())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasNoContent())
@@ -167,6 +174,7 @@
             this.Given(_ => GivenTheInputRequestHasNoContentLength())
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasNoContent())
@@ -192,6 +200,7 @@
                 .And(_ => GivenTheContentMD5Is(md5bytes))
                 .And(_ => GivenTheInputRequestHasMethod("GET"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
@@ -213,6 +222,7 @@
                 .And(_ => GivenTheContentTypeIs("application/json"))
                 .And(_ => GivenTheInputRequestHasMethod("POST"))
                 .And(_ => GivenTheInputRequestHasAValidUri())
+                .And(_ => GivenTheDownstreamReRoute())
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
@@ -223,7 +233,15 @@
 
         private void GivenTheDownstreamReRouteMethodIs(string input)
         {
-            _downstreamReRoute = new DownstreamReRouteBuilder().WithDownStreamHttpMethod(input).Build();
+            _downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownStreamHttpMethod(input)
+                .WithDownstreamHttpVersion(new Version("1.1")).Build();
+        }
+
+        private void GivenTheDownstreamReRoute()
+        {
+            _downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamHttpVersion(new Version("1.1")).Build();
         }
 
         private void GivenTheInputRequestHasNoContentLength()

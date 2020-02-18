@@ -257,7 +257,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamReRouteBuilder WithHttpVersion(Version downstreamHttpVersion)
+        public DownstreamReRouteBuilder WithDownstreamHttpVersion(Version downstreamHttpVersion)
         {
             _downstreamHttpVersion = downstreamHttpVersion;
             return this;

@@ -143,7 +143,7 @@ namespace Ocelot.Configuration.Creator
                 .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
                 .WithDangerousAcceptAnyServerCertificateValidator(fileReRoute.DangerousAcceptAnyServerCertificateValidator)
                 .WithSecurityOptions(securityOptions)
-                .WithHttpVersion(downstreamHttpVersion)
+                .WithDownstreamHttpVersion(downstreamHttpVersion)
                 .WithDownStreamHttpMethod(fileReRoute.DownstreamHttpMethod)
                 .Build();
 
