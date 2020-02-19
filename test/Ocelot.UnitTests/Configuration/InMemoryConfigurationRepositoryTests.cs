@@ -120,6 +120,7 @@ namespace Ocelot.UnitTests.Configuration
             public string DownstreamScheme { get; }
             public QoSOptions QoSOptions { get; }
             public HttpHandlerOptions HttpHandlerOptions { get; }
+            public Version DownstreamHttpVersion { get; }
         }
     }
 }

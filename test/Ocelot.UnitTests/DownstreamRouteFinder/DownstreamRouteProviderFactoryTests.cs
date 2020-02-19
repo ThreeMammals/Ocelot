@@ -1,5 +1,6 @@
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
+    using System;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
@@ -140,12 +141,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheReRoutes(List<ReRoute> reRoutes)
         {
-            _config = new InternalConfiguration(reRoutes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            _config = new InternalConfiguration(reRoutes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
         }
 
         private void GivenTheReRoutes(List<ReRoute> reRoutes, ServiceProviderConfiguration config)
         {
-            _config = new InternalConfiguration(reRoutes, "", config, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            _config = new InternalConfiguration(reRoutes, "", config, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
         }
     }
 }

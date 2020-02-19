@@ -27,7 +27,7 @@ namespace Ocelot.AcceptanceTests
         public void should_load_balance_request_with_least_connection()
         {
             int portOne = 50591;
-            int portTwo = 51482;
+            int portTwo = 54483;
 
             var downstreamServiceOneUrl = $"http://localhost:{portOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{portTwo}";
