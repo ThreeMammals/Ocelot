@@ -39,7 +39,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51179,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -50,7 +50,7 @@ namespace Ocelot.AcceptanceTests
 
             var input = "people";
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura", "\"people\""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51179", "/", 200, "Hello from Laura", "\"people\""))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasGzipContent(input))

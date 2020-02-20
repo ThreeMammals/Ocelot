@@ -350,6 +350,36 @@
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_not_replace_by_empty_scheme()
+        {
+            var downstreamReRoute = new DownstreamReRouteBuilder()
+                .WithDownstreamScheme("")
+                .WithServiceName("Ocelot/OcelotApp")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var downstreamRoute = new DownstreamRoute(
+                new List<PlaceholderNameAndValue>(),
+                new ReRouteBuilder()
+                    .WithDownstreamReRoute(downstreamReRoute)
+                    .Build());
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .WithType("ServiceFabric")
+                .WithHost("localhost")
+                .WithPort(19081)
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheDownstreamRequestUriIs("https://localhost:19081?PartitionKind=test&PartitionKey=1"))
+                .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1"))
+                .BDDfy();
+        }
+
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null);
