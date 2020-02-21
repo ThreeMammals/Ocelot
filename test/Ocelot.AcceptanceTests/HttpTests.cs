@@ -23,6 +23,44 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_return_response_200_when_using_http_one()
+        {
+            const int port = 53219;
+
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamPathTemplate = "/{url}",
+                        DownstreamScheme = "https",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamHttpMethod = "POST",
+                        DownstreamHttpVersion = "1.0",
+                        DangerousAcceptAnyServerCertificateValidator = true
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http1))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_200_when_using_http_one_point_one()
         {
             const int port = 53279;
