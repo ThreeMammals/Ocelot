@@ -2,14 +2,14 @@ Getting Started
 ===============
 
 Ocelot is designed to work with .NET Core only and is currently 
-built to netstandard2.0. `This <https://docs.microsoft.com/en-us/dotnet/articles/standard/library>`_ documentation may prove helpful when working out if Ocelot would be suitable for you.
+built to target netcoreapp3.1.
 
 .NET Core 3.1
 ^^^^^^^^^^^^^
 
 **Install NuGet package**
 
-Install Ocelot and it's dependencies using nuget. You will need to create a netstandard2.0 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
+Install Ocelot and it's dependencies using nuget. Then follow the Startup below and :doc:`../features/configuration` sections
 to get up and running.
 
    ``Install-Package Ocelot``
