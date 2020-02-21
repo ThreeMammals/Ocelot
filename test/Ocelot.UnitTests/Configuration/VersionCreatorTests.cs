@@ -8,13 +8,13 @@
 
     public class VersionCreatorTests
     {
-        private readonly VersionCreator _creator;
+        private readonly HttpVersionCreator _creator;
         private string _input;
         private Version _result;
 
         public VersionCreatorTests()
         {
-            _creator = new VersionCreator();
+            _creator = new HttpVersionCreator();
         }
 
         [Fact]

@@ -2,7 +2,7 @@
 {
     using System;
 
-    public class VersionCreator : IVersionCreator
+    public class HttpVersionCreator : IVersionCreator
     {
         public Version Create(string downstreamHttpVersion)
         {
