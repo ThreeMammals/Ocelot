@@ -24,7 +24,8 @@
                 {
                     Content = await MapContent(request),
                     Method = MapMethod(request, downstreamReRoute),
-                    RequestUri = MapUri(request)
+                    RequestUri = MapUri(request),
+                    Version = downstreamReRoute.DownstreamHttpVersion,
                 };
 
                 MapHeaders(request, requestMessage);

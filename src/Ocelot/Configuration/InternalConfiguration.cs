@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 namespace Ocelot.Configuration
 {
+    using System;
+
     public class InternalConfiguration : IInternalConfiguration
     {
         public InternalConfiguration(
@@ -12,7 +14,8 @@ namespace Ocelot.Configuration
             LoadBalancerOptions loadBalancerOptions,
             string downstreamScheme,
             QoSOptions qoSOptions,
-            HttpHandlerOptions httpHandlerOptions)
+            HttpHandlerOptions httpHandlerOptions,
+            Version downstreamHttpVersion)
         {
             ReRoutes = reRoutes;
             AdministrationPath = administrationPath;
@@ -22,6 +25,7 @@ namespace Ocelot.Configuration
             DownstreamScheme = downstreamScheme;
             QoSOptions = qoSOptions;
             HttpHandlerOptions = httpHandlerOptions;
+            DownstreamHttpVersion = downstreamHttpVersion;
         }
 
         public List<ReRoute> ReRoutes { get; }
@@ -32,5 +36,7 @@ namespace Ocelot.Configuration
         public string DownstreamScheme { get; }
         public QoSOptions QoSOptions { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
+
+        public Version DownstreamHttpVersion { get; }
     }
 }

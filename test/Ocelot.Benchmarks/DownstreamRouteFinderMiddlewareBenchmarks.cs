@@ -59,7 +59,7 @@ namespace Ocelot.Benchmarks
 
             _downstreamContext = new DownstreamContext(httpContext)
             {
-                Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null)
+                Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null, null)
             };
         }
 

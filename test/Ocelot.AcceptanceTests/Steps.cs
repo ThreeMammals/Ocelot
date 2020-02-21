@@ -392,6 +392,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+            Thread.Sleep(1000);
         }
 
         public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
