@@ -87,7 +87,7 @@
             _reRoutes = new List<ReRoute> { new ReRouteBuilder().Build() };
             _aggregates = new List<ReRoute> { new ReRouteBuilder().Build() };
             _dynamics = new List<ReRoute> { new ReRouteBuilder().Build() };
-            _internalConfig = new InternalConfiguration(null, "", null, "", null, "", null, null);
+            _internalConfig = new InternalConfiguration(null, "", null, "", null, "", null, null, null);
 
             _reRoutesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_reRoutes);
             _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_aggregates);

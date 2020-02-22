@@ -25,6 +25,7 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
                 "Get"
             ],
             "DownstreamHttpMethod": "",
+            "DownstreamHttpVersion": "",
             "AddHeadersToRequest": {},
             "AddClaimsToRequest": {},
             "RouteClaimsRequirement": {},
@@ -279,3 +280,8 @@ Registering a callback
             _callbackHolder.Dispose();
         }
     }
+
+DownstreamHttpVersion
+---------------------
+
+Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as "1.0", "1.1" or "2.0".

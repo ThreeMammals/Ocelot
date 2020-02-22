@@ -1,5 +1,6 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
+    using System;
     using Moq;
     using Ocelot.Cache;
     using Ocelot.Configuration;
@@ -30,6 +31,7 @@
         private Mock<ILoadBalancerOptionsCreator> _lboCreator;
         private Mock<IReRouteKeyCreator> _rrkCreator;
         private Mock<ISecurityOptionsCreator> _soCreator;
+        private Mock<IVersionCreator> _versionCreator;
         private FileConfiguration _fileConfig;
         private ReRouteOptions _rro;
         private string _requestId;
@@ -46,6 +48,7 @@
         private LoadBalancerOptions _lbo;
         private List<ReRoute> _result;
         private SecurityOptions _securityOptions;
+        private Version _expectedVersion;
 
         public ReRoutesCreatorTests()
         {
@@ -63,6 +66,7 @@
             _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
             _rrkCreator = new Mock<IReRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
+            _versionCreator = new Mock<IVersionCreator>();
 
             _creator = new ReRoutesCreator(
                 _cthCreator.Object,
@@ -78,7 +82,8 @@
                 _daCreator.Object,
                 _lboCreator.Object,
                 _rrkCreator.Object,
-                _soCreator.Object
+                _soCreator.Object,
+                _versionCreator.Object
                 );
         }
 
@@ -155,6 +160,7 @@
 
         private void GivenTheDependenciesAreSetUpCorrectly()
         {
+            _expectedVersion = new Version("1.1");
             _rro = new ReRouteOptions(false, false, false, false, false);
             _requestId = "testy";
             _rrk = "besty";
@@ -182,6 +188,7 @@
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(_ht);
             _daCreator.Setup(x => x.Create(It.IsAny<FileReRoute>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
+            _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
         }
 
         private void ThenTheReRoutesAreCreated()
@@ -209,6 +216,7 @@
 
         private void ThenTheReRouteIsSet(FileReRoute expected, int reRouteIndex)
         {
+            _result[reRouteIndex].DownstreamReRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
             _result[reRouteIndex].DownstreamReRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
             _result[reRouteIndex].DownstreamReRoute[0].IsAuthorised.ShouldBe(_rro.IsAuthorised);
             _result[reRouteIndex].DownstreamReRoute[0].IsCached.ShouldBe(_rro.IsCached);
