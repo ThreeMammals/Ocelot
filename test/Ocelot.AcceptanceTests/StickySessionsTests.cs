@@ -25,8 +25,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_same_downstream_host()
         {
-            var downstreamPortOne = 51375;
-            var downstreamPortTwo = 51892;
+            var downstreamPortOne = RandomPortFinder.GetRandomPort();
+            var downstreamPortTwo = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 
@@ -76,8 +76,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_different_downstream_host_for_different_re_route()
         {
-            var downstreamPortOne = 52881;
-            var downstreamPortTwo = 52892;
+            var downstreamPortOne = RandomPortFinder.GetRandomPort();
+            var downstreamPortTwo = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 
@@ -154,8 +154,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_same_downstream_host_for_different_re_route()
         {
-            var downstreamPortOne = 53881;
-            var downstreamPortTwo = 53892;
+            var downstreamPortOne = RandomPortFinder.GetRandomPort();
+            var downstreamPortTwo = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 

@@ -21,13 +21,15 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private readonly Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl = "http://localhost:51888";
+        private string _identityServerRootUrl;
         private readonly ServiceHandler _serviceHandler;
 
         public AuthorisationTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
                 o.Authority = _identityServerRootUrl;
@@ -41,7 +43,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_authorising_route()
         {
-            int port = 52875;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -86,9 +88,9 @@ namespace Ocelot.AcceptanceTests
                    }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
@@ -101,7 +103,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_authorising_route()
         {
-            int port = 59471;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -145,9 +147,9 @@ namespace Ocelot.AcceptanceTests
                    }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
@@ -159,7 +161,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_using_identity_server_with_allowed_scope()
         {
-            int port = 63471;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -188,9 +190,9 @@ namespace Ocelot.AcceptanceTests
                    }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
@@ -202,7 +204,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_using_identity_server_with_scope_not_allowed()
         {
-            int port = 60571;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -231,9 +233,9 @@ namespace Ocelot.AcceptanceTests
                    }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope("http://localhost:51888"))
+                .And(x => _steps.GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
@@ -245,7 +247,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_240()
         {
-            int port = 61071;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -292,9 +294,9 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:51888", "api", AccessTokenType.Jwt, users))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:51888"))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
