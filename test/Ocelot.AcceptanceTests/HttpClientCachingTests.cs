@@ -27,6 +27,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_cache_one_http_client_same_re_route()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -40,7 +42,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 58814,
+                                    Port = port,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -51,7 +53,7 @@ namespace Ocelot.AcceptanceTests
 
             var cache = new FakeHttpClientCache();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:58814", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithFakeHttpClientCache(cache))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -67,6 +69,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_cache_two_http_client_different_re_route()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -80,7 +84,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 58817,
+                                Port = port,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -95,7 +99,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 58817,
+                                Port = port,
                             }
                         },
                         UpstreamPathTemplate = "/two",
@@ -106,7 +110,7 @@ namespace Ocelot.AcceptanceTests
 
             var cache = new FakeHttpClientCache();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:58817", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithFakeHttpClientCache(cache))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

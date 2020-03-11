@@ -28,9 +28,11 @@
         [Fact]
         public void should_fix_issue_194()
         {
-            var consulPort = 8503;
-            var downstreamServiceOneUrl = "http://localhost:8362";
-            var downstreamServiceTwoUrl = "http://localhost:8330";
+            var consulPort = RandomPortFinder.GetRandomPort();
+            var servicePort1 = RandomPortFinder.GetRandomPort();
+            var servicePort2 = RandomPortFinder.GetRandomPort();
+            var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
+            var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             var configuration = new FileConfiguration
@@ -46,7 +48,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 8362,
+                                    Port = servicePort1,
                                 }
                             },
                             UpstreamPathTemplate = "/api/user/{user}",
@@ -61,7 +63,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 8330,
+                                    Port = servicePort2,
                                 }
                             },
                             UpstreamPathTemplate = "/api/product/{product}",

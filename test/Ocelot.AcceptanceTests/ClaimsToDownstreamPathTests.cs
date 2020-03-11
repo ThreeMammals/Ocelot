@@ -23,11 +23,13 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl = "http://localhost:57888";
+        private string _identityServerRootUrl;
         private string _downstreamFinalPath;
 
         public ClaimsToDownstreamPathTests()
         {
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _steps = new Steps();
             _options = o =>
             {
@@ -49,6 +51,8 @@ namespace Ocelot.AcceptanceTests
                 SubjectId = "registered|1231231",
             };
 
+            int port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -61,7 +65,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 57876,
+                                   Port = port,
                                },
                            },
                            DownstreamScheme = "http",
@@ -83,9 +87,9 @@ namespace Ocelot.AcceptanceTests
                    },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:57888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
