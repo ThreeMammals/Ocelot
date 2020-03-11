@@ -141,7 +141,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_500_when_using_http_one_to_talk_to_server_running_http_two()
+        public void should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
         {
             var port = RandomPortFinder.GetRandomPort();
 
@@ -177,7 +177,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
                 .BDDfy();
         }
 
