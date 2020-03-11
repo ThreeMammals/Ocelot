@@ -1,4 +1,6 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using Ocelot.Configuration.ChangeTracking;
+
+namespace Ocelot.AcceptanceTests
 {
     using Caching;
     using Configuration.Repository;
@@ -54,6 +56,7 @@
         private IWebHostBuilder _webHostBuilder;
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
+        private IOcelotConfigurationChangeTokenSource _changeToken;
 
         public Steps()
         {
@@ -214,6 +217,11 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenIHaveAChangeToken()
+        {
+            _changeToken = _ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
         }
 
         /// <summary>
@@ -384,6 +392,7 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+            Thread.Sleep(1000);
         }
 
         public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
@@ -901,6 +910,18 @@
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) {Content = content};
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        }
+
+        public void WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        }
+
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
         {
             var request = _ocelotServer.CreateRequest(url);
@@ -1123,6 +1144,11 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void TheChangeTokenShouldBeActive(bool itShouldBeActive)
+        {
+            _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
+        }
+        
         public void GivenOcelotIsRunningWithLogger()
         {
             _webHostBuilder = new WebHostBuilder();

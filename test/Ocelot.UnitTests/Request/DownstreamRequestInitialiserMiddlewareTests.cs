@@ -1,6 +1,4 @@
-﻿using Ocelot.Middleware;
-
-namespace Ocelot.UnitTests.Request
+﻿namespace Ocelot.UnitTests.Request
 {
     using Microsoft.AspNetCore.Http;
     using Moq;
@@ -9,9 +7,12 @@ namespace Ocelot.UnitTests.Request
     using Ocelot.Request.Creator;
     using Ocelot.Request.Mapper;
     using Ocelot.Request.Middleware;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Middleware;
     using Ocelot.Responses;
     using Shouldly;
     using System.Net.Http;
+    using Ocelot.Configuration;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -65,6 +66,20 @@ namespace Ocelot.UnitTests.Request
                 .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
                 .And(_ => ThenTheDownstreamRequestIsStored())
                 .And(_ => ThenTheNextMiddlewareIsInvoked())
+                .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_map_downstream_reroute_method_to_downstream_request()
+        {
+            this.Given(_ => GivenTheHttpContextContainsARequest())
+                .And(_ => GivenTheMapperWillReturnAMappedRequest())
+                .When(_ => WhenTheMiddlewareIsInvoked())
+                .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
+                .And(_ => ThenTheDownstreamRequestIsStored())
+                .And(_ => ThenTheNextMiddlewareIsInvoked())
+                .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
                 .BDDfy();
         }
 
@@ -80,6 +95,11 @@ namespace Ocelot.UnitTests.Request
                 .BDDfy();
         }
 
+        private void ThenTheDownstreamRequestMethodIs(string expected)
+        {
+            _downstreamContext.DownstreamRequest.Method.ShouldBe(expected);
+        }
+
         private void GivenTheHttpContextContainsARequest()
         {
             _httpContext
@@ -92,7 +112,7 @@ namespace Ocelot.UnitTests.Request
             _mappedRequest = new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "http://www.bbc.co.uk"));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -101,7 +121,7 @@ namespace Ocelot.UnitTests.Request
             _mappedRequest = new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(new System.Exception("boooom!")));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -112,7 +132,7 @@ namespace Ocelot.UnitTests.Request
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
         {
-            _requestMapper.Verify(rm => rm.Map(_httpRequest.Object), Times.Once);
+            _requestMapper.Verify(rm => rm.Map(_httpRequest.Object, _downstreamContext.DownstreamReRoute), Times.Once);
         }
 
         private void ThenTheDownstreamRequestIsStored()

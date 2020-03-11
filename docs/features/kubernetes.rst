@@ -14,7 +14,7 @@ Then add the following to your ConfigureServices method.
     s.AddOcelot()
      .AddKubernetes();
 
-If you have services deployed in kubernetes you will normally use the naming service to access them. Default usePodServiceAccount = True, which means that ServiceAccount using Pod to access the service of the k8s cluster needs to be ServiceAccount based on RABC authorization
+If you have services deployed in kubernetes you will normally use the naming service to access them. Default usePodServiceAccount = True, which means that ServiceAccount using Pod to access the service of the k8s cluster needs to be ServiceAccount based on RBAC authorization
 
 .. code-block::csharp
     public static class OcelotBuilderExtensions

@@ -27,7 +27,13 @@
                     }
 
                     app.UseAuthentication();
-                    app.UseMvc();
+                    app.UseRouting();
+                    app.UseAuthorization();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapDefaultControllerRoute();
+                        endpoints.MapControllers();
+                    });
                 });
             }
 

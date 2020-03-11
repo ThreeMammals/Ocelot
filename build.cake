@@ -134,11 +134,12 @@ Task("RunUnitTests")
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
+
 		// todo bring back report generator to get a friendly report
 		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		// https://github.com/danielpalme/ReportGenerator
-	
-		if (IsRunningOnCircleCI())
+		
+		if (IsRunningOnCircleCI() && IsMaster())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -497,4 +498,9 @@ private string GetResource(string url)
 private bool IsRunningOnCircleCI()
 {
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
+}
+
+private bool IsMaster()
+{
+    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "master";
 }

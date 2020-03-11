@@ -1,5 +1,6 @@
 ﻿namespace Ocelot.DownstreamRouteFinder.Finder
 {
+    using System;
     using Configuration;
     using Configuration.Builder;
     using Configuration.Creator;
@@ -54,6 +55,7 @@
                 .WithQosOptions(qosOptions)
                 .WithDownstreamScheme(configuration.DownstreamScheme)
                 .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
+                .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
                 .WithUpstreamPathTemplate(upstreamPathTemplate);
 
             var rateLimitOptions = configuration.ReRoutes != null

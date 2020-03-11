@@ -1,5 +1,6 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Values;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -41,6 +42,8 @@ namespace Ocelot.Configuration.Builder
         private List<AddHeader> _addHeadersToUpstream;
         private bool _dangerousAcceptAnyServerCertificateValidator;
         private SecurityOptions _securityOptions;
+        private string _downstreamHttpMethod;
+        private Version _downstreamHttpVersion;
 
         public DownstreamReRouteBuilder()
         {
@@ -53,6 +56,12 @@ namespace Ocelot.Configuration.Builder
         public DownstreamReRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
         {
             _downstreamAddresses.AddRange(downstreamAddresses);
+            return this;
+        }
+
+        public DownstreamReRouteBuilder WithDownStreamHttpMethod(string method)
+        {
+            _downstreamHttpMethod = method;
             return this;
         }
 
@@ -248,6 +257,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public DownstreamReRouteBuilder WithDownstreamHttpVersion(Version downstreamHttpVersion)
+        {
+            _downstreamHttpVersion = downstreamHttpVersion;
+            return this;
+        }
+
         public DownstreamReRoute Build()
         {
             return new DownstreamReRoute(
@@ -282,7 +297,9 @@ namespace Ocelot.Configuration.Builder
                 _addHeadersToDownstream,
                 _addHeadersToUpstream,
                 _dangerousAcceptAnyServerCertificateValidator,
-                _securityOptions);
+                _securityOptions,
+                _downstreamHttpMethod,
+                _downstreamHttpVersion);
         }
     }
 }

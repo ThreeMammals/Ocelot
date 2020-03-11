@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration.File;
 using System;
+using Ocelot.Configuration.ChangeTracking;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -53,6 +54,33 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenConfigShouldBe(_initialConfig))
                 .BDDfy();
         }
+
+        [Fact]
+        public void should_trigger_change_token_on_change()
+        {
+            this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
+                .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
+                .And(x => _steps.GivenIHaveAChangeToken())
+                .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken))
+                .Then(x => _steps.TheChangeTokenShouldBeActive(true))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_not_trigger_change_token_with_no_change()
+        {
+            this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
+                .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
+                .And(x => _steps.GivenIHaveAChangeToken())
+                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
+                .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken))
+                .Then(x => _steps.TheChangeTokenShouldBeActive(false))
+                .BDDfy();
+        }
+
+        private const int MillisecondsToWaitForChangeToken = (int) (OcelotConfigurationChangeToken.PollingIntervalSeconds*1000) - 100;
 
         public void Dispose()
         {

@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
+    using System;
+
     public class DownstreamRouteFinderTests
     {
         private readonly IDownstreamRouteProvider _downstreamRouteFinder;
@@ -739,7 +741,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheConfigurationIs(List<ReRoute> reRoutesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _reRoutesConfig = reRoutesConfig;
-            _config = new InternalConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build());
+            _config = new InternalConfiguration(_reRoutesConfig, adminPath, serviceProviderConfig, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

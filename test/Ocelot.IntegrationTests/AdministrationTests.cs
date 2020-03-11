@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using TestStack.BDDfy;
+using Ocelot.Configuration.ChangeTracking;
 using Xunit;
 
 namespace Ocelot.IntegrationTests
@@ -276,6 +277,51 @@ namespace Ocelot.IntegrationTests
                 .And(x => ThenTheResponseShouldBe(updatedConfiguration))
                 .And(_ => ThenTheConfigurationIsSavedCorrectly(updatedConfiguration))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_activate_change_token_when_configuration_is_updated()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration(),
+                ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            },
+                        },
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/",
+                    },
+                },
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", configuration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => TheChangeTokenShouldBeActive())
+                .And(x => ThenTheResponseShouldBe(configuration))
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .And(x => ThenTheResponseShouldBe(configuration))
+                .And(_ => ThenTheConfigurationIsSavedCorrectly(configuration))
+                .BDDfy();
+        }
+
+        private void TheChangeTokenShouldBeActive()
+        {
+            _builder.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>().ChangeToken.HasChanged.ShouldBeTrue();
         }
 
         private void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)

@@ -26,5 +26,7 @@
         public string DownstreamScheme { get; set; }
 
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
+
+        public string DownstreamHttpVersion { get; set; }
     }
 }

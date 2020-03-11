@@ -29,6 +29,7 @@ namespace Ocelot.Configuration.File
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
+        public string DownstreamHttpMethod { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
@@ -55,5 +56,6 @@ namespace Ocelot.Configuration.File
         public int Timeout { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
+        public string DownstreamHttpVersion { get; set; }
     }
 }
