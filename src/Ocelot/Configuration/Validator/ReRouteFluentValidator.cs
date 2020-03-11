@@ -83,6 +83,11 @@
                 RuleForEach(reRoute => reRoute.DownstreamHostAndPorts)
                     .SetValidator(hostAndPortValidator);
             });
+
+            When(reRoute => !string.IsNullOrEmpty(reRoute.DownstreamHttpVersion), () =>
+            {
+                RuleFor(r => r.DownstreamHttpVersion).Matches("^[0-9]([.,][0-9]{1,1})?$");
+            });
         }
 
         private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions authenticationOptions, CancellationToken cancellationToken)

@@ -31,6 +31,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_597()
         {
+            var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -46,7 +47,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 8571
+                                Port = port
                             }
                         },
                         Key = "key1"
@@ -62,7 +63,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 8571
+                                Port = port
                             }
                         },
                         Key = "key2"
@@ -78,7 +79,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 8571
+                                Port = port
                             }
                         },
                         Key = "key3"
@@ -94,7 +95,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 8571
+                                Port = port
                             }
                         },
                         Key = "key4"
@@ -129,7 +130,7 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"key1\":some_data,\"key2\":some_data}";
 
-            this.Given(x => x.GivenServiceIsRunning("http://localhost:8571", 200, "some_data"))
+            this.Given(x => x.GivenServiceIsRunning($"http://localhost:{port}", 200, "some_data"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
@@ -141,6 +142,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_advanced_aggregate_configs()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
+            var port3 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -154,7 +158,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51889,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/Comments",
@@ -170,7 +174,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 54030,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/UserDetails",
@@ -186,7 +190,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51887,
+                                    Port = port3,
                                 }
                             },
                             UpstreamPathTemplate = "/PostDetails",
@@ -221,9 +225,9 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51889", "/", 200, commentsResponseContent))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:54030", "/users/1", 200, userDetailsResponseContent))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51887", "/posts/2", 200, postDetailsResponseContent))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, commentsResponseContent))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/users/1", 200, userDetailsResponseContent))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port3}", "/posts/2", 200, postDetailsResponseContent))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -235,6 +239,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_user_defined_aggregate()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -248,7 +254,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51885,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -264,7 +270,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51886,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -290,8 +296,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "Bye from Laura, Bye from Tom";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51885", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51886", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDepdendency>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -304,6 +310,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -317,7 +325,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51875,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -333,7 +341,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 52476,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -358,8 +366,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51875", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:52476", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -372,6 +380,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_one_service_404()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -385,7 +395,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51881,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -401,7 +411,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51889,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -426,8 +436,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51881", "/", 404, ""))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51889", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 404, ""))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -440,6 +450,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_both_service_404()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -453,7 +465,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51883,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -469,7 +481,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51884,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -494,8 +506,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":,\"Tom\":}";
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51883", "/", 404, ""))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51884", "/", 404, ""))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 404, ""))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 404, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -508,6 +520,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_be_thread_safe()
         {
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -521,7 +535,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51878,
+                                    Port = port1,
                                 }
                             },
                             UpstreamPathTemplate = "/laura",
@@ -537,7 +551,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51880,
+                                    Port = port2,
                                 }
                             },
                             UpstreamPathTemplate = "/tom",
@@ -560,8 +574,8 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenServiceOneIsRunning("http://localhost:51878", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning("http://localhost:51880", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIMakeLotsOfDifferentRequestsToTheApiGateway())

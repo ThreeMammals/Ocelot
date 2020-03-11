@@ -33,6 +33,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/caching
    features/qualityofservice
    features/headerstransformation 
+   features/methodtransformation
    features/claimstransformation 
    features/logging
    features/tracing

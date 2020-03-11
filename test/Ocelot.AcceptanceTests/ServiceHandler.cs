@@ -6,9 +6,11 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using System;
+    using System.ComponentModel;
     using System.IO;
     using System.Net;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Server.Kestrel.Core;
 
     public class ServiceHandler : IDisposable
     {
@@ -35,6 +37,31 @@
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
                 .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(del);
+                })
+                .Build();
+
+            _builder.Start();
+        }
+
+        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate del, int port, HttpProtocols protocols)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .ConfigureKestrel(serverOptions =>
+                {
+                    serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
+                        {
+                            listenOptions.UseHttps("idsrv3test.pfx", "idsrv3test");
+                            listenOptions.Protocols = protocols;
+                        });
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .Configure(app =>
