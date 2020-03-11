@@ -28,7 +28,7 @@
         {
             var eurekaPort = 8761;
             var serviceName = "product";
-            var downstreamServicePort = 50371;
+            var downstreamServicePort = RandomPortFinder.GetRandomPort();           
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 

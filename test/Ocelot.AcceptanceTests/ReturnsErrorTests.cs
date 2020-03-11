@@ -21,6 +21,7 @@
         [Fact]
         public void should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
         {
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -36,7 +37,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 53876,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -44,7 +45,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:53876"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -55,6 +56,8 @@
         [Fact]
         public void should_log_warning_if_downstream_service_returns_internal_server_error()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -69,7 +72,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 53876,
+                                    Port = port,
                                 },
                             },
                             DownstreamScheme = "http",
@@ -77,7 +80,7 @@
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:53876"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithLogger())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

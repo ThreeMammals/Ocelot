@@ -25,13 +25,15 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl = "http://localhost:52888";
+        private string _identityServerRootUrl;
         private readonly ServiceHandler _serviceHandler;
 
         public ClaimsToHeadersForwardingTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
                 o.Authority = _identityServerRootUrl;
@@ -57,6 +59,8 @@ namespace Ocelot.AcceptanceTests
                }
             };
 
+            int port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -69,7 +73,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 52876,
+                                   Port = port,
                                }
                            },
                            DownstreamScheme = "http",
@@ -94,9 +98,9 @@ namespace Ocelot.AcceptanceTests
                    }
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:52888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
