@@ -210,8 +210,7 @@ Task("CreateArtifacts")
 
 		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
-		// todo fix this for docker build
-		//GenerateReleaseNotes(releaseNotesFile);
+		GenerateReleaseNotes(releaseNotesFile);
 
 		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
 
@@ -219,8 +218,7 @@ Task("CreateArtifacts")
 		{
 			System.IO.File.AppendAllLines(artifactsFile, new[]{
 				projectFile.GetFilename().FullPath,
-				// todo fix this for docker build
-				//"releaseNotes:releasenotes.md"
+				"releaseNotes:releasenotes.md"
 			});
 		}
 
