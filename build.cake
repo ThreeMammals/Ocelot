@@ -340,11 +340,11 @@ private void PersistVersion(string committedVersion, string newVersion)
 /// generates release notes based on issues closed in GitHub since the last release
 private void GenerateReleaseNotes(ConvertableFilePath file)
 {
-	if(!IsRunningOnWindows())
-	{
-        Warning("We are not running on Windows so we cannot generate release notes.");
-        return;		
-	}
+	// if(!IsRunningOnWindows())
+	// {
+    //     Warning("We are not running on Windows so we cannot generate release notes.");
+    //     return;		
+	// }
 
 	Information("Generating release notes at " + file);
 
