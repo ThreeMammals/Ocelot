@@ -405,6 +405,11 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		
 		foreach(var artifact in artifacts)
 		{
+			if (artifact == "releasenotes.md") 
+			{
+				continue;
+			}
+
 			var codePackage = packagesDir + File(artifact);
 
 			Information("Pushing package " + codePackage);
