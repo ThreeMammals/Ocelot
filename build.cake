@@ -2,6 +2,7 @@
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Net.Http
+#addin nuget:?package=System.Text.Encodings.Web
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
@@ -272,7 +273,7 @@ Task("CreateArtifacts")
 		{
 			System.IO.File.AppendAllLines(artifactsFile, new[]{
 				projectFile.GetFilename().FullPath,
-				"releaseNotes:releasenotes.md"
+				"releasenotes.md"
 			});
 		}
 
@@ -326,6 +327,9 @@ Task("DownloadGitHubReleaseArtifacts")
 
 		try
 		{
+			// hack to let GitHub catch up, todo - refactor to poll
+			System.Threading.Thread.Sleep(5000);
+
 			EnsureDirectoryExists(packagesDir);
 
 			var releaseUrl = tagsUrl + versioning.NuGetVersion;
@@ -360,7 +364,7 @@ Task("PublishToNuget")
 
 RunTarget(target);
 
-/// Gets nuique nuget version for this commit
+/// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
     GitVersion(new GitVersionSettings{
@@ -418,7 +422,8 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{System.IO.File.ReadAllText(releaseNotesFile)}\", \"draft\": true, \"prerelease\": true }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
+	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using(var client = new System.Net.Http.HttpClient())
@@ -440,6 +445,11 @@ private void CreateGitHubRelease()
 		dynamic test = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(returnValue);
 		releaseId = test.id;
 	}
+}
+
+private string ReleaseNotesAsJson()
+{
+	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(System.IO.File.ReadAllText(releaseNotesFile));
 }
 
 private void UploadFileToGitHubRelease(FilePath file)
@@ -468,7 +478,7 @@ private void UploadFileToGitHubRelease(FilePath file)
 
 private void CompleteGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{System.IO.File.ReadAllText(releaseNotesFile)}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
