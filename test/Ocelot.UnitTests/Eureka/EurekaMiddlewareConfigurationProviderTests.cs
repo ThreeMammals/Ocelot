@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.UnitTests.Eureka
 {
-    using Microsoft.AspNetCore.Builder.Internal;
+    using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration;
@@ -20,7 +20,7 @@
         {
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
             var sp = services.BuildServiceProvider();
@@ -35,7 +35,7 @@
             var client = new Mock<IDiscoveryClient>();
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
             services.AddSingleton<IDiscoveryClient>(client.Object);

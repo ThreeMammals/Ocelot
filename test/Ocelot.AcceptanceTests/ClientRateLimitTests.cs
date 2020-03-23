@@ -23,6 +23,8 @@
         [Fact]
         public void should_call_withratelimiting()
         {
+            int port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -35,7 +37,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51876,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -66,7 +68,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51876", "/api/ClientRateLimit"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
@@ -81,6 +83,8 @@
         [Fact]
         public void should_wait_for_period_timespan_to_elapse_before_making_next_request()
         {
+            int port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -93,7 +97,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51926,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -125,7 +129,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51926", "/api/ClientRateLimit"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
@@ -146,7 +150,7 @@
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
-            int port = 61876;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

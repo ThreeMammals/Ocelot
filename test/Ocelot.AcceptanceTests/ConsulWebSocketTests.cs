@@ -34,14 +34,14 @@
         [Fact]
         public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
         {
-            var downstreamPort = 5007;
+            var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
 
-            var secondDownstreamPort = 5008;
+            var secondDownstreamPort = RandomPortFinder.GetRandomPort();
             var secondDownstreamHost = "localhost";
 
             var serviceName = "websockets";
-            var consulPort = 8509;
+            var consulPort = RandomPortFinder.GetRandomPort();
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -181,7 +181,13 @@
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }
@@ -227,7 +233,13 @@
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        if (client.State != WebSocketState.Closed)
+                        {
+                            // Last version, the client state is CloseReceived
+                            // Valid states are: Open, CloseReceived, CloseSent
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        }
+
                         break;
                     }
                 }

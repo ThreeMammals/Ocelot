@@ -80,8 +80,13 @@
 
             When(reRoute => string.IsNullOrEmpty(reRoute.ServiceName), () =>
             {
-                RuleFor(reRoute => reRoute.DownstreamHostAndPorts)
-                    .SetCollectionValidator(hostAndPortValidator);
+                RuleForEach(reRoute => reRoute.DownstreamHostAndPorts)
+                    .SetValidator(hostAndPortValidator);
+            });
+
+            When(reRoute => !string.IsNullOrEmpty(reRoute.DownstreamHttpVersion), () =>
+            {
+                RuleFor(r => r.DownstreamHttpVersion).Matches("^[0-9]([.,][0-9]{1,1})?$");
             });
         }
 

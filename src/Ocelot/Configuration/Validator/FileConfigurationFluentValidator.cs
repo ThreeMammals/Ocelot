@@ -9,6 +9,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
@@ -21,8 +22,8 @@
                 .GetServices<ServiceDiscoveryFinderDelegate>()
                 .ToList();
 
-            RuleFor(configuration => configuration.ReRoutes)
-                .SetCollectionValidator(reRouteFluentValidator);
+            RuleForEach(configuration => configuration.ReRoutes)
+                .SetValidator(reRouteFluentValidator);
 
             RuleFor(configuration => configuration.GlobalConfiguration)
                 .SetValidator(fileGlobalConfigurationFluentValidator);
@@ -34,6 +35,10 @@
             RuleForEach(configuration => configuration.ReRoutes)
                 .Must((config, reRoute) => HaveServiceDiscoveryProviderRegistered(reRoute, config.GlobalConfiguration.ServiceDiscoveryProvider))
                 .WithMessage((config, reRoute) => $"Unable to start Ocelot, errors are: Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
+
+            RuleForEach(configuration => configuration.ReRoutes)
+                .Must((config, reRoute) => IsPlaceholderNotDuplicatedIn(reRoute.UpstreamPathTemplate))
+                .WithMessage((config, reRoute) => $"{nameof(reRoute)} {reRoute.UpstreamPathTemplate} has duplicated placeholder");
 
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
                 .Must(HaveServiceDiscoveryProviderRegistered)
@@ -107,6 +112,14 @@
             var reRoutesForAggregate = reRoutes.Where(r => fileAggregateReRoute.ReRouteKeys.Contains(r.Key));
 
             return reRoutesForAggregate.Count() == fileAggregateReRoute.ReRouteKeys.Count;
+        }
+
+        private bool IsPlaceholderNotDuplicatedIn(string upstreamPathTemplate)
+        {
+            Regex regExPlaceholder = new Regex("{[^}]+}");
+            var matches = regExPlaceholder.Matches(upstreamPathTemplate);
+            var upstreamPathPlaceholders = matches.Select(m => m.Value);
+            return upstreamPathPlaceholders.Count() == upstreamPathPlaceholders.Distinct().Count();
         }
 
         private static bool DoesNotContainReRoutesWithSpecificRequestIdKeys(FileAggregateReRoute fileAggregateReRoute,

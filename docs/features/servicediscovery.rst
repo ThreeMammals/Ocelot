@@ -155,6 +155,8 @@ Eureka. One of the services polls Eureka every 30 seconds (default) and gets the
 When Ocelot asks for a given service it is retrieved from memory so performance is not a big problem. Please note that this code
 is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them for all the hard work.
 
+Ocelot will use the scheme (http/https) set in Eureka if these values are not provided in ocelot.json
+
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 

@@ -27,14 +27,14 @@ namespace Ocelot.ServiceDiscovery
         {
             if (reRoute.UseServiceDiscovery)
             {
-                return GetServiceDiscoveryProvider(serviceConfig, reRoute.ServiceName);
+                return GetServiceDiscoveryProvider(serviceConfig, reRoute);
             }
 
             var services = new List<Service>();
 
             foreach (var downstreamAddress in reRoute.DownstreamAddresses)
             {
-                var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port), string.Empty, string.Empty, new string[0]);
+                var service = new Service(reRoute.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, reRoute.DownstreamScheme), string.Empty, string.Empty, new string[0]);
 
                 services.Add(service);
             }
@@ -42,17 +42,17 @@ namespace Ocelot.ServiceDiscovery
             return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
         }
 
-        private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, string key)
+        private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamReRoute reRoute)
         {
             if (config.Type?.ToLower() == "servicefabric")
             {
-                var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, key);
+                var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, reRoute.ServiceName);
                 return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
             }
 
             if (_delegates != null)
             {
-                var provider = _delegates?.Invoke(_provider, config, key);
+                var provider = _delegates?.Invoke(_provider, config, reRoute);
 
                 if (provider.GetType().Name.ToLower() == config.Type.ToLower())
                 {

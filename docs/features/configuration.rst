@@ -1,7 +1,7 @@
 Configuration
 ============
 
-An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/develop/test/Ocelot.ManualTest/ocelot.json>`_.
+An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/master/test/Ocelot.ManualTest/ocelot.json>`_.
 There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
 The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
 configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
@@ -24,6 +24,8 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "UpstreamHttpMethod": [
                 "Get"
             ],
+            "DownstreamHttpMethod": "",
+            "DownstreamHttpVersion": "",
             "AddHeadersToRequest": {},
             "AddClaimsToRequest": {},
             "RouteClaimsRequirement": {},
@@ -62,7 +64,8 @@ Here is an example ReRoute configuration, You don't need to set all of these thi
             "HttpHandlerOptions": {
                 "AllowAutoRedirect": true,
                 "UseCookieContainer": true,
-                "UseTracing": true
+                "UseTracing": true,
+                "MaxConnectionsPerServer": 100
             },
             "DangerousAcceptAnyServerCertificateValidator": false
         }
@@ -222,3 +225,63 @@ If you want to ignore SSL warnings / errors set the following in your ReRoute co
     "DangerousAcceptAnyServerCertificateValidator": true
 
 I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
+
+MaxConnectionsPerServer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+This controls how many connections the internal HttpClient will open. This can be set at ReRoute or global level.
+
+React to Configuration Changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Resolve IOcelotConfigurationChangeTokenSource from the DI container if you wish to react to changes to the Ocelot configuration via the Ocelot.Administration API or ocelot.json being reloaded from the disk. You may either poll the change token's HasChanged property, or register a callback with the RegisterChangeCallback method.
+
+Polling the HasChanged property
+-------------------------------
+
+.. code-block:: csharp
+    public class ConfigurationNotifyingService : BackgroundService
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly ILogger _logger;
+        public ConfigurationNotifyingService(IOcelotConfigurationChangeTokenSource tokenSource, ILogger logger)
+        {
+            _tokenSource = tokenSource;
+            _logger = logger;
+        }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (_tokenSource.ChangeToken.HasChanged)
+                {
+                    _logger.LogInformation("Configuration updated");
+                }
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+    
+Registering a callback
+----------------------
+
+.. code-block:: csharp
+    public class MyDependencyInjectedClass : IDisposable
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly IDisposable _callbackHolder;
+        public MyClass(IOcelotConfigurationChangeTokenSource tokenSource)
+        {
+            _tokenSource    = tokenSource;
+            _callbackHolder = tokenSource.ChangeToken.RegisterChangeCallback(_ => Console.WriteLine("Configuration changed"), null);
+        }
+        public void Dispose()
+        {
+            _callbackHolder.Dispose();
+        }
+    }
+
+DownstreamHttpVersion
+---------------------
+
+Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as "1.0", "1.1" or "2.0".

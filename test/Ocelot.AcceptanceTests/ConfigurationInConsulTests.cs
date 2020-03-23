@@ -5,6 +5,7 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Ocelot.AcceptanceTests
 
     public class ConfigurationInConsulTests : IDisposable
     {
-        private IWebHost _builder;
+        private IHost _builder;
         private readonly Steps _steps;
-        private IWebHost _fakeConsulBuilder;
+        private IHost _fakeConsulBuilder;
         private FileConfiguration _config;
         private readonly List<ServiceEntry> _consulServices;
 
@@ -31,6 +32,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
         {
+            int consulPort = RandomPortFinder.GetRandomPort();
+            int servicePort = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -44,7 +48,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51779,
+                                    Port = servicePort,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -56,15 +60,15 @@ namespace Ocelot.AcceptanceTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Host = "localhost",
-                        Port = 9502
+                        Port = consulPort
                     }
                 }
             };
 
-            var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -75,8 +79,10 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                            .UseUrls(url)
+            _fakeConsulBuilder = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder.UseUrls(url)
                             .UseKestrel()
                             .UseContentRoot(Directory.GetCurrentDirectory())
                             .UseIISIntegration()
@@ -103,7 +109,9 @@ namespace Ocelot.AcceptanceTests
                                         {
                                             var reader = new StreamReader(context.Request.Body);
 
-                                            var json = reader.ReadToEnd();
+                                            // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+                                            // var json = reader.ReadToEnd();                                            
+                                            var json = await reader.ReadToEndAsync();
 
                                             _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
@@ -122,8 +130,8 @@ namespace Ocelot.AcceptanceTests
                                         await context.Response.WriteJsonAsync(_consulServices);
                                     }
                                 });
-                            })
-                            .Build();
+                            });
+                }).Build();
 
             _fakeConsulBuilder.Start();
         }
@@ -146,22 +154,24 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
+            _builder = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(webBuilder =>
                 {
-                    app.UsePathBase(basePath);
-
-                    app.Run(async context =>
+                    webBuilder.UseUrls(url)
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseUrls(url)
+                    .Configure(app =>
                     {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    });
-                })
+                        app.UsePathBase(basePath);
+                        app.Run(async context =>
+                        {
+                            context.Response.StatusCode = statusCode;
+                            await context.Response.WriteAsync(responseBody);
+                            });
+                        });
+                    })
                 .Build();
 
             _builder.Start();

@@ -26,7 +26,7 @@
 
         public async Task<List<Service>> Get()
         {
-            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, false);
+            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 
             var services = new List<Service>();
 

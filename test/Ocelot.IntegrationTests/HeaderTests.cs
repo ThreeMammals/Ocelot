@@ -34,7 +34,7 @@ namespace Ocelot.IntegrationTests
         public HeaderTests()
         {
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5005";
+            _ocelotBaseUrl = "http://localhost:5010";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
 

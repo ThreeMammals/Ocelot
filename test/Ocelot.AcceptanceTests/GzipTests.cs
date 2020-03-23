@@ -26,6 +26,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
@@ -39,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = port,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -50,7 +52,7 @@ namespace Ocelot.AcceptanceTests
 
             var input = "people";
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura", "\"people\""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura", "\"people\""))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasGzipContent(input))
@@ -73,7 +75,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         using (var sr = new StreamReader(decompress))
                         {
-                            text = sr.ReadToEnd();
+                            // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+                            // text = sr.ReadToEnd();
+                            text = await sr.ReadToEndAsync();
                         }
                     }
 

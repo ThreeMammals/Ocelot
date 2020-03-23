@@ -11,6 +11,7 @@ namespace Ocelot.Configuration.File
             AddClaimsToRequest = new Dictionary<string, string>();
             RouteClaimsRequirement = new Dictionary<string, string>();
             AddQueriesToRequest = new Dictionary<string, string>();
+            ChangeDownstreamPathTemplate = new Dictionary<string, string>();
             DownstreamHeaderTransform = new Dictionary<string, string>();
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
@@ -28,16 +29,19 @@ namespace Ocelot.Configuration.File
         public string DownstreamPathTemplate { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
+        public string DownstreamHttpMethod { get; set; }
         public Dictionary<string, string> AddHeadersToRequest { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
         public Dictionary<string, string> AddClaimsToRequest { get; set; }
         public Dictionary<string, string> RouteClaimsRequirement { get; set; }
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
+        public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
         public string RequestIdKey { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public bool ReRouteIsCaseSensitive { get; set; }
         public string ServiceName { get; set; }
+        public string ServiceNamespace { get; set; }
         public string DownstreamScheme { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
@@ -52,5 +56,6 @@ namespace Ocelot.Configuration.File
         public int Timeout { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
+        public string DownstreamHttpVersion { get; set; }
     }
 }

@@ -1,11 +1,12 @@
 namespace Ocelot.UnitTests.DependencyInjection
 {
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Hosting.Internal;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Moq;
     using Ocelot.Configuration.Setter;
     using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.Middleware.Multiplexer;
     using Ocelot.Requester;
     using Ocelot.UnitTests.Requester;
@@ -14,6 +15,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using System.Reflection;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
@@ -31,9 +33,19 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
             _maxRetries = 100;
+        }
+
+        private IWebHostEnvironment GetHostingEnvironment()
+        {
+            var environment = new Mock<IWebHostEnvironment>();
+            environment
+                .Setup(e => e.ApplicationName)
+                .Returns(typeof(OcelotBuilderTests).GetTypeInfo().Assembly.GetName().Name);
+
+            return environment.Object;
         }
 
         [Fact]
@@ -48,7 +60,29 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        public void should_add_type_specific_delegating_handlers_transient()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandler)))
+                .And(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandlerTwo)))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => ThenTheSpecificHandlersAreTransient())
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_add_global_delegating_handlers_transient()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
+                .And(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
+                .And(x => ThenTheGlobalHandlersAreTransient())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_global_type_delegating_handlers_transient()
         {
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
@@ -114,6 +148,16 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_replace_iplaceholder()
+        {
+            this.Given(x => x.WhenISetUpOcelotServices())
+                .When(x => AddConfigPlaceholders())
+                .Then(x => ThenAnExceptionIsntThrown())
+                .And(x => ThenTheIPlaceholderInstanceIsReplaced())
+                .BDDfy();
+        }
+
         private void AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
@@ -124,6 +168,11 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddTransientDefinedAggregator<T>();
+        }
+
+        private void AddConfigPlaceholders()
+        {
+            _ocelotBuilder.AddConfigPlaceholders();
         }
 
         private void ThenTheSpecificHandlersAreTransient()
@@ -154,6 +203,16 @@ namespace Ocelot.UnitTests.DependencyInjection
             where T : DelegatingHandler
         {
             _ocelotBuilder.AddDelegatingHandler<T>();
+        }
+
+        private void AddTypeTransientGlobalDelegatingHandler(Type type)
+        {
+            _ocelotBuilder.AddDelegatingHandler(type, true);
+        }
+
+        private void AddTypeSpecificTransientDelegatingHandler(Type type)
+        {
+            _ocelotBuilder.AddDelegatingHandler(type);
         }
 
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
@@ -201,6 +260,13 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void ThenAnOcelotBuilderIsReturned()
         {
             _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
+        }
+
+        private void ThenTheIPlaceholderInstanceIsReplaced()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var placeholders = _serviceProvider.GetService<IPlaceholders>();
+            placeholders.ShouldBeOfType<ConfigAwarePlaceholders>();
         }
 
         private void WhenISetUpOcelotServices()

@@ -46,7 +46,7 @@ The following shows how to set up multiple downstream services for a ReRoute usi
 Service Discovery
 ^^^^^^^^^^^^^^^^^
 
-The following shows how to set up a ReRoute using service discovery then select the LeadConnection load balancer.
+The following shows how to set up a ReRoute using service discovery then select the LeastConnection load balancer.
 
 .. code-block:: json
 

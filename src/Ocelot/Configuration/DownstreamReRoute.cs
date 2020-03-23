@@ -1,6 +1,7 @@
 namespace Ocelot.Configuration
 {
     using Creator;
+    using System;
     using System.Collections.Generic;
     using Values;
 
@@ -13,6 +14,7 @@ namespace Ocelot.Configuration
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
             List<DownstreamHostAndPort> downstreamAddresses,
             string serviceName,
+            string serviceNamespace,
             HttpHandlerOptions httpHandlerOptions,
             bool useServiceDiscovery,
             bool enableEndpointEndpointRateLimiting,
@@ -27,6 +29,7 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries,
             List<ClaimToThing> claimsToHeaders,
             List<ClaimToThing> claimsToClaims,
+            List<ClaimToThing> claimsToPath,
             bool isAuthenticated,
             bool isAuthorised,
             AuthenticationOptions authenticationOptions,
@@ -36,7 +39,9 @@ namespace Ocelot.Configuration
             List<AddHeader> addHeadersToDownstream,
             List<AddHeader> addHeadersToUpstream,
             bool dangerousAcceptAnyServerCertificateValidator,
-            SecurityOptions securityOptions)
+            SecurityOptions securityOptions,
+            string downstreamHttpMethod,
+            Version downstreamHttpVersion)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -47,6 +52,7 @@ namespace Ocelot.Configuration
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamAddresses = downstreamAddresses ?? new List<DownstreamHostAndPort>();
             ServiceName = serviceName;
+            ServiceNamespace = serviceNamespace;
             HttpHandlerOptions = httpHandlerOptions;
             UseServiceDiscovery = useServiceDiscovery;
             EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
@@ -61,6 +67,7 @@ namespace Ocelot.Configuration
             ClaimsToQueries = claimsToQueries ?? new List<ClaimToThing>();
             ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
+            ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
             IsAuthenticated = isAuthenticated;
             IsAuthorised = isAuthorised;
             AuthenticationOptions = authenticationOptions;
@@ -68,6 +75,8 @@ namespace Ocelot.Configuration
             LoadBalancerKey = loadBalancerKey;
             AddHeadersToUpstream = addHeadersToUpstream;
             SecurityOptions = securityOptions;
+            DownstreamHttpMethod = downstreamHttpMethod;
+            DownstreamHttpVersion = downstreamHttpVersion;
         }
 
         public string Key { get; }
@@ -76,6 +85,7 @@ namespace Ocelot.Configuration
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; }
         public List<DownstreamHostAndPort> DownstreamAddresses { get; }
         public string ServiceName { get; }
+        public string ServiceNamespace { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
         public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }
@@ -90,6 +100,7 @@ namespace Ocelot.Configuration
         public List<ClaimToThing> ClaimsToQueries { get; }
         public List<ClaimToThing> ClaimsToHeaders { get; }
         public List<ClaimToThing> ClaimsToClaims { get; }
+        public List<ClaimToThing> ClaimsToPath { get; }
         public bool IsAuthenticated { get; }
         public bool IsAuthorised { get; }
         public AuthenticationOptions AuthenticationOptions { get; }
@@ -100,5 +111,7 @@ namespace Ocelot.Configuration
         public List<AddHeader> AddHeadersToUpstream { get; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
         public SecurityOptions SecurityOptions { get; }
+        public string DownstreamHttpMethod { get; }
+        public Version DownstreamHttpVersion { get;  }
     }
 }
