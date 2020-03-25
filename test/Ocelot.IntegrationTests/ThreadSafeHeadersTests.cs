@@ -32,6 +32,7 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
         {
+            var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -45,7 +46,7 @@ namespace Ocelot.IntegrationTests
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = 51611,
+                                    Port = port,
                                 },
                             },
                             UpstreamPathTemplate = "/",
@@ -55,7 +56,7 @@ namespace Ocelot.IntegrationTests
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenThereIsAServiceRunningOn("http://localhost:51611"))
+                .And(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => GivenOcelotIsRunning())
                 .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300))
                 .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())

@@ -75,7 +75,8 @@ namespace Ocelot.IntegrationTests
         public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5011";
+            var port = RandomPortFinder.GetRandomPort();
+            _ocelotBaseUrl = $"http://localhost:{port}";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
 
             var configuration = new FileConfiguration
@@ -122,12 +123,13 @@ namespace Ocelot.IntegrationTests
         public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
             var configuration = new FileConfiguration();
+            var port = RandomPortFinder.GetRandomPort();
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
                 .And(x => GivenOcelotIsRunning())
                 .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5017"))
+                .And(x => GivenAnotherOcelotIsRunning($"http://localhost:{port}"))
                 .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
@@ -356,8 +358,8 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
-            var fooPort = 47689;
-            var barPort = 27654;
+            var fooPort = RandomPortFinder.GetRandomPort();
+            var barPort = RandomPortFinder.GetRandomPort();
 
             var initialConfiguration = new FileConfiguration
             {
@@ -490,7 +492,8 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration();
 
-            var identityServerRootUrl = "http://localhost:5123";
+            var port = RandomPortFinder.GetRandomPort();
+            var identityServerRootUrl = $"http://localhost:{port}";
 
             Action<JwtBearerOptions> options = o =>
             {
