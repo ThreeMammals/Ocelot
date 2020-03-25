@@ -6,7 +6,21 @@ namespace Ocelot.Cache
     {
         public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest)
         {
+            string hashedContent = null;
+
             var downStreamUrlKeyBuilder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
+
+            var cacheOptionsHeader = context.DownstreamRoute?.CacheOptions?.Header;
+            if (!string.IsNullOrEmpty(cacheOptionsHeader))
+            {
+                var header = downstreamRequest.Headers.FirstOrDefault(r =>
+                        r.Key.Equals(cacheOptionsHeader, StringComparison.OrdinalIgnoreCase))
+                    .Value?.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(header))
+                    downStreamUrlKeyBuilder = downStreamUrlKeyBuilder.Append(header);
+            }
+
             if (downstreamRequest.Content != null)
             {
                 var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
