@@ -26,6 +26,7 @@ namespace Ocelot.AcceptanceTests
     using Ocelot.Provider.Eureka;
     using Ocelot.Provider.Polly;
     using Ocelot.Tracing.Butterfly;
+    using Ocelot.Tracing.OpenTracing;
     using Requester;
     using Shouldly;
     using System;
@@ -316,6 +317,41 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.Use(async (context, next) =>
+                    {
+                        await next.Invoke();
+                    });
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        internal void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                    .AddOpenTracing();
+
+                    s.AddSingleton<OpenTracing.ITracer>(fakeTracer);
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (_, next) =>
                     {
                         await next.Invoke();
                     });
