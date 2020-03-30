@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>0.0.0-dev</Version>
+    <Authors>Kjell-Åke Gafvelin</Authors>
+    <Description>This package provides OpenTracing support to Ocelot.</Description>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
