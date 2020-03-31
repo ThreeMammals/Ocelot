@@ -9,7 +9,6 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "jsonplaceholder.typicode.com",
-          //          "Host": "localhost",
           "Port": 443
         }
       ],
@@ -17,25 +16,7 @@
       "UpstreamHttpMethod": [
         "Get"
       ]
-    },
-    {
-      "HttpHandlerOptions": {
-        "UseTracing": true
-      },
-      "DownstreamPathTemplate": "/LaboratoryOutcome",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 50009
-        }
-      ],
-      "UpstreamPathTemplate": "/LaboratoryOutcome",
-      "UpstreamHttpMethod": [
-        "Post"
-      ]
     }
-
   ],
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:5000"
