@@ -117,6 +117,11 @@ namespace Ocelot.DependencyInjection
                     !fi.FullName.Equals(environmentFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
+            dynamic fileConfiguration = new ExpandoObject();
+            fileConfiguration.GlobalConfiguration = new ExpandoObject();
+            fileConfiguration.Aggregates = new List<object>();
+            fileConfiguration.ReRoutes = new List<object>();
+
             fileConfiguration ??= new FileConfiguration();
             primaryFile ??= Path.Join(folder, PrimaryConfigFile);
             globalFile ??= Path.Join(folder, GlobalConfigFile);
@@ -131,16 +136,18 @@ namespace Ocelot.DependencyInjection
                     continue;
                 }
 
+                //var lines = File.ReadAllText(file.FullName);
+                //var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
                 var lines = File.ReadAllText(file.FullName);
-                var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
-                if (file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
-                    file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                dynamic config = JsonConvert.DeserializeObject<ExpandoObject>(lines);
+
+                if (file.Name.Equals(GlobalConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
-                    fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
+                    TryAddSection(fileConfiguration, config, nameof(FileConfiguration.GlobalConfiguration));
                 }
 
-                fileConfiguration.Aggregates.AddRange(config.Aggregates);
-                fileConfiguration.Routes.AddRange(config.Routes);
+                TryAddSection(fileConfiguration, config, nameof(FileConfiguration.Aggregates));
+                TryAddSection(fileConfiguration, config, nameof(FileConfiguration.ReRoutes));
             }
 
             return JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
@@ -202,6 +209,27 @@ namespace Ocelot.DependencyInjection
             var primary = primaryFile ?? PrimaryConfigFile;
             File.WriteAllText(primary, json);
             return builder?.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
+        }
+
+        private static void TryAddSection(ExpandoObject mergedConfig, ExpandoObject config, string sectionName)
+        {
+            var configAsDict = config as IDictionary<string, object>;
+            var mergedConfigAsDict = mergedConfig as IDictionary<string, object>;
+            if (configAsDict.ContainsKey(sectionName) && mergedConfigAsDict.ContainsKey(sectionName))
+            {
+                var mergedSectionAsExpando = mergedConfigAsDict[sectionName] as ExpandoObject;
+                if (mergedSectionAsExpando != null)
+                {
+                    mergedConfigAsDict[sectionName] = configAsDict[sectionName];                    
+                }
+                else
+                {
+                    var mergedSectionAsList = mergedConfigAsDict[sectionName] as List<object>;
+                    var sectionAsList = configAsDict[sectionName] as List<object>;
+
+                    mergedSectionAsList.AddRange(sectionAsList);
+                }
+            }
         }
     }
 }
