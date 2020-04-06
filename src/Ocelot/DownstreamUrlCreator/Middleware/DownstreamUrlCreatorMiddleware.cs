@@ -74,7 +74,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                     }
                     else
                     {
-                        downstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
+                        var newQueryString = GetQueryString(dsPath).Replace('?', '&');
+                        newQueryString = MergeQueryStringsWithoutDuplicateValues(context.DownstreamRequest.Query, newQueryString);
+                        context.DownstreamRequest.Query = "?" + newQueryString;
                     }
                 }
                 else
@@ -90,7 +92,36 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             await _next.Invoke(httpContext);
         }
 
-        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
+
+        private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString)
+        {
+            var queries = HttpUtility.ParseQueryString(queryString);
+            var newQueries = HttpUtility.ParseQueryString(newQueryString);
+
+            var dict = new Dictionary<string, string>();
+            foreach (var key in newQueries.AllKeys)
+            {
+                if (!string.IsNullOrEmpty(key))
+                {
+                    dict.Add(key, newQueries[key]);
+
+                }
+            }
+
+            foreach (var key in queries.AllKeys)
+            {
+                if (string.IsNullOrEmpty(key) || dict.ContainsValue(queries[key]))
+                {
+                    continue;
+                }
+
+                dict.Add(key, queries[key]);
+            }
+
+            return string.Join("&", dict.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value)));
+        }
+
+        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext context)
         {
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
