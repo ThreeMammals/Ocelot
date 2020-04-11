@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Kubernetes
 {
-    public class PollKube : IServiceDiscoveryProvider
+    public class PollKubernetes : IServiceDiscoveryProvider
     {
         private readonly IOcelotLogger _logger;
         private readonly IServiceDiscoveryProvider _kubeServiceDiscoveryProvider;
@@ -15,9 +15,9 @@ namespace Ocelot.Provider.Kubernetes
         private bool _polling;
         private List<Service> _services;
 
-        public PollKube(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider kubeServiceDiscoveryProvider)
+        public PollKubernetes(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider kubeServiceDiscoveryProvider)
         {
-            _logger = factory.CreateLogger<PollKube>();
+            _logger = factory.CreateLogger<PollKubernetes>();
             _kubeServiceDiscoveryProvider = kubeServiceDiscoveryProvider;
             _services = new List<Service>();
 
