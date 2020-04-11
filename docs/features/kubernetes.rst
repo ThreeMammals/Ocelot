@@ -67,7 +67,7 @@ You use Ocelot to poll kubernetes for latest service information rather than per
    "Port": 443,
    "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
    "Namespace": "dev",
-   "Type": "pollkube"
+   "Type": "pollkube",
    "PollingInterval": 100
   } 
 
@@ -81,15 +81,15 @@ If your downstream service resides in a different namespace you can override the
 
 .. code-block:: json
 
-{
-  "ReRoutes": [
     {
-      "DownstreamPathTemplate": "/api/values",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/values",
-      "ServiceName": "downstreamservice",
-      "ServiceNamespace": "downstream-namespace",
-      "UpstreamHttpMethod": [ "Get" ]     
+      "ReRoutes": [
+        {
+          "DownstreamPathTemplate": "/api/values",
+          "DownstreamScheme": "http",
+          "UpstreamPathTemplate": "/values",
+          "ServiceName": "downstreamservice",
+          "ServiceNamespace": "downstream-namespace",
+          "UpstreamHttpMethod": [ "Get" ]     
+        }
+      ]
     }
-  ]
-}
