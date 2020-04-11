@@ -19,7 +19,7 @@ workflows:
   master:
     jobs:
       - queue/block_workflow:
-          time: "10"
+          time: "20"
           only-on-branch: master
       - release:
           requires:
