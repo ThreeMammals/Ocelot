@@ -2,6 +2,7 @@ namespace Ocelot.AcceptanceTests
 {
     using Configuration.File;
     using Consul;
+    using IdentityServer4.Extensions;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
@@ -169,9 +170,9 @@ namespace Ocelot.AcceptanceTests
                         {
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync(responseBody);
-                            });
                         });
-                    })
+                    });
+                })
                 .Build();
 
             _builder.Start();
