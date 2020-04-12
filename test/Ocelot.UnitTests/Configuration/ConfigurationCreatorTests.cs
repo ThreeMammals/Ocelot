@@ -105,7 +105,7 @@ namespace Ocelot.UnitTests.Configuration
                 GlobalConfiguration = new FileGlobalConfiguration()
             };
             _reRoutes = new List<ReRoute>();
-            _spc = new ServiceProviderConfiguration("", "", 1, "", "", 1);
+            _spc = new ServiceProviderConfiguration("", "", "", 1, "", "", 1);
             _lbo = new LoadBalancerOptionsBuilder().Build();
             _qoso = new QoSOptions(1, 1, 1, "");
             _hho = new HttpHandlerOptionsBuilder().Build();

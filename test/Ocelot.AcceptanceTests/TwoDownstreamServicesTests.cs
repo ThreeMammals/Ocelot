@@ -74,6 +74,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Port = consulPort
                     }

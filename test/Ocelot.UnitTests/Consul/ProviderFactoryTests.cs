@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Consul
                 .WithServiceName("")
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", 1, "", "", 1), reRoute);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", "", 1, "", "", 1), reRoute);
             provider.ShouldBeOfType<Consul>();
         }
 
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Consul
                 .WithServiceName("")
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "", 1, "", "", stopsPollerFromPolling), reRoute);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "http", "", 1, "", "", stopsPollerFromPolling), reRoute);
             var pollProvider = provider as PollConsul;
             pollProvider.ShouldNotBeNull();
             pollProvider.Dispose();
