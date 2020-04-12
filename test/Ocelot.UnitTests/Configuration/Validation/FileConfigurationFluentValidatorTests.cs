@@ -57,6 +57,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "ServiceFabric",
                         Port = 8500
@@ -90,6 +91,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
@@ -113,6 +115,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
@@ -147,6 +150,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
@@ -171,6 +175,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
                         Port = 8500
@@ -206,6 +211,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
                         Port = 8500
@@ -1197,6 +1203,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Type = "servicefabric",
                         Host = "localhost",
                         Port = 1234

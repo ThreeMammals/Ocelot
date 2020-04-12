@@ -12,7 +12,7 @@
 
             var consulFactory = provider.GetService<IConsulClientFactory>();
 
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Host, config.Port, reRoute.ServiceName, config.Token);
+            var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, reRoute.ServiceName, config.Token);
 
             var consulServiceDiscoveryProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
 

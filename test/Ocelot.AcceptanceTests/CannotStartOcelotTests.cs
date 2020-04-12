@@ -24,6 +24,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
                         Port = 8500
@@ -66,6 +67,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
                         Port = 8500
