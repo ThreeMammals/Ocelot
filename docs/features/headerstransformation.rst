@@ -85,6 +85,7 @@ Ocelot allows placeholders that can be used in header transformation.
 {BaseUrl} - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
 {DownstreamBaseUrl} - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for DownstreamHeaderTransform at the moment.
 {TraceId} - This will use the Butterfly APM Trace Id. This only works for DownstreamHeaderTransform at the moment.
+{UpstreamHost} - This will look for the incoming Host header.
 
 Handling 302 Redirects
 ^^^^^^^^^^^^^^^^^^^^^^

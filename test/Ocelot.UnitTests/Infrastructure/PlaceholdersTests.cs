@@ -134,5 +134,22 @@ namespace Ocelot.UnitTests.Infrastructure
             var result = _placeholders.Get("{UpstreamHost}");
             result.Data.ShouldBe(upstreamHost);
         }
+
+        [Fact]
+        public void should_return_error_when_finding_upstbecause_Host_not_set()
+        {
+            var httpContext = new DefaultHttpContext();
+            _accessor.Setup(x => x.HttpContext).Returns(httpContext);
+            var result = _placeholders.Get("{UpstreamHost}");
+            result.IsError.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void should_return_error_when_finding_upstream_host_because_exception_thrown()
+        {
+            _accessor.Setup(x => x.HttpContext).Throws(new Exception());
+            var result = _placeholders.Get("{UpstreamHost}");
+            result.IsError.ShouldBeTrue();
+        }
     }
 }

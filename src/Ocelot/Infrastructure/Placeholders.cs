@@ -32,7 +32,7 @@ namespace Ocelot.Infrastructure
 
             _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>
             {
-                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl() }
+                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl() },
             };
         }
 
@@ -143,10 +143,8 @@ namespace Ocelot.Infrastructure
                     {
                         return new OkResponse<string>(upstreamHost.First());
                     }
-                    else
-                    {
-                        return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
-                    }
+
+                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
                 }
                 catch
                 {
