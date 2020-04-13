@@ -108,3 +108,112 @@ subsequent requests. This means the sessions will be stuck across ReRoutes.
 Please note that if you give more than one DownstreamHostAndPort or you are using a Service Discovery provider such as Consul 
 and this returns more than one service then CookieStickySessions uses round robin to select the next server. This is hard coded at the 
 moment but could be changed.
+
+Custom Load Balancers
+^^^^^^^^^^^^^^^^^^^^
+
+`DavidLievrouw <https://github.com/DavidLievrouw`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155`_.
+
+In order to create and use a custom load balancer you can do the following. Below we setup a basic load balancing config and not the Type is CustomLoadBalancer this is the name of a class we will
+setup to do load balancing.
+
+.. code-block:: json
+
+    {
+        "DownstreamPathTemplate": "/api/posts/{postId}",
+        "DownstreamScheme": "https",
+        "DownstreamHostAndPorts": [
+                {
+                    "Host": "10.0.1.10",
+                    "Port": 5000,
+                },
+                {
+                    "Host": "10.0.1.11",
+                    "Port": 5000,
+                }
+            ],
+        "UpstreamPathTemplate": "/posts/{postId}",
+        "LoadBalancerOptions": {
+            "Type": "CustomLoadBalancer"
+        },
+        "UpstreamHttpMethod": [ "Put", "Delete" ]
+    }
+
+
+Then you need to create a class that implements the ILoadBalancer interface. Below is a simple round robin example.
+
+.. code-block:: csharp
+
+        private class CustomLoadBalancer : ILoadBalancer
+        {
+            private readonly Func<Task<List<Service>>> _services;
+            private readonly object _lock = new object();
+
+            private int _last;
+
+            public CustomLoadBalancer(Func<Task<List<Service>>> services)
+            {
+                _services = services;
+            }
+
+            public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
+            {
+                var services = await _services();
+                lock (_lock)
+                {
+                    if (_last >= services.Count)
+                    {
+                        _last = 0;
+                    }
+
+                    var next = services[_last];
+                    _last++;
+                    return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
+                }
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+            }
+        }
+
+Finally you need to register this class with Ocelot. I have used the most complex example below to show all of the data / types that can be passed into the factory that creates load balancers.
+
+.. code-block:: csharp
+
+            Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, reRoute, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
+
+            s.AddOcelot()
+                .AddCustomLoadBalancer(loadBalancerFactoryFunc);
+
+However there is a much simpler example that will work the same.
+
+.. code-block:: csharp
+
+            s.AddOcelot()
+                .AddCustomLoadBalancer<CustomLoadBalancer>();
+
+There are numerous extension methods to add a custom load balancer and the interface is as follows.
+
+.. code-block:: csharp
+
+        IOcelotBuilder AddCustomLoadBalancer<T>()
+            where T : ILoadBalancer, new();
+
+         IOcelotBuilder AddCustomLoadBalancer<T>(Func<T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+         IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+         IOcelotBuilder AddCustomLoadBalancer<T>(
+            Func<DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+         IOcelotBuilder AddCustomLoadBalancer<T>(
+            Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+When you enable custom load balancers Ocelot looks up your load balancer by its class name when it decides if it should do load balancing. If it finds a match it will use your load balaner to load balance. If Ocelot cannot match the load balancer type in your configuration with the name of registered load balancer class then you will receive a HTTP 500 internal server error. If your load balancer factory throw an exception when Ocelot calls it you will receive a HTTP 500 internal server error.
+
+Remember if you specify no load balancer in your config Ocelot will not try and load balance.

@@ -111,8 +111,8 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void WhenIGetTheReRouteWithTheSameKeyButDifferentLoadBalancer(DownstreamReRoute reRoute)
         {
             _reRoute = reRoute;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new OkResponse<ILoadBalancer>(new LeastConnection(null, null)));
-            _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig).Result;
+            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(new LeastConnection(null, null)));
+            _getResult = _loadBalancerHouse.Get(_reRoute, _serviceProviderConfig);
         }
 
         private void ThenAnErrorIsReturned()
@@ -138,13 +138,13 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _reRoute = reRoute;
             _loadBalancer = loadBalancer;
-            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).ReturnsAsync(new OkResponse<ILoadBalancer>(loadBalancer));
-            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig).Result;
+            _factory.Setup(x => x.Get(_reRoute, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
+            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig);
         }
 
         private void WhenWeGetTheLoadBalancer(DownstreamReRoute reRoute)
         {
-            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig).Result;
+            _getResult = _loadBalancerHouse.Get(reRoute, _serviceProviderConfig);
         }
 
         private void ThenItIsReturned()

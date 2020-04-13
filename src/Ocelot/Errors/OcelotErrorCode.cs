@@ -41,5 +41,7 @@
         QuotaExceededError = 36,
         RequestCanceled = 37,
         ConnectionToDownstreamServiceError = 38,
+        CouldNotFindLoadBalancerCreator = 39,
+        ErrorInvokingLoadBalancerCreator = 40,
     }
 }

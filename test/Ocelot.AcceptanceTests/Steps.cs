@@ -39,6 +39,9 @@ namespace Ocelot.AcceptanceTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Configuration;
+    using LoadBalancer.LoadBalancers;
+    using ServiceDiscovery.Providers;
     using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
     using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
@@ -244,6 +247,39 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(s =>
                 {
                     s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddCustomLoadBalancer(loadBalancerFactoryFunc);
                 })
                 .Configure(app =>
                 {
