@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-
-namespace Ocelot.Cache
+﻿namespace Ocelot.Cache
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.Extensions.Caching.Memory;
+
     public class AspMemoryCache<T> : IOcelotCache<T>
     {
         private readonly IMemoryCache _memoryCache;
@@ -20,7 +18,9 @@ namespace Ocelot.Cache
         public void Add(string key, T value, TimeSpan ttl, string region)
         {
             if (ttl.TotalMilliseconds <= 0)
+            {
                 return;
+            }
 
             _memoryCache.Set(key, value, ttl);
 
@@ -28,10 +28,13 @@ namespace Ocelot.Cache
         }
 
         public T Get(string key, string region)
-        {
-            _memoryCache.TryGetValue<T>(key, out T value);
+        {   
+            if (_memoryCache.TryGetValue(key, out T value))
+            {
+                return value;
+            }
 
-            return value;
+            return default(T);
         }
 
         public void ClearRegion(string region)
@@ -48,8 +51,10 @@ namespace Ocelot.Cache
 
         public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
         {
-            if (_memoryCache.TryGetValue(key, out object oldValue))
+            if (_memoryCache.TryGetValue(key, out T oldValue))
+            {
                 _memoryCache.Remove(key);
+            }
 
             Add(key, value, ttl, region);
         }
