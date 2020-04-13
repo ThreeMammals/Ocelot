@@ -1,11 +1,12 @@
-﻿using Ocelot.Configuration;
-using Ocelot.ServiceDiscovery.Providers;
-
-namespace Ocelot.LoadBalancer.LoadBalancers
+﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
+    using Ocelot.Responses;
+    using Ocelot.Configuration;
+    using Ocelot.ServiceDiscovery.Providers;
+
     public interface ILoadBalancerCreator
     {
-        ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider);
+        Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider);
         string Type { get; }
     }
 }

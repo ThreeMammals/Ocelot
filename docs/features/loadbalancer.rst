@@ -214,6 +214,6 @@ There are numerous extension methods to add a custom load balancer and the inter
             Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer;
 
-When you enable custom load balancers Ocelot looks up your load balancer by its class name when it decides if it should do load balancing. If it finds a match it will load balance your request. If Ocelot cannot match the load balancer type in your configuration with the name of registered load balancer class then you will receive a HTTP 500 internal server error.
+When you enable custom load balancers Ocelot looks up your load balancer by its class name when it decides if it should do load balancing. If it finds a match it will use your load balaner to load balance. If Ocelot cannot match the load balancer type in your configuration with the name of registered load balancer class then you will receive a HTTP 500 internal server error. If your load balancer factory throw an exception when Ocelot calls it you will receive a HTTP 500 internal server error.
 
 Remember if you specify no load balancer in your config Ocelot will not try and load balance.

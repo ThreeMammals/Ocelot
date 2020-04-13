@@ -2,12 +2,13 @@
 { 
     using Ocelot.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Responses;
 
     public class NoLoadBalancerCreator : ILoadBalancerCreator
     {
-        public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+        public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
         {
-            return new NoLoadBalancer(async () => await serviceProvider.Get());
+            return new OkResponse<ILoadBalancer>(new NoLoadBalancer(async () => await serviceProvider.Get()));
         }
 
         public string Type => nameof(NoLoadBalancer);

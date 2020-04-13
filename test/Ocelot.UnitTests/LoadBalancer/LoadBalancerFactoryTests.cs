@@ -16,6 +16,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
+    using System;
+
     public class LoadBalancerFactoryTests
     {
         private DownstreamReRoute _reRoute;
@@ -35,6 +37,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new FakeLoadBalancerCreator<FakeLoadBalancerOne>(),
                 new FakeLoadBalancerCreator<FakeLoadBalancerTwo>(),
                 new FakeLoadBalancerCreator<FakeNoLoadBalancer>(nameof(NoLoadBalancer)),
+                new BrokenLoadBalancerCreator<BrokenLoadBalancer>(),
             };
             _factory = new LoadBalancerFactory(_serviceProviderFactory.Object, _loadBalancerCreators);
         }
@@ -84,6 +87,22 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenAnErrorResponseIsReturned())
                 .And(x => x.ThenTheErrorMessageIsCorrect())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_response_if_creator_errors()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithLoadBalancerOptions(new LoadBalancerOptions("BrokenLoadBalancer", "", 0))
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build();
+
+            this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
+                .When(x => x.WhenIGetTheLoadBalancer())
+                .Then(x => x.ThenAnErrorResponseIsReturned())
                 .BDDfy();
         }
 
@@ -183,11 +202,27 @@ namespace Ocelot.UnitTests.LoadBalancer
                 Type = type;
             }
 
-            public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+            public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
             {
-                return new T();
+                return new OkResponse<ILoadBalancer>(new T());
             }
             
+            public string Type { get; }
+        }
+
+        private class BrokenLoadBalancerCreator<T> : ILoadBalancerCreator
+            where T : ILoadBalancer, new()
+        {
+            public BrokenLoadBalancerCreator()
+            {
+                Type = typeof(T).Name;
+            }
+
+            public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+            {
+                return new ErrorResponse<ILoadBalancer>(new ErrorInvokingLoadBalancerCreator(new Exception()));
+            }
+
             public string Type { get; }
         }
 
@@ -229,5 +264,19 @@ namespace Ocelot.UnitTests.LoadBalancer
                 throw new System.NotImplementedException();
             }
         }
+
+        private class BrokenLoadBalancer : ILoadBalancer
+        {
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
     }
 }

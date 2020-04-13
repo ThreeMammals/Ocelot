@@ -2,12 +2,13 @@
 {
     using Ocelot.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Responses;
 
     public class LeastConnectionCreator : ILoadBalancerCreator
     {
-        public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+        public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
         {
-            return new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName);
+            return new OkResponse<ILoadBalancer>(new LeastConnection(async () => await serviceProvider.Get(), reRoute.ServiceName));
         }
 
         public string Type => nameof(LeastConnection);

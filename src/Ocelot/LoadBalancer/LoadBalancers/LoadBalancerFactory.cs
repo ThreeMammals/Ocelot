@@ -35,8 +35,14 @@
                 return new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreator($"Could not find load balancer creator for Type: {requestedType}, please check your config specified the correct load balancer and that you have registered a class with the same name."));
             }
 
-            var createdLoadBalancer = applicableCreator.Create(reRoute, serviceProvider);
-            return new OkResponse<ILoadBalancer>(createdLoadBalancer);
+            var createdLoadBalancerResponse = applicableCreator.Create(reRoute, serviceProvider);
+
+            if (createdLoadBalancerResponse.IsError)
+            {
+                return new ErrorResponse<ILoadBalancer>(createdLoadBalancerResponse.Errors);
+            }
+
+            return new OkResponse<ILoadBalancer>(createdLoadBalancerResponse.Data);
         }
     }
 }

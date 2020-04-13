@@ -3,6 +3,7 @@
     using System;
     using Ocelot.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.Responses;
 
     public class DelegateInvokingLoadBalancerCreator<T> : ILoadBalancerCreator
         where T : ILoadBalancer
@@ -15,9 +16,17 @@
             _creatorFunc = creatorFunc;
         }
 
-        public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+        public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
         {
-            return _creatorFunc(reRoute, serviceProvider);
+            try
+            {
+                return new OkResponse<ILoadBalancer>(_creatorFunc(reRoute, serviceProvider));
+
+            }
+            catch (Exception e)
+            {
+                return new ErrorResponse<ILoadBalancer>(new ErrorInvokingLoadBalancerCreator(e));
+            }
         }
 
         public string Type => typeof(T).Name;

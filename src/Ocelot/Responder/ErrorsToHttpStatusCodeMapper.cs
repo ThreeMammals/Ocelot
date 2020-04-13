@@ -46,7 +46,8 @@ namespace Ocelot.Responder
             }
 
             if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError
-                || e.Code == OcelotErrorCode.CouldNotFindLoadBalancerCreator))
+                || e.Code == OcelotErrorCode.CouldNotFindLoadBalancerCreator
+                || e.Code == OcelotErrorCode.ErrorInvokingLoadBalancerCreator))
             {
                 return 500;
             }

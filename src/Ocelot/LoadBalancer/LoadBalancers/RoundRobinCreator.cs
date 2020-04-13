@@ -2,12 +2,13 @@
 {
     using Ocelot.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
-    
+    using Ocelot.Responses;
+
     public class RoundRobinCreator : ILoadBalancerCreator
     {
-        public ILoadBalancer Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
+        public Response<ILoadBalancer> Create(DownstreamReRoute reRoute, IServiceDiscoveryProvider serviceProvider)
         {
-            return new RoundRobin(async () => await serviceProvider.Get());
+            return new OkResponse<ILoadBalancer>(new RoundRobin(async () => await serviceProvider.Get()));
         }
 
         public string Type => nameof(RoundRobin);

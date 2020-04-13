@@ -16,11 +16,11 @@ namespace Ocelot.UnitTests.LoadBalancer
 {
     public class DelegateInvokingLoadBalancerCreatorTests
     {
-        private readonly DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
-        private readonly Func<DownstreamReRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;
+        private DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
+        private Func<DownstreamReRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private DownstreamReRoute _reRoute;
-        private ILoadBalancer _loadBalancer;
+        private Response<ILoadBalancer> _loadBalancer;
         private string _typeName;
 
         public DelegateInvokingLoadBalancerCreatorTests()
@@ -51,6 +51,31 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_error()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .Build();
+
+            this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => x.GivenTheCreatorFuncThrows())
+                .When(x => x.WhenIGetTheLoadBalancer())
+                .Then(x => x.ThenAnErrorIsReturned())
+                .BDDfy();
+        }
+
+        private void GivenTheCreatorFuncThrows()
+        {
+            _creatorFunc = (reRoute, serviceDiscoveryProvider) => throw new Exception();
+
+            _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
+        }
+
+        private void ThenAnErrorIsReturned()
+        {
+            _loadBalancer.IsError.ShouldBeTrue();
+        }
+
         private void GivenAReRoute(DownstreamReRoute reRoute)
         {
             _reRoute = reRoute;
@@ -69,7 +94,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenTheLoadBalancerIsReturned<T>()
             where T : ILoadBalancer
         {
-            _loadBalancer.ShouldBeOfType<T>();
+            _loadBalancer.Data.ShouldBeOfType<T>();
         }
 
         private void ThenTheLoadBalancerTypeIs(string type)

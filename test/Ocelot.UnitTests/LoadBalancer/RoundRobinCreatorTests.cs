@@ -1,20 +1,21 @@
-﻿using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.ServiceDiscovery.Providers;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.LoadBalancer
+﻿namespace Ocelot.UnitTests.LoadBalancer
 {
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.LoadBalancer.LoadBalancers;
+    using Ocelot.Responses;
+    using Ocelot.ServiceDiscovery.Providers;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class RoundRobinCreatorTests
     {
         private readonly RoundRobinCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
         private DownstreamReRoute _reRoute;
-        private ILoadBalancer _loadBalancer;
+        private Response<ILoadBalancer> _loadBalancer;
         private string _typeName;
 
         public RoundRobinCreatorTests()
@@ -61,7 +62,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenTheLoadBalancerIsReturned<T>()
             where T : ILoadBalancer
         {
-            _loadBalancer.ShouldBeOfType<T>();
+            _loadBalancer.Data.ShouldBeOfType<T>();
         }
 
         private void ThenTheLoadBalancerTypeIs(string type)
