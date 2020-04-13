@@ -123,5 +123,16 @@ namespace Ocelot.UnitTests.Infrastructure
             result.IsError.ShouldBeTrue();
             result.Errors[0].Message.ShouldBe("Unable to remove placeholder: {Test}, placeholder does not exists");
         }
+
+        [Fact]
+        public void should_return_upstreamHost()
+        {
+            var upstreamHost = "UpstreamHostA";
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers.Add("Host", upstreamHost);
+            _accessor.Setup(x => x.HttpContext).Returns(httpContext);
+            var result = _placeholders.Get("{UpstreamHost}");
+            result.Data.ShouldBe(upstreamHost);
+        }
     }
 }
