@@ -4,7 +4,6 @@
     using System.Linq;
     using Ocelot.Configuration;
     using Ocelot.Responses;
-    using System.Threading.Tasks;
     using Ocelot.ServiceDiscovery;
 
     public class LoadBalancerFactory : ILoadBalancerFactory
@@ -22,21 +21,16 @@
         {
             var serviceProviderFactoryResponse = _serviceProviderFactory.Get(config, reRoute);
 
-            Response<ILoadBalancer> response;
             if (serviceProviderFactoryResponse.IsError)
             {
-                response = new ErrorResponse<ILoadBalancer>(serviceProviderFactoryResponse.Errors);
-            }
-            else
-            {
-                var serviceProvider = serviceProviderFactoryResponse.Data;
-                var requestedType = reRoute.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
-                var applicableCreator = _loadBalancerCreators.Single(c => c.Type == requestedType);
-                var createdLoadBalancer = applicableCreator.Create(reRoute, serviceProvider);
-                response = new OkResponse<ILoadBalancer>(createdLoadBalancer);
+                return new ErrorResponse<ILoadBalancer>(serviceProviderFactoryResponse.Errors);
             }
 
-            return response;
+            var serviceProvider = serviceProviderFactoryResponse.Data;
+            var requestedType = reRoute.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
+            var applicableCreator = _loadBalancerCreators.Single(c => c.Type == requestedType);
+            var createdLoadBalancer = applicableCreator.Create(reRoute, serviceProvider);
+            return new OkResponse<ILoadBalancer>(createdLoadBalancer);
         }
     }
 }
