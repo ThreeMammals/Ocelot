@@ -1,3 +1,9 @@
+using System.Threading.Tasks;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
+
 namespace Ocelot.UnitTests.DependencyInjection
 {
     using Microsoft.AspNetCore.Hosting;
@@ -149,6 +155,42 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        public void should_add_custom_load_balancer_creators_by_default_ctor()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer<FakeCustomLoadBalancer>())
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_factory_method()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer(() => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_di_factory_method()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer(provider => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_add_custom_load_balancer_creators_by_factory_method_with_arguments()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+        
+        [Fact]
         public void should_replace_iplaceholder()
         {
             this.Given(x => x.WhenISetUpOcelotServices())
@@ -158,12 +200,21 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_add_custom_load_balancer_creators()
+        {
+            this.Given(x => WhenISetUpOcelotServices())
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
+                .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
+                .BDDfy();
+        }
+
         private void AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
-
+        
         private void AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
@@ -237,6 +288,17 @@ namespace Ocelot.UnitTests.DependencyInjection
             var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
+        }
+        
+        private void ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators()
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+            var creators = _serviceProvider.GetServices<ILoadBalancerCreator>().ToList();
+            creators.Count(c => c.GetType() == typeof(NoLoadBalancerCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(RoundRobinCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
+            creators.Count(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>)).ShouldBe(1);
         }
 
         private void ThenTheAggregatorsAreTransient<TOne, TWo>()
@@ -322,6 +384,21 @@ namespace Ocelot.UnitTests.DependencyInjection
         private void ThenAnExceptionIsntThrown()
         {
             _ex.ShouldBeNull();
+        }
+
+        private class FakeCustomLoadBalancer : ILoadBalancer
+        {
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            {
+                // Not relevant for these tests
+                throw new NotImplementedException();
+            }
+
+            public void Release(ServiceHostAndPort hostAndPort)
+            {
+                // Not relevant for these tests
+                throw new NotImplementedException();
+            }
         }
     }
 }

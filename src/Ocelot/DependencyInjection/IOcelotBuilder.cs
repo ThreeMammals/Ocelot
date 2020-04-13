@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Middleware.Multiplexer;
 using System;
 using System.Net.Http;
+using Ocelot.Configuration;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.DependencyInjection
 {
@@ -24,6 +27,23 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator;
+
+        IOcelotBuilder AddCustomLoadBalancer<T>()
+            where T : ILoadBalancer, new();
+        
+        IOcelotBuilder AddCustomLoadBalancer<T>(Func<T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+        IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+        IOcelotBuilder AddCustomLoadBalancer<T>(
+            Func<DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
+
+        IOcelotBuilder AddCustomLoadBalancer<T>(
+            Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer;
 
         IOcelotBuilder AddConfigPlaceholders();
     }
