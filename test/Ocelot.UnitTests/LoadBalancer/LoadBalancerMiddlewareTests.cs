@@ -182,7 +182,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _loadBalancerHouse
                 .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
-                .ReturnsAsync(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
+                .Returns(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
         }
 
         private void GivenTheLoadBalancerHouseReturnsAnError()
@@ -194,7 +194,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             _loadBalancerHouse
                 .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
-                .ReturnsAsync(_getLoadBalancerHouseError);
+                .Returns(_getLoadBalancerHouseError);
         }
 
         private void ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline()

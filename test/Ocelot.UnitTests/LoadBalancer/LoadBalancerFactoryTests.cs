@@ -134,7 +134,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheLoadBalancer()
         {
-            _result = _factory.Get(_reRoute, _serviceProviderConfig).Result;
+            _result = _factory.Get(_reRoute, _serviceProviderConfig);
         }
 
         private void ThenTheLoadBalancerIsReturned<T>()

@@ -18,7 +18,7 @@
             _loadBalancerCreators = loadBalancerCreators;
         }
 
-        public Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
+        public Response<ILoadBalancer> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
         {
             var serviceProviderFactoryResponse = _serviceProviderFactory.Get(config, reRoute);
 
@@ -36,7 +36,7 @@
                 response = new OkResponse<ILoadBalancer>(createdLoadBalancer);
             }
 
-            return Task.FromResult(response);
+            return response;
         }
     }
 }

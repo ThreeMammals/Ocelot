@@ -22,7 +22,7 @@ namespace Ocelot.LoadBalancer.Middleware
 
         public async Task Invoke(DownstreamContext context)
         {
-            var loadBalancer = await _loadBalancerHouse.Get(context.DownstreamReRoute, context.Configuration.ServiceProviderConfiguration);
+            var loadBalancer = _loadBalancerHouse.Get(context.DownstreamReRoute, context.Configuration.ServiceProviderConfiguration);
             if (loadBalancer.IsError)
             {
                 Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");

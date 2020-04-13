@@ -3,7 +3,6 @@ using Ocelot.Responses;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -18,7 +17,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
         }
 
-        public async Task<Response<ILoadBalancer>> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
+        public Response<ILoadBalancer> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
         {
             try
             {
@@ -30,7 +29,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                     if (reRoute.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
                     {
-                        result = await _factory.Get(reRoute, config);
+                        result = _factory.Get(reRoute, config);
                         if (result.IsError)
                         {
                             return new ErrorResponse<ILoadBalancer>(result.Errors);
@@ -43,7 +42,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     return new OkResponse<ILoadBalancer>(loadBalancer);
                 }
 
-                result = await _factory.Get(reRoute, config);
+                result = _factory.Get(reRoute, config);
 
                 if (result.IsError)
                 {
@@ -58,7 +57,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             {
                 return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
                 {
-                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.LoadBalancerKey} exception is {ex}")
+                    new UnableToFindLoadBalancerError($"unabe to find load balancer for {reRoute.LoadBalancerKey} exception is {ex}"),
                 });
             }
         }
