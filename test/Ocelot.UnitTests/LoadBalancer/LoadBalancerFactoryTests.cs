@@ -69,7 +69,24 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancerTwo>())
                 .BDDfy();
         }
-        
+
+        [Fact]
+        public void should_return_error_response_if_cannot_find_load_balancer_creator()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithLoadBalancerOptions(new LoadBalancerOptions("DoesntExistLoadBalancer", "", 0))
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build();
+
+            this.Given(x => x.GivenAReRoute(reRoute))
+                .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
+                .And(x => x.GivenTheServiceProviderFactoryReturns())
+                .When(x => x.WhenIGetTheLoadBalancer())
+                .Then(x => x.ThenAnErrorResponseIsReturned())
+                .And(x => x.ThenTheErrorMessageIsCorrect())
+                .BDDfy();
+        }
+
         [Fact]
         public void should_call_service_provider()
         {
@@ -145,6 +162,11 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void ThenAnErrorResponseIsReturned()
         {
             _result.IsError.ShouldBeTrue();
+        }
+
+        private void ThenTheErrorMessageIsCorrect()
+        {
+            _result.Errors[0].Message.ShouldBe("Could not find load balancer creator for Type: DoesntExistLoadBalancer, please check your config specified the correct load balancer and that you have registered a class with the same name.");
         }
 
         private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator

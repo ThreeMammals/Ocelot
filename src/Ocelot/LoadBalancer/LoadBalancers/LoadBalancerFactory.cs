@@ -28,7 +28,13 @@
 
             var serviceProvider = serviceProviderFactoryResponse.Data;
             var requestedType = reRoute.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
-            var applicableCreator = _loadBalancerCreators.Single(c => c.Type == requestedType);
+            var applicableCreator = _loadBalancerCreators.SingleOrDefault(c => c.Type == requestedType);
+
+            if (applicableCreator == null)
+            {
+                return new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreator($"Could not find load balancer creator for Type: {requestedType}, please check your config specified the correct load balancer and that you have registered a class with the same name."));
+            }
+
             var createdLoadBalancer = applicableCreator.Create(reRoute, serviceProvider);
             return new OkResponse<ILoadBalancer>(createdLoadBalancer);
         }
