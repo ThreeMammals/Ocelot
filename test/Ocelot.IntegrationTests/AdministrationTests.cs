@@ -342,7 +342,7 @@ namespace Ocelot.IntegrationTests
         public void should_get_file_configuration_edit_and_post_updated_version_redirecting_reroute()
         {
             var fooPort = 47689;
-            var barPort = 47690;
+            var barPort = 27654;
 
             var initialConfiguration = new FileConfiguration
             {
