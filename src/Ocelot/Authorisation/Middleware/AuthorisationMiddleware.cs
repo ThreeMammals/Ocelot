@@ -5,37 +5,40 @@
     using Ocelot.Middleware;
     using Responses;
     using System.Threading.Tasks;
+    using Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IClaimsAuthoriser _claimsAuthoriser;
         private readonly IScopesAuthoriser _scopesAuthoriser;
 
-        public AuthorisationMiddleware(OcelotRequestDelegate next,
+        public AuthorisationMiddleware(RequestDelegate next,
             IClaimsAuthoriser claimsAuthoriser,
             IScopesAuthoriser scopesAuthoriser,
-            IOcelotLoggerFactory loggerFactory)
-            : base(loggerFactory.CreateLogger<AuthorisationMiddleware>())
+            IOcelotLoggerFactory loggerFactory,
+            IRequestScopedDataRepository repo)
+            : base(loggerFactory.CreateLogger<AuthorisationMiddleware>(), repo)
         {
             _next = next;
             _claimsAuthoriser = claimsAuthoriser;
             _scopesAuthoriser = scopesAuthoriser;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            if (!IsOptionsHttpMethod(context) && IsAuthenticatedRoute(context.DownstreamReRoute))
+            if (!IsOptionsHttpMethod(httpContext) && IsAuthenticatedRoute(DownstreamContext.Data.DownstreamReRoute))
             {
                 Logger.LogInformation("route is authenticated scopes must be checked");
 
-                var authorised = _scopesAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.AuthenticationOptions.AllowedScopes);
+                var authorised = _scopesAuthoriser.Authorise(httpContext.User, DownstreamContext.Data.DownstreamReRoute.AuthenticationOptions.AllowedScopes);
 
                 if (authorised.IsError)
                 {
                     Logger.LogWarning("error authorising user scopes");
 
-                    SetPipelineError(context, authorised.Errors);
+                    SetPipelineError(httpContext, authorised.Errors);
                     return;
                 }
 
@@ -47,41 +50,41 @@
                 {
                     Logger.LogWarning("user scopes is not authorised setting pipeline error");
 
-                    SetPipelineError(context, new UnauthorisedError(
-                            $"{context.HttpContext.User.Identity.Name} unable to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
+                    SetPipelineError(httpContext, new UnauthorisedError(
+                            $"{httpContext.User.Identity.Name} unable to access {DownstreamContext.Data.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
 
-            if (!IsOptionsHttpMethod(context) && IsAuthorisedRoute(context.DownstreamReRoute))
+            if (!IsOptionsHttpMethod(httpContext) && IsAuthorisedRoute(DownstreamContext.Data.DownstreamReRoute))
             {
                 Logger.LogInformation("route is authorised");
 
-                var authorised = _claimsAuthoriser.Authorise(context.HttpContext.User, context.DownstreamReRoute.RouteClaimsRequirement, context.TemplatePlaceholderNameAndValues);
+                var authorised = _claimsAuthoriser.Authorise(httpContext.User, DownstreamContext.Data.DownstreamReRoute.RouteClaimsRequirement, DownstreamContext.Data.TemplatePlaceholderNameAndValues);
 
                 if (authorised.IsError)
                 {
-                    Logger.LogWarning($"Error whilst authorising {context.HttpContext.User.Identity.Name}. Setting pipeline error");
+                    Logger.LogWarning($"Error whilst authorising {httpContext.User.Identity.Name}. Setting pipeline error");
 
-                    SetPipelineError(context, authorised.Errors);
+                    SetPipelineError(httpContext, authorised.Errors);
                     return;
                 }
 
                 if (IsAuthorised(authorised))
                 {
-                    Logger.LogInformation($"{context.HttpContext.User.Identity.Name} has succesfully been authorised for {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}.");
-                    await _next.Invoke(context);
+                    Logger.LogInformation($"{httpContext.User.Identity.Name} has succesfully been authorised for {DownstreamContext.Data.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}.");
+                    await _next.Invoke(httpContext);
                 }
                 else
                 {
-                    Logger.LogWarning($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
+                    Logger.LogWarning($"{httpContext.User.Identity.Name} is not authorised to access {DownstreamContext.Data.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
 
-                    SetPipelineError(context, new UnauthorisedError($"{context.HttpContext.User.Identity.Name} is not authorised to access {context.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
+                    SetPipelineError(httpContext, new UnauthorisedError($"{httpContext.User.Identity.Name} is not authorised to access {DownstreamContext.Data.DownstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
             else
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
-                await _next.Invoke(context);
+                Logger.LogInformation($"{DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value} route does not require user to be authorised");
+                await _next.Invoke(httpContext);
             }
         }
 
@@ -100,9 +103,9 @@
             return reRoute.IsAuthorised;
         }
 
-        private static bool IsOptionsHttpMethod(DownstreamContext context)
+        private static bool IsOptionsHttpMethod(HttpContext httpContext)
         {
-            return context.HttpContext.Request.Method.ToUpper() == "OPTIONS";
+            return httpContext.Request.Method.ToUpper() == "OPTIONS";
         }
     }
 }

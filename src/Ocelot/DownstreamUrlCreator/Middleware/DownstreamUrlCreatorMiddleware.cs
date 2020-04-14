@@ -1,52 +1,62 @@
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
-using System;
-using System.Threading.Tasks;
-
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
+    using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using Configuration;
+    using DownstreamRouteFinder.UrlMatcher;
+    using Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
+    using Request.Middleware;
+    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Responses;
+    using Ocelot.Values;
+    using System;
+    using System.Threading.Tasks;
 
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
 
-        public DownstreamUrlCreatorMiddleware(OcelotRequestDelegate next,
+        public DownstreamUrlCreatorMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer)
-                : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
+            IDownstreamPathPlaceholderReplacer replacer,
+            IRequestScopedDataRepository repo
+            )
+                : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>(), repo)
         {
             _next = next;
             _replacer = replacer;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
             var response = _replacer
-                .Replace(context.DownstreamReRoute.DownstreamPathTemplate.Value, context.TemplatePlaceholderNameAndValues);
+                .Replace(DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value, DownstreamContext.Data.TemplatePlaceholderNameAndValues);
 
             if (response.IsError)
             {
                 Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                SetPipelineError(context, response.Errors);
+                SetPipelineError(httpContext, response.Errors);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(context.DownstreamReRoute.DownstreamScheme))
+            if (!string.IsNullOrEmpty(DownstreamContext.Data.DownstreamReRoute.DownstreamScheme))
             {
-                context.DownstreamRequest.Scheme = context.DownstreamReRoute.DownstreamScheme;
+                DownstreamContext.Data.DownstreamRequest.Scheme = DownstreamContext.Data.DownstreamReRoute.DownstreamScheme;
             }
 
-            if (ServiceFabricRequest(context))
+            var config = RequestScopedDataRepository.Get<IInternalConfiguration>("IInternalConfiguration");
+            //todo check config is ok
+
+            if (ServiceFabricRequest(config.Data, DownstreamContext.Data.DownstreamReRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(context, response);
-                context.DownstreamRequest.AbsolutePath = pathAndQuery.path;
-                context.DownstreamRequest.Query = pathAndQuery.query;
+                var pathAndQuery = CreateServiceFabricUri(DownstreamContext.Data.DownstreamRequest, DownstreamContext.Data.DownstreamReRoute, DownstreamContext.Data.TemplatePlaceholderNameAndValues, response);
+                DownstreamContext.Data.DownstreamRequest.AbsolutePath = pathAndQuery.path;
+                DownstreamContext.Data.DownstreamRequest.Query = pathAndQuery.query;
             }
             else
             {
@@ -54,48 +64,48 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                 if (ContainsQueryString(dsPath))
                 {
-                    context.DownstreamRequest.AbsolutePath = GetPath(dsPath);
+                    DownstreamContext.Data.DownstreamRequest.AbsolutePath = GetPath(dsPath);
 
-                    if (string.IsNullOrEmpty(context.DownstreamRequest.Query))
+                    if (string.IsNullOrEmpty(DownstreamContext.Data.DownstreamRequest.Query))
                     {
-                        context.DownstreamRequest.Query = GetQueryString(dsPath);
+                        DownstreamContext.Data.DownstreamRequest.Query = GetQueryString(dsPath);
                     }
                     else
                     {
-                        context.DownstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
+                        DownstreamContext.Data.DownstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
                     }
                 }
                 else
                 {
-                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(context);
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext.Data.DownstreamRequest, DownstreamContext.Data.TemplatePlaceholderNameAndValues);
 
-                    context.DownstreamRequest.AbsolutePath = dsPath.Value;
+                    DownstreamContext.Data.DownstreamRequest.AbsolutePath = dsPath.Value;
                 }
             }
 
-            Logger.LogDebug($"Downstream url is {context.DownstreamRequest}");
+            Logger.LogDebug($"Downstream url is {DownstreamContext.Data.DownstreamRequest}");
 
-            await _next.Invoke(context);
+            await _next.Invoke(httpContext);
         }
 
-        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext context)
+        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
-            foreach (var nAndV in context.TemplatePlaceholderNameAndValues)
+            foreach (var nAndV in templatePlaceholderNameAndValues)
             {
                 var name = nAndV.Name.Replace("{", "").Replace("}", "");
 
-                if (context.DownstreamRequest.Query.Contains(name) &&
-                    context.DownstreamRequest.Query.Contains(nAndV.Value))
+                if (downstreamRequest.Query.Contains(name) &&
+                    downstreamRequest.Query.Contains(nAndV.Value))
                 {
-                    var questionMarkOrAmpersand = context.DownstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
-                    context.DownstreamRequest.Query = context.DownstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
+                    var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
+                    downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
 
                     var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
-                    context.DownstreamRequest.Query = rgx.Replace(context.DownstreamRequest.Query, "");
+                    downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, "");
 
-                    if (!string.IsNullOrEmpty(context.DownstreamRequest.Query))
+                    if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
-                        context.DownstreamRequest.Query = '?' + context.DownstreamRequest.Query.Substring(1);
+                        downstreamRequest.Query = '?' + downstreamRequest.Query.Substring(1);
                     }
                 }
             }
@@ -116,17 +126,17 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             return dsPath.Value.Contains("?");
         }
 
-        private (string path, string query) CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
+        private (string path, string query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamReRoute downstreamReRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
         {
-            var query = context.DownstreamRequest.Query;
-            var serviceName = _replacer.Replace(context.DownstreamReRoute.ServiceName, context.TemplatePlaceholderNameAndValues);
+            var query = downstreamRequest.Query;
+            var serviceName = _replacer.Replace(downstreamReRoute.ServiceName, templatePlaceholderNameAndValues);
             var pathTemplate = $"/{serviceName.Data.Value}{dsPath.Data.Value}";
             return (pathTemplate, query);
         }
 
-        private static bool ServiceFabricRequest(DownstreamContext context)
+        private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamReRoute downstreamReRoute)
         {
-            return context.Configuration.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && context.DownstreamReRoute.UseServiceDiscovery;
+            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamReRoute.UseServiceDiscovery;
         }
     }
 }

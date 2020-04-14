@@ -1,10 +1,11 @@
-﻿using Ocelot.Middleware.Pipeline;
-
-namespace Ocelot.PathManipulation.Middleware
+﻿namespace Ocelot.DownstreamPathManipulation.Middleware
 {
+    using Microsoft.AspNetCore.Builder;
+    using PathManipulation.Middleware;
+
     public static class ClaimsToDownstreamPathMiddlewareExtensions
     {
-        public static IOcelotPipelineBuilder UseClaimsToDownstreamPathMiddleware(this IOcelotPipelineBuilder builder)
+        public static IApplicationBuilder UseClaimsToDownstreamPathMiddleware(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<ClaimsToDownstreamPathMiddleware>();
         }

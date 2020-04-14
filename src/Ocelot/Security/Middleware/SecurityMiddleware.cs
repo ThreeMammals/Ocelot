@@ -5,40 +5,45 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Security.Middleware
 {
+    using Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
+
     public class SecurityMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;
         private readonly IEnumerable<ISecurityPolicy> _securityPolicies;
 
-        public SecurityMiddleware(IOcelotLoggerFactory loggerFactory,
+        public SecurityMiddleware(RequestDelegate next, 
+            IOcelotLoggerFactory loggerFactory,
             IEnumerable<ISecurityPolicy> securityPolicies,
-            OcelotRequestDelegate next)
-            : base(loggerFactory.CreateLogger<SecurityMiddleware>())
+            IRequestScopedDataRepository repo
+            )
+            : base(loggerFactory.CreateLogger<SecurityMiddleware>(), repo)
         {
             _logger = loggerFactory.CreateLogger<SecurityMiddleware>();
             _securityPolicies = securityPolicies;
             _next = next;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (_securityPolicies != null)
             {
-                foreach (var policie in _securityPolicies)
+                foreach (var policy in _securityPolicies)
                 {
-                    var result = await policie.Security(context);
+                    var result = await policy.Security(httpContext);
                     if (!result.IsError)
                     {
                         continue;
                     }
 
-                    this.SetPipelineError(context, result.Errors);
+                    SetPipelineError(httpContext, result.Errors);
                     return;
                 }
             }
 
-            await _next.Invoke(context);
+            await _next.Invoke(httpContext);
         }
     }
 }

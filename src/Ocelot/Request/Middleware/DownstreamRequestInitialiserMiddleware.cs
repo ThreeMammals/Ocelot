@@ -4,37 +4,43 @@ namespace Ocelot.Request.Middleware
     using Ocelot.Middleware;
     using Ocelot.Request.Creator;
     using System.Threading.Tasks;
+    using Configuration;
+    using Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
 
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly Mapper.IRequestMapper _requestMapper;
         private readonly IDownstreamRequestCreator _creator;
 
-        public DownstreamRequestInitialiserMiddleware(OcelotRequestDelegate next,
+        public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             Mapper.IRequestMapper requestMapper,
-            IDownstreamRequestCreator creator)
-                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
+            IDownstreamRequestCreator creator,
+            IRequestScopedDataRepository repo)
+                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>(), repo)
         {
             _next = next;
             _requestMapper = requestMapper;
             _creator = creator;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamRequest = await _requestMapper.Map(context.HttpContext.Request, context.DownstreamReRoute);
+            var httpRequestMessage = await _requestMapper.Map(httpContext.Request, DownstreamContext.Data.DownstreamReRoute);
 
-            if (downstreamRequest.IsError)
+            if (httpRequestMessage.IsError)
             {
-                SetPipelineError(context, downstreamRequest.Errors);
+                SetPipelineError(httpContext, httpRequestMessage.Errors);
                 return;
             }
 
-            context.DownstreamRequest = _creator.Create(downstreamRequest.Data);
+            var downstreamRequest = _creator.Create(httpRequestMessage.Data);
 
-            await _next.Invoke(context);
+            DownstreamContext.Data.DownstreamRequest = downstreamRequest;
+
+            await _next.Invoke(httpContext);
         }
     }
 }

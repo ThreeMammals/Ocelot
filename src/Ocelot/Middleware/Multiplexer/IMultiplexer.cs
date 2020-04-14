@@ -1,10 +1,11 @@
-﻿using Ocelot.Configuration;
-using System.Threading.Tasks;
-
-namespace Ocelot.Middleware.Multiplexer
+﻿namespace Ocelot.Middleware.Multiplexer
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using System.Threading.Tasks;
+
     public interface IMultiplexer
     {
-        Task Multiplex(DownstreamContext context, ReRoute reRoute, OcelotRequestDelegate next);
+        Task Multiplex(HttpContext httpContext, ReRoute reRoute, RequestDelegate next);
     }
 }

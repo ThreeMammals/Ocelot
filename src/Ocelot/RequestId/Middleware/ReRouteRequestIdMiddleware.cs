@@ -1,59 +1,59 @@
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using Ocelot.Request.Middleware;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
-
 namespace Ocelot.RequestId.Middleware
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Request.Middleware;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http.Headers;
+    using System.Threading.Tasks;
+
     public class ReRouteRequestIdMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
-
-        public ReRouteRequestIdMiddleware(OcelotRequestDelegate next,
+        public ReRouteRequestIdMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
-                : base(loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>())
+                : base(loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>(), requestScopedDataRepository)
         {
             _next = next;
             _requestScopedDataRepository = requestScopedDataRepository;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            SetOcelotRequestId(context);
-            await _next.Invoke(context);
+            SetOcelotRequestId(httpContext);
+            await _next.Invoke(httpContext);
         }
 
-        private void SetOcelotRequestId(DownstreamContext context)
+        private void SetOcelotRequestId(HttpContext httpContext)
         {
-            var key = context.DownstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
+            var key = DownstreamContext.Data.DownstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
 
-            if (context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
+            if (httpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
-                context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
+                httpContext.TraceIdentifier = upstreamRequestIds.First();
 
                 var previousRequestId = _requestScopedDataRepository.Get<string>("RequestId");
-                if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data) && previousRequestId.Data != context.HttpContext.TraceIdentifier)
+                if (!previousRequestId.IsError && !string.IsNullOrEmpty(previousRequestId.Data) && previousRequestId.Data != httpContext.TraceIdentifier)
                 {
                     _requestScopedDataRepository.Add("PreviousRequestId", previousRequestId.Data);
-                    _requestScopedDataRepository.Update("RequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Update("RequestId", httpContext.TraceIdentifier);
                 }
                 else
                 {
-                    _requestScopedDataRepository.Add("RequestId", context.HttpContext.TraceIdentifier);
+                    _requestScopedDataRepository.Add("RequestId", httpContext.TraceIdentifier);
                 }
             }
 
-            var requestId = new RequestId(context.DownstreamReRoute.RequestIdKey, context.HttpContext.TraceIdentifier);
+            var requestId = new RequestId(DownstreamContext.Data.DownstreamReRoute.RequestIdKey, httpContext.TraceIdentifier);
 
-            if (ShouldAddRequestId(requestId, context.DownstreamRequest.Headers))
+            if (ShouldAddRequestId(requestId, DownstreamContext.Data.DownstreamRequest.Headers))
             {
-                AddRequestIdHeader(requestId, context.DownstreamRequest);
+                AddRequestIdHeader(requestId, DownstreamContext.Data.DownstreamRequest);
             }
         }
 

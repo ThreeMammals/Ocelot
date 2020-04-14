@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -9,15 +8,12 @@ namespace Ocelot.Middleware
 {
     public class DownstreamContext
     {
-        public DownstreamContext(HttpContext httpContext)
+        public DownstreamContext()
         {
-            HttpContext = httpContext;
             Errors = new List<Error>();
         }
 
         public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; set; }
-
-        public HttpContext HttpContext { get; }
 
         public DownstreamReRoute DownstreamReRoute { get; set; }
 

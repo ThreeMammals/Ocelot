@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 
-namespace Ocelot.Middleware
-{
-    public delegate Task OcelotRequestDelegate(DownstreamContext downstreamContext);
-}
+//namespace Ocelot.Middleware
+//{
+//    public delegate Task OcelotRequestDelegate(DownstreamContext downstreamContext);
+//}
