@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.Responses;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -24,17 +25,21 @@ namespace Ocelot.UnitTests.Claims
         private Mock<IOcelotLogger> _logger;
         private readonly ClaimsToClaimsMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public ClaimsToClaimsMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _addHeaders = new Mock<IAddClaimsToRequest>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
+            _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object, _repo.Object);
         }
 
         [Fact]
@@ -62,7 +67,7 @@ namespace Ocelot.UnitTests.Claims
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

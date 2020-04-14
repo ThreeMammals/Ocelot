@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Middleware.Multiplexer
 {
+    using Microsoft.AspNetCore.Http;
+
     public class Multiplexer : IMultiplexer
     {
         private readonly IResponseAggregatorFactory _factory;
@@ -15,7 +17,7 @@ namespace Ocelot.Middleware.Multiplexer
             _factory = factory;
         }
 
-        public async Task Multiplex(DownstreamContext context, ReRoute reRoute, OcelotRequestDelegate next)
+        public async Task Multiplex(DownstreamContext context, HttpContext httpContext, ReRoute reRoute, RequestDelegate next)
         {
             var reRouteKeysConfigs = reRoute.DownstreamReRouteConfig;
             if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
@@ -24,14 +26,14 @@ namespace Ocelot.Middleware.Multiplexer
 
                 for (var i = 0; i < reRoute.DownstreamReRoute.Count; i++)
                 {
-                    var downstreamContext = new DownstreamContext(context.HttpContext)
+                    var downstreamContext = new DownstreamContext()
                     {
                         TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
                         Configuration = context.Configuration,
                         DownstreamReRoute = reRoute.DownstreamReRoute[i],
                     };
 
-                    tasks[i] = Fire(downstreamContext, next);
+                    tasks[i] = Fire(downstreamContext, httpContext, next);
                 }
 
                 await Task.WhenAll(tasks);
@@ -48,13 +50,13 @@ namespace Ocelot.Middleware.Multiplexer
             }
             else
             {
-                var downstreamContextMain = new DownstreamContext(context.HttpContext)
+                var downstreamContextMain = new DownstreamContext()
                 {
                     TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
                     Configuration = context.Configuration,
                     DownstreamReRoute = reRoute.DownstreamReRoute[0],
                 };
-                var mainResponse = await Fire(downstreamContextMain, next);
+                var mainResponse = await Fire(downstreamContextMain, httpContext, next);
 
                 if (reRoute.DownstreamReRoute.Count == 1)
                 {
@@ -82,25 +84,25 @@ namespace Ocelot.Middleware.Multiplexer
 
                         foreach (var value in values)
                         {
-                            var downstreamContext = new DownstreamContext(context.HttpContext)
+                            var downstreamContext = new DownstreamContext()
                             {
                                 TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
                                 Configuration = context.Configuration,
                                 DownstreamReRoute = downstreamReRoute,
                             };
                             downstreamContext.TemplatePlaceholderNameAndValues.Add(new PlaceholderNameAndValue("{" + matchAdvancedAgg.Parameter + "}", value.ToString()));
-                            tasks.Add(Fire(downstreamContext, next));
+                            tasks.Add(Fire(downstreamContext, httpContext, next));
                         }
                     }
                     else
                     {
-                        var downstreamContext = new DownstreamContext(context.HttpContext)
+                        var downstreamContext = new DownstreamContext()
                         {
                             TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
                             Configuration = context.Configuration,
                             DownstreamReRoute = downstreamReRoute,
                         };
-                        tasks.Add(Fire(downstreamContext, next));
+                        tasks.Add(Fire(downstreamContext, httpContext, next));
                     }
                 }
 
@@ -143,9 +145,10 @@ namespace Ocelot.Middleware.Multiplexer
             originalContext.DownstreamResponse = finished.DownstreamResponse;
         }
 
-        private async Task<DownstreamContext> Fire(DownstreamContext context, OcelotRequestDelegate next)
+        private async Task<DownstreamContext> Fire(DownstreamContext context, HttpContext httpContext, RequestDelegate next)
         {
-            await next.Invoke(context);
+            //todo this wont work
+            await next.Invoke(httpContext);
             return context;
         }
     }

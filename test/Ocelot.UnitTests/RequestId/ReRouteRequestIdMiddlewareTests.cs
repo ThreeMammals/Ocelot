@@ -29,20 +29,21 @@
         private Mock<IOcelotLogger> _logger;
         private readonly ReRouteRequestIdMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
         private readonly Mock<IRequestScopedDataRepository> _repo;
-
+        private HttpContext _httpContext;
         public ReRouteRequestIdMiddlewareTests()
         {
+            _httpContext = new DefaultHttpContext();
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             _repo = new Mock<IRequestScopedDataRepository>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ReRouteRequestIdMiddleware>()).Returns(_logger.Object);
             _next = context =>
             {
-                context.HttpContext.Response.Headers.Add("LSRequestId", context.HttpContext.TraceIdentifier);
+                _httpContext.Response.Headers.Add("LSRequestId", _httpContext.TraceIdentifier);
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
@@ -166,7 +167,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsNoGlobalRequestId()
@@ -204,18 +205,18 @@
         {
             _key = key;
             _value = value;
-            _downstreamContext.HttpContext.Request.Headers.TryAdd(_key, _value);
+            _httpContext.Request.Headers.TryAdd(_key, _value);
         }
 
         private void ThenTheTraceIdIsAnything()
         {
-            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
+            _httpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
             value.First().ShouldNotBeNullOrEmpty();
         }
 
         private void ThenTheTraceIdIs(string expected)
         {
-            _downstreamContext.HttpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
+            _httpContext.Response.Headers.TryGetValue("LSRequestId", out var value);
             value.First().ShouldBe(expected);
         }
     }

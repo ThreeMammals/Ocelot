@@ -15,6 +15,7 @@
     using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -25,15 +26,18 @@
         private Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
-
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public OutputCacheMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _cache = new Mock<IOcelotCache<CachedResponse>>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _cacheKeyGenerator = new CacheKeyGenerator();
@@ -91,8 +95,8 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator, _repo.Object);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsACachedResponse(CachedResponse response)

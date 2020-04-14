@@ -1,29 +1,32 @@
-using System.Net;
-using System.Net.Http;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using System.Threading.Tasks;
-using Ocelot.Responses;
-
 namespace Ocelot.Requester.Middleware
 {
+    using Ocelot.Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
+    using System.Net;
+    using System.Net.Http;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System.Threading.Tasks;
+    using Ocelot.Responses;
+
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
 
-        public HttpRequesterMiddleware(OcelotRequestDelegate next,
+        public HttpRequesterMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IHttpRequester requester)
-                : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>())
+            IHttpRequester requester,
+            IRequestScopedDataRepository repo)
+                : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>(), repo)
         {
             _next = next;
             _requester = requester;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var response = await _requester.GetResponse(context);
+            var response = await _requester.GetResponse(DownstreamContext.Data, httpContext);
 
             CreateLogBasedOnResponse(response);
 
@@ -31,15 +34,15 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogDebug("IHttpRequester returned an error, setting pipeline error");
 
-                SetPipelineError(context, response.Errors);
+                SetPipelineError(httpContext, response.Errors);
                 return;
             }
 
             Logger.LogDebug("setting http response message");
 
-            context.DownstreamResponse = new DownstreamResponse(response.Data);
+            DownstreamContext.Data.DownstreamResponse = new DownstreamResponse(response.Data);
 
-            await _next.Invoke(context);
+            await _next.Invoke(httpContext);
         }
 
         private void CreateLogBasedOnResponse(Response<HttpResponseMessage> response)

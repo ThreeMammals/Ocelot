@@ -16,16 +16,18 @@ namespace Ocelot.UnitTests.Middleware
         private readonly Multiplexer _multiplexer;
         private readonly DownstreamContext _context;
         private ReRoute _reRoute;
-        private readonly OcelotRequestDelegate _pipeline;
+        private readonly RequestDelegate _pipeline;
         private int _count;
         private Mock<IResponseAggregator> _aggregator;
         private Mock<IResponseAggregatorFactory> _factory;
+        private HttpContext _httpContext;
 
         public MultiplexerTests()
         {
+            _httpContext = new DefaultHttpContext();
             _factory = new Mock<IResponseAggregatorFactory>();
             _aggregator = new Mock<IResponseAggregator>();
-            _context = new DownstreamContext(new DefaultHttpContext());
+            _context = new DownstreamContext();
             _pipeline = context => Task.FromResult(_count++);
             _factory.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(_aggregator.Object);
             _multiplexer = new Multiplexer(_factory.Object);
@@ -60,7 +62,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIMultiplex()
         {
-            _multiplexer.Multiplex(_context, _reRoute, _pipeline).GetAwaiter().GetResult();
+            _multiplexer.Multiplex(_context, _httpContext,  _reRoute, _pipeline).GetAwaiter().GetResult();
         }
 
         private void ThePipelineIsCalled(int expected)

@@ -18,6 +18,7 @@
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -29,12 +30,16 @@
         private Mock<IOcelotLogger> _logger;
         private DownstreamUrlCreatorMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly HttpRequestMessage _request;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
@@ -388,8 +393,8 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object);
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object, _repo.Object);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

@@ -13,34 +13,28 @@
     using Shouldly;
     using System.Net.Http;
     using Ocelot.Configuration;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
     public class DownstreamRequestInitialiserMiddlewareTests
     {
         private readonly DownstreamRequestInitialiserMiddleware _middleware;
-
         private readonly Mock<HttpContext> _httpContext;
-
         private readonly Mock<HttpRequest> _httpRequest;
-
-        private readonly Mock<OcelotRequestDelegate> _next;
-
+        private readonly Mock<RequestDelegate> _next;
         private readonly Mock<IRequestMapper> _requestMapper;
-
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-
         private readonly Mock<IOcelotLogger> _logger;
-
         private Response<HttpRequestMessage> _mappedRequest;
         private DownstreamContext _downstreamContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamRequestInitialiserMiddlewareTests()
         {
-            _httpContext = new Mock<HttpContext>();
             _httpRequest = new Mock<HttpRequest>();
             _requestMapper = new Mock<IRequestMapper>();
-            _next = new Mock<OcelotRequestDelegate>();
+            _next = new Mock<RequestDelegate>();
             _logger = new Mock<IOcelotLogger>();
 
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -52,9 +46,9 @@
                 _next.Object,
                 _loggerFactory.Object,
                 _requestMapper.Object,
-                new DownstreamRequestCreator(new FrameworkDescription()));
+                new DownstreamRequestCreator(new FrameworkDescription()), _repo.Object);
 
-            _downstreamContext = new DownstreamContext(_httpContext.Object);
+            _downstreamContext = new DownstreamContext();
         }
 
         [Fact]
@@ -127,7 +121,7 @@
 
         private void WhenTheMiddlewareIsInvoked()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext.Object).GetAwaiter().GetResult();
         }
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
@@ -153,12 +147,12 @@
 
         private void ThenTheNextMiddlewareIsInvoked()
         {
-            _next.Verify(n => n(_downstreamContext), Times.Once);
+            _next.Verify(n => n(_httpContext.Object), Times.Once);
         }
 
         private void ThenTheNextMiddlewareIsNotInvoked()
         {
-            _next.Verify(n => n(It.IsAny<DownstreamContext>()), Times.Never);
+            _next.Verify(n => n(It.IsAny<HttpContext>()), Times.Never);
         }
     }
 }

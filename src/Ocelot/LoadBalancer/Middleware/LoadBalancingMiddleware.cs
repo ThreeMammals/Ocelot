@@ -26,7 +26,7 @@
         public async Task Invoke(HttpContext httpContext)
         {
 
-            var loadBalancer = _loadBalancerHouse.Get(DownstreamContext.Data.DownstreamReRoute, Configuration.Data.ServiceProviderConfiguration);
+            var loadBalancer = _loadBalancerHouse.Get(DownstreamContext.Data.DownstreamReRoute, DownstreamContext.Data.Configuration.ServiceProviderConfiguration);
 
             if (loadBalancer.IsError)
             {
@@ -35,7 +35,7 @@
                 return;
             }
 
-            var hostAndPort = await loadBalancer.Data.Lease(httpContext);
+            var hostAndPort = await loadBalancer.Data.Lease(DownstreamContext.Data, httpContext);
             if (hostAndPort.IsError)
             {
                 Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");

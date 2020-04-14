@@ -49,10 +49,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 DownstreamContext.Data.DownstreamRequest.Scheme = DownstreamContext.Data.DownstreamReRoute.DownstreamScheme;
             }
 
-            var config = RequestScopedDataRepository.Get<IInternalConfiguration>("IInternalConfiguration");
-            //todo check config is ok
 
-            if (ServiceFabricRequest(config.Data, DownstreamContext.Data.DownstreamReRoute))
+            if (ServiceFabricRequest(DownstreamContext.Data.Configuration, DownstreamContext.Data.DownstreamReRoute))
             {
                 var pathAndQuery = CreateServiceFabricUri(DownstreamContext.Data.DownstreamRequest, DownstreamContext.Data.DownstreamReRoute, DownstreamContext.Data.TemplatePlaceholderNameAndValues, response);
                 DownstreamContext.Data.DownstreamRequest.AbsolutePath = pathAndQuery.path;

@@ -25,13 +25,15 @@ namespace Ocelot.UnitTests.Errors
         private Mock<IOcelotLogger> _logger;
         private readonly ExceptionHandlerMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
 
         public ExceptionHandlerMiddlewareTests()
         {
+            _httpContext = new DefaultHttpContext();
             _configRepo = new Mock<IInternalConfigurationRepository>();
             _repo = new Mock<IRequestScopedDataRepository>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ExceptionHandlerMiddleware>()).Returns(_logger.Object);
@@ -44,9 +46,9 @@ namespace Ocelot.UnitTests.Errors
                     throw new Exception("BOOM");
                 }
 
-                context.HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                _httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
             };
-            _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _configRepo.Object, _repo.Object);
+            _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _repo.Object);
         }
 
         [Fact]
@@ -122,13 +124,13 @@ namespace Ocelot.UnitTests.Errors
 
         private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
         {
-            _downstreamContext.HttpContext.Request.Headers.Add(key, value);
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _httpContext.Request.Headers.Add(key, value);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheConfigThrows()
@@ -140,7 +142,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenAnExceptionIsThrown()
         {
-            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
+            _httpContext.Response.StatusCode.ShouldBe(500);
         }
 
         private void GivenTheConfigReturnsError()
@@ -174,12 +176,12 @@ namespace Ocelot.UnitTests.Errors
 
         private void ThenTheResponseIsOk()
         {
-            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(200);
+            _httpContext.Response.StatusCode.ShouldBe(200);
         }
 
         private void ThenTheResponseIsError()
         {
-            _downstreamContext.HttpContext.Response.StatusCode.ShouldBe(500);
+            _httpContext.Response.StatusCode.ShouldBe(500);
         }
 
         private void TheAspDotnetRequestIdIsSet()

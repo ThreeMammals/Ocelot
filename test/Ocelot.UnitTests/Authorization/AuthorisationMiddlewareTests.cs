@@ -1,5 +1,4 @@
-﻿using Ocelot.Middleware;
-
+﻿
 namespace Ocelot.UnitTests.Authorization
 {
     using Microsoft.AspNetCore.Http;
@@ -14,8 +13,10 @@ namespace Ocelot.UnitTests.Authorization
     using System.Collections.Generic;
     using System.Security.Claims;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.Middleware;
 
     public class AuthorisationMiddlewareTests
     {
@@ -25,18 +26,22 @@ namespace Ocelot.UnitTests.Authorization
         private Mock<IOcelotLogger> _logger;
         private readonly AuthorisationMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public AuthorisationMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _authService = new Mock<IClaimsAuthoriser>();
             _authScopesService = new Mock<IScopesAuthoriser>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
+            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object, _repo.Object);
         }
 
         [Fact]
@@ -56,7 +61,7 @@ namespace Ocelot.UnitTests.Authorization
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)

@@ -17,6 +17,7 @@ namespace Ocelot.UnitTests.RateLimit
     using System.IO;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -28,23 +29,26 @@ namespace Ocelot.UnitTests.RateLimit
         private Mock<IOcelotLogger> _logger;
         private readonly ClientRateLimitMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
         private readonly string _url;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public ClientRateLimitMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _url = "http://localhost:51879";
             var cacheEntryOptions = new MemoryCacheOptions();
             _rateLimitCounterHandler = new MemoryCacheRateLimitCounterHandler(new MemoryCache(cacheEntryOptions));
-            var httpContext = new DefaultHttpContext();
-            _downstreamContext = new DownstreamContext(httpContext);
-            _downstreamContext.HttpContext.Response.Body = new FakeStream();
+            _downstreamContext = new DownstreamContext();
+            _httpContext.Response.Body = new FakeStream();
 
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler);
+            _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler, _repo.Object);
         }
 
         [Fact]
@@ -110,8 +114,8 @@ namespace Ocelot.UnitTests.RateLimit
                 request.Headers.Add("ClientId", clientId);
                 _downstreamContext.DownstreamRequest = new DownstreamRequest(request);
 
-                _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
-                _responseStatusCode = (int)_downstreamContext.HttpContext.Response.StatusCode;
+                _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+                _responseStatusCode = (int)_httpContext.Response.StatusCode;
             }
         }
 
@@ -124,10 +128,10 @@ namespace Ocelot.UnitTests.RateLimit
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
                 _downstreamContext.DownstreamRequest = new DownstreamRequest(request);
-                _downstreamContext.HttpContext.Request.Headers.TryAdd("ClientId", clientId);
+                _httpContext.Request.Headers.TryAdd("ClientId", clientId);
 
-                _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
-                _responseStatusCode = (int)_downstreamContext.HttpContext.Response.StatusCode;
+                _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+                _responseStatusCode = (int)_httpContext.Response.StatusCode;
             }
         }
 

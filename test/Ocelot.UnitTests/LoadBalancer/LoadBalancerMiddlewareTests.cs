@@ -1,7 +1,3 @@
-using System;
-using System.Linq.Expressions;
-using Ocelot.Middleware;
-
 namespace Ocelot.UnitTests.LoadBalancer
 {
     using Microsoft.AspNetCore.Http;
@@ -19,8 +15,12 @@ namespace Ocelot.UnitTests.LoadBalancer
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
+    using System;
+    using System.Linq.Expressions;
+    using Ocelot.Middleware;
 
     public class LoadBalancerMiddlewareTests
     {
@@ -35,15 +35,19 @@ namespace Ocelot.UnitTests.LoadBalancer
         private Mock<IOcelotLogger> _logger;
         private LoadBalancingMiddleware _middleware;
         private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public LoadBalancerMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _loadBalancerHouse = new Mock<ILoadBalancerHouse>();
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com/");
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<LoadBalancingMiddleware>()).Returns(_logger.Object);
@@ -132,8 +136,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object, _repo.Object);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
@@ -153,14 +157,14 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
             _loadBalancer
-               .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+               .Setup(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                .ReturnsAsync(_getHostAndPortError);
         }
 
         private void GivenTheLoadBalancerReturnsOk()
         {
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("abc", 123, "https")));
         }
 
@@ -168,7 +172,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(_hostAndPort));
         }
 

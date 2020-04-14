@@ -18,24 +18,24 @@ namespace Ocelot.Logging
         }
 
         [DiagnosticName("Ocelot.MiddlewareException")]
-        public virtual void OcelotMiddlewareException(Exception exception, DownstreamContext context, string name)
+        public virtual void OcelotMiddlewareException(Exception exception, HttpContext context, string name)
         {
             _logger.LogTrace($"Ocelot.MiddlewareException: {name}; {exception.Message};");
-            Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
+            Event(context, $"Ocelot.MiddlewareStarted: {name}; {context.Request.Path}");
         }
 
         [DiagnosticName("Ocelot.MiddlewareStarted")]
-        public virtual void OcelotMiddlewareStarted(DownstreamContext context, string name)
+        public virtual void OcelotMiddlewareStarted(HttpContext context, string name)
         {
-            _logger.LogTrace($"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
-            Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
+            _logger.LogTrace($"Ocelot.MiddlewareStarted: {name}; {context.Request.Path}");
+            Event(context, $"Ocelot.MiddlewareStarted: {name}; {context.Request.Path}");
         }
 
         [DiagnosticName("Ocelot.MiddlewareFinished")]
-        public virtual void OcelotMiddlewareFinished(DownstreamContext context, string name)
+        public virtual void OcelotMiddlewareFinished(HttpContext context, string name)
         {
-            _logger.LogTrace($"Ocelot.MiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
-            Event(context.HttpContext, $"OcelotMiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
+            _logger.LogTrace($"Ocelot.MiddlewareFinished: {name}; {context.Request.Path}");
+            Event(context, $"OcelotMiddlewareFinished: {name}; {context.Request.Path}");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]

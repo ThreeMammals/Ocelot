@@ -8,6 +8,6 @@ namespace Ocelot.Headers
 
     public interface IHttpResponseHeaderReplacer
     {
-        Response Replace(HttpContext context, List<HeaderFindAndReplace> fAndRs);
+        Response Replace(DownstreamContext downstreamContext, HttpContext httpContext, List<HeaderFindAndReplace> fAndRs);
     }
 }

@@ -32,7 +32,7 @@ namespace Ocelot.Security.Middleware
             {
                 foreach (var policy in _securityPolicies)
                 {
-                    var result = await policy.Security(httpContext);
+                    var result = await policy.Security(DownstreamContext.Data, httpContext);
                     if (!result.IsError)
                     {
                         continue;

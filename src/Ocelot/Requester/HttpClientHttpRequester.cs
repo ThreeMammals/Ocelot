@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
+    using Microsoft.AspNetCore.Http;
+
     public class HttpClientHttpRequester : IHttpRequester
     {
         private readonly IHttpClientCache _cacheHandlers;
@@ -25,7 +27,7 @@ namespace Ocelot.Requester
             _mapper = mapper;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context)
+        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context, HttpContext httpContext)
         {
             var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
 
@@ -33,7 +35,7 @@ namespace Ocelot.Requester
 
             try
             {
-                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage(), context.HttpContext.RequestAborted);
+                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage(), httpContext.RequestAborted);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (Exception exception)

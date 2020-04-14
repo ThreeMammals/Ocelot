@@ -6,6 +6,6 @@
 
     public interface IMultiplexer
     {
-        Task Multiplex(HttpContext httpContext, ReRoute reRoute, RequestDelegate next);
+        Task Multiplex(DownstreamContext context, HttpContext httpContext, ReRoute reRoute, RequestDelegate next);
     }
 }

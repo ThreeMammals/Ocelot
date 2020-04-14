@@ -10,21 +10,23 @@ namespace Ocelot.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IInternalConfigurationRepository _configRepo;
-
+        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         public DownstreamContextMiddleware(RequestDelegate next, IOcelotLogger logger, IRequestScopedDataRepository requestScopedDataRepository, IInternalConfigurationRepository configRepo) : base(logger, requestScopedDataRepository)
         {
             _next = next;
             _configRepo = configRepo;
+            _requestScopedDataRepository = requestScopedDataRepository;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamContext = new DownstreamContext();
-            RequestScopedDataRepository.Add("DownstreamContext", downstreamContext);
-
-            var config = _configRepo.Get();
-            RequestScopedDataRepository.Add("IInternalConfiguration", config.Data);
             //todo check the config is actually ok?
+            var config = _configRepo.Get();
+
+            var downstreamContext = new DownstreamContext {Configuration = config.Data};
+
+            _requestScopedDataRepository.Add("DownstreamContext", downstreamContext);
+
             await _next.Invoke(httpContext);
         }
     }

@@ -19,13 +19,16 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Benchmarks
 {
+    using Infrastructure.RequestData;
+
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]
     public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
     {
         private DownstreamRouteFinderMiddleware _middleware;
         private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
 
         public DownstreamRouteFinderMiddlewareBenchmarks()
         {
@@ -44,6 +47,7 @@ namespace Ocelot.Benchmarks
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
             var multiplexer = services.GetService<IMultiplexer>();
+            var repo = services.GetService<IRequestScopedDataRepository>();
 
             _next = async context =>
             {
@@ -51,22 +55,24 @@ namespace Ocelot.Benchmarks
                 throw new Exception("BOOM");
             };
 
-            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer);
+            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer, repo);
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test");
             httpContext.Request.QueryString = new QueryString("?a=b");
             httpContext.Request.Headers.Add("Host", "most");
 
-            _downstreamContext = new DownstreamContext(httpContext)
+            _downstreamContext = new DownstreamContext()
             {
                 Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null, null)
             };
+
+            _httpContext = new DefaultHttpContext();
         }
 
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_downstreamContext);
+            await _middleware.Invoke(_httpContext);
         }
     }
 }

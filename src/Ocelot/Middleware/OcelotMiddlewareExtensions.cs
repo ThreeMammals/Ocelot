@@ -55,13 +55,6 @@
 
             app.Properties["analysis.NextMiddlewareName"] = "TransitionToOcelotMiddleware";
 
-            app.Use(async (context, next) =>
-            {
-                //todo - maybe just store the downstream context IoC in memory as first step
-                var downstreamContext = new DownstreamContext(context);
-                await next.Invoke();
-            });
-
             return app;
         }
 

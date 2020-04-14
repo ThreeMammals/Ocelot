@@ -24,7 +24,8 @@ namespace Ocelot.Benchmarks
     {
         private ExceptionHandlerMiddleware _middleware;
         private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
 
         public ExceptionHandlerMiddlewareBenchmarks()
         {
@@ -41,21 +42,23 @@ namespace Ocelot.Benchmarks
             var builder = new OcelotBuilder(serviceCollection, config);
             var services = serviceCollection.BuildServiceProvider();
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
-            var configRepo = services.GetService<IInternalConfigurationRepository>();
             var repo = services.GetService<IRequestScopedDataRepository>();
+
             _next = async context =>
             {
                 await Task.CompletedTask;
                 throw new Exception("BOOM");
             };
-            _middleware = new ExceptionHandlerMiddleware(_next, loggerFactory, configRepo, repo);
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+
+            _middleware = new ExceptionHandlerMiddleware(_next, loggerFactory, repo);
+            _downstreamContext = new DownstreamContext();
+            _httpContext = new DefaultHttpContext();
         }
 
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_downstreamContext);
+            await _middleware.Invoke(_httpContext);
         }
     }
 }

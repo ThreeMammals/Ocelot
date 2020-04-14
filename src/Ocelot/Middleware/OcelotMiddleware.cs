@@ -5,8 +5,7 @@
     using Ocelot.Errors;
     using Ocelot.Logging;
     using System.Collections.Generic;
-    using Configuration;
-    using Responses;
+    using Ocelot.Responses;
 
     public abstract class OcelotMiddleware
     {
@@ -23,9 +22,6 @@
 
         public IOcelotLogger Logger { get; }
         public string MiddlewareName { get; }
-
-        //todo check data is ok
-        public Response<IInternalConfiguration> Configuration => _requestScopedDataRepository.Get<IInternalConfiguration>("IInternalConfiguration");
 
         public Response<DownstreamContext> DownstreamContext => _requestScopedDataRepository.Get<DownstreamContext>("DownstreamContext");
 
@@ -45,16 +41,16 @@
             // context.Errors.Add(error);
 
             // todo write tests for this
-            var errors = RequestScopedDataRepository.Get<List<Error>>("Errors");
+            var errors = _requestScopedDataRepository.Get<List<Error>>("Errors");
 
             if (!errors.IsError)
             {
                 errors.Data.Add(error);
-                RequestScopedDataRepository.Update("Errors", errors);
+                _requestScopedDataRepository.Update("Errors", errors);
             }
             else
             {
-                RequestScopedDataRepository.Add("Errors", new List<Error> { error });
+                _requestScopedDataRepository.Add("Errors", new List<Error> { error });
             }
         }
     }

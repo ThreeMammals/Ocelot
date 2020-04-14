@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.Cache
         {
             _cacheKeyGenerator = new CacheKeyGenerator();
             _cacheKeyGenerator = new CacheKeyGenerator();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext())
+            _downstreamContext = new DownstreamContext()
             {
                 DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"))
             };

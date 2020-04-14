@@ -41,9 +41,9 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
-            var provider = _factory.Get(Configuration.Data);
+            var provider = _factory.Get(DownstreamContext.Data.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, Configuration.Data, upstreamHost);
+            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, DownstreamContext.Data.Configuration, upstreamHost);
 
             if (downstreamRoute.IsError)
             {
@@ -59,7 +59,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             DownstreamContext.Data.TemplatePlaceholderNameAndValues =
                 downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 
-            await _multiplexer.Multiplex(httpContext, downstreamRoute.Data.ReRoute, _next);
+            await _multiplexer.Multiplex(DownstreamContext.Data, httpContext, downstreamRoute.Data.ReRoute, _next);
         }
     }
 }

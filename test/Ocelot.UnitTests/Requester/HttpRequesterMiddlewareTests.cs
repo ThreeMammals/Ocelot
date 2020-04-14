@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.Requester
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -25,16 +26,20 @@ namespace Ocelot.UnitTests.Requester
         private Mock<IOcelotLogger> _logger;
         private readonly HttpRequesterMiddleware _middleware;
         private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public HttpRequesterMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _requester = new Mock<IHttpRequester>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequesterMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object);
+            _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object, _repo.Object);
         }
 
         [Fact]
@@ -76,13 +81,13 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheRequestIs()
         {
             _downstreamContext =
-                new DownstreamContext(new DefaultHttpContext())
+                new DownstreamContext()
                 {
                     DownstreamReRoute = new DownstreamReRouteBuilder().Build()
                 };
@@ -93,7 +98,7 @@ namespace Ocelot.UnitTests.Requester
             _response = response;
 
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>()))
+                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(_response);
         }
 

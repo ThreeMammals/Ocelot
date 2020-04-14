@@ -17,6 +17,7 @@ namespace Ocelot.UnitTests.QueryStrings
     using System.Net.Http;
     using System.Security.Claims;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -27,18 +28,22 @@ namespace Ocelot.UnitTests.QueryStrings
         private Mock<IOcelotLogger> _logger;
         private ClaimsToQueryStringMiddleware _middleware;
         private DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public ClaimsToQueryStringMiddlewareTests()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
+            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToQueryStringMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
-            _middleware = new ClaimsToQueryStringMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
+            _middleware = new ClaimsToQueryStringMiddleware(_next, _loggerFactory.Object, _addQueries.Object, _repo.Object);
         }
 
         [Fact]
@@ -66,7 +71,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheAddHeadersToRequestReturnsOk()

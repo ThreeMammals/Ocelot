@@ -14,38 +14,63 @@
         /// is the next thing called in the Ocelot pipeline. Anything after next.invoke is the last thing called
         /// in the Ocelot pipeline before we go to the global error handler.
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> PreErrorResponderMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This is called after the global error handling middleware so any code before calling next.invoke
+        /// is the next thing called in the Ocelot pipeline. Anything after next.invoke is the last thing called
+        /// in the Ocelot pipeline before we go to the global error handler.</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreErrorResponderMiddleware { get; set; }
 
         /// <summary>
         /// This is to allow the user to run any extra authentication before the Ocelot authentication
         /// kicks in
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> PreAuthenticationMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This is to allow the user to run any extra authentication before the Ocelot authentication
+        /// kicks in</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreAuthenticationMiddleware { get; set; }
 
         /// <summary>
         /// This allows the user to completely override the ocelot authentication middleware
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> AuthenticationMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This allows the user to completely override the ocelot authentication middleware</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
 
         /// <summary>
         /// This is to allow the user to run any extra authorisation before the Ocelot authentication
         /// kicks in
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> PreAuthorisationMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This is to allow the user to run any extra authorisation before the Ocelot authentication
+        /// kicks in</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreAuthorisationMiddleware { get; set; }
 
         /// <summary>
         /// This allows the user to completely override the ocelot authorisation middleware
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> AuthorisationMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This allows the user to completely override the ocelot authorisation middleware</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> AuthorisationMiddleware { get; set; }
 
         /// <summary>
         /// This allows the user to implement there own query string manipulation logic
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> PreQueryStringBuilderMiddleware { get; set; }
+        /// <value>
+        /// <placeholder>This allows the user to implement there own query string manipulation logic</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
 
         /// <summary>
         /// This is an extension that will branch to different pipes
         /// </summary>
+        /// <value>
+        /// <placeholder>This is an extension that will branch to different pipes</placeholder>
+        /// </value>
         // todo fix this data structure
         public Dictionary<Func<HttpContext,  bool>, Action<IApplicationBuilder>> MapWhenOcelotPipeline { get; } = new Dictionary<Func<HttpContext, bool>, Action<IApplicationBuilder>>();
     }

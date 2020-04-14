@@ -16,6 +16,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Security
 {
+    using Ocelot.Infrastructure.RequestData;
+
     public class SecurityMiddlewareTests
     {
         private List<Mock<ISecurityPolicy>> _securityPolicyList;
@@ -23,10 +25,14 @@ namespace Ocelot.UnitTests.Security
         private Mock<IOcelotLogger> _logger;
         private readonly SecurityMiddleware _middleware;
         private readonly DownstreamContext _downstreamContext;
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public SecurityMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<SecurityMiddleware>()).Returns(_logger.Object);
@@ -37,8 +43,8 @@ namespace Ocelot.UnitTests.Security
             {
                 return Task.CompletedTask;
             };
-            _middleware = new SecurityMiddleware(_loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList(), _next);
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList(), _repo.Object);
+            _downstreamContext = new DownstreamContext();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
 
@@ -65,7 +71,7 @@ namespace Ocelot.UnitTests.Security
             foreach (var item in _securityPolicyList)
             {
                 Response response = new OkResponse();
-                item.Setup(x => x.Security(_downstreamContext)).Returns(Task.FromResult(response));
+                item.Setup(x => x.Security(_downstreamContext, _httpContext)).Returns(Task.FromResult(response));
             }
         }
 
@@ -78,19 +84,19 @@ namespace Ocelot.UnitTests.Security
                 {
                     Error error = new UnauthenticatedError($"Not passing security verification");
                     Response response = new ErrorResponse(error);
-                    item.Setup(x => x.Security(_downstreamContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_downstreamContext, _httpContext)).Returns(Task.FromResult(response));
                 }
                 else
                 {
                     Response response = new OkResponse();
-                    item.Setup(x => x.Security(_downstreamContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_downstreamContext, _httpContext)).Returns(Task.FromResult(response));
                 }
             }
         }
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheRequestIsPassingSecurity()

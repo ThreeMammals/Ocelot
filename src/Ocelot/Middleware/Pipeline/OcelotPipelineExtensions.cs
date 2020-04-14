@@ -16,10 +16,8 @@
     using Ocelot.Errors.Middleware;
     using Ocelot.Headers.Middleware;
     using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.PathManipulation.Middleware;
     using System;
-    using System.Threading.Tasks;
-    using DownstreamPathManipulation.Middleware;
+    using Ocelot.DownstreamPathManipulation.Middleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Ocelot.WebSockets.Middleware;

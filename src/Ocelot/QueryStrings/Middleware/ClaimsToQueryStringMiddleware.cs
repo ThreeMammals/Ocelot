@@ -4,39 +4,42 @@
     using Ocelot.Middleware;
     using System.Linq;
     using System.Threading.Tasks;
+    using Infrastructure.RequestData;
+    using Microsoft.AspNetCore.Http;
 
     public class ClaimsToQueryStringMiddleware : OcelotMiddleware
     {
-        private readonly OcelotRequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly IAddQueriesToRequest _addQueriesToRequest;
 
-        public ClaimsToQueryStringMiddleware(OcelotRequestDelegate next,
+        public ClaimsToQueryStringMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IAddQueriesToRequest addQueriesToRequest)
-                : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
+            IAddQueriesToRequest addQueriesToRequest,
+            IRequestScopedDataRepository requestScopedDataRepository)
+                : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>(), requestScopedDataRepository)
         {
             _next = next;
             _addQueriesToRequest = addQueriesToRequest;
         }
 
-        public async Task Invoke(DownstreamContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            if (context.DownstreamReRoute.ClaimsToQueries.Any())
+            if (DownstreamContext.Data.DownstreamReRoute.ClaimsToQueries.Any())
             {
-                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+                Logger.LogInformation($"{DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
-                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(context.DownstreamReRoute.ClaimsToQueries, context.HttpContext.User.Claims, context.DownstreamRequest);
+                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(DownstreamContext.Data.DownstreamReRoute.ClaimsToQueries, httpContext.User.Claims, DownstreamContext.Data.DownstreamRequest);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                    SetPipelineError(context, response.Errors);
+                    SetPipelineError(httpContext, response.Errors);
                     return;
                 }
             }
 
-            await _next.Invoke(context);
+            await _next.Invoke(httpContext);
         }
     }
 }

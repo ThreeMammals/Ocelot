@@ -22,6 +22,7 @@ namespace Ocelot.UnitTests.DependencyInjection
     using System.Linq;
     using System.Net.Http;
     using System.Reflection;
+    using Microsoft.AspNetCore.Http;
     using TestStack.BDDfy;
     using Xunit;
     using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
@@ -388,7 +389,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private class FakeCustomLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext, HttpContext httpContext)
             {
                 // Not relevant for these tests
                 throw new NotImplementedException();

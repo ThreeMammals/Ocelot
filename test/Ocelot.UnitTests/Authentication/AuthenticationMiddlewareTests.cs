@@ -16,6 +16,7 @@ namespace Ocelot.UnitTests.Authentication
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
+    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -24,15 +25,19 @@ namespace Ocelot.UnitTests.Authentication
         private AuthenticationMiddleware _middleware;
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private Mock<IOcelotLogger> _logger;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
         private readonly DownstreamContext _downstreamContext;
+        private HttpContext _httpContext;
+        private Mock<IRequestScopedDataRepository> _repo;
 
         public AuthenticationMiddlewareTests()
         {
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _httpContext = new DefaultHttpContext();
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<AuthenticationMiddleware>()).Returns(_logger.Object);
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
         }
 
         [Fact]
@@ -66,11 +71,11 @@ namespace Ocelot.UnitTests.Authentication
             {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
-                context.HttpContext.Response.Body = stream;
+                _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
             };
-            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware = new AuthenticationMiddleware(_next, _factory.Object, _repo.Object);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheTestServerPipelineIsConfigured()
@@ -79,19 +84,19 @@ namespace Ocelot.UnitTests.Authentication
             {
                 byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
-                context.HttpContext.Response.Body = stream;
+                _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
             };
         }
 
         private void GivenTheRequestIsUsingOptionsMethod()
         {
-            _downstreamContext.HttpContext.Request.Method = "OPTIONS";
+            _httpContext.Request.Method = "OPTIONS";
         }
 
         private void ThenTheUserIsAuthenticated()
         {
-            var content = _downstreamContext.HttpContext.Response.Body.AsString();
+            var content = _httpContext.Response.Body.AsString();
             content.ShouldBe("The user is authenticated");
         }
 

@@ -17,16 +17,15 @@ namespace Ocelot.Errors.Middleware
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IInternalConfigurationRepository _configRepo;
+        private readonly IRequestScopedDataRepository _repo;
 
         public ExceptionHandlerMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IInternalConfigurationRepository configRepo,
             IRequestScopedDataRepository repo)
                 : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>(), repo)
         {
-            _configRepo = configRepo;
             _next = next;
+            _repo = repo;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -38,12 +37,12 @@ namespace Ocelot.Errors.Middleware
                 //try and get the global request id and set it for logs...
                 //should this basically be immutable per request...i guess it should!
                 //first thing is get config
-                if (Configuration.IsError)
-                {
-                    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {Configuration.Errors.ToErrorString()}");
-                }
+                //if (Configuration.IsError)
+                //{
+                //    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {Configuration.Errors.ToErrorString()}");
+                //}
 
-                TrySetGlobalRequestId(httpContext, Configuration.Data);
+                TrySetGlobalRequestId(httpContext, DownstreamContext.Data.Configuration);
 
                 Logger.LogDebug("ocelot pipeline started");
 
@@ -80,7 +79,7 @@ namespace Ocelot.Errors.Middleware
                 httpContext.TraceIdentifier = upstreamRequestIds.First();
             }
 
-            RequestScopedDataRepository.Add("RequestId", httpContext.TraceIdentifier);
+            _repo.Add("RequestId", httpContext.TraceIdentifier);
         }
 
         private void SetInternalServerErrorOnResponse(HttpContext httpContext)
