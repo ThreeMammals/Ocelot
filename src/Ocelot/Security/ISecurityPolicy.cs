@@ -7,6 +7,6 @@
 
     public interface ISecurityPolicy
     {
-        Task<Response> Security(DownstreamContext downstreamContext, HttpContext httpContext);
+        Task<Response> Security(IDownstreamContext downstreamContext, HttpContext httpContext);
     }
 }

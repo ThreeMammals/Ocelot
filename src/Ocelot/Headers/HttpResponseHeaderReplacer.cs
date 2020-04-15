@@ -18,7 +18,7 @@ namespace Ocelot.Headers
             _placeholders = placeholders;
         }
 
-        public Response Replace(DownstreamContext downstreamContext, HttpContext httpContext, List<HeaderFindAndReplace> fAndRs)
+        public Response Replace(IDownstreamContext downstreamContext, HttpContext httpContext, List<HeaderFindAndReplace> fAndRs)
         {
             var response = downstreamContext.DownstreamResponse;
             var request = downstreamContext.DownstreamRequest;

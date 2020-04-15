@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.RateLimit.Middleware
 {
-    using Ocelot.Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;
     using Ocelot.Logging;
@@ -15,22 +14,21 @@
 
         public ClientRateLimitMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRateLimitCounterHandler counterHandler,
-            IRequestScopedDataRepository requestScopedDataRepository)
-                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>(), requestScopedDataRepository)
+            IRateLimitCounterHandler counterHandler)
+                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
             _processor = new ClientRateLimitProcessor(counterHandler);
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var options = DownstreamContext.Data.DownstreamReRoute.RateLimitOptions;
+            var options = downstreamContext.DownstreamReRoute.RateLimitOptions;
 
             // check if rate limiting is enabled
-            if (!DownstreamContext.Data.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
+            if (!downstreamContext.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                Logger.LogInformation($"EndpointRateLimiting is not enabled for {DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value}");
+                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -41,7 +39,7 @@
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                Logger.LogInformation($"{DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+                Logger.LogInformation($"{downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -59,7 +57,7 @@
                     var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                     // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule, DownstreamContext.Data.DownstreamReRoute);
+                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamContext.DownstreamReRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -67,7 +65,7 @@
                     await ReturnQuotaExceededResponse(httpContext, options, retrystring);
 
                     // Set Error
-                    SetPipelineError(httpContext, new QuotaExceededError(this.GetResponseMessage(options)));
+                    SetPipelineError(downstreamContext, new QuotaExceededError(this.GetResponseMessage(options)));
 
                     return;
                 }

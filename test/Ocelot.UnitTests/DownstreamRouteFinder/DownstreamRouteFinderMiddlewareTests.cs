@@ -33,11 +33,9 @@
         private RequestDelegate _next;
         private readonly Mock<IMultiplexer> _multiplexer;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamRouteFinderMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _finder = new Mock<IDownstreamRouteProvider>();
             _factory = new Mock<IDownstreamRouteProviderFactory>();
@@ -48,7 +46,7 @@
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamRouteFinderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _multiplexer = new Mock<IMultiplexer>();
-            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _factory.Object, _multiplexer.Object, _repo.Object);
+            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _factory.Object, _multiplexer.Object);
         }
 
         [Fact]
@@ -76,7 +74,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetType();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetType();
         }
 
         private void GivenTheFollowingConfig(IInternalConfiguration config)

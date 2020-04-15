@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Authentication.Middleware
 {
-    using Infrastructure.RequestData;
+    using Ocelot.Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Authentication;
     using Ocelot.Configuration;
@@ -13,20 +13,19 @@
         private readonly RequestDelegate _next;
 
         public AuthenticationMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository repo)
-            : base(loggerFactory.CreateLogger<AuthenticationMiddleware>(), repo)
+            IOcelotLoggerFactory loggerFactory)
+            : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(DownstreamContext.Data.DownstreamReRoute))
+            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamContext.DownstreamReRoute))
             {
                 Logger.LogInformation($"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
-                var result = await httpContext.AuthenticateAsync(DownstreamContext.Data.DownstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
+                var result = await httpContext.AuthenticateAsync(downstreamContext.DownstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
 
                 httpContext.User = result.Principal;
 
@@ -42,7 +41,7 @@
 
                     Logger.LogWarning($"Client has NOT been authenticated for {httpContext.Request.Path} and pipeline error set. {error}");
 
-                    SetPipelineError(httpContext, error);
+                    SetPipelineError(downstreamContext, error);
                 }
             }
             else

@@ -9,7 +9,7 @@
 
     public class IPSecurityPolicy : ISecurityPolicy
     {
-        public async Task<Response> Security(DownstreamContext downstreamContext, HttpContext httpContext)
+        public async Task<Response> Security(IDownstreamContext downstreamContext, HttpContext httpContext)
         {
             IPAddress clientIp = httpContext.Connection.RemoteIpAddress;
             SecurityOptions securityOptions = downstreamContext.DownstreamReRoute.SecurityOptions;

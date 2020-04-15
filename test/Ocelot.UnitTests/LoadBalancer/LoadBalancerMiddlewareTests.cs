@@ -136,8 +136,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object, _repo.Object);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)

@@ -74,8 +74,8 @@ namespace Ocelot.UnitTests.Authentication
                 _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
             };
-            _middleware = new AuthenticationMiddleware(_next, _factory.Object, _repo.Object);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheTestServerPipelineIsConfigured()

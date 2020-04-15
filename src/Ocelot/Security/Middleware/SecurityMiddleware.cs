@@ -1,11 +1,9 @@
-﻿using Ocelot.Logging;
-using Ocelot.Middleware;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Ocelot.Security.Middleware
+﻿namespace Ocelot.Security.Middleware
 {
-    using Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
 
     public class SecurityMiddleware : OcelotMiddleware
@@ -16,29 +14,28 @@ namespace Ocelot.Security.Middleware
 
         public SecurityMiddleware(RequestDelegate next, 
             IOcelotLoggerFactory loggerFactory,
-            IEnumerable<ISecurityPolicy> securityPolicies,
-            IRequestScopedDataRepository repo
+            IEnumerable<ISecurityPolicy> securityPolicies
             )
-            : base(loggerFactory.CreateLogger<SecurityMiddleware>(), repo)
+            : base(loggerFactory.CreateLogger<SecurityMiddleware>())
         {
             _logger = loggerFactory.CreateLogger<SecurityMiddleware>();
             _securityPolicies = securityPolicies;
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
             if (_securityPolicies != null)
             {
                 foreach (var policy in _securityPolicies)
                 {
-                    var result = await policy.Security(DownstreamContext.Data, httpContext);
+                    var result = await policy.Security(downstreamContext, httpContext);
                     if (!result.IsError)
                     {
                         continue;
                     }
 
-                    SetPipelineError(httpContext, result.Errors);
+                    SetPipelineError(downstreamContext, result.Errors);
                     return;
                 }
             }

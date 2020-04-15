@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.Headers.Middleware
 {
-    using Ocelot.Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -14,27 +13,26 @@
 
         public ClaimsToHeadersMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IAddHeadersToRequest addHeadersToRequest,
-            IRequestScopedDataRepository repo)
-                : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>(), repo)
+            IAddHeadersToRequest addHeadersToRequest)
+                : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
         {
             _next = next;
             _addHeadersToRequest = addHeadersToRequest;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (DownstreamContext.Data.DownstreamReRoute.ClaimsToHeaders.Any())
+            if (downstreamContext.DownstreamReRoute.ClaimsToHeaders.Any())
             {
-                Logger.LogInformation($"{DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
+                Logger.LogInformation($"{downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
-                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(DownstreamContext.Data.DownstreamReRoute.ClaimsToHeaders, httpContext.User.Claims, DownstreamContext.Data.DownstreamRequest);
+                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamContext.DownstreamReRoute.ClaimsToHeaders, httpContext.User.Claims, downstreamContext.DownstreamRequest);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("Error setting headers on context, setting pipeline error");
 
-                    SetPipelineError(httpContext, response.Errors);
+                    SetPipelineError(downstreamContext, response.Errors);
                     return;
                 }
 

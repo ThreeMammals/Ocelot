@@ -1,6 +1,5 @@
 namespace Ocelot.Requester.Middleware
 {
-    using Ocelot.Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using System.Net;
     using System.Net.Http;
@@ -16,17 +15,16 @@ namespace Ocelot.Requester.Middleware
 
         public HttpRequesterMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IHttpRequester requester,
-            IRequestScopedDataRepository repo)
-                : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>(), repo)
+            IHttpRequester requester)
+                : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>())
         {
             _next = next;
             _requester = requester;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var response = await _requester.GetResponse(DownstreamContext.Data, httpContext);
+            var response = await _requester.GetResponse(downstreamContext, httpContext);
 
             CreateLogBasedOnResponse(response);
 
@@ -34,13 +32,13 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogDebug("IHttpRequester returned an error, setting pipeline error");
 
-                SetPipelineError(httpContext, response.Errors);
+                SetPipelineError(downstreamContext, response.Errors);
                 return;
             }
 
             Logger.LogDebug("setting http response message");
 
-            DownstreamContext.Data.DownstreamResponse = new DownstreamResponse(response.Data);
+            downstreamContext.DownstreamResponse = new DownstreamResponse(response.Data);
 
             await _next.Invoke(httpContext);
         }

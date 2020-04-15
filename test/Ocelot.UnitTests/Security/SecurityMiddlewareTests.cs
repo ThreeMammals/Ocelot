@@ -27,11 +27,9 @@ namespace Ocelot.UnitTests.Security
         private readonly DownstreamContext _downstreamContext;
         private readonly RequestDelegate _next;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public SecurityMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
@@ -43,7 +41,7 @@ namespace Ocelot.UnitTests.Security
             {
                 return Task.CompletedTask;
             };
-            _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList(), _repo.Object);
+            _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList());
             _downstreamContext = new DownstreamContext();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
         }
@@ -96,7 +94,7 @@ namespace Ocelot.UnitTests.Security
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheRequestIsPassingSecurity()

@@ -6,7 +6,7 @@ namespace Ocelot.Cache
 {
     public class CacheKeyGenerator : ICacheKeyGenerator
     {
-        public string GenerateRequestCacheKey(DownstreamContext context)
+        public string GenerateRequestCacheKey(IDownstreamContext context)
         {
             string hashedContent = null;
             StringBuilder downStreamUrlKeyBuilder = new StringBuilder($"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}");

@@ -17,7 +17,7 @@ namespace Ocelot.Middleware.Multiplexer
             _factory = factory;
         }
 
-        public async Task Multiplex(DownstreamContext context, HttpContext httpContext, ReRoute reRoute, RequestDelegate next)
+        public async Task Multiplex(IDownstreamContext context, HttpContext httpContext, ReRoute reRoute, RequestDelegate next)
         {
             var reRouteKeysConfigs = reRoute.DownstreamReRouteConfig;
             if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
@@ -120,7 +120,7 @@ namespace Ocelot.Middleware.Multiplexer
             }
         }
 
-        private async Task Map(ReRoute reRoute, DownstreamContext context, List<DownstreamContext> contexts)
+        private async Task Map(ReRoute reRoute, IDownstreamContext context, List<DownstreamContext> contexts)
         {
             if (reRoute.DownstreamReRoute.Count > 1)
             {
@@ -133,7 +133,7 @@ namespace Ocelot.Middleware.Multiplexer
             }
         }
 
-        private void MapNotAggregate(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        private void MapNotAggregate(IDownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
         {
             //assume at least one..if this errors then it will be caught by global exception handler
             var finished = downstreamContexts.First();

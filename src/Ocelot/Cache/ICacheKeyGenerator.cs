@@ -4,6 +4,6 @@ namespace Ocelot.Cache
 {
     public interface ICacheKeyGenerator
     {
-        string GenerateRequestCacheKey(DownstreamContext context);
+        string GenerateRequestCacheKey(IDownstreamContext context);
     }
 }

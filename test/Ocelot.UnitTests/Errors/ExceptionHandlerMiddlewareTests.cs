@@ -19,21 +19,19 @@ namespace Ocelot.UnitTests.Errors
     public class ExceptionHandlerMiddlewareTests
     {
         private bool _shouldThrowAnException;
-        private readonly Mock<IInternalConfigurationRepository> _configRepo;
         private readonly Mock<IRequestScopedDataRepository> _repo;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ExceptionHandlerMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
+        private readonly Mock<IDownstreamContext> _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
         public ExceptionHandlerMiddlewareTests()
         {
             _httpContext = new DefaultHttpContext();
-            _configRepo = new Mock<IInternalConfigurationRepository>();
             _repo = new Mock<IRequestScopedDataRepository>();
-            _downstreamContext = new DownstreamContext();
+            _downstreamContext = new Mock<IDownstreamContext>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ExceptionHandlerMiddleware>()).Returns(_logger.Object);
@@ -103,16 +101,6 @@ namespace Ocelot.UnitTests.Errors
         }
 
         [Fact]
-        public void should_throw_exception_if_config_provider_returns_error()
-        {
-            this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-               .And(_ => GivenTheConfigReturnsError())
-               .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-               .Then(_ => ThenAnExceptionIsThrown())
-               .BDDfy();
-        }
-
-        [Fact]
         public void should_throw_exception_if_config_provider_throws()
         {
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
@@ -125,31 +113,25 @@ namespace Ocelot.UnitTests.Errors
         private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
         {
             _httpContext.Request.Headers.Add(key, value);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext.Object).GetAwaiter().GetResult();
         }
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext.Object).GetAwaiter().GetResult();
         }
 
         private void GivenTheConfigThrows()
         {
             var ex = new Exception("outer", new Exception("inner"));
-            _configRepo
-               .Setup(x => x.Get()).Throws(ex);
+            _downstreamContext
+               .Setup(x => x.Configuration).Throws(ex);
+            
         }
 
         private void ThenAnExceptionIsThrown()
         {
             _httpContext.Response.StatusCode.ShouldBe(500);
-        }
-
-        private void GivenTheConfigReturnsError()
-        {
-            var response = new Responses.ErrorResponse<IInternalConfiguration>(new FakeError());
-            _configRepo
-                .Setup(x => x.Get()).Returns(response);
         }
 
         private void TheRequestIdIsSet(string key, string value)
@@ -159,9 +141,8 @@ namespace Ocelot.UnitTests.Errors
 
         private void GivenTheConfigurationIs(IInternalConfiguration config)
         {
-            var response = new Responses.OkResponse<IInternalConfiguration>(config);
-            _configRepo
-                .Setup(x => x.Get()).Returns(response);
+            _downstreamContext
+                .Setup(x => x.Configuration).Returns(config);
         }
 
         private void GivenAnExceptionWillNotBeThrownDownstream()

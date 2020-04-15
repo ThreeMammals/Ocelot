@@ -1,6 +1,5 @@
 namespace Ocelot.Responder.Middleware
 {
-    using Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Errors;
     using Ocelot.Infrastructure.Extensions;
@@ -21,31 +20,30 @@ namespace Ocelot.Responder.Middleware
         public ResponderMiddleware(RequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
-            IErrorsToHttpStatusCodeMapper codeMapper,
-            IRequestScopedDataRepository repo
+            IErrorsToHttpStatusCodeMapper codeMapper
            )
-            : base(loggerFactory.CreateLogger<ResponderMiddleware>(), repo)
+            : base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
             await _next.Invoke(httpContext);
 
             // todo check errors is ok
-            if (Errors.Data.Count > 0)
+            if (downstreamContext.Errors.Count > 0)
             {
-                Logger.LogWarning($"{Errors.Data.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+                Logger.LogWarning($"{downstreamContext.Errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
 
-                SetErrorResponse(httpContext, Errors.Data);
+                SetErrorResponse(httpContext, downstreamContext.Errors);
             }
             else
             {
                 Logger.LogDebug("no pipeline errors, setting and returning completed response");
-                await _responder.SetResponseOnHttpContext(httpContext, DownstreamContext.Data.DownstreamResponse);
+                await _responder.SetResponseOnHttpContext(httpContext, downstreamContext.DownstreamResponse);
             }
         }
 

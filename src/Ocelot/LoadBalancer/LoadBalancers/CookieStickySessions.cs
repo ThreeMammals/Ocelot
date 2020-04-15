@@ -42,7 +42,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             });
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext, HttpContext httpContext)
+        public async Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext downstreamContext, HttpContext httpContext)
         {
             var key = httpContext.Request.Cookies[_key];
 

@@ -1,8 +1,6 @@
 namespace Ocelot.Errors.Middleware
 {
     using Ocelot.Configuration;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Infrastructure.Extensions;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -22,13 +20,13 @@ namespace Ocelot.Errors.Middleware
         public ExceptionHandlerMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository repo)
-                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>(), repo)
+                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
             _next = next;
             _repo = repo;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
             try
             {
@@ -42,7 +40,7 @@ namespace Ocelot.Errors.Middleware
                 //    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {Configuration.Errors.ToErrorString()}");
                 //}
 
-                TrySetGlobalRequestId(httpContext, DownstreamContext.Data.Configuration);
+                TrySetGlobalRequestId(httpContext, downstreamContext.Configuration);
 
                 Logger.LogDebug("ocelot pipeline started");
 

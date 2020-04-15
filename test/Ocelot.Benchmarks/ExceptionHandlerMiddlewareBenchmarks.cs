@@ -58,7 +58,7 @@ namespace Ocelot.Benchmarks
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_httpContext);
+            await _middleware.Invoke(_httpContext, _downstreamContext);
         }
     }
 }

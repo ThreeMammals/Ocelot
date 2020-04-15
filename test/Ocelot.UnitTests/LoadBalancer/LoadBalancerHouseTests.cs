@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context, HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext context, HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }
@@ -170,7 +170,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeRoundRobinLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context, HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext context, HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

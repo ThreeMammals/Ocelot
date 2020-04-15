@@ -4,8 +4,6 @@ namespace Ocelot.Request.Middleware
     using Ocelot.Middleware;
     using Ocelot.Request.Creator;
     using System.Threading.Tasks;
-    using Configuration;
-    using Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
 
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
@@ -17,28 +15,27 @@ namespace Ocelot.Request.Middleware
         public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             Mapper.IRequestMapper requestMapper,
-            IDownstreamRequestCreator creator,
-            IRequestScopedDataRepository repo)
-                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>(), repo)
+            IDownstreamRequestCreator creator)
+                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
         {
             _next = next;
             _requestMapper = requestMapper;
             _creator = creator;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var httpRequestMessage = await _requestMapper.Map(httpContext.Request, DownstreamContext.Data.DownstreamReRoute);
+            var httpRequestMessage = await _requestMapper.Map(httpContext.Request, downstreamContext.DownstreamReRoute);
 
             if (httpRequestMessage.IsError)
             {
-                SetPipelineError(httpContext, httpRequestMessage.Errors);
+                SetPipelineError(downstreamContext, httpRequestMessage.Errors);
                 return;
             }
 
             var downstreamRequest = _creator.Create(httpRequestMessage.Data);
 
-            DownstreamContext.Data.DownstreamRequest = downstreamRequest;
+            downstreamContext.DownstreamRequest = downstreamRequest;
 
             await _next.Invoke(httpContext);
         }

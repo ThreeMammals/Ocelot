@@ -95,8 +95,8 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator, _repo.Object);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsACachedResponse(CachedResponse response)

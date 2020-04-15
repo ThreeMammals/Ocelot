@@ -115,7 +115,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             public DownstreamReRoute ReRoute { get; }
             public IServiceDiscoveryProvider ServiceDiscoveryProvider { get; }
 
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context, HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext context, HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

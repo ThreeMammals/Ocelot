@@ -56,6 +56,7 @@ namespace Ocelot.DependencyInjection
             Services = services;
             Services.Configure<FileConfiguration>(configurationRoot);
 
+            Services.AddScoped<IDownstreamContext, DownstreamContext>();
             Services.TryAddSingleton<IOcelotCache<FileConfiguration>, AspMemoryCache<FileConfiguration>>();
             Services.TryAddSingleton<IOcelotCache<CachedResponse>, AspMemoryCache<CachedResponse>>();
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();

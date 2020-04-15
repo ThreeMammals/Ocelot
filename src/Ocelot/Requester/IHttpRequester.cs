@@ -8,6 +8,6 @@
 
     public interface IHttpRequester
     {
-        Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context, HttpContext httpContex);
+        Task<Response<HttpResponseMessage>> GetResponse(IDownstreamContext context, HttpContext httpContex);
     }
 }

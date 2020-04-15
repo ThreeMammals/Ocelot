@@ -393,8 +393,8 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object, _repo.Object);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object);
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

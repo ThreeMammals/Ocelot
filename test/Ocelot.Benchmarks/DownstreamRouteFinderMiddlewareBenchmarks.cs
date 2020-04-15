@@ -47,7 +47,6 @@ namespace Ocelot.Benchmarks
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
             var multiplexer = services.GetService<IMultiplexer>();
-            var repo = services.GetService<IRequestScopedDataRepository>();
 
             _next = async context =>
             {
@@ -55,7 +54,7 @@ namespace Ocelot.Benchmarks
                 throw new Exception("BOOM");
             };
 
-            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer, repo);
+            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer);
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test");
             httpContext.Request.QueryString = new QueryString("?a=b");
@@ -72,7 +71,7 @@ namespace Ocelot.Benchmarks
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_httpContext);
+            await _middleware.Invoke(_httpContext, _downstreamContext);
         }
     }
 }

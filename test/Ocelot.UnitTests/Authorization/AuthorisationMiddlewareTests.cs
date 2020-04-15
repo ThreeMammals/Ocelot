@@ -28,11 +28,9 @@ namespace Ocelot.UnitTests.Authorization
         private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public AuthorisationMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _authService = new Mock<IClaimsAuthoriser>();
             _authScopesService = new Mock<IScopesAuthoriser>();
@@ -41,7 +39,7 @@ namespace Ocelot.UnitTests.Authorization
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object, _repo.Object);
+            _middleware = new AuthorisationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
         }
 
         [Fact]
@@ -61,7 +59,7 @@ namespace Ocelot.UnitTests.Authorization
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)

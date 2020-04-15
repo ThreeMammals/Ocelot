@@ -24,7 +24,6 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
     public class ClaimsToDownstreamPathMiddlewareTests
     {
         private readonly Mock<IChangeDownstreamPathTemplate> _changePath;
-        private readonly Mock<IRequestScopedDataRepository> _repo;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private ClaimsToDownstreamPathMiddleware _middleware;
@@ -34,7 +33,6 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
         public ClaimsToDownstreamPathMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -43,7 +41,7 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
             _next = context => Task.CompletedTask;
             _changePath = new Mock<IChangeDownstreamPathTemplate>();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
-            _middleware = new ClaimsToDownstreamPathMiddleware(_next, _loggerFactory.Object, _changePath.Object, _repo.Object);
+            _middleware = new ClaimsToDownstreamPathMiddleware(_next, _loggerFactory.Object, _changePath.Object);
         }
 
         [Fact]
@@ -72,7 +70,7 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheChangeDownstreamPathReturnsOk()

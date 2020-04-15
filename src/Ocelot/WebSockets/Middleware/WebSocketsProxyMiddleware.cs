@@ -4,8 +4,6 @@
 
 namespace Ocelot.WebSockets.Middleware
 {
-    using Infrastructure.RequestData;
-    using Request.Middleware;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -23,9 +21,8 @@ namespace Ocelot.WebSockets.Middleware
         private readonly RequestDelegate _next;
 
         public WebSocketsProxyMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository repo)
-                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>(), repo)
+            IOcelotLoggerFactory loggerFactory)
+                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
         }
@@ -70,9 +67,9 @@ namespace Ocelot.WebSockets.Middleware
             }
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            await Proxy(httpContext, DownstreamContext.Data.DownstreamRequest.ToUri());
+            await Proxy(httpContext, downstreamContext.DownstreamRequest.ToUri());
         }
 
         private async Task Proxy(HttpContext context, string serverEndpoint)

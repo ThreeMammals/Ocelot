@@ -68,6 +68,7 @@
 
         private void WhenIUseAGeneric()
         {
+            _services.AddScoped<IDownstreamContext, DownstreamContext>();
             var provider = _services.BuildServiceProvider();
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.UseMiddleware<ExceptionHandlerMiddleware>();
@@ -118,33 +119,15 @@
             private readonly RequestDelegate _next;
 
             public MultiParametersInvokeMiddleware(RequestDelegate next)
-                : base(new FakeLogger(), new FakeRepo())
+                : base(new FakeLogger())
             {
                 _next = next;
             }
 
-            public Task Invoke(DownstreamContext context, IServiceProvider serviceProvider)
+            public Task Invoke(HttpContext context, IServiceProvider serviceProvider)
             {
                 return Task.CompletedTask;
             }
-        }
-    }
-
-    internal class FakeRepo : IRequestScopedDataRepository
-    {
-        public Response Add<T>(string key, T value)
-        {
-            return new OkResponse<T>(default(T));
-        }
-
-        public Response Update<T>(string key, T value)
-        {
-            return new OkResponse<T>(default(T));
-        }
-
-        public Response<T> Get<T>(string key)
-        {
-            return new OkResponse<T>(default(T));
         }
     }
 

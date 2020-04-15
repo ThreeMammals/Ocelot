@@ -27,11 +27,9 @@ namespace Ocelot.UnitTests.Claims
         private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public ClaimsToClaimsMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _addHeaders = new Mock<IAddClaimsToRequest>();
             _downstreamContext = new DownstreamContext();
@@ -39,7 +37,7 @@ namespace Ocelot.UnitTests.Claims
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object, _repo.Object);
+            _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
         }
 
         [Fact]
@@ -67,7 +65,7 @@ namespace Ocelot.UnitTests.Claims
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

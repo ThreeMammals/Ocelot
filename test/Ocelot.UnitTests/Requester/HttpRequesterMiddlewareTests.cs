@@ -28,18 +28,16 @@ namespace Ocelot.UnitTests.Requester
         private DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public HttpRequesterMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _requester = new Mock<IHttpRequester>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<HttpRequesterMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object, _repo.Object);
+            _middleware = new HttpRequesterMiddleware(_next, _loggerFactory.Object, _requester.Object);
         }
 
         [Fact]
@@ -81,7 +79,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheRequestIs()

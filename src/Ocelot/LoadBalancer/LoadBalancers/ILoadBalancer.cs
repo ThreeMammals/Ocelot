@@ -8,7 +8,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
     public interface ILoadBalancer
     {
-        Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext, HttpContext httpContext);
+        Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext downstreamContext, HttpContext httpContext);
 
         void Release(ServiceHostAndPort hostAndPort);
     }

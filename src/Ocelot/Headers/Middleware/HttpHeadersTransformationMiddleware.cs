@@ -1,6 +1,5 @@
 namespace Ocelot.Headers.Middleware
 {
-    using Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -19,10 +18,9 @@ namespace Ocelot.Headers.Middleware
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeadersToResponse,
-            IAddHeadersToRequest addHeadersToRequest,
-            IRequestScopedDataRepository repo
+            IAddHeadersToRequest addHeadersToRequest
             )
-                : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>(), repo)
+                : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeadersToResponse = addHeadersToResponse;
             _addHeadersToRequest = addHeadersToRequest;
@@ -31,29 +29,29 @@ namespace Ocelot.Headers.Middleware
             _preReplacer = preReplacer;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var preFAndRs = DownstreamContext.Data.DownstreamReRoute.UpstreamHeadersFindAndReplace;
+            var preFAndRs = downstreamContext.DownstreamReRoute.UpstreamHeadersFindAndReplace;
 
             //todo - this should be on httprequestmessage not httpcontext?
             _preReplacer.Replace(httpContext, preFAndRs);
 
-            _addHeadersToRequest.SetHeadersOnDownstreamRequest(DownstreamContext.Data.DownstreamReRoute.AddHeadersToUpstream, httpContext);
+            _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamContext.DownstreamReRoute.AddHeadersToUpstream, httpContext);
 
             await _next.Invoke(httpContext);
 
             // todo check errors is ok
             //todo put this check on the base class?
-            if (Errors.Data.Count > 0)
+            if (downstreamContext.Errors.Count > 0)
             {
                 return;
             }
 
-            var postFAndRs = DownstreamContext.Data.DownstreamReRoute.DownstreamHeadersFindAndReplace;
+            var postFAndRs = downstreamContext.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(DownstreamContext.Data, httpContext, postFAndRs);
+            _postReplacer.Replace(downstreamContext, httpContext, postFAndRs);
 
-            _addHeadersToResponse.Add(DownstreamContext.Data.DownstreamReRoute.AddHeadersToDownstream, DownstreamContext.Data.DownstreamResponse);
+            _addHeadersToResponse.Add(downstreamContext.DownstreamReRoute.AddHeadersToDownstream, downstreamContext.DownstreamResponse);
         }
     }
 }

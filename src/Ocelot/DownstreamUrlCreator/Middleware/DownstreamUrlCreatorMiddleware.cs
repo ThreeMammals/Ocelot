@@ -2,11 +2,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 {
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
-    using Configuration;
-    using DownstreamRouteFinder.UrlMatcher;
-    using Infrastructure.RequestData;
+    using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Microsoft.AspNetCore.Http;
-    using Request.Middleware;
+    using Ocelot.Request.Middleware;
     using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -22,39 +21,38 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         public DownstreamUrlCreatorMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer,
-            IRequestScopedDataRepository repo
+            IDownstreamPathPlaceholderReplacer replacer
             )
-                : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>(), repo)
+                : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
             _replacer = replacer;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
             var response = _replacer
-                .Replace(DownstreamContext.Data.DownstreamReRoute.DownstreamPathTemplate.Value, DownstreamContext.Data.TemplatePlaceholderNameAndValues);
+                .Replace(downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value, downstreamContext.TemplatePlaceholderNameAndValues);
 
             if (response.IsError)
             {
                 Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                SetPipelineError(httpContext, response.Errors);
+                SetPipelineError(downstreamContext, response.Errors);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(DownstreamContext.Data.DownstreamReRoute.DownstreamScheme))
+            if (!string.IsNullOrEmpty(downstreamContext.DownstreamReRoute.DownstreamScheme))
             {
-                DownstreamContext.Data.DownstreamRequest.Scheme = DownstreamContext.Data.DownstreamReRoute.DownstreamScheme;
+                downstreamContext.DownstreamRequest.Scheme = downstreamContext.DownstreamReRoute.DownstreamScheme;
             }
 
 
-            if (ServiceFabricRequest(DownstreamContext.Data.Configuration, DownstreamContext.Data.DownstreamReRoute))
+            if (ServiceFabricRequest(downstreamContext.Configuration, downstreamContext.DownstreamReRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(DownstreamContext.Data.DownstreamRequest, DownstreamContext.Data.DownstreamReRoute, DownstreamContext.Data.TemplatePlaceholderNameAndValues, response);
-                DownstreamContext.Data.DownstreamRequest.AbsolutePath = pathAndQuery.path;
-                DownstreamContext.Data.DownstreamRequest.Query = pathAndQuery.query;
+                var pathAndQuery = CreateServiceFabricUri(downstreamContext.DownstreamRequest, downstreamContext.DownstreamReRoute, downstreamContext.TemplatePlaceholderNameAndValues, response);
+                downstreamContext.DownstreamRequest.AbsolutePath = pathAndQuery.path;
+                downstreamContext.DownstreamRequest.Query = pathAndQuery.query;
             }
             else
             {
@@ -62,26 +60,26 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                 if (ContainsQueryString(dsPath))
                 {
-                    DownstreamContext.Data.DownstreamRequest.AbsolutePath = GetPath(dsPath);
+                    downstreamContext.DownstreamRequest.AbsolutePath = GetPath(dsPath);
 
-                    if (string.IsNullOrEmpty(DownstreamContext.Data.DownstreamRequest.Query))
+                    if (string.IsNullOrEmpty(downstreamContext.DownstreamRequest.Query))
                     {
-                        DownstreamContext.Data.DownstreamRequest.Query = GetQueryString(dsPath);
+                        downstreamContext.DownstreamRequest.Query = GetQueryString(dsPath);
                     }
                     else
                     {
-                        DownstreamContext.Data.DownstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
+                        downstreamContext.DownstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
                     }
                 }
                 else
                 {
-                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext.Data.DownstreamRequest, DownstreamContext.Data.TemplatePlaceholderNameAndValues);
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamContext.DownstreamRequest, downstreamContext.TemplatePlaceholderNameAndValues);
 
-                    DownstreamContext.Data.DownstreamRequest.AbsolutePath = dsPath.Value;
+                    downstreamContext.DownstreamRequest.AbsolutePath = dsPath.Value;
                 }
             }
 
-            Logger.LogDebug($"Downstream url is {DownstreamContext.Data.DownstreamRequest}");
+            Logger.LogDebug($"Downstream url is {downstreamContext.DownstreamRequest}");
 
             await _next.Invoke(httpContext);
         }

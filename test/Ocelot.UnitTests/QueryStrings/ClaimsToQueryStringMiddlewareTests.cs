@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.QueryStrings
             _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
-            _middleware = new ClaimsToQueryStringMiddleware(_next, _loggerFactory.Object, _addQueries.Object, _repo.Object);
+            _middleware = new ClaimsToQueryStringMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheAddHeadersToRequestReturnsOk()

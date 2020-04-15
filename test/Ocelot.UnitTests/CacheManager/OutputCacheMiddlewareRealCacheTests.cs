@@ -31,11 +31,9 @@
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public OutputCacheMiddlewareRealCacheTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();            
@@ -49,7 +47,7 @@
             _downstreamContext = new DownstreamContext();
             _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
             _next = context => Task.CompletedTask;
-            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator, _repo.Object);
+            _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator);
         }
 
         [Fact]
@@ -71,7 +69,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContentTypeHeaderIsCached()

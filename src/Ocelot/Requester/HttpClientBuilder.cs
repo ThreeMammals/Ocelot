@@ -1,13 +1,13 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-
-namespace Ocelot.Requester
+﻿namespace Ocelot.Requester
 {
+    using Ocelot.Configuration;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
@@ -32,7 +32,7 @@ namespace Ocelot.Requester
             _defaultTimeout = TimeSpan.FromSeconds(90);
         }
 
-        public IHttpClient Create(DownstreamContext context)
+        public IHttpClient Create(IDownstreamContext context)
         {
             _cacheKey = context.DownstreamReRoute;
 
@@ -68,7 +68,7 @@ namespace Ocelot.Requester
             return _client;
         }
 
-        private HttpClientHandler CreateHandler(DownstreamContext context)
+        private HttpClientHandler CreateHandler(IDownstreamContext context)
         {
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
@@ -84,7 +84,7 @@ namespace Ocelot.Requester
             }
         }
 
-        private HttpClientHandler UseNonCookiesHandler(DownstreamContext context)
+        private HttpClientHandler UseNonCookiesHandler(IDownstreamContext context)
         {
             return new HttpClientHandler
             {
@@ -96,7 +96,7 @@ namespace Ocelot.Requester
             };
         }
 
-        private HttpClientHandler UseCookiesHandler(DownstreamContext context)
+        private HttpClientHandler UseCookiesHandler(IDownstreamContext context)
         {
             return new HttpClientHandler
             {

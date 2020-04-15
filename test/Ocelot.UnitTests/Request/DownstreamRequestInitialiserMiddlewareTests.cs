@@ -13,7 +13,6 @@
     using Shouldly;
     using System.Net.Http;
     using Ocelot.Configuration;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -28,10 +27,10 @@
         private readonly Mock<IOcelotLogger> _logger;
         private Response<HttpRequestMessage> _mappedRequest;
         private DownstreamContext _downstreamContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamRequestInitialiserMiddlewareTests()
         {
+            _httpContext = new Mock<HttpContext>();
             _httpRequest = new Mock<HttpRequest>();
             _requestMapper = new Mock<IRequestMapper>();
             _next = new Mock<RequestDelegate>();
@@ -46,7 +45,7 @@
                 _next.Object,
                 _loggerFactory.Object,
                 _requestMapper.Object,
-                new DownstreamRequestCreator(new FrameworkDescription()), _repo.Object);
+                new DownstreamRequestCreator(new FrameworkDescription()));
 
             _downstreamContext = new DownstreamContext();
         }
@@ -121,7 +120,7 @@
 
         private void WhenTheMiddlewareIsInvoked()
         {
-            _middleware.Invoke(_httpContext.Object).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext.Object, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()

@@ -30,11 +30,9 @@ namespace Ocelot.UnitTests.Headers
         private readonly Mock<IAddHeadersToResponse> _addHeadersToResponse;
         private readonly Mock<IAddHeadersToRequest> _addHeadersToRequest;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public HttpHeadersTransformationMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _preReplacer = new Mock<IHttpContextRequestHeaderReplacer>();
             _postReplacer = new Mock<IHttpResponseHeaderReplacer>();
@@ -47,7 +45,7 @@ namespace Ocelot.UnitTests.Headers
             _addHeadersToRequest = new Mock<IAddHeadersToRequest>();
             _middleware = new HttpHeadersTransformationMiddleware(
                 _next, _loggerFactory.Object, _preReplacer.Object,
-                _postReplacer.Object, _addHeadersToResponse.Object, _addHeadersToRequest.Object, _repo.Object);
+                _postReplacer.Object, _addHeadersToResponse.Object, _addHeadersToRequest.Object);
         }
 
         [Fact]
@@ -79,7 +77,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownstreamRequestIs()

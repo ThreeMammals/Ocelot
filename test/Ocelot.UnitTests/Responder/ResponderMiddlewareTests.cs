@@ -25,11 +25,9 @@ namespace Ocelot.UnitTests.Responder
         private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
 
         public ResponderMiddlewareTests()
         {
-            _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _responder = new Mock<IHttpResponder>();
             _codeMapper = new Mock<IErrorsToHttpStatusCodeMapper>();
@@ -38,7 +36,7 @@ namespace Ocelot.UnitTests.Responder
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ResponderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new ResponderMiddleware(_next, _responder.Object, _loggerFactory.Object, _codeMapper.Object, _repo.Object);
+            _middleware = new ResponderMiddleware(_next, _responder.Object, _loggerFactory.Object, _codeMapper.Object);
         }
 
         [Fact]
@@ -62,7 +60,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheHttpResponseMessageIs(DownstreamResponse response)

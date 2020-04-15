@@ -27,7 +27,7 @@ namespace Ocelot.Requester
             _mapper = mapper;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(DownstreamContext context, HttpContext httpContext)
+        public async Task<Response<HttpResponseMessage>> GetResponse(IDownstreamContext context, HttpContext httpContext)
         {
             var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
 
