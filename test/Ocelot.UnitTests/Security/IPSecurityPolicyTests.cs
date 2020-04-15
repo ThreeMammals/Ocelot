@@ -19,12 +19,14 @@ namespace Ocelot.UnitTests.Security
         private readonly DownstreamReRouteBuilder _downstreamReRouteBuilder;
         private readonly IPSecurityPolicy _ipSecurityPolicy;
         private Response response;
+        private HttpContext _httpContext;
 
         public IPSecurityPolicyTests()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _httpContext = new DefaultHttpContext();
+            _downstreamContext = new DownstreamContext();
             _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             _downstreamReRouteBuilder = new DownstreamReRouteBuilder();
             _ipSecurityPolicy = new IPSecurityPolicy();
         }
@@ -41,7 +43,7 @@ namespace Ocelot.UnitTests.Security
         [Fact]
         private void should_blockedIp_clientIp_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamReRoute())
                 .When(x => x.WhenTheSecurityPolicy())
@@ -52,7 +54,7 @@ namespace Ocelot.UnitTests.Security
         [Fact]
         private void should_blockedIp_clientIp_Not_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamReRoute())
                 .When(x => x.WhenTheSecurityPolicy())
@@ -63,7 +65,7 @@ namespace Ocelot.UnitTests.Security
         [Fact]
         private void should_allowedIp_clientIp_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamReRoute())
                 .When(x => x.WhenTheSecurityPolicy())
@@ -74,7 +76,7 @@ namespace Ocelot.UnitTests.Security
         [Fact]
         private void should_allowedIp_clientIp_Not_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamReRoute())
                 .When(x => x.WhenTheSecurityPolicy())
@@ -99,7 +101,7 @@ namespace Ocelot.UnitTests.Security
 
         private void WhenTheSecurityPolicy()
         {
-            response = this._ipSecurityPolicy.Security(_downstreamContext).GetAwaiter().GetResult();
+            response = _ipSecurityPolicy.Security(_downstreamContext, _httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenSecurityPassing()

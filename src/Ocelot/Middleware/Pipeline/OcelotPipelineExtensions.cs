@@ -17,6 +17,7 @@
     using Ocelot.Headers.Middleware;
     using Ocelot.LoadBalancer.Middleware;
     using System;
+    using System.Threading.Tasks;
     using Ocelot.DownstreamPathManipulation.Middleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
@@ -143,7 +144,7 @@
         }
 
         private static void UseIfNotNull(this IApplicationBuilder builder,
-            Func<RequestDelegate, RequestDelegate> middleware)
+            Func<HttpContext, Func<Task>, Task> middleware)
         {
             if (middleware != null)
             {

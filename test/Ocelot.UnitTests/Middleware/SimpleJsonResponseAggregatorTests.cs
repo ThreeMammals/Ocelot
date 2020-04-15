@@ -53,14 +53,14 @@ namespace Ocelot.UnitTests.Middleware
                 .Build();
 
             var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":1,""text"":""text1""},{""id"":2,""writerId"":2,""postId"":2,""text"":""text2""},{""id"":3,""writerId"":2,""postId"":1,""text"":""text21""}]";
-            var commentsDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var commentsDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = commentsDownstreamReRoute
             };
 
             var userDetailsResponseContent = @"[{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""},{""id"":2,""firstName"":""reza"",""lastName"":""rezaei""}]";
-            var userDetailsDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var userDetailsDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = userDetailsDownstreamReRoute
@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Middleware
 
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
 
-            this.Given(x => GivenTheUpstreamContext(new DownstreamContext(new DefaultHttpContext())))
+            this.Given(x => GivenTheUpstreamContext(new DownstreamContext()))
                 .And(x => GivenTheReRoute(reRoute))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
@@ -97,13 +97,13 @@ namespace Ocelot.UnitTests.Middleware
                 .WithDownstreamReRoutes(downstreamReRoutes)
                 .Build();
 
-            var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var billDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
-            var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var georgeDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Middleware
 
             var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
 
-            this.Given(x => GivenTheUpstreamContext(new DownstreamContext(new DefaultHttpContext())))
+            this.Given(x => GivenTheUpstreamContext(new DownstreamContext()))
                 .And(x => GivenTheReRoute(reRoute))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
@@ -140,13 +140,13 @@ namespace Ocelot.UnitTests.Middleware
                 .WithDownstreamReRoutes(downstreamReRoutes)
                 .Build();
 
-            var billDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var billDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = billDownstreamReRoute
             };
 
-            var georgeDownstreamContext = new DownstreamContext(new DefaultHttpContext())
+            var georgeDownstreamContext = new DownstreamContext()
             {
                 DownstreamResponse = new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"),
                 DownstreamReRoute = georgeDownstreamReRoute,
@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Middleware
 
             var expected = "Error";
 
-            this.Given(x => GivenTheUpstreamContext(new DownstreamContext(new DefaultHttpContext())))
+            this.Given(x => GivenTheUpstreamContext(new DownstreamContext()))
                 .And(x => GivenTheReRoute(reRoute))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())

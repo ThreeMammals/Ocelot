@@ -19,9 +19,11 @@ namespace Ocelot.UnitTests.Logging
         private DownstreamContext _downstreamContext;
         private string _name;
         private Exception _exception;
+        private HttpContext _httpContext;
 
         public OcelotDiagnosticListenerTests()
         {
+            _httpContext = new DefaultHttpContext();
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _serviceCollection = new ServiceCollection();
@@ -36,7 +38,7 @@ namespace Ocelot.UnitTests.Logging
             this.Given(_ => GivenAMiddlewareName())
                 .And(_ => GivenAContext())
                 .When(_ => WhenOcelotMiddlewareStartedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareStarted: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareStarted: {_name}; {_httpContext.Request.Path}"))
                 .BDDfy();
         }
 
@@ -46,7 +48,7 @@ namespace Ocelot.UnitTests.Logging
             this.Given(_ => GivenAMiddlewareName())
                 .And(_ => GivenAContext())
                 .When(_ => WhenOcelotMiddlewareFinishedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareFinished: {_name}; {_httpContext.Request.Path}"))
                 .BDDfy();
         }
 
@@ -67,7 +69,7 @@ namespace Ocelot.UnitTests.Logging
             this.Given(_ => GivenAMiddlewareName())
                 .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareStartedCalled())
-                .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}"))
                 .BDDfy();
         }
 
@@ -77,7 +79,7 @@ namespace Ocelot.UnitTests.Logging
             this.Given(_ => GivenAMiddlewareName())
                 .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareFinishedCalled())
-                .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Response.StatusCode}"))
+                .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}"))
                 .BDDfy();
         }
 
@@ -99,27 +101,27 @@ namespace Ocelot.UnitTests.Logging
 
         private void WhenOcelotMiddlewareStartedCalled()
         {
-            _listener.OcelotMiddlewareStarted(_downstreamContext, _name);
+            _listener.OcelotMiddlewareStarted(_httpContext, _name);
         }
 
         private void WhenOcelotMiddlewareFinishedCalled()
         {
-            _listener.OcelotMiddlewareFinished(_downstreamContext, _name);
+            _listener.OcelotMiddlewareFinished(_httpContext, _name);
         }
 
         private void WhenOcelotMiddlewareExceptionCalled()
         {
-            _listener.OcelotMiddlewareException(_exception, _downstreamContext, _name);
+            _listener.OcelotMiddlewareException(_exception, _httpContext, _name);
         }
 
         private void WhenMiddlewareStartedCalled()
         {
-            _listener.OnMiddlewareStarting(_downstreamContext.HttpContext, _name);
+            _listener.OnMiddlewareStarting(_httpContext, _name);
         }
 
         private void WhenMiddlewareFinishedCalled()
         {
-            _listener.OnMiddlewareFinished(_downstreamContext.HttpContext, _name);
+            _listener.OnMiddlewareFinished(_httpContext, _name);
         }
 
         private void WhenMiddlewareExceptionCalled()
@@ -129,7 +131,7 @@ namespace Ocelot.UnitTests.Logging
 
         private void GivenAContext()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
         }
 
         private void GivenAMiddlewareName()

@@ -26,14 +26,16 @@ namespace Ocelot.UnitTests.LoadBalancer
         private Response<ServiceHostAndPort> _firstHostAndPort;
         private Response<ServiceHostAndPort> _secondHostAndPort;
         private readonly FakeBus<StickySession> _bus;
+        private HttpContext _httpContext;
 
         public CookieStickySessionsTests()
         {
+            _httpContext = new DefaultHttpContext();
             _bus = new FakeBus<StickySession>();
             _loadBalancer = new Mock<ILoadBalancer>();
             _defaultExpiryInMs = 0;
             _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus);
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
+            _downstreamContext = new DownstreamContext();
         }
 
         [Fact]
@@ -116,7 +118,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheLoadBalancerReturnsError()
         {
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(new ErrorResponse<ServiceHostAndPort>(new AnyError()));
         }
 
@@ -138,14 +140,14 @@ namespace Ocelot.UnitTests.LoadBalancer
             var cookiesTwo = new FakeCookies();
             cookiesTwo.AddCookie("sessionid", "123");
             contextTwo.Request.Cookies = cookiesTwo;
-            _firstHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextOne));
-            _secondHostAndPort = await _stickySessions.Lease(new DownstreamContext(contextTwo));
+            _firstHostAndPort = await _stickySessions.Lease(new DownstreamContext(), contextOne);
+            _secondHostAndPort = await _stickySessions.Lease(new DownstreamContext(), contextTwo);
         }
 
         private void GivenTheLoadBalancerReturnsSequence()
         {
             _loadBalancer
-                .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .SetupSequence(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
         }
@@ -158,8 +160,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private async Task WhenILeaseTwiceInARow()
         {
-            _firstHostAndPort = await _stickySessions.Lease(_downstreamContext);
-            _secondHostAndPort = await _stickySessions.Lease(_downstreamContext);
+            _firstHostAndPort = await _stickySessions.Lease(_downstreamContext, _httpContext);
+            _secondHostAndPort = await _stickySessions.Lease(_downstreamContext, _httpContext);
         }
 
         private void GivenTheDownstreamRequestHasSessionId(string value)
@@ -168,19 +170,20 @@ namespace Ocelot.UnitTests.LoadBalancer
             var cookies = new FakeCookies();
             cookies.AddCookie("sessionid", value);
             context.Request.Cookies = cookies;
-            _downstreamContext = new DownstreamContext(context);
+            _downstreamContext = new DownstreamContext();
+            _httpContext = context;
         }
 
         private void GivenTheLoadBalancerReturns()
         {
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<DownstreamContext>()))
+                .Setup(x => x.Lease(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("", 80)));
         }
 
         private async Task WhenILease()
         {
-            _result = await _stickySessions.Lease(_downstreamContext);
+            _result = await _stickySessions.Lease(_downstreamContext, _httpContext);
         }
 
         private void ThenTheHostAndPortIsNotNull()

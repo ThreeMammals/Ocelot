@@ -36,15 +36,15 @@ namespace Ocelot.UnitTests.Middleware
         {
             var reRoute = new ReRouteBuilder().Build();
 
-            var context = new DownstreamContext(new DefaultHttpContext());
+            var context = new DownstreamContext();
 
             var contexts = new List<DownstreamContext>
             {
-                new DownstreamContext(new DefaultHttpContext())
+                new DownstreamContext()
                 {
                     DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
-                new DownstreamContext(new DefaultHttpContext())
+                new DownstreamContext()
                 {
                     DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }
@@ -65,15 +65,15 @@ namespace Ocelot.UnitTests.Middleware
         {
             var reRoute = new ReRouteBuilder().Build();
 
-            var context = new DownstreamContext(new DefaultHttpContext());
+            var context = new DownstreamContext();
 
             var contexts = new List<DownstreamContext>
             {
-                new DownstreamContext(new DefaultHttpContext())
+                new DownstreamContext()
                 {
                     DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 },
-                new DownstreamContext(new DefaultHttpContext())
+                new DownstreamContext()
                 {
                     DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
                 }

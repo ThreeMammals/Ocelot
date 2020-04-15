@@ -370,7 +370,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)
         {
-            var context = new DownstreamContext(new DefaultHttpContext())
+            var context = new DownstreamContext()
             {
                 DownstreamReRoute = downstream,
                 DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }),

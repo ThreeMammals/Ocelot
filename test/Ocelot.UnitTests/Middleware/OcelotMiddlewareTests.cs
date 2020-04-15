@@ -10,9 +10,12 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {
+    using Ocelot.Infrastructure.RequestData;
+
     public class OcelotMiddlewareTests
     {
         private Mock<IOcelotLogger> _logger;
+        private Mock<IRequestScopedDataRepository> _repo;
         private FakeMiddleware _middleware;
         private List<Error> _errors;
 
@@ -20,7 +23,8 @@ namespace Ocelot.UnitTests.Middleware
         {
             _errors = new List<Error>();
             _logger = new Mock<IOcelotLogger>();
-            _middleware = new FakeMiddleware(_logger.Object);
+            _repo = new Mock<IRequestScopedDataRepository>();
+            _middleware = new FakeMiddleware(_logger.Object, _repo.Object);
         }
 
         [Fact]
@@ -44,7 +48,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenISetTheErrors()
         {
-            _middleware.SetPipelineError(new DownstreamContext(new DefaultHttpContext()), _errors);
+            _middleware.SetPipelineError(new DefaultHttpContext(), _errors);
         }
 
         private void ThenTheErrorIsLogged(int times)
@@ -54,7 +58,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenISetTheError()
         {
-            _middleware.SetPipelineError(new DownstreamContext(new DefaultHttpContext()), _errors[0]);
+            _middleware.SetPipelineError(new DefaultHttpContext(), _errors[0]);
         }
 
         private void GivenAnError(Error error)
@@ -65,8 +69,8 @@ namespace Ocelot.UnitTests.Middleware
 
     public class FakeMiddleware : OcelotMiddleware
     {
-        public FakeMiddleware(IOcelotLogger logger)
-            : base(logger)
+        public FakeMiddleware(IOcelotLogger logger, IRequestScopedDataRepository repo)
+            : base(logger, repo)
         {
         }
     }

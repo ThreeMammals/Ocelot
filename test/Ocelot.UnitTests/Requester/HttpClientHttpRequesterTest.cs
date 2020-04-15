@@ -24,13 +24,15 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
-        private DownstreamContext _request;
+        private DownstreamContext _downstreamContext;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private Mock<IExceptionToErrorMapper> _mapper;
+        private HttpContext _httpContext;
 
         public HttpClientHttpRequesterTest()
         {
+            _httpContext = new DefaultHttpContext();
             _factory = new Mock<IDelegatingHandlerHandlerFactory>();
             _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
             _logger = new Mock<IOcelotLogger>();
@@ -63,7 +65,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
-            var context = new DownstreamContext(new DefaultHttpContext())
+            var context = new DownstreamContext()
             {
                 DownstreamReRoute = reRoute,
                 DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }),
@@ -92,7 +94,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
-            var context = new DownstreamContext(new DefaultHttpContext())
+            var context = new DownstreamContext()
             {
                 DownstreamReRoute = reRoute,
                 DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
@@ -120,7 +122,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 
-            var context = new DownstreamContext(new DefaultHttpContext())
+            var context = new DownstreamContext()
             {
                 DownstreamReRoute = reRoute,
                 DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
@@ -134,14 +136,14 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
-        private void GivenTheRequestIs(DownstreamContext request)
+        private void GivenTheRequestIs(DownstreamContext downstreamContext)
         {
-            _request = request;
+            _downstreamContext = downstreamContext;
         }
 
         private void WhenIGetResponse()
         {
-            _response = _httpClientRequester.GetResponse(_request).GetAwaiter().GetResult();
+            _response = _httpClientRequester.GetResponse(_downstreamContext, _httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseIsCalledCorrectly()
