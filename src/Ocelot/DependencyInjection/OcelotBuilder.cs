@@ -57,6 +57,26 @@ namespace Ocelot.DependencyInjection
             Services.Configure<FileConfiguration>(configurationRoot);
 
             Services.AddScoped<IDownstreamContext, DownstreamContext>();
+
+            services.AddScoped<Func<DownstreamReRoute, IDownstreamContext>>(serviceProvider => downstreamReRoute =>
+            {
+                var globalButScopedForThisRequest = serviceProvider.GetService<IDownstreamContext>();
+
+                if (globalButScopedForThisRequest == null)
+                {
+                    return new DownstreamContext();
+                }
+                else
+                {
+                    return new DownstreamContext()
+                    {
+                        TemplatePlaceholderNameAndValues = globalButScopedForThisRequest.TemplatePlaceholderNameAndValues,
+                        Configuration = globalButScopedForThisRequest.Configuration,
+                        DownstreamReRoute = downstreamReRoute,
+                    };
+                }
+            });
+
             Services.TryAddSingleton<IOcelotCache<FileConfiguration>, AspMemoryCache<FileConfiguration>>();
             Services.TryAddSingleton<IOcelotCache<CachedResponse>, AspMemoryCache<CachedResponse>>();
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
