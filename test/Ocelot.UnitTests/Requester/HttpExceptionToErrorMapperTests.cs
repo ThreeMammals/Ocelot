@@ -16,12 +16,12 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class HttpExeptionToErrorMapperTests
+    public class HttpExceptionToErrorMapperTests
     {
         private HttpExceptionToErrorMapper _mapper;
         private readonly ServiceCollection _services;
 
-        public HttpExeptionToErrorMapperTests()
+        public HttpExceptionToErrorMapperTests()
         {
             _services = new ServiceCollection();
             var provider = _services.BuildServiceProvider();
