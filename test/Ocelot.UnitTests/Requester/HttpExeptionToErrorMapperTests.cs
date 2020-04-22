@@ -18,14 +18,14 @@ namespace Ocelot.UnitTests.Requester
 {
     public class HttpExeptionToErrorMapperTests
     {
-        private HttpExeptionToErrorMapper _mapper;
+        private HttpExceptionToErrorMapper _mapper;
         private readonly ServiceCollection _services;
 
         public HttpExeptionToErrorMapperTests()
         {
             _services = new ServiceCollection();
             var provider = _services.BuildServiceProvider();
-            _mapper = new HttpExeptionToErrorMapper(provider);
+            _mapper = new HttpExceptionToErrorMapper(provider);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Requester
 
             var provider = _services.BuildServiceProvider();
 
-            _mapper = new HttpExeptionToErrorMapper(provider);
+            _mapper = new HttpExceptionToErrorMapper(provider);
 
             var error = _mapper.Map(new TaskCanceledException());
 
