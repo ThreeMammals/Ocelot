@@ -143,7 +143,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIGetResponse()
         {
-            _response = _httpClientRequester.GetResponse(_downstreamContext, _httpContext).GetAwaiter().GetResult();
+            _response = _httpClientRequester.GetResponse(_downstreamContext, _httpContext, _downstreamContext.DownstreamReRoute).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseIsCalledCorrectly()

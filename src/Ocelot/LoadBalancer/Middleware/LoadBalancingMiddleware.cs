@@ -23,8 +23,9 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
+            var downstreamReRoute = Get(httpContext, downstreamContext);
 
-            var loadBalancer = _loadBalancerHouse.Get(downstreamContext.DownstreamReRoute, downstreamContext.Configuration.ServiceProviderConfiguration);
+            var loadBalancer = _loadBalancerHouse.Get(downstreamReRoute, downstreamContext.Configuration.ServiceProviderConfiguration);
 
             if (loadBalancer.IsError)
             {

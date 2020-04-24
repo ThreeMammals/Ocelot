@@ -1,12 +1,11 @@
-﻿using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Ocelot.Middleware.Multiplexer
+﻿namespace Ocelot.Middleware.Multiplexer
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public class Multiplexer : IMultiplexer
     {
@@ -17,23 +16,49 @@ namespace Ocelot.Middleware.Multiplexer
             _factory = factory;
         }
 
-        public async Task Multiplex(IDownstreamContext context, HttpContext httpContext, ReRoute reRoute, RequestDelegate next)
+        public async Task Multiplex(IDownstreamContext context, HttpContext httpContext, RequestDelegate next)
         {
-            var reRouteKeysConfigs = reRoute.DownstreamReRouteConfig;
+            var reRouteKeysConfigs = context.DownstreamRoute.ReRoute.DownstreamReRouteConfig;
             if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
             {
-                var tasks = new Task<DownstreamContext>[reRoute.DownstreamReRoute.Count];
+                var tasks = new Task<DownstreamContext>[context.DownstreamRoute.ReRoute.DownstreamReRoute.Count];
 
-                for (var i = 0; i < reRoute.DownstreamReRoute.Count; i++)
+                for (var i = 0; i < context.DownstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
                 {
-                    var downstreamContext = new DownstreamContext()
+                    var downstreamContext = new DownstreamContext
                     {
                         TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
                         Configuration = context.Configuration,
-                        DownstreamReRoute = reRoute.DownstreamReRoute[i],
+                        DownstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[i],
                     };
 
-                    tasks[i] = Fire(downstreamContext, httpContext, next);
+                    var newHttpContext = new DefaultHttpContext(httpContext.Features);
+
+                    foreach (var header in httpContext.Request.Headers)
+                    {
+                        newHttpContext.Request.Headers.TryAdd(header.Key, header.Value);
+                    }
+
+                    newHttpContext.Request.Body = httpContext.Request.Body;
+                    newHttpContext.Request.ContentLength = httpContext.Request.ContentLength;
+                    newHttpContext.Request.ContentType = httpContext.Request.ContentType;
+                    newHttpContext.Request.Host = httpContext.Request.Host;
+                    newHttpContext.Request.Method = httpContext.Request.Method;
+                    newHttpContext.Request.Path = httpContext.Request.Path;
+                    newHttpContext.Request.PathBase = httpContext.Request.PathBase;
+                    newHttpContext.Request.Protocol = httpContext.Request.Protocol;
+                    newHttpContext.Request.Query = httpContext.Request.Query;
+                    newHttpContext.Request.QueryString = httpContext.Request.QueryString;
+                    newHttpContext.Request.Scheme = httpContext.Request.Scheme;
+                    newHttpContext.Request.IsHttps = httpContext.Request.IsHttps;
+                    newHttpContext.Request.RouteValues = httpContext.Request.RouteValues;
+                    newHttpContext.Connection.RemoteIpAddress = httpContext.Connection.RemoteIpAddress;
+                    //newHttpContext.Request.Form = httpContext.Request.Form;
+
+                    // add the downstream re route to this context so we know what to work with in later
+                    newHttpContext.Items.Add("DownstreamReRoute", context.DownstreamRoute.ReRoute.DownstreamReRoute[i]);
+
+                    tasks[i] = Fire(downstreamContext, newHttpContext, next);
                 }
 
                 await Task.WhenAll(tasks);
@@ -46,7 +71,7 @@ namespace Ocelot.Middleware.Multiplexer
                     contexts.Add(finished);
                 }
 
-                await Map(reRoute, context, contexts);
+                await Map(context.DownstreamRoute.ReRoute, context, contexts);
             }
             else
             {
@@ -54,11 +79,11 @@ namespace Ocelot.Middleware.Multiplexer
                 {
                     TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
                     Configuration = context.Configuration,
-                    DownstreamReRoute = reRoute.DownstreamReRoute[0],
+                    DownstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[0],
                 };
                 var mainResponse = await Fire(downstreamContextMain, httpContext, next);
 
-                if (reRoute.DownstreamReRoute.Count == 1)
+                if (context.DownstreamRoute.ReRoute.DownstreamReRoute.Count == 1)
                 {
                     MapNotAggregate(context, new List<DownstreamContext>() { mainResponse });
                     return;
@@ -73,10 +98,10 @@ namespace Ocelot.Middleware.Multiplexer
                 var content = await mainResponse.DownstreamResponse.Content.ReadAsStringAsync();
                 var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
 
-                for (var i = 1; i < reRoute.DownstreamReRoute.Count; i++)
+                for (var i = 1; i < context.DownstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
                 {
                     var templatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues;
-                    var downstreamReRoute = reRoute.DownstreamReRoute[i];
+                    var downstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[i];
                     var matchAdvancedAgg = reRouteKeysConfigs.FirstOrDefault(q => q.ReRouteKey == downstreamReRoute.Key);
                     if (matchAdvancedAgg != null)
                     {
@@ -116,7 +141,7 @@ namespace Ocelot.Middleware.Multiplexer
                     contexts.Add(finished);
                 }
 
-                await Map(reRoute, context, contexts);
+                await Map(context.DownstreamRoute.ReRoute, context, contexts);
             }
         }
 

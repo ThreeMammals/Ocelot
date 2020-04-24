@@ -39,23 +39,25 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var provider = _factory.Get(downstreamContext.Configuration);
 
-            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, downstreamContext.Configuration, upstreamHost);
+            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, downstreamContext.Configuration, upstreamHost);
 
-            if (downstreamRoute.IsError)
+            if (response.IsError)
             {
-                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
 
-                SetPipelineError(downstreamContext, downstreamRoute.Errors);
+                SetPipelineError(downstreamContext, response.Errors);
                 return;
             }
 
-            var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
+            var downstreamPathTemplates = string.Join(", ", response.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             downstreamContext.TemplatePlaceholderNameAndValues =
-                downstreamRoute.Data.TemplatePlaceholderNameAndValues;
+                response.Data.TemplatePlaceholderNameAndValues;
 
-            await _multiplexer.Multiplex(downstreamContext, httpContext, downstreamRoute.Data.ReRoute, _next);
+            downstreamContext.DownstreamRoute = response.Data;
+
+            await _multiplexer.Multiplex(downstreamContext, httpContext, _next);
         }
     }
 }

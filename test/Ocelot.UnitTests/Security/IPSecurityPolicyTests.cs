@@ -101,7 +101,7 @@ namespace Ocelot.UnitTests.Security
 
         private void WhenTheSecurityPolicy()
         {
-            response = _ipSecurityPolicy.Security(_downstreamContext, _httpContext).GetAwaiter().GetResult();
+            response = _ipSecurityPolicy.Security(_downstreamContext.DownstreamReRoute, _httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenSecurityPassing()

@@ -14,6 +14,7 @@ namespace Ocelot.UnitTests.Requester
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.Configuration;
     using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
@@ -96,7 +97,7 @@ namespace Ocelot.UnitTests.Requester
             _response = response;
 
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>()))
+                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>(), It.IsAny<HttpContext>(), It.IsAny<DownstreamReRoute>()))
                 .ReturnsAsync(_response);
         }
 

@@ -3,6 +3,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Request.Middleware;
 using System.Collections.Generic;
+using Ocelot.DownstreamRouteFinder;
 
 namespace Ocelot.Middleware
 {
@@ -14,6 +15,8 @@ namespace Ocelot.Middleware
         }
 
         public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; set; }
+
+        public DownstreamRoute DownstreamRoute { get; set; }
 
         public DownstreamReRoute DownstreamReRoute { get; set; }
 
@@ -31,6 +34,8 @@ namespace Ocelot.Middleware
     public interface IDownstreamContext
     {
         public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; set; }
+
+        public DownstreamRoute DownstreamRoute { get; set; }
 
         public DownstreamReRoute DownstreamReRoute { get; set; }
 

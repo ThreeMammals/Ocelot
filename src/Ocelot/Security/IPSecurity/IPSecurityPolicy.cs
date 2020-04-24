@@ -4,15 +4,14 @@
     using Ocelot.Configuration;
     using Ocelot.Middleware;
     using Ocelot.Responses;
-    using System.Net;
     using System.Threading.Tasks;
 
     public class IPSecurityPolicy : ISecurityPolicy
     {
-        public async Task<Response> Security(IDownstreamContext downstreamContext, HttpContext httpContext)
+        public async Task<Response> Security(DownstreamReRoute downstreamReRoute, HttpContext httpContext)
         {
-            IPAddress clientIp = httpContext.Connection.RemoteIpAddress;
-            SecurityOptions securityOptions = downstreamContext.DownstreamReRoute.SecurityOptions;
+            var clientIp = httpContext.Connection.RemoteIpAddress;
+            var securityOptions = downstreamReRoute.SecurityOptions;
             if (securityOptions == null)
             {
                 return new OkResponse();

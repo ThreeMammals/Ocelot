@@ -21,11 +21,13 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamContext.DownstreamReRoute))
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamReRoute))
             {
                 Logger.LogInformation($"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
-                var result = await httpContext.AuthenticateAsync(downstreamContext.DownstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
+                var result = await httpContext.AuthenticateAsync(downstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
 
                 httpContext.User = result.Principal;
 

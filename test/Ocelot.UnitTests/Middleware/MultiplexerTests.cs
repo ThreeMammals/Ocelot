@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIMultiplex()
         {
-            _multiplexer.Multiplex(_context, _httpContext,  _reRoute, _pipeline).GetAwaiter().GetResult();
+            _multiplexer.Multiplex(_context, _httpContext, _pipeline).GetAwaiter().GetResult();
         }
 
         private void ThePipelineIsCalled(int expected)

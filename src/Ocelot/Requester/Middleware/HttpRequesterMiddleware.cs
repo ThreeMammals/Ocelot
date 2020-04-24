@@ -24,7 +24,9 @@ namespace Ocelot.Requester.Middleware
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var response = await _requester.GetResponse(downstreamContext, httpContext);
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            var response = await _requester.GetResponse(downstreamContext, httpContext, downstreamReRoute);
 
             CreateLogBasedOnResponse(response);
 

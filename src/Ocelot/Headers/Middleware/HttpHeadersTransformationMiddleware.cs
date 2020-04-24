@@ -31,12 +31,14 @@ namespace Ocelot.Headers.Middleware
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var preFAndRs = downstreamContext.DownstreamReRoute.UpstreamHeadersFindAndReplace;
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            var preFAndRs = downstreamReRoute.UpstreamHeadersFindAndReplace;
 
             //todo - this should be on httprequestmessage not httpcontext?
             _preReplacer.Replace(httpContext, preFAndRs);
 
-            _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamContext.DownstreamReRoute.AddHeadersToUpstream, httpContext);
+            _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamReRoute.AddHeadersToUpstream, httpContext);
 
             await _next.Invoke(httpContext);
 
@@ -47,11 +49,11 @@ namespace Ocelot.Headers.Middleware
                 return;
             }
 
-            var postFAndRs = downstreamContext.DownstreamReRoute.DownstreamHeadersFindAndReplace;
+            var postFAndRs = downstreamReRoute.DownstreamHeadersFindAndReplace;
 
             _postReplacer.Replace(downstreamContext, httpContext, postFAndRs);
 
-            _addHeadersToResponse.Add(downstreamContext.DownstreamReRoute.AddHeadersToDownstream, downstreamContext.DownstreamResponse);
+            _addHeadersToResponse.Add(downstreamReRoute.AddHeadersToDownstream, downstreamContext.DownstreamResponse);
         }
     }
 }

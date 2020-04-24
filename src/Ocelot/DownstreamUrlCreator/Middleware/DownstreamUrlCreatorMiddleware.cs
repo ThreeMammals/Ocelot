@@ -31,8 +31,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
             var response = _replacer
-                .Replace(downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value, downstreamContext.TemplatePlaceholderNameAndValues);
+                .Replace(downstreamReRoute.DownstreamPathTemplate.Value, downstreamContext.TemplatePlaceholderNameAndValues);
 
             if (response.IsError)
             {
@@ -42,15 +44,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            if (!string.IsNullOrEmpty(downstreamContext.DownstreamReRoute.DownstreamScheme))
+            if (!string.IsNullOrEmpty(downstreamReRoute.DownstreamScheme))
             {
-                downstreamContext.DownstreamRequest.Scheme = downstreamContext.DownstreamReRoute.DownstreamScheme;
+                downstreamContext.DownstreamRequest.Scheme = downstreamReRoute.DownstreamScheme;
             }
 
-
-            if (ServiceFabricRequest(downstreamContext.Configuration, downstreamContext.DownstreamReRoute))
+            if (ServiceFabricRequest(downstreamContext.Configuration, downstreamReRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(downstreamContext.DownstreamRequest, downstreamContext.DownstreamReRoute, downstreamContext.TemplatePlaceholderNameAndValues, response);
+                var pathAndQuery = CreateServiceFabricUri(downstreamContext.DownstreamRequest, downstreamReRoute, downstreamContext.TemplatePlaceholderNameAndValues, response);
                 downstreamContext.DownstreamRequest.AbsolutePath = pathAndQuery.path;
                 downstreamContext.DownstreamRequest.Query = pathAndQuery.query;
             }

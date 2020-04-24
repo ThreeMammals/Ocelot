@@ -22,11 +22,13 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (downstreamContext.DownstreamReRoute.ClaimsToClaims.Any())
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            if (downstreamReRoute.ClaimsToClaims.Any())
             {
                 Logger.LogDebug("this route has instructions to convert claims to other claims");
 
-                var result = _addClaimsToRequest.SetClaimsOnContext(downstreamContext.DownstreamReRoute.ClaimsToClaims, httpContext);
+                var result = _addClaimsToRequest.SetClaimsOnContext(downstreamReRoute.ClaimsToClaims, httpContext);
 
                 if (result.IsError)
                 {

@@ -1,10 +1,10 @@
 ﻿namespace Ocelot.Requester
 {
-    using Ocelot.Middleware;
+    using Ocelot.Configuration;
 
     public interface IHttpClientBuilder
     {
-        IHttpClient Create(IDownstreamContext request);
+        IHttpClient Create(DownstreamReRoute downstreamReRoute);
 
         void Save();
     }

@@ -23,12 +23,14 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            var options = downstreamContext.DownstreamReRoute.RateLimitOptions;
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            var options = downstreamReRoute.RateLimitOptions;
 
             // check if rate limiting is enabled
-            if (!downstreamContext.DownstreamReRoute.EnableEndpointEndpointRateLimiting)
+            if (!downstreamReRoute.EnableEndpointEndpointRateLimiting)
             {
-                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value}");
+                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamReRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -39,7 +41,7 @@
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                Logger.LogInformation($"{downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+                Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -57,7 +59,7 @@
                     var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                     // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamContext.DownstreamReRoute);
+                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamReRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
 

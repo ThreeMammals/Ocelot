@@ -23,11 +23,13 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (downstreamContext.DownstreamReRoute.ClaimsToPath.Any())
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
+            if (downstreamReRoute.ClaimsToPath.Any())
             {
-                Logger.LogInformation($"{downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
-                var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamContext.DownstreamReRoute.ClaimsToPath, httpContext.User.Claims,
-                    downstreamContext.DownstreamReRoute.DownstreamPathTemplate, downstreamContext.TemplatePlaceholderNameAndValues);
+                Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
+                var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamReRoute.ClaimsToPath, httpContext.User.Claims,
+                    downstreamReRoute.DownstreamPathTemplate, downstreamContext.TemplatePlaceholderNameAndValues);
 
                 if (response.IsError)
                 {

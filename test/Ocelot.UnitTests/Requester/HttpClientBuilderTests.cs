@@ -421,18 +421,18 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIBuild()
         {
-            _httpClient = _builder.Create(_context);
+            _httpClient = _builder.Create(_context.DownstreamReRoute);
         }
 
         private void WhenIBuildTheFirstTime()
         {
-            _firstHttpClient = _builder.Create(_context);
+            _firstHttpClient = _builder.Create(_context.DownstreamReRoute);
         }
 
         private void WhenIBuildAgain()
         {
             _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
-            _againHttpClient = _builder.Create(_context);
+            _againHttpClient = _builder.Create(_context.DownstreamReRoute);
         }
 
         private void ThenTheHttpClientShouldNotBeNull()

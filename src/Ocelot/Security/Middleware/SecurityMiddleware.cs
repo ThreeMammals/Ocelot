@@ -9,7 +9,6 @@
     public class SecurityMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IOcelotLogger _logger;
         private readonly IEnumerable<ISecurityPolicy> _securityPolicies;
 
         public SecurityMiddleware(RequestDelegate next, 
@@ -18,18 +17,19 @@
             )
             : base(loggerFactory.CreateLogger<SecurityMiddleware>())
         {
-            _logger = loggerFactory.CreateLogger<SecurityMiddleware>();
             _securityPolicies = securityPolicies;
             _next = next;
         }
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
+            var downstreamReRoute = Get(httpContext, downstreamContext);
+
             if (_securityPolicies != null)
             {
                 foreach (var policy in _securityPolicies)
                 {
-                    var result = await policy.Security(downstreamContext, httpContext);
+                    var result = await policy.Security(downstreamReRoute, httpContext);
                     if (!result.IsError)
                     {
                         continue;

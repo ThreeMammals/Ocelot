@@ -22,11 +22,13 @@
 
         public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
         {
-            if (downstreamContext.DownstreamReRoute.ClaimsToQueries.Any())
-            {
-                Logger.LogInformation($"{downstreamContext.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+            var downstreamReRoute = Get(httpContext, downstreamContext);
 
-                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamContext.DownstreamReRoute.ClaimsToQueries, httpContext.User.Claims, downstreamContext.DownstreamRequest);
+            if (downstreamReRoute.ClaimsToQueries.Any())
+            {
+                Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+
+                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamReRoute.ClaimsToQueries, httpContext.User.Claims, downstreamContext.DownstreamRequest);
 
                 if (response.IsError)
                 {

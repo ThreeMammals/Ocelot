@@ -1,13 +1,13 @@
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
 namespace Ocelot.Requester
 {
+    using Ocelot.Configuration;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Responses;
+    using System;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     public class HttpClientHttpRequester : IHttpRequester
     {
@@ -27,11 +27,11 @@ namespace Ocelot.Requester
             _mapper = mapper;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(IDownstreamContext context, HttpContext httpContext)
+        public async Task<Response<HttpResponseMessage>> GetResponse(IDownstreamContext context, HttpContext httpContext, DownstreamReRoute downstreamReRoute)
         {
             var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
 
-            var httpClient = builder.Create(context);
+            var httpClient = builder.Create(downstreamReRoute);
 
             try
             {
