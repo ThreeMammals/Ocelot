@@ -1,27 +1,38 @@
-﻿namespace Ocelot.Middleware.Multiplexer
+﻿namespace Ocelot.DownstreamRouteFinder.Middleware
 {
     using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Ocelot.Infrastructure.Extensions;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Request.Middleware;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class Multiplexer : IMultiplexer
+    public class MultiplexingMiddleware : OcelotMiddleware
     {
+        private readonly RequestDelegate _next;
         private readonly IResponseAggregatorFactory _factory;
 
-        public Multiplexer(IResponseAggregatorFactory factory)
+        public MultiplexingMiddleware(RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
+            IResponseAggregatorFactory factory
+            )
+                : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
             _factory = factory;
+            _next = next;
         }
 
-        public async Task Multiplex(IDownstreamContext context, HttpContext httpContext, RequestDelegate next)
+        public async Task Invoke(HttpContext httpContext, IDownstreamContext context)
         {
             var reRouteKeysConfigs = context.DownstreamRoute.ReRoute.DownstreamReRouteConfig;
             if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
             {
-                var tasks = new Task<IDownstreamContext>[context.DownstreamRoute.ReRoute.DownstreamReRoute.Count];
+                var tasks = new Task<HttpContext>[context.DownstreamRoute.ReRoute.DownstreamReRoute.Count];
 
                 for (var i = 0; i < context.DownstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
                 {
@@ -58,12 +69,12 @@
                     // add the downstream re route to this context so we know what to work with in later
                     newHttpContext.Items.Add("DownstreamReRoute", context.DownstreamRoute.ReRoute.DownstreamReRoute[i]);
 
-                    tasks[i] = Fire(downstreamContext, newHttpContext, next);
+                    tasks[i] = Fire(newHttpContext, _next);
                 }
 
                 await Task.WhenAll(tasks);
 
-                var contexts = new List<IDownstreamContext>();
+                var contexts = new List<HttpContext>();
 
                 foreach (var task in tasks)
                 {
@@ -81,21 +92,21 @@
                     Configuration = context.Configuration,
                     DownstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[0],
                 };
-                var mainResponse = await Fire(downstreamContextMain, httpContext, next);
+                var mainResponse = await Fire(httpContext, _next);
 
                 if (context.DownstreamRoute.ReRoute.DownstreamReRoute.Count == 1)
                 {
-                    MapNotAggregate(context, new List<IDownstreamContext>() { mainResponse });
+                    MapNotAggregate(context, new List<HttpContext>() { mainResponse });
                     return;
                 }
 
-                var tasks = new List<Task<IDownstreamContext>>();
-                if (mainResponse.DownstreamResponse == null)
+                var tasks = new List<Task<HttpContext>>();
+                if (mainResponse.Items.DownstreamResponse() == null)
                 {
                     return;
                 }
 
-                var content = await mainResponse.DownstreamResponse.Content.ReadAsStringAsync();
+                var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
                 var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
 
                 for (var i = 1; i < context.DownstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
@@ -116,7 +127,7 @@
                                 DownstreamReRoute = downstreamReRoute,
                             };
                             downstreamContext.TemplatePlaceholderNameAndValues.Add(new PlaceholderNameAndValue("{" + matchAdvancedAgg.Parameter + "}", value.ToString()));
-                            tasks.Add(Fire(downstreamContext, httpContext, next));
+                            tasks.Add(Fire(httpContext, _next));
                         }
                     }
                     else
@@ -127,13 +138,13 @@
                             Configuration = context.Configuration,
                             DownstreamReRoute = downstreamReRoute,
                         };
-                        tasks.Add(Fire(downstreamContext, httpContext, next));
+                        tasks.Add(Fire(httpContext, _next));
                     }
                 }
 
                 await Task.WhenAll(tasks);
 
-                var contexts = new List<IDownstreamContext>() { mainResponse };
+                var contexts = new List<HttpContext>() { mainResponse };
 
                 foreach (var task in tasks)
                 {
@@ -145,12 +156,12 @@
             }
         }
 
-        private async Task Map(ReRoute reRoute, IDownstreamContext context, List<IDownstreamContext> contexts)
+        private async Task Map(Ocelot.Configuration.ReRoute reRoute, IDownstreamContext context, List<HttpContext> contexts)
         {
             if (reRoute.DownstreamReRoute.Count > 1)
             {
                 var aggregator = _factory.Get(reRoute);
-                await aggregator.Aggregate(reRoute, context, contexts);
+                //await aggregator.Aggregate(reRoute, context, contexts);
             }
             else
             {
@@ -158,23 +169,61 @@
             }
         }
 
-        private void MapNotAggregate(IDownstreamContext originalContext, List<IDownstreamContext> downstreamContexts)
+        private void MapNotAggregate(IDownstreamContext originalContext, List<HttpContext> downstreamContexts)
         {
             //assume at least one..if this errors then it will be caught by global exception handler
             var finished = downstreamContexts.First();
 
-            originalContext.Errors.AddRange(finished.Errors);
+            //originalContext.Errors.AddRange(finished.Errors);
 
-            originalContext.DownstreamRequest = finished.DownstreamRequest;
+            originalContext.DownstreamRequest = finished.Items.DownstreamRequest();
 
-            originalContext.DownstreamResponse = finished.DownstreamResponse;
+            originalContext.DownstreamResponse = finished.Items.DownstreamResponse();
         }
 
-        private async Task<IDownstreamContext> Fire(IDownstreamContext context, HttpContext httpContext, RequestDelegate next)
+        private async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)
         {
             //todo this wont work
             await next.Invoke(httpContext);
-            return context;
+            return httpContext;
+        }
+    }
+
+    public static class HttpItemsExtensions
+    {
+        public static void SetDownstreamRequest(this IDictionary<object, object> input, DownstreamRequest downstreamRequest)
+        {
+            input.Set("DownstreamRequest", downstreamRequest);
+        }
+
+        public static void SetDownstreamResponse(this IDictionary<object, object> input, DownstreamResponse downstreamResponse)
+        {
+            input.Set("DownstreamResponse", downstreamResponse);
+        }
+
+        public static DownstreamRequest DownstreamRequest(this IDictionary<object, object> input)
+        {
+            return input.Get<DownstreamRequest>("DownstreamRequest");
+        }
+
+        public static DownstreamResponse DownstreamResponse(this IDictionary<object, object> input)
+        {
+            return input.Get<DownstreamResponse>("DownstreamResponse");
+        }
+
+        private static T Get<T>(this IDictionary<object, object> input, string key)
+        {
+            if (input.TryGetValue(key, out var value))
+            {
+                return (T)value;
+            }
+
+            return default(T);
+        }
+
+        private static void Set<T>(this IDictionary<object, object> input, string key, T value)
+        {
+            input.Add(key, value);
         }
     }
 }

@@ -656,7 +656,7 @@ namespace Ocelot.AcceptanceTests
             _dep = dep;
         }
 
-        public async Task<DownstreamResponse> Aggregate(List<DownstreamContext> responses)
+        public async Task<DownstreamResponse> Aggregate(List<IDownstreamContext> responses)
         {
             var one = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
             var two = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();

@@ -40,6 +40,7 @@
                 wenSocketsApp =>
                 {
                     wenSocketsApp.UseDownstreamRouteFinderMiddleware();
+                    wenSocketsApp.UseMultiplexingMiddleware();
                     wenSocketsApp.UseDownstreamRequestInitialiser();
                     wenSocketsApp.UseLoadBalancingMiddleware();
                     wenSocketsApp.UseDownstreamUrlCreatorMiddleware();
@@ -54,6 +55,9 @@
 
             // Then we get the downstream route information
             app.UseDownstreamRouteFinderMiddleware();
+
+            // Multiplex the request if required
+            app.UseMultiplexingMiddleware();
 
             // This security module, IP whitelist blacklist, extended security mechanism
             app.UseSecurityMiddleware();

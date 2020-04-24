@@ -20,8 +20,8 @@ namespace Ocelot.UnitTests.Middleware
     public class SimpleJsonResponseAggregatorTests
     {
         private readonly SimpleJsonResponseAggregator _aggregator;
-        private List<DownstreamContext> _downstreamContexts;
-        private DownstreamContext _upstreamContext;
+        private List<IDownstreamContext> _downstreamContexts;
+        private IDownstreamContext _upstreamContext;
         private ReRoute _reRoute;
 
         public SimpleJsonResponseAggregatorTests()
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Middleware
                 DownstreamReRoute = userDetailsDownstreamReRoute
             };
 
-            var downstreamContexts = new List<DownstreamContext> { commentsDownstreamContext, userDetailsDownstreamContext };
+            var downstreamContexts = new List<IDownstreamContext> { commentsDownstreamContext, userDetailsDownstreamContext };
 
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
 
@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Middleware
                 DownstreamReRoute = georgeDownstreamReRoute
             };
 
-            var downstreamContexts = new List<DownstreamContext> { billDownstreamContext, georgeDownstreamContext };
+            var downstreamContexts = new List<IDownstreamContext> { billDownstreamContext, georgeDownstreamContext };
 
             var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
 
@@ -154,7 +154,7 @@ namespace Ocelot.UnitTests.Middleware
 
             georgeDownstreamContext.Errors.Add(new AnyError());
 
-            var downstreamContexts = new List<DownstreamContext> { billDownstreamContext, georgeDownstreamContext };
+            var downstreamContexts = new List<IDownstreamContext> { billDownstreamContext, georgeDownstreamContext };
 
             var expected = "Error";
 
@@ -183,12 +183,12 @@ namespace Ocelot.UnitTests.Middleware
             _reRoute = reRoute;
         }
 
-        private void GivenTheUpstreamContext(DownstreamContext upstreamContext)
+        private void GivenTheUpstreamContext(IDownstreamContext upstreamContext)
         {
             _upstreamContext = upstreamContext;
         }
 
-        private void GivenTheDownstreamContext(List<DownstreamContext> downstreamContexts)
+        private void GivenTheDownstreamContext(List<IDownstreamContext> downstreamContexts)
         {
             _downstreamContexts = downstreamContexts;
         }

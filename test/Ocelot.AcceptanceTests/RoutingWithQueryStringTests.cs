@@ -86,7 +86,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/odata/customers", "?$filter=Name%20eq%20'Sam'", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/odata/customers", "?$filter=Name%20eq%20%27Sam%27", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/odata/customers?$filter=Name eq 'Sam' "))

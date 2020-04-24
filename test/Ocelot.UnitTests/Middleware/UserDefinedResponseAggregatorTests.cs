@@ -22,8 +22,8 @@ namespace Ocelot.UnitTests.Middleware
         private readonly UserDefinedResponseAggregator _aggregator;
         private readonly Mock<IDefinedAggregatorProvider> _provider;
         private ReRoute _reRoute;
-        private List<DownstreamContext> _contexts;
-        private DownstreamContext _context;
+        private List<IDownstreamContext> _contexts;
+        private IDownstreamContext _context;
 
         public UserDefinedResponseAggregatorTests()
         {
@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Middleware
 
             var context = new DownstreamContext();
 
-            var contexts = new List<DownstreamContext>
+            var contexts = new List<IDownstreamContext>
             {
                 new DownstreamContext()
                 {
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Middleware
 
             var context = new DownstreamContext();
 
-            var contexts = new List<DownstreamContext>
+            var contexts = new List<IDownstreamContext>
             {
                 new DownstreamContext()
                 {
@@ -111,12 +111,12 @@ namespace Ocelot.UnitTests.Middleware
             _provider.Verify(x => x.Get(_reRoute), Times.Once);
         }
 
-        private void GivenContext(DownstreamContext context)
+        private void GivenContext(IDownstreamContext context)
         {
             _context = context;
         }
 
-        private void GivenContexts(List<DownstreamContext> contexts)
+        private void GivenContexts(List<IDownstreamContext> contexts)
         {
             _contexts = contexts;
         }
@@ -139,7 +139,7 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<DownstreamResponse> Aggregate(List<DownstreamContext> responses)
+            public async Task<DownstreamResponse> Aggregate(List<IDownstreamContext> responses)
             {
                 var tom = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
                 var laura = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();

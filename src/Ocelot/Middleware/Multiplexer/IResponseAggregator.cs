@@ -6,6 +6,6 @@ namespace Ocelot.Middleware.Multiplexer
 {
     public interface IResponseAggregator
     {
-        Task Aggregate(ReRoute reRoute, IDownstreamContext originalContext, List<DownstreamContext> downstreamResponses);
+        Task Aggregate(ReRoute reRoute, IDownstreamContext originalContext, List<IDownstreamContext> downstreamResponses);
     }
 }

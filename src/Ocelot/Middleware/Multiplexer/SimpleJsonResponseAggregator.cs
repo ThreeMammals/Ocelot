@@ -11,12 +11,12 @@ namespace Ocelot.Middleware.Multiplexer
 {
     public class SimpleJsonResponseAggregator : IResponseAggregator
     {
-        public async Task Aggregate(ReRoute reRoute, IDownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        public async Task Aggregate(ReRoute reRoute, IDownstreamContext originalContext, List<IDownstreamContext> downstreamContexts)
         {
             await MapAggregateContent(originalContext, downstreamContexts);
         }
 
-        private static async Task MapAggregateContent(IDownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        private static async Task MapAggregateContent(IDownstreamContext originalContext, List<IDownstreamContext> downstreamContexts)
         {
             var contentBuilder = new StringBuilder();
 
@@ -84,7 +84,7 @@ namespace Ocelot.Middleware.Multiplexer
             originalContext.DownstreamResponse = new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?");
         }
 
-        private static void MapAggregateError(IDownstreamContext originalContext, DownstreamContext downstreamContext)
+        private static void MapAggregateError(IDownstreamContext originalContext, IDownstreamContext downstreamContext)
         {
             originalContext.Errors.AddRange(downstreamContext.Errors);
             originalContext.DownstreamResponse = downstreamContext.DownstreamResponse;

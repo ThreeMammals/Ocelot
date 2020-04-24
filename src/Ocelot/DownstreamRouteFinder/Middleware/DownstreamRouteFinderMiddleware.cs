@@ -57,7 +57,8 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             downstreamContext.DownstreamRoute = response.Data;
 
-            await _multiplexer.Multiplex(downstreamContext, httpContext, _next);
+            await _next.Invoke(httpContext);
+            //await _multiplexer.Multiplex(downstreamContext, httpContext, _next);
         }
     }
 }

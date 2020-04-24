@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class SecurityMiddleware : OcelotMiddleware
     {
@@ -41,6 +42,9 @@
             }
 
             await _next.Invoke(httpContext);
+
+            httpContext.Items.SetDownstreamRequest(downstreamContext.DownstreamRequest);
+            httpContext.Items.SetDownstreamResponse(downstreamContext.DownstreamResponse);
         }
     }
 }
