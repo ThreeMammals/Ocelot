@@ -3,6 +3,7 @@ namespace Ocelot.UnitTests.Headers
     using Microsoft.AspNetCore.Http;
     using Moq;
     using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Headers;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.RequestData;
@@ -263,8 +264,11 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenICallTheReplacer()
         {
-            var context = new DownstreamContext() { DownstreamResponse = _response, DownstreamRequest = _request };
-            _result = _replacer.Replace(context, new DefaultHttpContext(), _headerFindAndReplaces);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.SetDownstreamResponse(_response);
+            httpContext.Items.SetDownstreamRequest(_request);
+
+            _result = _replacer.Replace(httpContext, _headerFindAndReplaces);
         }
 
         private void ThenTheHeaderShouldBe(string key, string value)

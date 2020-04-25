@@ -1,29 +1,30 @@
-using Microsoft.AspNetCore.Http;
-using Moq;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using Ocelot.Responses;
-using Ocelot.UnitTests.Responder;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
-
 namespace Ocelot.UnitTests.Middleware
 {
+    using Microsoft.AspNetCore.Http;
+    using Moq;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Middleware;
+    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Responses;
+    using Ocelot.UnitTests.Responder;
+    using Shouldly;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class UserDefinedResponseAggregatorTests
     {
         private readonly UserDefinedResponseAggregator _aggregator;
         private readonly Mock<IDefinedAggregatorProvider> _provider;
         private ReRoute _reRoute;
-        private List<IDownstreamContext> _contexts;
-        private IDownstreamContext _context;
+        private List<HttpContext> _contexts;
+        private HttpContext _context;
 
         public UserDefinedResponseAggregatorTests()
         {
@@ -36,18 +37,18 @@ namespace Ocelot.UnitTests.Middleware
         {
             var reRoute = new ReRouteBuilder().Build();
 
-            var context = new DownstreamContext();
+            var context = new DefaultHttpContext();
 
-            var contexts = new List<IDownstreamContext>
+            var contextA = new DefaultHttpContext();
+            contextA.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+
+            var contextB = new DefaultHttpContext();
+            contextB.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+
+            var contexts = new List<HttpContext>()
             {
-                new DownstreamContext()
-                {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
-                },
-                new DownstreamContext()
-                {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
-                }
+                contextA,
+                contextB,
             };
 
             this.Given(_ => GivenTheProviderReturnsAggregator())
@@ -65,18 +66,18 @@ namespace Ocelot.UnitTests.Middleware
         {
             var reRoute = new ReRouteBuilder().Build();
 
-            var context = new DownstreamContext();
+            var context = new DefaultHttpContext();
 
-            var contexts = new List<IDownstreamContext>
+            var contextA = new DefaultHttpContext();
+            contextA.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+
+            var contextB = new DefaultHttpContext();
+            contextB.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+
+            var contexts = new List<HttpContext>()
             {
-                new DownstreamContext()
-                {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
-                },
-                new DownstreamContext()
-                {
-                    DownstreamResponse = new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason")
-                }
+                contextA,
+                contextB,
             };
 
             this.Given(_ => GivenTheProviderReturnsError())
@@ -91,8 +92,8 @@ namespace Ocelot.UnitTests.Middleware
 
         private void ThenTheErrorIsReturned()
         {
-            _context.IsError.ShouldBeTrue();
-            _context.Errors.Count.ShouldBe(1);
+            _context.Items.Errors().Count.ShouldBeGreaterThan(0);
+            _context.Items.Errors().Count.ShouldBe(1);
         }
 
         private void GivenTheProviderReturnsError()
@@ -102,7 +103,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private async Task ThenTheContentIsCorrect()
         {
-            var content = await _context.DownstreamResponse.Content.ReadAsStringAsync();
+            var content = await _context.Items.DownstreamResponse().Content.ReadAsStringAsync();
             content.ShouldBe("Tom, Laura");
         }
 
@@ -111,12 +112,12 @@ namespace Ocelot.UnitTests.Middleware
             _provider.Verify(x => x.Get(_reRoute), Times.Once);
         }
 
-        private void GivenContext(IDownstreamContext context)
+        private void GivenContext(HttpContext context)
         {
             _context = context;
         }
 
-        private void GivenContexts(List<IDownstreamContext> contexts)
+        private void GivenContexts(List<HttpContext> contexts)
         {
             _contexts = contexts;
         }
@@ -139,12 +140,12 @@ namespace Ocelot.UnitTests.Middleware
 
         public class TestDefinedAggregator : IDefinedAggregator
         {
-            public async Task<DownstreamResponse> Aggregate(List<IDownstreamContext> responses)
+            public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
             {
-                var tom = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
-                var laura = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();
+                var tom = await responses[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
+                var laura = await responses[1].Items.DownstreamResponse().Content.ReadAsStringAsync();
                 var content = $"{tom}, {laura}";
-                var headers = responses.SelectMany(x => x.DownstreamResponse.Headers).ToList();
+                var headers = responses.SelectMany(x => x.Items.DownstreamResponse().Headers).ToList();
                 return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers, "some reason");
             }
         }
