@@ -1,6 +1,8 @@
 namespace Ocelot.UnitTests.Middleware
 {
+    using Microsoft.AspNetCore.Http;
     using Moq;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Errors;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -14,9 +16,11 @@ namespace Ocelot.UnitTests.Middleware
         private Mock<IOcelotLogger> _logger;
         private FakeMiddleware _middleware;
         private List<Error> _errors;
+        private HttpContext httpContext;
 
         public OcelotMiddlewareTests()
         {
+            httpContext = new DefaultHttpContext();
             _errors = new List<Error>();
             _logger = new Mock<IOcelotLogger>();
             _middleware = new FakeMiddleware(_logger.Object);
@@ -43,7 +47,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenISetTheErrors()
         {
-            _middleware.SetPipelineError(new DownstreamContext(), _errors);
+            httpContext.Items.SetErrors(_errors);
         }
 
         private void ThenTheErrorIsLogged(int times)
@@ -53,7 +57,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenISetTheError()
         {
-            _middleware.SetPipelineError(new DownstreamContext(), _errors[0]);
+            httpContext.Items.SetError(_errors[0]);
         }
 
         private void GivenAnError(Error error)

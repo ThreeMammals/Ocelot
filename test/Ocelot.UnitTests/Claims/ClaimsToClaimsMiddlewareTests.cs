@@ -9,12 +9,12 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -24,7 +24,6 @@ namespace Ocelot.UnitTests.Claims
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ClaimsToClaimsMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
@@ -32,7 +31,6 @@ namespace Ocelot.UnitTests.Claims
         {
             _httpContext = new DefaultHttpContext();
             _addHeaders = new Mock<IAddClaimsToRequest>();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
@@ -65,13 +63,14 @@ namespace Ocelot.UnitTests.Claims
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void GivenTheAddClaimsToRequestReturns()

@@ -7,6 +7,7 @@ namespace Ocelot.Requester.Middleware
     using Ocelot.Middleware;
     using System.Threading.Tasks;
     using Ocelot.Responses;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
@@ -22,11 +23,11 @@ namespace Ocelot.Requester.Middleware
             _requester = requester;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
-            var response = await _requester.GetResponse(downstreamContext, httpContext, downstreamReRoute);
+            var response = await _requester.GetResponse(httpContext);
 
             CreateLogBasedOnResponse(response);
 
@@ -34,13 +35,13 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogDebug("IHttpRequester returned an error, setting pipeline error");
 
-                SetPipelineError(downstreamContext, response.Errors);
+                httpContext.Items.SetErrors(response.Errors);
                 return;
             }
 
             Logger.LogDebug("setting http response message");
 
-            downstreamContext.DownstreamResponse = new DownstreamResponse(response.Data);
+            httpContext.Items.SetDownstreamResponse(new DownstreamResponse(response.Data));
 
             await _next.Invoke(httpContext);
         }

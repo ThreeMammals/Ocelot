@@ -5,6 +5,7 @@
 namespace Ocelot.WebSockets.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System;
@@ -67,9 +68,10 @@ namespace Ocelot.WebSockets.Middleware
             }
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            await Proxy(httpContext, downstreamContext.DownstreamRequest.ToUri());
+            var uri = httpContext.Items.DownstreamRequest().ToUri();
+            await Proxy(httpContext, uri);
         }
 
         private async Task Proxy(HttpContext context, string serverEndpoint)

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ClaimsToQueryStringMiddleware : OcelotMiddleware
     {
@@ -20,21 +21,23 @@
             _addQueriesToRequest = addQueriesToRequest;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (downstreamReRoute.ClaimsToQueries.Any())
             {
                 Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
-                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamReRoute.ClaimsToQueries, httpContext.User.Claims, downstreamContext.DownstreamRequest);
+                var downstreamRequest = httpContext.Items.DownstreamRequest();
+
+                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamReRoute.ClaimsToQueries, httpContext.User.Claims, downstreamRequest);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                    SetPipelineError(downstreamContext, response.Errors);
+                    httpContext.Items.SetErrors(response.Errors);
                     return;
                 }
             }

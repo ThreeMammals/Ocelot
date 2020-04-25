@@ -5,6 +5,7 @@ namespace Ocelot.Request.Middleware
     using Ocelot.Request.Creator;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
@@ -23,21 +24,21 @@ namespace Ocelot.Request.Middleware
             _creator = creator;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             var httpRequestMessage = await _requestMapper.Map(httpContext.Request, downstreamReRoute);
 
             if (httpRequestMessage.IsError)
             {
-                SetPipelineError(downstreamContext, httpRequestMessage.Errors);
+                httpContext.Items.SetErrors(httpRequestMessage.Errors);
                 return;
             }
 
             var downstreamRequest = _creator.Create(httpRequestMessage.Data);
 
-            downstreamContext.DownstreamRequest = downstreamRequest;
+            httpContext.Items.SetDownstreamRequest(downstreamRequest);
 
             await _next.Invoke(httpContext);
         }

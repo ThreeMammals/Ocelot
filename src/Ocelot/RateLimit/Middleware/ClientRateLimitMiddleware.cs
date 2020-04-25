@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Linq;
@@ -21,9 +22,9 @@
             _processor = new ClientRateLimitProcessor(counterHandler);
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             var options = downstreamReRoute.RateLimitOptions;
 
@@ -67,7 +68,7 @@
                     await ReturnQuotaExceededResponse(httpContext, options, retrystring);
 
                     // Set Error
-                    SetPipelineError(downstreamContext, new QuotaExceededError(this.GetResponseMessage(options)));
+                    httpContext.Items.SetError(new QuotaExceededError(this.GetResponseMessage(options)));
 
                     return;
                 }
@@ -116,7 +117,7 @@
 
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
-            var message = this.GetResponseMessage(option);
+            var message = GetResponseMessage(option);
 
             if (!option.DisableRateLimitHeaders)
             {

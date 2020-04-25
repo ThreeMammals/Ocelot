@@ -23,7 +23,7 @@
             _leases = new List<Lease>();
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext downstreamContext, HttpContext httpContext)
+        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
         {
             var services = await _services.Invoke();
 

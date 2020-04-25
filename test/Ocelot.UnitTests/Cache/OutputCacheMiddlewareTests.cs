@@ -18,6 +18,7 @@
     using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class OutputCacheMiddlewareTests
     {
@@ -25,7 +26,6 @@
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private readonly RequestDelegate _next;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
@@ -37,13 +37,12 @@
             _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
             _cache = new Mock<IOcelotCache<CachedResponse>>();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _cacheKeyGenerator = new CacheKeyGenerator();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
+            _httpContext.Items.SetDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
         }
 
         [Fact]
@@ -96,7 +95,7 @@
         private void WhenICallTheMiddleware()
         {
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsACachedResponse(CachedResponse response)
@@ -109,7 +108,7 @@
 
         private void GivenResponseIsNotCached(HttpResponseMessage responseMessage)
         {
-            _downstreamContext.DownstreamResponse = new DownstreamResponse(responseMessage);
+            _httpContext.Items.SetDownstreamResponse(new DownstreamResponse(responseMessage));
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -125,8 +124,9 @@
 
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
 
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void ThenTheCacheGetIsCalledCorrectly()

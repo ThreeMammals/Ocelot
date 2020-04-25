@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.Authentication.Middleware
 {
-    using Ocelot.Infrastructure.RequestData;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Authentication;
     using Ocelot.Configuration;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Threading.Tasks;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class AuthenticationMiddleware : OcelotMiddleware
     {
@@ -19,9 +19,9 @@
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamReRoute))
             {
@@ -43,7 +43,7 @@
 
                     Logger.LogWarning($"Client has NOT been authenticated for {httpContext.Request.Path} and pipeline error set. {error}");
 
-                    SetPipelineError(downstreamContext, error);
+                    httpContext.Items.SetError(error);
                 }
             }
             else

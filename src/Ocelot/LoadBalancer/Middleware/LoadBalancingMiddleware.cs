@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.LoadBalancer.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -21,38 +22,42 @@
             _loadBalancerHouse = loadBalancerHouse;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
-            var loadBalancer = _loadBalancerHouse.Get(downstreamReRoute, downstreamContext.Configuration.ServiceProviderConfiguration);
+            var internalConfiguration = httpContext.Items.IInternalConfiguration();
+
+            var loadBalancer = _loadBalancerHouse.Get(downstreamReRoute, internalConfiguration.ServiceProviderConfiguration);
 
             if (loadBalancer.IsError)
             {
                 Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
-                SetPipelineError(downstreamContext, loadBalancer.Errors);
+                httpContext.Items.SetErrors(loadBalancer.Errors);
                 return;
             }
 
-            var hostAndPort = await loadBalancer.Data.Lease(downstreamContext, httpContext);
+            var hostAndPort = await loadBalancer.Data.Lease(httpContext);
             if (hostAndPort.IsError)
             {
                 Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
-                SetPipelineError(downstreamContext, hostAndPort.Errors);
+                httpContext.Items.SetErrors(hostAndPort.Errors);
                 return;
             }
 
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
+
             //todo check downstreamRequest is ok
-            downstreamContext.DownstreamRequest.Host = hostAndPort.Data.DownstreamHost;
+            downstreamRequest.Host = hostAndPort.Data.DownstreamHost;
 
             if (hostAndPort.Data.DownstreamPort > 0)
             {
-                downstreamContext.DownstreamRequest.Port = hostAndPort.Data.DownstreamPort;
+                downstreamRequest.Port = hostAndPort.Data.DownstreamPort;
             }
 
             if (!string.IsNullOrEmpty(hostAndPort.Data.Scheme))
             {
-                downstreamContext.DownstreamRequest.Scheme = hostAndPort.Data.Scheme;
+                downstreamRequest.Scheme = hostAndPort.Data.Scheme;
             }
 
             try

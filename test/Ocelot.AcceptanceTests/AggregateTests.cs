@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Middleware;
 using Ocelot.Middleware.Multiplexer;
 using Shouldly;
@@ -656,14 +657,14 @@ namespace Ocelot.AcceptanceTests
             _dep = dep;
         }
 
-        public async Task<DownstreamResponse> Aggregate(List<IDownstreamContext> responses)
+        public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
         {
-            var one = await responses[0].DownstreamResponse.Content.ReadAsStringAsync();
-            var two = await responses[1].DownstreamResponse.Content.ReadAsStringAsync();
+            var one = await responses[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
+            var two = await responses[1].Items.DownstreamResponse().Content.ReadAsStringAsync();
 
             var merge = $"{one}, {two}";
             merge = merge.Replace("Hello", "Bye").Replace("{", "").Replace("}", "");
-            var headers = responses.SelectMany(x => x.DownstreamResponse.Headers).ToList();
+            var headers = responses.SelectMany(x => x.Items.DownstreamResponse().Headers).ToList();
             return new DownstreamResponse(new StringContent(merge), HttpStatusCode.OK, headers, "some reason");
         }
     }

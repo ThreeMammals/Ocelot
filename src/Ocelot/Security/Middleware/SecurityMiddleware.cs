@@ -22,9 +22,9 @@
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (_securityPolicies != null)
             {
@@ -36,15 +36,12 @@
                         continue;
                     }
 
-                    SetPipelineError(downstreamContext, result.Errors);
+                    httpContext.Items.SetErrors(result.Errors);
                     return;
                 }
             }
 
             await _next.Invoke(httpContext);
-
-            httpContext.Items.SetDownstreamRequest(downstreamContext.DownstreamRequest);
-            httpContext.Items.SetDownstreamResponse(downstreamContext.DownstreamResponse);
         }
     }
 }

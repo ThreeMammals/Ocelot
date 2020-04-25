@@ -4,6 +4,7 @@
     using Moq;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
@@ -28,7 +29,6 @@
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ReRouteRequestIdMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private readonly Mock<IRequestScopedDataRepository> _repo;
         private HttpContext _httpContext;
@@ -37,7 +37,6 @@
             _httpContext = new DefaultHttpContext();
             _downstreamRequest = new HttpRequestMessage(HttpMethod.Get, "http://test.com");
             _repo = new Mock<IRequestScopedDataRepository>();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ReRouteRequestIdMiddleware>()).Returns(_logger.Object);
@@ -47,7 +46,7 @@
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(_downstreamRequest);
+            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_downstreamRequest));
         }
 
         [Fact]
@@ -167,7 +166,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenThereIsNoGlobalRequestId()
@@ -197,8 +196,9 @@
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void GivenTheRequestIdIsAddedToTheRequest(string key, string value)

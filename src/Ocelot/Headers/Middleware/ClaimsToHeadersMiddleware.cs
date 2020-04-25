@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.Headers.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Linq;
@@ -20,21 +21,23 @@
             _addHeadersToRequest = addHeadersToRequest;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (downstreamReRoute.ClaimsToHeaders.Any())
             {
                 Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
-                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamReRoute.ClaimsToHeaders, httpContext.User.Claims, downstreamContext.DownstreamRequest);
+                var downstreamRequest = httpContext.Items.DownstreamRequest();
+
+                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamReRoute.ClaimsToHeaders, httpContext.User.Claims, downstreamRequest);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("Error setting headers on context, setting pipeline error");
 
-                    SetPipelineError(downstreamContext, response.Errors);
+                    httpContext.Items.SetErrors(response.Errors);
                     return;
                 }
 

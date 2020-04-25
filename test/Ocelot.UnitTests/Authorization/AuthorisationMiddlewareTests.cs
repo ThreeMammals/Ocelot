@@ -7,16 +7,15 @@ namespace Ocelot.UnitTests.Authorization
     using Ocelot.Authorisation.Middleware;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
     using System.Collections.Generic;
     using System.Security.Claims;
     using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.Middleware;
 
     public class AuthorisationMiddlewareTests
     {
@@ -25,7 +24,6 @@ namespace Ocelot.UnitTests.Authorization
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly AuthorisationMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
@@ -34,7 +32,6 @@ namespace Ocelot.UnitTests.Authorization
             _httpContext = new DefaultHttpContext();
             _authService = new Mock<IClaimsAuthoriser>();
             _authScopesService = new Mock<IScopesAuthoriser>();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
@@ -59,13 +56,13 @@ namespace Ocelot.UnitTests.Authorization
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamReRoute;
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
+            _httpContext.Items.SetDownstreamReRoute(downstreamReRoute);
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

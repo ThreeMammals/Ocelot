@@ -2,6 +2,7 @@
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -24,7 +25,6 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
-        private DownstreamContext _downstreamContext;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private Mock<IExceptionToErrorMapper> _mapper;
@@ -65,13 +65,11 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
-            var context = new DownstreamContext()
-            {
-                DownstreamReRoute = reRoute,
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }),
-            };
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.SetDownstreamReRoute(reRoute);
+            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }));
 
-            this.Given(x => x.GivenTheRequestIs(context))
+            this.Given(x => x.GivenTheRequestIs(httpContext))
                 .And(x => GivenTheHouseReturnsOkHandler())
                 .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledCorrectly())
@@ -94,13 +92,11 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
-            var context = new DownstreamContext()
-            {
-                DownstreamReRoute = reRoute,
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
-            };
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.SetDownstreamReRoute(reRoute);
+            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
-            this.Given(x => x.GivenTheRequestIs(context))
+            this.Given(x => x.GivenTheRequestIs(httpContext))
                 .When(x => x.WhenIGetResponse())
                 .Then(x => x.ThenTheResponseIsCalledError())
                 .BDDfy();
@@ -122,13 +118,11 @@ namespace Ocelot.UnitTests.Requester
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 
-            var context = new DownstreamContext()
-            {
-                DownstreamReRoute = reRoute,
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }),
-            };
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.SetDownstreamReRoute(reRoute);
+            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
-            this.Given(_ => GivenTheRequestIs(context))
+            this.Given(_ => GivenTheRequestIs(httpContext))
                 .And(_ => GivenTheHouseReturnsTimeoutHandler())
                 .When(_ => WhenIGetResponse())
                 .Then(_ => ThenTheResponseIsCalledError())
@@ -136,14 +130,14 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
-        private void GivenTheRequestIs(DownstreamContext downstreamContext)
+        private void GivenTheRequestIs(HttpContext httpContext)
         {
-            _downstreamContext = downstreamContext;
+            _httpContext = httpContext;
         }
 
         private void WhenIGetResponse()
         {
-            _response = _httpClientRequester.GetResponse(_downstreamContext, _httpContext, _downstreamContext.DownstreamReRoute).GetAwaiter().GetResult();
+            _response = _httpClientRequester.GetResponse(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseIsCalledCorrectly()

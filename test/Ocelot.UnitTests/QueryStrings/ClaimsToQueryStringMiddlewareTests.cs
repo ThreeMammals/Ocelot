@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.QueryStrings
     using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ClaimsToQueryStringMiddlewareTests
     {
@@ -27,7 +28,6 @@ namespace Ocelot.UnitTests.QueryStrings
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private ClaimsToQueryStringMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
         private Mock<IRequestScopedDataRepository> _repo;
@@ -36,13 +36,12 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             _repo = new Mock<IRequestScopedDataRepository>();
             _httpContext = new DefaultHttpContext();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToQueryStringMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _addQueries = new Mock<IAddQueriesToRequest>();
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
+            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
             _middleware = new ClaimsToQueryStringMiddleware(_next, _loggerFactory.Object, _addQueries.Object);
         }
 
@@ -71,7 +70,7 @@ namespace Ocelot.UnitTests.QueryStrings
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheAddHeadersToRequestReturnsOk()
@@ -90,13 +89,14 @@ namespace Ocelot.UnitTests.QueryStrings
                 .Verify(x => x.SetQueriesOnDownstreamRequest(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<Claim>>(),
-                    _downstreamContext.DownstreamRequest), Times.Once);
+                    _httpContext.Items.DownstreamRequest()), Times.Once);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
     }
 }

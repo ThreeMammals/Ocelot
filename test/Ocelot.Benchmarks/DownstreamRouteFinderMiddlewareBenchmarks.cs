@@ -1,32 +1,27 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Validators;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration;
-using Ocelot.DependencyInjection;
-using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Ocelot.Benchmarks
 {
-    using Infrastructure.RequestData;
+    using BenchmarkDotNet.Attributes;
+    using BenchmarkDotNet.Columns;
+    using BenchmarkDotNet.Configs;
+    using BenchmarkDotNet.Diagnosers;
+    using BenchmarkDotNet.Validators;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.Configuration;
+    using Ocelot.DependencyInjection;
+    using Ocelot.DownstreamRouteFinder.Finder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Logging;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]
     public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
     {
         private DownstreamRouteFinderMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
@@ -46,7 +41,6 @@ namespace Ocelot.Benchmarks
             var services = serviceCollection.BuildServiceProvider();
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
-            var multiplexer = services.GetService<IMultiplexer>();
 
             _next = async context =>
             {
@@ -54,24 +48,21 @@ namespace Ocelot.Benchmarks
                 throw new Exception("BOOM");
             };
 
-            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf, multiplexer);
+            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf);
+
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test");
             httpContext.Request.QueryString = new QueryString("?a=b");
             httpContext.Request.Headers.Add("Host", "most");
+            httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null, null));
 
-            _downstreamContext = new DownstreamContext()
-            {
-                Configuration = new InternalConfiguration(new List<ReRoute>(), null, null, null, null, null, null, null, null)
-            };
-
-            _httpContext = new DefaultHttpContext();
+            _httpContext = httpContext;
         }
 
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_httpContext, _downstreamContext);
+            await _middleware.Invoke(_httpContext);
         }
     }
 }

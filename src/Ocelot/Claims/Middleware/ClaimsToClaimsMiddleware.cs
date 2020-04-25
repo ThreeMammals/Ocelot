@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.Claims.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Linq;
@@ -20,9 +21,9 @@
             _addClaimsToRequest = addClaimsToRequest;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (downstreamReRoute.ClaimsToClaims.Any())
             {
@@ -34,7 +35,7 @@
                 {
                     Logger.LogDebug("error converting claims to other claims, setting pipeline error");
 
-                    SetPipelineError(downstreamContext, result.Errors);
+                    httpContext.Items.SetErrors(result.Errors);
                     return;
                 }
             }

@@ -8,6 +8,7 @@
     using Ocelot.Cache.Middleware;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Shouldly;
@@ -17,7 +18,6 @@
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
 
@@ -26,7 +26,6 @@
         private readonly IOcelotCache<CachedResponse> _cacheManager;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly OutputCacheMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
@@ -44,8 +43,7 @@
             });
             _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
             _cacheKeyGenerator = new CacheKeyGenerator();
-            _downstreamContext = new DownstreamContext();
-            _downstreamContext.DownstreamRequest = new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
+            _httpContext.Items.SetDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
             _next = context => Task.CompletedTask;
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator);
         }
@@ -69,7 +67,7 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContentTypeHeaderIsCached()
@@ -82,7 +80,7 @@
 
         private void GivenResponseIsNotCached(DownstreamResponse response)
         {
-            _downstreamContext.DownstreamResponse = response;
+            _httpContext.Items.SetDownstreamResponse(response);
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -93,7 +91,7 @@
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            _downstreamContext.DownstreamReRoute = reRoute;
+            _httpContext.Items.SetDownstreamReRoute(reRoute);
         }
     }
 }

@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.Middleware;
     using Ocelot.PathManipulation;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
     {
@@ -21,21 +22,24 @@
             _changeDownstreamPathTemplate = changeDownstreamPathTemplate;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (downstreamReRoute.ClaimsToPath.Any())
             {
                 Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
+
+                var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
+
                 var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamReRoute.ClaimsToPath, httpContext.User.Claims,
-                    downstreamReRoute.DownstreamPathTemplate, downstreamContext.TemplatePlaceholderNameAndValues);
+                    downstreamReRoute.DownstreamPathTemplate, templatePlaceholderNameAndValues);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                    SetPipelineError(downstreamContext, response.Errors);
+                    httpContext.Items.SetErrors(response.Errors);
                     return;
                 }
             }

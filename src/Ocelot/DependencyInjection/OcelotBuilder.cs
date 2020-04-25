@@ -56,25 +56,6 @@ namespace Ocelot.DependencyInjection
             Services = services;
             Services.Configure<FileConfiguration>(configurationRoot);
 
-            Services.AddScoped<IDownstreamContext, DownstreamContext>();
-
-            //Services.AddScoped<Func<DownstreamReRoute, HttpContext, IDownstreamContext>>(serviceProvider => (downstreamReRoute, httpContext) =>
-            //{
-            //    var globalButScopedForThisRequest = serviceProvider.GetService<IDownstreamContext>();
-
-            //    if (globalButScopedForThisRequest == null)
-            //    {
-            //        return new DownstreamContext();
-            //    }
-
-            //    return new DownstreamContext()
-            //    {
-            //        TemplatePlaceholderNameAndValues = globalButScopedForThisRequest.TemplatePlaceholderNameAndValues,
-            //        Configuration = globalButScopedForThisRequest.Configuration,
-            //        DownstreamReRoute = downstreamReRoute,
-            //    };
-            //});
-
             Services.TryAddSingleton<IOcelotCache<FileConfiguration>, AspMemoryCache<FileConfiguration>>();
             Services.TryAddSingleton<IOcelotCache<CachedResponse>, AspMemoryCache<CachedResponse>>();
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
@@ -147,7 +128,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
-            Services.TryAddSingleton<IMultiplexer, Multiplexer>();
             Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
             Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();

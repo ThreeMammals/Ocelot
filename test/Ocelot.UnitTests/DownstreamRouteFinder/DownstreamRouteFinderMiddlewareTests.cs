@@ -29,9 +29,7 @@
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly DownstreamRouteFinderMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private RequestDelegate _next;
-        private readonly Mock<IMultiplexer> _multiplexer;
         private HttpContext _httpContext;
 
         public DownstreamRouteFinderMiddlewareTests()
@@ -40,13 +38,11 @@
             _finder = new Mock<IDownstreamRouteProvider>();
             _factory = new Mock<IDownstreamRouteProviderFactory>();
             _factory.Setup(x => x.Get(It.IsAny<IInternalConfiguration>())).Returns(_finder.Object);
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamRouteFinderMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _multiplexer = new Mock<IMultiplexer>();
-            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _factory.Object, _multiplexer.Object);
+            _middleware = new DownstreamRouteFinderMiddleware(_next, _loggerFactory.Object, _factory.Object);
         }
 
         [Fact]
@@ -74,13 +70,13 @@
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetType();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetType();
         }
 
         private void GivenTheFollowingConfig(IInternalConfiguration config)
         {
             _config = config;
-            _downstreamContext.Configuration = config;
+            _httpContext.Items.SetIInternalConfiguration(config);
         }
 
         private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)
@@ -93,8 +89,8 @@
 
         private void ThenTheScopedDataRepositoryIsCalledCorrectly()
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues.ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
-            _downstreamContext.Configuration.ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
+            _httpContext.Items.TemplatePlaceholderNameAndValues().ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
+            _httpContext.Items.IInternalConfiguration().ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
         }
     }
 }

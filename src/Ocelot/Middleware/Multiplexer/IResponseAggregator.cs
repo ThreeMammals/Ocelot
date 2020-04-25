@@ -1,11 +1,12 @@
-﻿using Ocelot.Configuration;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Ocelot.Middleware.Multiplexer
+﻿namespace Ocelot.Middleware.Multiplexer
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     public interface IResponseAggregator
     {
-        Task Aggregate(ReRoute reRoute, IDownstreamContext originalContext, List<IDownstreamContext> downstreamResponses);
+        Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamResponses);
     }
 }

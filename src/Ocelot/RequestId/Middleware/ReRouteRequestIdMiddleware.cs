@@ -1,6 +1,7 @@
 namespace Ocelot.RequestId.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
@@ -23,15 +24,15 @@ namespace Ocelot.RequestId.Middleware
             _requestScopedDataRepository = requestScopedDataRepository;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            SetOcelotRequestId(httpContext, downstreamContext);
+            SetOcelotRequestId(httpContext);
             await _next.Invoke(httpContext);
         }
 
-        private void SetOcelotRequestId(HttpContext httpContext, IDownstreamContext downstreamContext)
+        private void SetOcelotRequestId(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             var key = downstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
 
@@ -53,9 +54,11 @@ namespace Ocelot.RequestId.Middleware
 
             var requestId = new RequestId(downstreamReRoute.RequestIdKey, httpContext.TraceIdentifier);
 
-            if (ShouldAddRequestId(requestId, downstreamContext.DownstreamRequest.Headers))
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
+
+            if (ShouldAddRequestId(requestId, downstreamRequest.Headers))
             {
-                AddRequestIdHeader(requestId, downstreamContext.DownstreamRequest);
+                AddRequestIdHeader(requestId, downstreamRequest);
             }
         }
 

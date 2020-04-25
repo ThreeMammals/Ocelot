@@ -5,6 +5,7 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.Repository;
     using Ocelot.Logging;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ConfigurationMiddleware : OcelotMiddleware
     {
@@ -18,12 +19,17 @@ namespace Ocelot.Middleware
             _configRepo = configRepo;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             //todo check the config is actually ok?
             var config = _configRepo.Get();
 
-            downstreamContext.Configuration = config.Data;
+            if(config.IsError)
+            {
+                throw new System.Exception("OOOOPS this should not happen raise an issue in GitHub");
+            }
+
+            httpContext.Items.SetIInternalConfiguration(config.Data);
 
             await _next.Invoke(httpContext);
         }

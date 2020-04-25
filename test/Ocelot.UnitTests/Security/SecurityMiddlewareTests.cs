@@ -16,7 +16,9 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Security
 {
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Infrastructure.RequestData;
+    using Shouldly;
 
     public class SecurityMiddlewareTests
     {
@@ -24,7 +26,6 @@ namespace Ocelot.UnitTests.Security
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly SecurityMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
         private readonly RequestDelegate _next;
         private HttpContext _httpContext;
 
@@ -42,8 +43,7 @@ namespace Ocelot.UnitTests.Security
                 return Task.CompletedTask;
             };
             _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList());
-            _downstreamContext = new DownstreamContext();
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
+            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Security
             foreach (var item in _securityPolicyList)
             {
                 Response response = new OkResponse();
-                item.Setup(x => x.Security(_downstreamContext.DownstreamReRoute, _httpContext)).Returns(Task.FromResult(response));
+                item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
             }
         }
 
@@ -82,29 +82,29 @@ namespace Ocelot.UnitTests.Security
                 {
                     Error error = new UnauthenticatedError($"Not passing security verification");
                     Response response = new ErrorResponse(error);
-                    item.Setup(x => x.Security(_downstreamContext.DownstreamReRoute, _httpContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
                 }
                 else
                 {
                     Response response = new OkResponse();
-                    item.Setup(x => x.Security(_downstreamContext.DownstreamReRoute, _httpContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
                 }
             }
         }
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheRequestIsPassingSecurity()
         {
-            Assert.False(_downstreamContext.IsError);
+            _httpContext.Items.Errors().Count.ShouldBe(0);
         }
 
         private void ThenTheRequestIsNotPassingSecurity()
         {
-            Assert.True(_downstreamContext.IsError);
+            _httpContext.Items.Errors().Count.ShouldBeGreaterThan(0);
         }
     }
 }

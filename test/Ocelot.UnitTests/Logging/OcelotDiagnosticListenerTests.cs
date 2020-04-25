@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 using System;
 using TestStack.BDDfy;
 using Xunit;
@@ -16,7 +15,6 @@ namespace Ocelot.UnitTests.Logging
         private readonly Mock<IOcelotLogger> _logger;
         private IServiceCollection _serviceCollection;
         private IServiceProvider _serviceProvider;
-        private DownstreamContext _downstreamContext;
         private string _name;
         private Exception _exception;
         private HttpContext _httpContext;
@@ -33,41 +31,9 @@ namespace Ocelot.UnitTests.Logging
         }
 
         [Fact]
-        public void should_trace_ocelot_middleware_started()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .When(_ => WhenOcelotMiddlewareStartedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareStarted: {_name}; {_httpContext.Request.Path}"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_trace_ocelot_middleware_finished()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .When(_ => WhenOcelotMiddlewareFinishedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareFinished: {_name}; {_httpContext.Request.Path}"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_trace_ocelot_middleware_exception()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .And(_ => GivenAException(new Exception("oh no")))
-                .When(_ => WhenOcelotMiddlewareExceptionCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareException: {_name}; {_exception.Message};"))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_trace_middleware_started()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareStartedCalled())
                 .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}"))
                 .BDDfy();
@@ -77,7 +43,6 @@ namespace Ocelot.UnitTests.Logging
         public void should_trace_middleware_finished()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareFinishedCalled())
                 .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}"))
                 .BDDfy();
@@ -87,7 +52,6 @@ namespace Ocelot.UnitTests.Logging
         public void should_trace_middleware_exception()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .And(_ => GivenAException(new Exception("oh no")))
                 .When(_ => WhenMiddlewareExceptionCalled())
                 .Then(_ => ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};"))
@@ -97,21 +61,6 @@ namespace Ocelot.UnitTests.Logging
         private void GivenAException(Exception exception)
         {
             _exception = exception;
-        }
-
-        private void WhenOcelotMiddlewareStartedCalled()
-        {
-            _listener.OcelotMiddlewareStarted(_httpContext, _name);
-        }
-
-        private void WhenOcelotMiddlewareFinishedCalled()
-        {
-            _listener.OcelotMiddlewareFinished(_httpContext, _name);
-        }
-
-        private void WhenOcelotMiddlewareExceptionCalled()
-        {
-            _listener.OcelotMiddlewareException(_exception, _httpContext, _name);
         }
 
         private void WhenMiddlewareStartedCalled()
@@ -127,11 +76,6 @@ namespace Ocelot.UnitTests.Logging
         private void WhenMiddlewareExceptionCalled()
         {
             _listener.OnMiddlewareException(_exception, _name);
-        }
-
-        private void GivenAContext()
-        {
-            _downstreamContext = new DownstreamContext();
         }
 
         private void GivenAMiddlewareName()

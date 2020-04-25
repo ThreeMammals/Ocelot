@@ -1,21 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
-using Ocelot.Middleware;
-using Ocelot.Request.Middleware;
-using Ocelot.Responses;
-using Ocelot.Security.IPSecurity;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.Security
+﻿namespace Ocelot.UnitTests.Security
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Responses;
+    using Ocelot.Security.IPSecurity;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Http;
+    using TestStack.BDDfy;
+    using Xunit;
+
     public class IPSecurityPolicyTests
     {
-        private readonly DownstreamContext _downstreamContext;
         private readonly DownstreamReRouteBuilder _downstreamReRouteBuilder;
         private readonly IPSecurityPolicy _ipSecurityPolicy;
         private Response response;
@@ -24,15 +23,14 @@ namespace Ocelot.UnitTests.Security
         public IPSecurityPolicyTests()
         {
             _httpContext = new DefaultHttpContext();
-            _downstreamContext = new DownstreamContext();
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
+            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             _downstreamReRouteBuilder = new DownstreamReRouteBuilder();
             _ipSecurityPolicy = new IPSecurityPolicy();
         }
 
         [Fact]
-        private void should_No_blocked_Ip_and_allowed_Ip()
+        public void should_No_blocked_Ip_and_allowed_Ip()
         {
             this.Given(x => x.GivenSetDownstreamReRoute())
                 .When(x => x.WhenTheSecurityPolicy())
@@ -41,7 +39,7 @@ namespace Ocelot.UnitTests.Security
         }
 
         [Fact]
-        private void should_blockedIp_clientIp_block()
+        public void should_blockedIp_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetBlockedIP())
@@ -52,7 +50,7 @@ namespace Ocelot.UnitTests.Security
         }
 
         [Fact]
-        private void should_blockedIp_clientIp_Not_block()
+        public void should_blockedIp_clientIp_Not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetBlockedIP())
@@ -63,7 +61,7 @@ namespace Ocelot.UnitTests.Security
         }
 
         [Fact]
-        private void should_allowedIp_clientIp_block()
+        public void should_allowedIp_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetAllowedIP())
@@ -74,7 +72,7 @@ namespace Ocelot.UnitTests.Security
         }
 
         [Fact]
-        private void should_allowedIp_clientIp_Not_block()
+        public void should_allowedIp_clientIp_Not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetAllowedIP())
@@ -96,12 +94,12 @@ namespace Ocelot.UnitTests.Security
 
         private void GivenSetDownstreamReRoute()
         {
-            _downstreamContext.DownstreamReRoute = _downstreamReRouteBuilder.Build();
+            _httpContext.Items.SetDownstreamReRoute(_downstreamReRouteBuilder.Build());
         }
 
         private void WhenTheSecurityPolicy()
         {
-            response = _ipSecurityPolicy.Security(_downstreamContext.DownstreamReRoute, _httpContext).GetAwaiter().GetResult();
+            response = _ipSecurityPolicy.Security(_httpContext.Items.DownstreamReRoute(), _httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenSecurityPassing()

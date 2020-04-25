@@ -1,29 +1,26 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Validators;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.Repository;
-using Ocelot.DependencyInjection;
-using Ocelot.Errors.Middleware;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Ocelot.Benchmarks
 {
+    using BenchmarkDotNet.Attributes;
+    using BenchmarkDotNet.Columns;
+    using BenchmarkDotNet.Configs;
+    using BenchmarkDotNet.Diagnosers;
+    using BenchmarkDotNet.Validators;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Errors.Middleware;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(ExceptionHandlerMiddlewareBenchmarks))]
     public class ExceptionHandlerMiddlewareBenchmarks : ManualConfig
     {
         private ExceptionHandlerMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
@@ -51,14 +48,13 @@ namespace Ocelot.Benchmarks
             };
 
             _middleware = new ExceptionHandlerMiddleware(_next, loggerFactory, repo);
-            _downstreamContext = new DownstreamContext();
             _httpContext = new DefaultHttpContext();
         }
 
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
-            await _middleware.Invoke(_httpContext, _downstreamContext);
+            await _middleware.Invoke(_httpContext);
         }
     }
 }

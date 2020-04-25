@@ -8,9 +8,10 @@ namespace Ocelot.Errors.Middleware
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     /// <summary>
-    /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
+    /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500.
     /// </summary>
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
@@ -26,21 +27,15 @@ namespace Ocelot.Errors.Middleware
             _repo = repo;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             try
             {
                 httpContext.RequestAborted.ThrowIfCancellationRequested();
 
-                //try and get the global request id and set it for logs...
-                //should this basically be immutable per request...i guess it should!
-                //first thing is get config
-                //if (Configuration.IsError)
-                //{
-                //    throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {Configuration.Errors.ToErrorString()}");
-                //}
+                var internalConfiguration = httpContext.Items.IInternalConfiguration();
 
-                TrySetGlobalRequestId(httpContext, downstreamContext.Configuration);
+                TrySetGlobalRequestId(httpContext, internalConfiguration);
 
                 Logger.LogDebug("ocelot pipeline started");
 

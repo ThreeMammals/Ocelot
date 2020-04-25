@@ -1,6 +1,7 @@
 namespace Ocelot.Responder.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Errors;
     using Ocelot.Infrastructure.Extensions;
     using Ocelot.Logging;
@@ -29,21 +30,25 @@ namespace Ocelot.Responder.Middleware
             _codeMapper = codeMapper;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             await _next.Invoke(httpContext);
 
+            var errors = httpContext.Items.Errors();
             // todo check errors is ok
-            if (downstreamContext.Errors.Count > 0)
+            if (errors.Count > 0)
             {
-                Logger.LogWarning($"{downstreamContext.Errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+                Logger.LogWarning($"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
 
-                SetErrorResponse(httpContext, downstreamContext.Errors);
+                SetErrorResponse(httpContext, errors);
             }
             else
             {
                 Logger.LogDebug("no pipeline errors, setting and returning completed response");
-                await _responder.SetResponseOnHttpContext(httpContext, downstreamContext.DownstreamResponse);
+
+                var downstreamResponse = httpContext.Items.DownstreamResponse();
+
+                await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
             }
         }
 

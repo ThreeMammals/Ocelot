@@ -8,6 +8,7 @@ namespace Ocelot.Requester
     using System;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class HttpClientHttpRequester : IHttpRequester
     {
@@ -27,15 +28,19 @@ namespace Ocelot.Requester
             _mapper = mapper;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(IDownstreamContext context, HttpContext httpContext, DownstreamReRoute downstreamReRoute)
+        public async Task<Response<HttpResponseMessage>> GetResponse(HttpContext httpContext)
         {
             var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
+
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
 
             var httpClient = builder.Create(downstreamReRoute);
 
             try
             {
-                var response = await httpClient.SendAsync(context.DownstreamRequest.ToHttpRequestMessage(), httpContext.RequestAborted);
+                var response = await httpClient.SendAsync(downstreamRequest.ToHttpRequestMessage(), httpContext.RequestAborted);
                 return new OkResponse<HttpResponseMessage>(response);
             }
             catch (Exception exception)

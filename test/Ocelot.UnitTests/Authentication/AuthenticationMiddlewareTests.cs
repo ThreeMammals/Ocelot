@@ -19,6 +19,7 @@ namespace Ocelot.UnitTests.Authentication
     using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class AuthenticationMiddlewareTests
     {
@@ -26,7 +27,6 @@ namespace Ocelot.UnitTests.Authentication
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private Mock<IOcelotLogger> _logger;
         private RequestDelegate _next;
-        private readonly DownstreamContext _downstreamContext;
         private HttpContext _httpContext;
         private Mock<IRequestScopedDataRepository> _repo;
 
@@ -37,7 +37,6 @@ namespace Ocelot.UnitTests.Authentication
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<AuthenticationMiddleware>()).Returns(_logger.Object);
-            _downstreamContext = new DownstreamContext();
         }
 
         [Fact]
@@ -75,7 +74,7 @@ namespace Ocelot.UnitTests.Authentication
                 return Task.CompletedTask;
             };
             _middleware = new AuthenticationMiddleware(_next, _factory.Object);
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheTestServerPipelineIsConfigured()
@@ -102,7 +101,7 @@ namespace Ocelot.UnitTests.Authentication
 
         private void GivenTheDownStreamRouteIs(DownstreamReRoute downstreamRoute)
         {
-            _downstreamContext.DownstreamReRoute = downstreamRoute;
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute);
         }
     }
 

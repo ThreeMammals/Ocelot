@@ -42,7 +42,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             });
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(IDownstreamContext downstreamContext, HttpContext httpContext)
+        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
         {
             var key = httpContext.Request.Cookies[_key];
 
@@ -62,7 +62,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 }
             }
 
-            var next = await _loadBalancer.Lease(downstreamContext, httpContext);
+            var next = await _loadBalancer.Lease(httpContext);
 
             if (next.IsError)
             {

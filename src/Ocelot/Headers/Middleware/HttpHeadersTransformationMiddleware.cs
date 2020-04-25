@@ -1,6 +1,7 @@
 namespace Ocelot.Headers.Middleware
 {
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Threading.Tasks;
@@ -29,9 +30,9 @@ namespace Ocelot.Headers.Middleware
             _preReplacer = preReplacer;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             var preFAndRs = downstreamReRoute.UpstreamHeadersFindAndReplace;
 
@@ -44,16 +45,18 @@ namespace Ocelot.Headers.Middleware
 
             // todo check errors is ok
             //todo put this check on the base class?
-            if (downstreamContext.Errors.Count > 0)
+            if (httpContext.Items.Errors().Count > 0)
             {
                 return;
             }
 
             var postFAndRs = downstreamReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(downstreamContext, httpContext, postFAndRs);
+            _postReplacer.Replace(httpContext, postFAndRs);
 
-            _addHeadersToResponse.Add(downstreamReRoute.AddHeadersToDownstream, downstreamContext.DownstreamResponse);
+            var downstreamResponse = httpContext.Items.DownstreamResponse();
+
+            _addHeadersToResponse.Add(downstreamReRoute.AddHeadersToDownstream, downstreamResponse);
         }
     }
 }

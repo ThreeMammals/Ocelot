@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
     using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class ClaimsToDownstreamPathMiddlewareTests
     {
@@ -27,20 +28,18 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private ClaimsToDownstreamPathMiddleware _middleware;
-        private DownstreamContext _downstreamContext;
         private RequestDelegate _next;
         private HttpContext _httpContext;
 
         public ClaimsToDownstreamPathMiddlewareTests()
         {
             _httpContext = new DefaultHttpContext();
-            _downstreamContext = new DownstreamContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToDownstreamPathMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _changePath = new Mock<IChangeDownstreamPathTemplate>();
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
+            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
             _middleware = new ClaimsToDownstreamPathMiddleware(_next, _loggerFactory.Object, _changePath.Object);
         }
 
@@ -70,7 +69,7 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext, _downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheChangeDownstreamPathReturnsOk()
@@ -90,14 +89,15 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
                 .Verify(x => x.ChangeDownstreamPath(
                     It.IsAny<List<ClaimToThing>>(),
                     It.IsAny<IEnumerable<Claim>>(),
-                    _downstreamContext.DownstreamReRoute.DownstreamPathTemplate,
-                    _downstreamContext.TemplatePlaceholderNameAndValues), Times.Once);
+                    _httpContext.Items.DownstreamReRoute().DownstreamPathTemplate,
+                    _httpContext.Items.TemplatePlaceholderNameAndValues()), Times.Once);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
     }

@@ -6,6 +6,7 @@
     using Ocelot.Responses;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {
@@ -24,9 +25,9 @@
             _scopesAuthoriser = scopesAuthoriser;
         }
 
-        public async Task Invoke(HttpContext httpContext, IDownstreamContext downstreamContext)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = Get(httpContext, downstreamContext);
+            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
 
             if (!IsOptionsHttpMethod(httpContext) && IsAuthenticatedRoute(downstreamReRoute))
             {
@@ -38,7 +39,7 @@
                 {
                     Logger.LogWarning("error authorising user scopes");
 
-                    SetPipelineError(downstreamContext, authorised.Errors);
+                    httpContext.Items.SetErrors(authorised.Errors);
                     return;
                 }
 
@@ -50,7 +51,7 @@
                 {
                     Logger.LogWarning("user scopes is not authorised setting pipeline error");
 
-                    SetPipelineError(downstreamContext, new UnauthorisedError(
+                    httpContext.Items.SetError(new UnauthorisedError(
                             $"{httpContext.User.Identity.Name} unable to access {downstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
@@ -59,13 +60,13 @@
             {
                 Logger.LogInformation("route is authorised");
 
-                var authorised = _claimsAuthoriser.Authorise(httpContext.User, downstreamReRoute.RouteClaimsRequirement, downstreamContext.TemplatePlaceholderNameAndValues);
+                var authorised = _claimsAuthoriser.Authorise(httpContext.User, downstreamReRoute.RouteClaimsRequirement, httpContext.Items.TemplatePlaceholderNameAndValues());
 
                 if (authorised.IsError)
                 {
                     Logger.LogWarning($"Error whilst authorising {httpContext.User.Identity.Name}. Setting pipeline error");
 
-                    SetPipelineError(downstreamContext, authorised.Errors);
+                    httpContext.Items.SetErrors(authorised.Errors);
                     return;
                 }
 
@@ -78,7 +79,7 @@
                 {
                     Logger.LogWarning($"{httpContext.User.Identity.Name} is not authorised to access {downstreamReRoute.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
 
-                    SetPipelineError(downstreamContext, new UnauthorisedError($"{httpContext.User.Identity.Name} is not authorised to access {downstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
+                    httpContext.Items.SetError(new UnauthorisedError($"{httpContext.User.Identity.Name} is not authorised to access {downstreamReRoute.UpstreamPathTemplate.OriginalValue}"));
                 }
             }
             else

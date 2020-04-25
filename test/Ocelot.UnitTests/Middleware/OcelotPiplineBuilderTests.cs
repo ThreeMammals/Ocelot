@@ -8,24 +8,20 @@
     using Ocelot.DependencyInjection;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Pipeline;
     using Shouldly;
     using System.Collections.Generic;
     using System.Reflection;
     using Microsoft.AspNetCore.Builder;
     using Ocelot.Errors.Middleware;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
     using System;
     using System.Threading.Tasks;
-    using Responses;
 
     public class OcelotPiplineBuilderTests
     {
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configRoot;
-        private DownstreamContext _downstreamContext;
         private int _counter;
         private HttpContext _httpContext;
 
@@ -68,12 +64,10 @@
 
         private void WhenIUseAGeneric()
         {
-            _services.AddScoped<IDownstreamContext, DownstreamContext>();
             var provider = _services.BuildServiceProvider();
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.UseMiddleware<ExceptionHandlerMiddleware>();
             var del = builder.Build();
-            _downstreamContext = new DownstreamContext();
             del.Invoke(_httpContext);
         }
 
@@ -93,7 +87,6 @@
                 await next.Invoke();
             });
             var del = builder.Build();
-            _downstreamContext = new DownstreamContext();
             del.Invoke(_httpContext);
         }
 
@@ -110,7 +103,6 @@
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.UseMiddleware<MultiParametersInvokeMiddleware>();
             var del = builder.Build();
-            _downstreamContext = new DownstreamContext();
             del.Invoke(_httpContext);
         }
 
