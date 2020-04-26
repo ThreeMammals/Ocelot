@@ -7,6 +7,7 @@ namespace Ocelot.Responder.Middleware
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -54,8 +55,15 @@ namespace Ocelot.Responder.Middleware
 
         private void SetErrorResponse(HttpContext context, List<Error> errors)
         {
+            //todo - refactor this all teh way down because its shit
             var statusCode = _codeMapper.Map(errors);
             _responder.SetErrorResponseOnContext(context, statusCode);
+
+            if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
+            {
+                var downstreamResponse = context.Items.DownstreamResponse();
+                _responder.SetErrorResponseOnContext(context, downstreamResponse);
+            }
         }
     }
 }

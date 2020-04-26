@@ -174,7 +174,7 @@ namespace Ocelot.UnitTests.Errors
         private class FakeError : Error
         {
             internal FakeError()
-                : base("meh", OcelotErrorCode.CannotAddDataError)
+                : base("meh", OcelotErrorCode.CannotAddDataError, 404)
             {
             }
         }

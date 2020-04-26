@@ -6,6 +6,8 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Linq;
+    using System.Net;
+    using System.Net.Http;
     using System.Threading.Tasks;
 
     public class ClientRateLimitMiddleware : OcelotMiddleware
@@ -65,10 +67,11 @@
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
                     // break execution
-                    await ReturnQuotaExceededResponse(httpContext, options, retrystring);
+                    var ds = ReturnQuotaExceededResponse(httpContext, options, retrystring);
+                    httpContext.Items.SetDownstreamResponse(ds);
 
                     // Set Error
-                    httpContext.Items.SetError(new QuotaExceededError(this.GetResponseMessage(options)));
+                    httpContext.Items.SetError(new QuotaExceededError(this.GetResponseMessage(options), options.HttpStatusCode));
 
                     return;
                 }
@@ -115,17 +118,20 @@
                 $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.OriginalValue }, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
 
-        public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
+        public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
             var message = GetResponseMessage(option);
 
+            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode);
+
+            http.Content = new StringContent(message);
+
             if (!option.DisableRateLimitHeaders)
             {
-                httpContext.Response.Headers["Retry-After"] = retryAfter;
+                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter);
             }
 
-            httpContext.Response.StatusCode = option.HttpStatusCode;
-            return httpContext.Response.WriteAsync(message);
+            return new DownstreamResponse(http);
         }
 
         private string GetResponseMessage(RateLimitOptions option)
