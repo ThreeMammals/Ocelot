@@ -30,20 +30,6 @@
 
         private HttpContext Copy(HttpContext source)
         {
-            //"Protocol": "HTTP/1.1",
-            //"Scheme": "http",
-            //"Method": "GET",
-            //"PathBase": "",
-            //"Path": "/",
-            //"QueryString": "",
-            //"RawTarget": "",
-            //"Headers": {
-            //        "Host": [
-            //            "localhost"
-            //    ]
-            //}
-
-
             var target = new DefaultHttpContext();
 
             foreach (var header in source.Request.Headers)
@@ -67,31 +53,27 @@
             target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
             target.RequestServices = source.RequestServices;
 
-            foreach(var wsrp in source.WebSockets.WebSocketRequestedProtocols)
-            {
-                target.WebSockets.WebSocketRequestedProtocols.Add(wsrp);
-            }
-
             target.Items.Add("RequestId", source.Items["RequestId"]);
-            //target.Request.Form = target.Request.Form;
+            target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
+            target.Items.SetTemplatePlaceholderNameAndValues(source.Items.TemplatePlaceholderNameAndValues());
             return target;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            //if(httpContext.WebSockets.IsWebSocketRequest)
-            //{
-            //    httpContext.Items.Add("DownstreamReRoute", context.DownstreamRoute.ReRoute.DownstreamReRoute[0]);
-
-            //    await _next.Invoke(httpContext);
-            //    return;
-            //}
+            if (httpContext.WebSockets.IsWebSocketRequest)
+            {
+                //todo this is obviously stupid
+                httpContext.Items.SetDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                await _next.Invoke(httpContext);
+                return;
+            }
 
             //var reRouteKeysConfigs = context.DownstreamRoute.ReRoute.DownstreamReRouteConfig;
             //if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
             //{
 
-                var downstreamRoute = httpContext.Items.DownstreamRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
                 var tasks = new Task<HttpContext>[downstreamRoute.ReRoute.DownstreamReRoute.Count];
 
@@ -211,8 +193,8 @@
 
             httpContext.Items.SetDownstreamResponse(finished.Items.DownstreamResponse());
 
-            httpContext.Response.StatusCode = finished.Response.StatusCode;
-            httpContext.Response.Body = finished.Response.Body;
+            //httpContext.Response.StatusCode = finished.Response.StatusCode;
+            //httpContext.Response.Body = finished.Response.Body;
         }
 
         private async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)

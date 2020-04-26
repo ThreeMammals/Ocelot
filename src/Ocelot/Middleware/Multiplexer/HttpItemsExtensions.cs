@@ -57,7 +57,8 @@
 
         public static List<Error> Errors(this IDictionary<object, object> input)
         {
-            return input.Get<List<Error>>("Errors");
+            var errors = input.Get<List<Error>>("Errors");
+            return errors == null ? new List<Error>() : errors;
         }
 
         public static DownstreamRoute DownstreamRoute(this IDictionary<object, object> input)
