@@ -30,17 +30,14 @@ namespace Ocelot.UnitTests.RateLimit
         private Mock<IOcelotLogger> _logger;
         private readonly ClientRateLimitMiddleware _middleware;
         private RequestDelegate _next;
+        private DownstreamResponse _downstreamResponse;
         private readonly string _url;
-        private HttpContext _httpContext;
 
         public ClientRateLimitMiddlewareTests()
         {
-            _httpContext = new DefaultHttpContext();
             _url = "http://localhost:51879";
             var cacheEntryOptions = new MemoryCacheOptions();
             _rateLimitCounterHandler = new MemoryCacheRateLimitCounterHandler(new MemoryCache(cacheEntryOptions));
-            _httpContext.Response.Body = new FakeStream();
-
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
@@ -67,11 +64,10 @@ namespace Ocelot.UnitTests.RateLimit
 
             var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(), reRoute);
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .When(x => x.WhenICallTheMiddlewareMultipleTime(2))
-                .Then(x => x.ThenresponseStatusCodeIs200())
-                .When(x => x.WhenICallTheMiddlewareMultipleTime(3))
-                .Then(x => x.ThenresponseStatusCodeIs429())
+            this.Given(x => x.WhenICallTheMiddlewareMultipleTimes(2, downstreamRoute))
+                .Then(x => x.ThenThereIsNoDownstreamResponse())
+                .When(x => x.WhenICallTheMiddlewareMultipleTimes(3, downstreamRoute))
+                .Then(x => x.ThenTheResponseIs429())
                 .BDDfy();
         }
 
@@ -89,58 +85,67 @@ namespace Ocelot.UnitTests.RateLimit
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build());
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .When(x => x.WhenICallTheMiddlewareWithWhiteClient())
-                .Then(x => x.ThenresponseStatusCodeIs200())
+            this.Given(x => x.WhenICallTheMiddlewareWithWhiteClient(downstreamRoute))
+                .Then(x => x.ThenThereIsNoDownstreamResponse())
                 .BDDfy();
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void WhenICallTheMiddlewareMultipleTimes(int times, DownstreamRoute downstreamRoute)
         {
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-            _httpContext.Items.SetDownstreamRoute(downstreamRoute);
-        }
-
-        private void WhenICallTheMiddlewareMultipleTime(int times)
-        {
-            var clientId = "ocelotclient1";
+            var httpContexts = new List<HttpContext>();
 
             for (int i = 0; i < times; i++)
             {
+                var httpContext = new DefaultHttpContext();
+                httpContext.Response.Body = new FakeStream();
+                httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+                httpContext.Items.SetDownstreamRoute(downstreamRoute);
+                var clientId = "ocelotclient1";
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
-                request.Headers.Add("ClientId", clientId);
-                _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
+                httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
+                httpContext.Request.Headers.TryAdd("ClientId", clientId);
+                httpContexts.Add(httpContext);
+            }
 
-                _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
-                _responseStatusCode = _httpContext.Response.StatusCode;
+            foreach (var httpContext in httpContexts)
+            {
+                _middleware.Invoke(httpContext).GetAwaiter().GetResult();
+                var ds = httpContext.Items.DownstreamResponse();
+                _downstreamResponse = ds;
             }
         }
 
-        private void WhenICallTheMiddlewareWithWhiteClient()
+        private void WhenICallTheMiddlewareWithWhiteClient(DownstreamRoute downstreamRoute)
         {
             var clientId = "ocelotclient2";
 
             for (int i = 0; i < 10; i++)
             {
+                var httpContext = new DefaultHttpContext();
+                httpContext.Response.Body = new FakeStream();
+                httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+                httpContext.Items.SetDownstreamRoute(downstreamRoute);
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
-                _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
-                _httpContext.Request.Headers.TryAdd("ClientId", clientId);
-
-                _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
-                _responseStatusCode = (int)_httpContext.Response.StatusCode;
+                httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
+                httpContext.Request.Headers.TryAdd("ClientId", clientId);
+                _middleware.Invoke(httpContext).GetAwaiter().GetResult();
+                var ds = httpContext.Items.DownstreamResponse();
+                _downstreamResponse = ds;
             }
         }
 
-        private void ThenresponseStatusCodeIs429()
+        private void ThenTheResponseIs429()
         {
-            _responseStatusCode.ShouldBe(429);
+            var code = (int)_downstreamResponse.StatusCode;
+            code.ShouldBe(429);
         }
 
-        private void ThenresponseStatusCodeIs200()
+        private void ThenThereIsNoDownstreamResponse()
         {
-            _responseStatusCode.ShouldBe(200);
+            _downstreamResponse.ShouldBeNull();
         }
     }
 

@@ -44,7 +44,6 @@
             _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
             _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
             _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_request));
             _next = context => Task.CompletedTask;
         }
 

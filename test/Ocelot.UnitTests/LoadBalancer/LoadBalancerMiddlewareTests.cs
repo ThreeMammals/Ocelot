@@ -51,7 +51,6 @@ namespace Ocelot.UnitTests.LoadBalancer
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<LoadBalancingMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_downstreamRequest));
         }
 
         [Fact]

@@ -51,8 +51,8 @@
         [Fact]
         public void Should_handle_valid_httpRequest()
         {
-            //this.Given(_ => GivenTheHttpContextContainsARequest())
-            this.Given(_ => GivenTheMapperWillReturnAMappedRequest())
+            this.Given(_ => GivenTheHttpContextContainsARequest())
+                .And(_ => GivenTheMapperWillReturnAMappedRequest())
                 .When(_ => WhenTheMiddlewareIsInvoked())
                 .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
                 .And(_ => ThenTheDownstreamRequestIsStored())
@@ -64,8 +64,8 @@
         [Fact]
         public void Should_map_downstream_reroute_method_to_downstream_request()
         {
-            //this.Given(_ => GivenTheHttpContextContainsARequest())
-            this.Given(_ => GivenTheMapperWillReturnAMappedRequest())
+            this.Given(_ => GivenTheHttpContextContainsARequest())
+                .And(_ => GivenTheMapperWillReturnAMappedRequest())
                 .When(_ => WhenTheMiddlewareIsInvoked())
                 .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
                 .And(_ => ThenTheDownstreamRequestIsStored())
@@ -77,8 +77,8 @@
         [Fact]
         public void Should_handle_mapping_failure()
         {
-            //this.Given(_ => GivenTheHttpContextContainsARequest())
-            this.Given(_ => GivenTheMapperWillReturnAnError())
+            this.Given(_ => GivenTheHttpContextContainsARequest())
+                .And(_ => GivenTheMapperWillReturnAnError())
                 .When(_ => WhenTheMiddlewareIsInvoked())
                 .And(_ => ThenTheDownstreamRequestIsNotStored())
                 .And(_ => ThenAPipelineErrorIsStored())
@@ -91,13 +91,10 @@
             _httpContext.Items.DownstreamRequest().Method.ShouldBe(expected);
         }
 
-        //private void GivenTheHttpContextContainsARequest()
-        //{
-        //    _httpContext.Request = _httpRequest;
-
-        //        .Setup(hc => hc.Request)
-        //        .Returns(_httpRequest.Object);
-        //}
+        private void GivenTheHttpContextContainsARequest()
+        {
+            _httpContext.Items.SetDownstreamReRoute(new DownstreamReRouteBuilder().Build());
+        }
 
         private void GivenTheMapperWillReturnAMappedRequest()
         {
