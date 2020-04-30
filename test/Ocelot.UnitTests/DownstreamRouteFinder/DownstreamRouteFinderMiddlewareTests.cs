@@ -11,7 +11,7 @@
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.Responses;
     using Shouldly;
     using System.Collections.Generic;

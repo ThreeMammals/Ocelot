@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Ocelot.Middleware.Pipeline;
+using Ocelot.Middleware;
 
 namespace Ocelot.Errors.Middleware
 {

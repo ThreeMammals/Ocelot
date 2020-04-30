@@ -1,6 +1,6 @@
 using Ocelot.Configuration;
 
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     public class InMemoryResponseAggregatorFactory : IResponseAggregatorFactory
     {

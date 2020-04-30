@@ -1,4 +1,4 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Middleware
+﻿namespace Ocelot.Multiplexer
 {
     using Microsoft.AspNetCore.Builder;
 

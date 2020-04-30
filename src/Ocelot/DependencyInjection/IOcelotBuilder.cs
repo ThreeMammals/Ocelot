@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Middleware.Multiplexer;
+using Ocelot.Multiplexer;
 using System;
 using System.Net.Http;
 using Ocelot.Configuration;

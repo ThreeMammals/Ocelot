@@ -4,6 +4,7 @@
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.Responses;
     using Ocelot.Security.IPSecurity;

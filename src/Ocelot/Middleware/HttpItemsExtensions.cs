@@ -1,9 +1,9 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Middleware
+﻿namespace Ocelot.Middleware
 {
     using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Errors;
-    using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using System.Collections.Generic;
 

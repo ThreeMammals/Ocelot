@@ -4,9 +4,8 @@ namespace Ocelot.UnitTests.Middleware
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.Responses;
     using Ocelot.UnitTests.Responder;
     using Shouldly;

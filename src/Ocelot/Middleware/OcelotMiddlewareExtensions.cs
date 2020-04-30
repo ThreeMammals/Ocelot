@@ -11,7 +11,6 @@
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
     using Ocelot.Logging;
-    using Ocelot.Middleware.Pipeline;
     using Ocelot.Responses;
     using System;
     using System.Diagnostics;

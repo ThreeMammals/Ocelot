@@ -27,7 +27,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.PathManipulation;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;

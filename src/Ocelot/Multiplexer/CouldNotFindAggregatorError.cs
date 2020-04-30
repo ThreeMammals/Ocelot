@@ -1,6 +1,6 @@
 using Ocelot.Errors;
 
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     public class CouldNotFindAggregatorError : Error
     {

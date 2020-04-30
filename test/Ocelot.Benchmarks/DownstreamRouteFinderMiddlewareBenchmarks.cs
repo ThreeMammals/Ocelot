@@ -13,6 +13,7 @@ namespace Ocelot.Benchmarks
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;

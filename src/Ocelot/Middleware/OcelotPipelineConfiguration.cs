@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.Middleware
 {
-    using Ocelot.Middleware.Pipeline;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;

@@ -1,8 +1,8 @@
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+    using Ocelot.Middleware;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 

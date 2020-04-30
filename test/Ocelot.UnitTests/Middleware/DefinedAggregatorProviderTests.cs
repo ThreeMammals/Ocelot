@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Middleware.Multiplexer;
+using Ocelot.Multiplexer;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

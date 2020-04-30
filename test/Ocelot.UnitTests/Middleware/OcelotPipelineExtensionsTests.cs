@@ -9,7 +9,6 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Pipeline;
     using Ocelot.Request.Middleware;
     using Ocelot.WebSockets.Middleware;
     using Shouldly;

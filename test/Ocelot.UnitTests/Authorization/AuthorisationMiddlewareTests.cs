@@ -10,6 +10,7 @@ namespace Ocelot.UnitTests.Authorization
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using Ocelot.Responses;
     using System.Collections.Generic;
     using System.Security.Claims;

@@ -1,13 +1,9 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Middleware
+﻿namespace Ocelot.Multiplexer
 {
     using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
     using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
@@ -22,41 +18,10 @@
             IOcelotLoggerFactory loggerFactory,
             IResponseAggregatorFactory factory
             )
-                : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
+                : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
         {
             _factory = factory;
             _next = next;
-        }
-
-        private HttpContext Copy(HttpContext source)
-        {
-            var target = new DefaultHttpContext();
-
-            foreach (var header in source.Request.Headers)
-            {
-                target.Request.Headers.TryAdd(header.Key, header.Value);
-            }
-
-            target.Request.Body = source.Request.Body;
-            target.Request.ContentLength = source.Request.ContentLength;
-            target.Request.ContentType = source.Request.ContentType;
-            target.Request.Host = source.Request.Host;
-            target.Request.Method = source.Request.Method;
-            target.Request.Path = source.Request.Path;
-            target.Request.PathBase = source.Request.PathBase;
-            target.Request.Protocol = source.Request.Protocol;
-            target.Request.Query = source.Request.Query;
-            target.Request.QueryString = source.Request.QueryString;
-            target.Request.Scheme = source.Request.Scheme;
-            target.Request.IsHttps = source.Request.IsHttps;
-            target.Request.RouteValues = source.Request.RouteValues;
-            target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
-            target.RequestServices = source.RequestServices;
-
-            target.Items.Add("RequestId", source.Items["RequestId"]);
-            target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
-            target.Items.SetTemplatePlaceholderNameAndValues(source.Items.TemplatePlaceholderNameAndValues());
-            return target;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -167,6 +132,37 @@
 
             //    await Map(httpContext, context.DownstreamRoute.ReRoute, context, contexts);
             //}
+        }
+
+        private HttpContext Copy(HttpContext source)
+        {
+            var target = new DefaultHttpContext();
+
+            foreach (var header in source.Request.Headers)
+            {
+                target.Request.Headers.TryAdd(header.Key, header.Value);
+            }
+
+            target.Request.Body = source.Request.Body;
+            target.Request.ContentLength = source.Request.ContentLength;
+            target.Request.ContentType = source.Request.ContentType;
+            target.Request.Host = source.Request.Host;
+            target.Request.Method = source.Request.Method;
+            target.Request.Path = source.Request.Path;
+            target.Request.PathBase = source.Request.PathBase;
+            target.Request.Protocol = source.Request.Protocol;
+            target.Request.Query = source.Request.Query;
+            target.Request.QueryString = source.Request.QueryString;
+            target.Request.Scheme = source.Request.Scheme;
+            target.Request.IsHttps = source.Request.IsHttps;
+            target.Request.RouteValues = source.Request.RouteValues;
+            target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
+            target.RequestServices = source.RequestServices;
+
+            target.Items.Add("RequestId", source.Items["RequestId"]);
+            target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
+            target.Items.SetTemplatePlaceholderNameAndValues(source.Items.TemplatePlaceholderNameAndValues());
+            return target;
         }
 
         private async Task Map(HttpContext httpContext, ReRoute reRoute, List<HttpContext> contexts)

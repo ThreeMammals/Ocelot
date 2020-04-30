@@ -3,7 +3,7 @@ namespace Ocelot.UnitTests.Middleware
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Shouldly;
     using TestStack.BDDfy;
     using Xunit;

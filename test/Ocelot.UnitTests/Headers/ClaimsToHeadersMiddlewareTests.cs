@@ -10,6 +10,7 @@
     using Ocelot.Headers;
     using Ocelot.Headers.Middleware;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.Responses;
     using System.Collections.Generic;

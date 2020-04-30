@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.Provider.Consul;
     using Ocelot.Provider.Eureka;
     using Ocelot.Provider.Polly;

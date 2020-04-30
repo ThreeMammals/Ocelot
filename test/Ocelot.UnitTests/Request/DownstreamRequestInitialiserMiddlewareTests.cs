@@ -21,7 +21,6 @@
     {
         private readonly DownstreamRequestInitialiserMiddleware _middleware;
         private readonly HttpContext _httpContext;
-        private readonly Mock<HttpRequest> _httpRequest;
         private readonly Mock<RequestDelegate> _next;
         private readonly Mock<IRequestMapper> _requestMapper;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
@@ -31,7 +30,6 @@
         public DownstreamRequestInitialiserMiddlewareTests()
         {
             _httpContext = new DefaultHttpContext();
-            _httpRequest = new Mock<HttpRequest>();
             _requestMapper = new Mock<IRequestMapper>();
             _next = new Mock<RequestDelegate>();
             _logger = new Mock<IOcelotLogger>();
@@ -121,7 +119,7 @@
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
         {
-            _requestMapper.Verify(rm => rm.Map(_httpRequest.Object, _httpContext.Items.DownstreamReRoute()), Times.Once);
+            _requestMapper.Verify(rm => rm.Map(_httpContext.Request, _httpContext.Items.DownstreamReRoute()), Times.Once);
         }
 
         private void ThenTheDownstreamRequestIsStored()

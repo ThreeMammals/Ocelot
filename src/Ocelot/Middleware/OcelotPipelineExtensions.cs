@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Middleware.Pipeline
+﻿namespace Ocelot.Middleware
 {
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.RateLimit.Middleware;
@@ -22,6 +22,7 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Ocelot.WebSockets.Middleware;
+    using Ocelot.Multiplexer;
 
     public static class OcelotPipelineExtensions
     {

@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Middleware.Multiplexer
+﻿namespace Ocelot.Multiplexer
 {
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;

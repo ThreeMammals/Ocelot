@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Middleware;
-using Ocelot.Middleware.Multiplexer;
+using Ocelot.Multiplexer;
 using Shouldly;
 using System;
 using System.Collections.Generic;
