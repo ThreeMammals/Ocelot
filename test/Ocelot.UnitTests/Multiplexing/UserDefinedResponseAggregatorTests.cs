@@ -1,4 +1,4 @@
-namespace Ocelot.UnitTests.Middleware
+namespace Ocelot.UnitTests.Multiplexing
 {
     using Microsoft.AspNetCore.Http;
     using Moq;

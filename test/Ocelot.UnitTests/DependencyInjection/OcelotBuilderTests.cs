@@ -19,11 +19,11 @@ namespace Ocelot.UnitTests.DependencyInjection
     using Microsoft.AspNetCore.Http;
     using TestStack.BDDfy;
     using Xunit;
-    using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
     using System.Threading.Tasks;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Responses;
     using Ocelot.Values;
+    using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
     public class OcelotBuilderTests
     {

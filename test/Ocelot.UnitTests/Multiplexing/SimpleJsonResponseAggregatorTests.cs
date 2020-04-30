@@ -15,7 +15,7 @@ using System.Text;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Middleware
+namespace Ocelot.UnitTests.Multiplexing
 {
     public class SimpleJsonResponseAggregatorTests
     {

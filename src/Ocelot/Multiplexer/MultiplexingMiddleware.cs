@@ -2,11 +2,11 @@
 {
     using Microsoft.AspNetCore.Http;
     using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using System.Threading.Tasks;
 
     public class MultiplexingMiddleware : OcelotMiddleware
@@ -34,18 +34,26 @@
                 return;
             }
 
-            //var reRouteKeysConfigs = context.DownstreamRoute.ReRoute.DownstreamReRouteConfig;
-            //if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
-            //{
-
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
+            var reRouteKeysConfigs = httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRouteConfig;
+            if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
+            {
+                var downstreamRoute = httpContext.Items.DownstreamRoute();
 
                 var tasks = new Task<HttpContext>[downstreamRoute.ReRoute.DownstreamReRoute.Count];
 
                 for (var i = 0; i < downstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
                 {
                     var newHttpContext = Copy(httpContext);
-                    newHttpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[i]);
+
+                    newHttpContext.Items
+                        .Add("RequestId", httpContext.Items["RequestId"]);
+                    newHttpContext.Items
+                        .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
+                    newHttpContext.Items
+                        .SetTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
+                    newHttpContext.Items
+                        .SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[i]);
+
                     tasks[i] = Fire(newHttpContext, _next);
                 }
 
@@ -60,78 +68,96 @@
                 }
 
                 await Map(httpContext, downstreamRoute.ReRoute, contexts);
-            //}
-            //else
-            //{
-            //    var downstreamContextMain = new DownstreamContext()
-            //    {
-            //        TemplatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues,
-            //        Configuration = context.Configuration,
-            //        DownstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[0],
-            //    };
+            }
+            else
+            {
+                httpContext.Items.SetDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                var mainResponse = await Fire(httpContext, _next);
 
-            //    var mainResponse = await Fire(httpContext, _next);
+                if (httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute.Count == 1)
+                {
+                    MapNotAggregate(httpContext, new List<HttpContext>() { mainResponse });
+                    return;
+                }
 
-            //    if (context.DownstreamRoute.ReRoute.DownstreamReRoute.Count == 1)
-            //    {
-            //        MapNotAggregate(context, httpContext, new List<HttpContext>() { mainResponse });
-            //        return;
-            //    }
+                var tasks = new List<Task<HttpContext>>();
 
-            //    var tasks = new List<Task<HttpContext>>();
-            //    if (mainResponse.Items.DownstreamResponse() == null)
-            //    {
-            //        return;
-            //    }
+                if (mainResponse.Items.DownstreamResponse() == null)
+                {
+                    return;
+                }
 
-            //    var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
-            //    var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
+                var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
 
-            //    for (var i = 1; i < context.DownstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
-            //    {
-            //        var templatePlaceholderNameAndValues = context.TemplatePlaceholderNameAndValues;
-            //        var downstreamReRoute = context.DownstreamRoute.ReRoute.DownstreamReRoute[i];
-            //        var matchAdvancedAgg = reRouteKeysConfigs.FirstOrDefault(q => q.ReRouteKey == downstreamReRoute.Key);
-            //        if (matchAdvancedAgg != null)
-            //        {
-            //            var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct().ToList();
+                var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
 
-            //            foreach (var value in values)
-            //            {
-            //                var downstreamContext = new DownstreamContext()
-            //                {
-            //                    TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
-            //                    Configuration = context.Configuration,
-            //                    DownstreamReRoute = downstreamReRoute,
-            //                };
-            //                downstreamContext.TemplatePlaceholderNameAndValues.Add(new PlaceholderNameAndValue("{" + matchAdvancedAgg.Parameter + "}", value.ToString()));
-            //                tasks.Add(Fire(httpContext, _next));
-            //            }
-            //        }
-            //        else
-            //        {
-            //            var downstreamContext = new DownstreamContext()
-            //            {
-            //                TemplatePlaceholderNameAndValues = new List<PlaceholderNameAndValue>(templatePlaceholderNameAndValues),
-            //                Configuration = context.Configuration,
-            //                DownstreamReRoute = downstreamReRoute,
-            //            };
-            //            tasks.Add(Fire(httpContext, _next));
-            //        }
-            //    }
+                for (var i = 1; i < httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute.Count; i++)
+                {
+                    var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
 
-            //    await Task.WhenAll(tasks);
+                    var downstreamReRoute = httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[i];
 
-            //    var contexts = new List<HttpContext>() { mainResponse };
+                    var matchAdvancedAgg = reRouteKeysConfigs
+                        .FirstOrDefault(q => q.ReRouteKey == downstreamReRoute.Key);
 
-            //    foreach (var task in tasks)
-            //    {
-            //        var finished = await task;
-            //        contexts.Add(finished);
-            //    }
+                    if (matchAdvancedAgg != null)
+                    {
+                        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct().ToList();
 
-            //    await Map(httpContext, context.DownstreamRoute.ReRoute, context, contexts);
-            //}
+                        foreach (var value in values)
+                        {
+                            var newHttpContext = Copy(httpContext);
+
+                            var tPNV = httpContext.Items.TemplatePlaceholderNameAndValues();
+                            tPNV.Add(new PlaceholderNameAndValue("{" + matchAdvancedAgg.Parameter + "}", value.ToString()));
+
+                            newHttpContext.Items
+                                .Add("RequestId", httpContext.Items["RequestId"]);
+
+                            newHttpContext.Items
+                                .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
+
+                            newHttpContext.Items
+                                .SetTemplatePlaceholderNameAndValues(tPNV);
+
+                            newHttpContext.Items
+                                .SetDownstreamReRoute(downstreamReRoute);
+
+                            tasks.Add(Fire(newHttpContext, _next));
+                        }
+                    }
+                    else
+                    {
+                        var newHttpContext = Copy(httpContext);
+
+                        newHttpContext.Items
+                               .Add("RequestId", httpContext.Items["RequestId"]);
+
+                        newHttpContext.Items
+                            .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
+
+                        newHttpContext.Items
+                            .SetTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
+
+                        newHttpContext.Items
+                            .SetDownstreamReRoute(downstreamReRoute);
+
+                        tasks.Add(Fire(newHttpContext, _next));
+                    }
+                }
+
+                await Task.WhenAll(tasks);
+
+                var contexts = new List<HttpContext>() { mainResponse };
+
+                foreach (var task in tasks)
+                {
+                    var finished = await task;
+                    contexts.Add(finished);
+                }
+
+                await Map(httpContext, httpContext.Items.DownstreamRoute().ReRoute, contexts);
+            }
         }
 
         private HttpContext Copy(HttpContext source)
@@ -158,10 +184,6 @@
             target.Request.RouteValues = source.Request.RouteValues;
             target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
             target.RequestServices = source.RequestServices;
-
-            target.Items.Add("RequestId", source.Items["RequestId"]);
-            target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
-            target.Items.SetTemplatePlaceholderNameAndValues(source.Items.TemplatePlaceholderNameAndValues());
             return target;
         }
 
@@ -170,7 +192,7 @@
             if (reRoute.DownstreamReRoute.Count > 1)
             {
                 var aggregator = _factory.Get(reRoute);
-                //await aggregator.Aggregate(reRoute, context, contexts);
+                await aggregator.Aggregate(reRoute, httpContext, contexts);
             }
             else
             {
@@ -188,14 +210,10 @@
             httpContext.Items.SetDownstreamRequest(finished.Items.DownstreamRequest());
 
             httpContext.Items.SetDownstreamResponse(finished.Items.DownstreamResponse());
-
-            //httpContext.Response.StatusCode = finished.Response.StatusCode;
-            //httpContext.Response.Body = finished.Response.Body;
         }
 
         private async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)
         {
-            //todo this wont work
             await next.Invoke(httpContext);
             return httpContext;
         }
