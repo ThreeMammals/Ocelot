@@ -98,12 +98,12 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var httpContext = new DefaultHttpContext();
                 httpContext.Response.Body = new FakeStream();
-                httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
-                httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-                httpContext.Items.SetDownstreamRoute(downstreamRoute);
+                httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+                httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
                 var clientId = "ocelotclient1";
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
-                httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
+                httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
                 httpContext.Request.Headers.TryAdd("ClientId", clientId);
                 httpContexts.Add(httpContext);
             }
@@ -124,12 +124,12 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var httpContext = new DefaultHttpContext();
                 httpContext.Response.Body = new FakeStream();
-                httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
-                httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-                httpContext.Items.SetDownstreamRoute(downstreamRoute);
+                httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+                httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
                 request.Headers.Add("ClientId", clientId);
-                httpContext.Items.SetDownstreamRequest(new DownstreamRequest(request));
+                httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
                 httpContext.Request.Headers.TryAdd("ClientId", clientId);
                 _middleware.Invoke(httpContext).GetAwaiter().GetResult();
                 var ds = httpContext.Items.DownstreamResponse();

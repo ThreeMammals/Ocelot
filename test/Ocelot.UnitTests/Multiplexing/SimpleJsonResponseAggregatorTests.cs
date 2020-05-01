@@ -55,13 +55,13 @@ namespace Ocelot.UnitTests.Multiplexing
             var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":1,""text"":""text1""},{""id"":2,""writerId"":2,""postId"":2,""text"":""text2""},{""id"":3,""writerId"":2,""postId"":1,""text"":""text21""}]";
 
             var commentsDownstreamContext = new DefaultHttpContext();
-            commentsDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            commentsDownstreamContext.Items.SetDownstreamReRoute(commentsDownstreamReRoute);
+            commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            commentsDownstreamContext.Items.UpsertDownstreamReRoute(commentsDownstreamReRoute);
 
             var userDetailsResponseContent = @"[{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""},{""id"":2,""firstName"":""reza"",""lastName"":""rezaei""}]";
             var userDetailsDownstreamContext = new DefaultHttpContext();
-            userDetailsDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            userDetailsDownstreamContext.Items.SetDownstreamReRoute(userDetailsDownstreamReRoute);
+            userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            userDetailsDownstreamContext.Items.UpsertDownstreamReRoute(userDetailsDownstreamReRoute);
 
             var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
 
@@ -95,12 +95,12 @@ namespace Ocelot.UnitTests.Multiplexing
                 .Build();
 
             var billDownstreamContext = new DefaultHttpContext();
-            billDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.SetDownstreamReRoute(billDownstreamReRoute);
+            billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            billDownstreamContext.Items.UpsertDownstreamReRoute(billDownstreamReRoute);
 
             var georgeDownstreamContext = new DefaultHttpContext();
-            georgeDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.SetDownstreamReRoute(georgeDownstreamReRoute);
+            georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            georgeDownstreamContext.Items.UpsertDownstreamReRoute(georgeDownstreamReRoute);
 
             var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
 
@@ -134,12 +134,12 @@ namespace Ocelot.UnitTests.Multiplexing
                 .Build();
 
             var billDownstreamContext = new DefaultHttpContext();
-            billDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.SetDownstreamReRoute(billDownstreamReRoute);
+            billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            billDownstreamContext.Items.UpsertDownstreamReRoute(billDownstreamReRoute);
 
             var georgeDownstreamContext = new DefaultHttpContext();
-            georgeDownstreamContext.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.SetDownstreamReRoute(georgeDownstreamReRoute);
+            georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            georgeDownstreamContext.Items.UpsertDownstreamReRoute(georgeDownstreamReRoute);
 
             georgeDownstreamContext.Items.SetError(new AnyError());
 

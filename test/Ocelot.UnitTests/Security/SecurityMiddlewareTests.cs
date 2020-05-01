@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Security
                 return Task.CompletedTask;
             };
             _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList());
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
         }
 
         [Fact]

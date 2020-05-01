@@ -265,8 +265,8 @@ namespace Ocelot.UnitTests.Headers
         private void WhenICallTheReplacer()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.SetDownstreamResponse(_response);
-            httpContext.Items.SetDownstreamRequest(_request);
+            httpContext.Items.UpsertDownstreamResponse(_response);
+            httpContext.Items.UpsertDownstreamRequest(_request);
 
             _result = _replacer.Replace(httpContext, _headerFindAndReplaces);
         }

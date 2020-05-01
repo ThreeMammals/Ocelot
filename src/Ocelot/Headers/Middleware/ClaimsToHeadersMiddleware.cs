@@ -37,7 +37,7 @@
                 {
                     Logger.LogWarning("Error setting headers on context, setting pipeline error");
 
-                    httpContext.Items.SetErrors(response.Errors);
+                    httpContext.Items.UpsertErrors(response.Errors);
                     return;
                 }
 

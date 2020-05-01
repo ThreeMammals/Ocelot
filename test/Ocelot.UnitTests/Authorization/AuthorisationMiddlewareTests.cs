@@ -62,8 +62,8 @@ namespace Ocelot.UnitTests.Authorization
 
         private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamReRoute downstreamReRoute)
         {
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
-            _httpContext.Items.SetDownstreamReRoute(downstreamReRoute);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamReRoute);
         }
 
         private void GivenTheAuthServiceReturns(Response<bool> expected)

@@ -81,7 +81,7 @@
         private void SetHttpResponseMessageThisRequest(HttpContext context,
                                                        DownstreamResponse response)
         {
-            context.Items.SetDownstreamResponse(response);
+            context.Items.UpsertDownstreamResponse(response);
         }
 
         internal DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)

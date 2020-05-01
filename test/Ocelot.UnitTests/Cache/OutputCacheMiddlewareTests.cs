@@ -42,7 +42,7 @@
             _cacheKeyGenerator = new CacheKeyGenerator();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _httpContext.Items.SetDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
+            _httpContext.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
         }
 
         [Fact]
@@ -108,7 +108,7 @@
 
         private void GivenResponseIsNotCached(HttpResponseMessage responseMessage)
         {
-            _httpContext.Items.SetDownstreamResponse(new DownstreamResponse(responseMessage));
+            _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(responseMessage));
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -124,9 +124,9 @@
 
             var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
 
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void ThenTheCacheGetIsCalledCorrectly()

@@ -39,7 +39,7 @@
                 {
                     Logger.LogWarning("error authorising user scopes");
 
-                    httpContext.Items.SetErrors(authorised.Errors);
+                    httpContext.Items.UpsertErrors(authorised.Errors);
                     return;
                 }
 
@@ -66,7 +66,7 @@
                 {
                     Logger.LogWarning($"Error whilst authorising {httpContext.User.Identity.Name}. Setting pipeline error");
 
-                    httpContext.Items.SetErrors(authorised.Errors);
+                    httpContext.Items.UpsertErrors(authorised.Errors);
                     return;
                 }
 

@@ -46,7 +46,7 @@
                 return Task.CompletedTask;
             };
             _middleware = new ReRouteRequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_downstreamRequest));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(_downstreamRequest));
         }
 
         [Fact]
@@ -196,9 +196,9 @@
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void GivenTheRequestIdIsAddedToTheRequest(string key, string value)

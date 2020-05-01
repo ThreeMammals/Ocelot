@@ -35,7 +35,7 @@
                 {
                     Logger.LogDebug("error converting claims to other claims, setting pipeline error");
 
-                    httpContext.Items.SetErrors(result.Errors);
+                    httpContext.Items.UpsertErrors(result.Errors);
                     return;
                 }
             }

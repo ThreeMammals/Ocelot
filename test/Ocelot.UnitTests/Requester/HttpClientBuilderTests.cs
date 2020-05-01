@@ -372,8 +372,8 @@ namespace Ocelot.UnitTests.Requester
         private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)
         {
             _context = new DefaultHttpContext();
-            _context.Items.SetDownstreamReRoute(downstream);
-            _context.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }));
+            _context.Items.UpsertDownstreamReRoute(downstream);
+            _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }));
         }
 
         private void ThenSomethingIsReturned()

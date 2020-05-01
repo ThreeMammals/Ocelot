@@ -43,7 +43,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             {
                 Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
 
-                httpContext.Items.SetErrors(response.Errors);
+                httpContext.Items.UpsertErrors(response.Errors);
                 return;
             }
 
@@ -51,9 +51,9 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             // why set both of these on HttpContext
-            httpContext.Items.SetTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
+            httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
 
-            httpContext.Items.SetDownstreamRoute(response.Data);
+            httpContext.Items.UpsertDownstreamRoute(response.Data);
 
             await _next.Invoke(httpContext);
         }

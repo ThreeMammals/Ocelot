@@ -9,45 +9,45 @@
 
     public static class HttpItemsExtensions
     {
-        public static void SetDownstreamRequest(this IDictionary<object, object> input, DownstreamRequest downstreamRequest)
+        public static void UpsertDownstreamRequest(this IDictionary<object, object> input, DownstreamRequest downstreamRequest)
         {
-            input.Set("DownstreamRequest", downstreamRequest);
+            input.Upsert("DownstreamRequest", downstreamRequest);
         }
 
-        public static void SetDownstreamResponse(this IDictionary<object, object> input, DownstreamResponse downstreamResponse)
+        public static void UpsertDownstreamResponse(this IDictionary<object, object> input, DownstreamResponse downstreamResponse)
         {
-            input.Set("DownstreamResponse", downstreamResponse);
+            input.Upsert("DownstreamResponse", downstreamResponse);
         }
 
-        public static void SetDownstreamReRoute(this IDictionary<object, object> input, DownstreamReRoute downstreamReRoute)
+        public static void UpsertDownstreamReRoute(this IDictionary<object, object> input, DownstreamReRoute downstreamReRoute)
         {
-            input.Set("DownstreamReRoute", downstreamReRoute);
+            input.Upsert("DownstreamReRoute", downstreamReRoute);
         }
 
-        public static void SetTemplatePlaceholderNameAndValues(this IDictionary<object, object> input, List<PlaceholderNameAndValue> tPNV)
+        public static void UpsertTemplatePlaceholderNameAndValues(this IDictionary<object, object> input, List<PlaceholderNameAndValue> tPNV)
         {
-            input.Set("TemplatePlaceholderNameAndValues", tPNV);
+            input.Upsert("TemplatePlaceholderNameAndValues", tPNV);
         }
 
-        public static void SetDownstreamRoute(this IDictionary<object, object> input, DownstreamRoute downstreamRoute)
+        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, DownstreamRoute downstreamRoute)
         {
-            input.Set("DownstreamRoute", downstreamRoute);
+            input.Upsert("DownstreamRoute", downstreamRoute);
         }
 
-        public static void SetErrors(this IDictionary<object, object> input, List<Error> errors)
+        public static void UpsertErrors(this IDictionary<object, object> input, List<Error> errors)
         {
-            input.Set("Errors", errors);
+            input.Upsert("Errors", errors);
         }
 
         public static void SetError(this IDictionary<object, object> input, Error error)
         {
             var errors = new List<Error>() { error };
-            input.Set("Errors", errors);
+            input.Upsert("Errors", errors);
         }
 
         public static void SetIInternalConfiguration(this IDictionary<object, object> input, IInternalConfiguration config)
         {
-            input.Set("IInternalConfiguration", config);
+            input.Upsert("IInternalConfiguration", config);
         }
 
         public static IInternalConfiguration IInternalConfiguration(this IDictionary<object, object> input)
@@ -96,9 +96,22 @@
             return default(T);
         }
 
-        private static void Set<T>(this IDictionary<object, object> input, string key, T value)
+        private static void Upsert<T>(this IDictionary<object, object> input, string key, T value)
         {
-            input.Add(key, value);
+            if (input.DoesntExist(key))
+            {
+                input.Add(key, value);
+            }
+            else
+            {
+                input.Remove(key);
+                input.Add(key, value);
+            }
+        }
+
+        private static bool DoesntExist(this IDictionary<object, object> input, string key)
+        {
+            return !input.ContainsKey(key);
         }
     }
 }

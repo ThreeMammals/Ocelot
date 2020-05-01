@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Responder
 
         private void GivenTheHttpResponseMessageIs(DownstreamResponse response)
         {
-            _httpContext.Items.SetDownstreamResponse(response);
+            _httpContext.Items.UpsertDownstreamResponse(response);
         }
 
         private void ThenThereAreNoErrors()

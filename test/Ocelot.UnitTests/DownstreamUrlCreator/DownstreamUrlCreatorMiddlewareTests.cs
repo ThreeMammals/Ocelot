@@ -397,15 +397,15 @@
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void GivenTheDownstreamRequestUriIs(string uri)
         {
             _request.RequestUri = new Uri(uri);
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_request));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(_request));
         }
 
         private void GivenTheUrlReplacerWillReturnSequence(params string[] paths)

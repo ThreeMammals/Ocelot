@@ -68,7 +68,7 @@
 
                     // break execution
                     var ds = ReturnQuotaExceededResponse(httpContext, options, retrystring);
-                    httpContext.Items.SetDownstreamResponse(ds);
+                    httpContext.Items.UpsertDownstreamResponse(ds);
 
                     // Set Error
                     httpContext.Items.SetError(new QuotaExceededError(this.GetResponseMessage(options), options.HttpStatusCode));

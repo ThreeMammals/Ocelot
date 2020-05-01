@@ -24,11 +24,11 @@ namespace Ocelot.Multiplexer
                 var aggregateResponse = await aggregator.Data
                     .Aggregate(downstreamResponses);
 
-                originalContext.Items.SetDownstreamResponse(aggregateResponse);
+                originalContext.Items.UpsertDownstreamResponse(aggregateResponse);
             }
             else
             {
-                originalContext.Items.SetErrors(aggregator.Errors);
+                originalContext.Items.UpsertErrors(aggregator.Errors);
             }
         }
     }

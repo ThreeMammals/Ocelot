@@ -66,8 +66,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.SetDownstreamReRoute(reRoute);
-            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }));
+            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
                 .And(x => GivenTheHouseReturnsOkHandler())
@@ -93,8 +93,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.SetDownstreamReRoute(reRoute);
-            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
+            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
                 .When(x => x.WhenIGetResponse())
@@ -119,8 +119,8 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.SetDownstreamReRoute(reRoute);
-            httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
+            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(_ => GivenTheRequestIs(httpContext))
                 .And(_ => GivenTheHouseReturnsTimeoutHandler())

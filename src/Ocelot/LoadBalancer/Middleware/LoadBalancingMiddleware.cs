@@ -33,7 +33,7 @@
             if (loadBalancer.IsError)
             {
                 Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
-                httpContext.Items.SetErrors(loadBalancer.Errors);
+                httpContext.Items.UpsertErrors(loadBalancer.Errors);
                 return;
             }
 
@@ -41,7 +41,7 @@
             if (hostAndPort.IsError)
             {
                 Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
-                httpContext.Items.SetErrors(hostAndPort.Errors);
+                httpContext.Items.UpsertErrors(hostAndPort.Errors);
                 return;
             }
 

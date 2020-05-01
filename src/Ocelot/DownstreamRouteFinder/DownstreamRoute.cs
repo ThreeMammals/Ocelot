@@ -6,6 +6,10 @@
 
     public class DownstreamRoute
     {
+        public DownstreamRoute()
+        {
+        }
+
         public DownstreamRoute(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, ReRoute reRoute)
         {
             TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;

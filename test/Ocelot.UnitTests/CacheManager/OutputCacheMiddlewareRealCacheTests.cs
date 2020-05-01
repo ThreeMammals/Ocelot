@@ -43,7 +43,7 @@
             });
             _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
             _cacheKeyGenerator = new CacheKeyGenerator();
-            _httpContext.Items.SetDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
+            _httpContext.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
             _next = context => Task.CompletedTask;
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator);
         }
@@ -80,7 +80,7 @@
 
         private void GivenResponseIsNotCached(DownstreamResponse response)
         {
-            _httpContext.Items.SetDownstreamResponse(response);
+            _httpContext.Items.UpsertDownstreamResponse(response);
         }
 
         private void GivenTheDownstreamRouteIs()
@@ -91,7 +91,7 @@
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            _httpContext.Items.SetDownstreamReRoute(reRoute);
+            _httpContext.Items.UpsertDownstreamReRoute(reRoute);
         }
     }
 }

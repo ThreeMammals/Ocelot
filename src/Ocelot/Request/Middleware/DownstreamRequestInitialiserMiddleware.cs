@@ -32,13 +32,13 @@ namespace Ocelot.Request.Middleware
 
             if (httpRequestMessage.IsError)
             {
-                httpContext.Items.SetErrors(httpRequestMessage.Errors);
+                httpContext.Items.UpsertErrors(httpRequestMessage.Errors);
                 return;
             }
 
             var downstreamRequest = _creator.Create(httpRequestMessage.Data);
 
-            httpContext.Items.SetDownstreamRequest(downstreamRequest);
+            httpContext.Items.UpsertDownstreamRequest(downstreamRequest);
 
             await _next.Invoke(httpContext);
         }

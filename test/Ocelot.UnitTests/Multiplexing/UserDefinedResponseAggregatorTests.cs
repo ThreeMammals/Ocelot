@@ -39,10 +39,10 @@ namespace Ocelot.UnitTests.Multiplexing
             var context = new DefaultHttpContext();
 
             var contextA = new DefaultHttpContext();
-            contextA.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            contextA.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
             var contextB = new DefaultHttpContext();
-            contextB.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
             var contexts = new List<HttpContext>()
             {
@@ -68,10 +68,10 @@ namespace Ocelot.UnitTests.Multiplexing
             var context = new DefaultHttpContext();
 
             var contextA = new DefaultHttpContext();
-            contextA.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            contextA.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
             var contextB = new DefaultHttpContext();
-            contextB.Items.SetDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+            contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
             var contexts = new List<HttpContext>()
             {

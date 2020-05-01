@@ -91,7 +91,7 @@
 
         private void GivenTheHttpContextContainsARequest()
         {
-            _httpContext.Items.SetDownstreamReRoute(new DownstreamReRouteBuilder().Build());
+            _httpContext.Items.UpsertDownstreamReRoute(new DownstreamReRouteBuilder().Build());
         }
 
         private void GivenTheMapperWillReturnAMappedRequest()

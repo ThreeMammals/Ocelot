@@ -36,7 +36,7 @@
                         continue;
                     }
 
-                    httpContext.Items.SetErrors(result.Errors);
+                    httpContext.Items.UpsertErrors(result.Errors);
                     return;
                 }
             }

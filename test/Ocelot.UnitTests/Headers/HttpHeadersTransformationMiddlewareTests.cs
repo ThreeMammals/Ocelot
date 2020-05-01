@@ -81,12 +81,12 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheDownstreamRequestIs()
         {
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
         }
 
         private void GivenTheHttpResponseMessageIs()
         {
-            _httpContext.Items.SetDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
+            _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
         }
 
         private void GivenTheReRouteHasPreFindAndReplaceSetUp()
@@ -99,8 +99,8 @@ namespace Ocelot.UnitTests.Headers
 
             var dR = new DownstreamRoute(null, reRoute);
 
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);
-            _httpContext.Items.SetDownstreamReRoute(dR.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);
+            _httpContext.Items.UpsertDownstreamReRoute(dR.ReRoute.DownstreamReRoute[0]);
         }
 
         private void ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly()

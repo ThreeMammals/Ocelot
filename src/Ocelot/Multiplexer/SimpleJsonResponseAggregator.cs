@@ -83,13 +83,13 @@ namespace Ocelot.Multiplexer
                 Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
             };
 
-            originalContext.Items.SetDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));
+            originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));
         }
 
         private static void MapAggregateError(HttpContext originalContext, HttpContext downstreamContext)
         {
-            originalContext.Items.SetErrors(downstreamContext.Items.Errors());
-            originalContext.Items.SetDownstreamResponse(downstreamContext.Items.DownstreamResponse());
+            originalContext.Items.UpsertErrors(downstreamContext.Items.Errors());
+            originalContext.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
         }
     }
 }

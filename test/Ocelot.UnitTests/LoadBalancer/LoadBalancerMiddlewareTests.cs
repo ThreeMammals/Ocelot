@@ -148,7 +148,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheDownStreamUrlIs(string downstreamUrl)
         {
             _downstreamRequest.RequestUri = new Uri(downstreamUrl);
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(_downstreamRequest));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(_downstreamRequest));
         }
 
         private void GivenTheLoadBalancerReturnsAnError()
@@ -176,8 +176,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheDownStreamRouteIs(DownstreamReRoute downstreamRoute, List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue> placeholder)
         {
-            _httpContext.Items.SetTemplatePlaceholderNameAndValues(placeholder);
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute);
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(placeholder);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute);
         }
 
         private void GivenTheLoadBalancerHouseReturns()

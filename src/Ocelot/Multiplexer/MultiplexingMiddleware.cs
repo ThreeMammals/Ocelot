@@ -29,7 +29,7 @@
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
                 //todo this is obviously stupid
-                httpContext.Items.SetDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -50,9 +50,9 @@
                     newHttpContext.Items
                         .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
                     newHttpContext.Items
-                        .SetTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
+                        .UpsertTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
                     newHttpContext.Items
-                        .SetDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[i]);
+                        .UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[i]);
 
                     tasks[i] = Fire(newHttpContext, _next);
                 }
@@ -71,7 +71,7 @@
             }
             else
             {
-                httpContext.Items.SetDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
                 var mainResponse = await Fire(httpContext, _next);
 
                 if (httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute.Count == 1)
@@ -118,10 +118,10 @@
                                 .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
 
                             newHttpContext.Items
-                                .SetTemplatePlaceholderNameAndValues(tPNV);
+                                .UpsertTemplatePlaceholderNameAndValues(tPNV);
 
                             newHttpContext.Items
-                                .SetDownstreamReRoute(downstreamReRoute);
+                                .UpsertDownstreamReRoute(downstreamReRoute);
 
                             tasks.Add(Fire(newHttpContext, _next));
                         }
@@ -137,10 +137,10 @@
                             .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
 
                         newHttpContext.Items
-                            .SetTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
+                            .UpsertTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
 
                         newHttpContext.Items
-                            .SetDownstreamReRoute(downstreamReRoute);
+                            .UpsertDownstreamReRoute(downstreamReRoute);
 
                         tasks.Add(Fire(newHttpContext, _next));
                     }
@@ -205,11 +205,11 @@
             //assume at least one..if this errors then it will be caught by global exception handler
             var finished = downstreamContexts.First();
 
-            httpContext.Items.SetErrors(finished.Items.Errors());
+            httpContext.Items.UpsertErrors(finished.Items.Errors());
 
-            httpContext.Items.SetDownstreamRequest(finished.Items.DownstreamRequest());
+            httpContext.Items.UpsertDownstreamRequest(finished.Items.DownstreamRequest());
 
-            httpContext.Items.SetDownstreamResponse(finished.Items.DownstreamResponse());
+            httpContext.Items.UpsertDownstreamResponse(finished.Items.DownstreamResponse());
         }
 
         private async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)

@@ -35,13 +35,13 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogDebug("IHttpRequester returned an error, setting pipeline error");
 
-                httpContext.Items.SetErrors(response.Errors);
+                httpContext.Items.UpsertErrors(response.Errors);
                 return;
             }
 
             Logger.LogDebug("setting http response message");
 
-            httpContext.Items.SetDownstreamResponse(new DownstreamResponse(response.Data));
+            httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(response.Data));
 
             await _next.Invoke(httpContext);
         }

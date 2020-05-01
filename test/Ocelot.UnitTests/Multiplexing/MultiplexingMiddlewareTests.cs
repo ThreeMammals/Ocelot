@@ -4,9 +4,13 @@
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
+    using Ocelot.Middleware;
     using Ocelot.Multiplexer;
     using Shouldly;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using TestStack.BDDfy;
     using Xunit;
@@ -14,7 +18,7 @@
     public class MultiplexingMiddlewareTests
     {
         private readonly MultiplexingMiddleware _middleware;
-        private ReRoute _reRoute;
+        private DownstreamRoute _downstreamRoute;
         private int _count;
         private Mock<IResponseAggregator> _aggregator;
         private Mock<IResponseAggregatorFactory> _factory;
@@ -60,7 +64,8 @@
 
         private void GivenTheFollowing(ReRoute reRoute)
         {
-            _reRoute = reRoute;
+            _downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
+            _httpContext.Items.UpsertDownstreamRoute(_downstreamRoute);
         }
 
         private void WhenIMultiplex()

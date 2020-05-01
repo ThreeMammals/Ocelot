@@ -101,7 +101,7 @@ namespace Ocelot.UnitTests.Authentication
 
         private void GivenTheDownStreamRouteIs(DownstreamReRoute downstreamRoute)
         {
-            _httpContext.Items.SetDownstreamReRoute(downstreamRoute);
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute);
         }
     }
 

@@ -45,7 +45,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                httpContext.Items.SetErrors(response.Errors);
+                httpContext.Items.UpsertErrors(response.Errors);
                 return;
             }
 

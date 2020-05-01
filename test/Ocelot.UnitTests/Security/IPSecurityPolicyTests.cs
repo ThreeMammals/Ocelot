@@ -24,7 +24,7 @@
         public IPSecurityPolicyTests()
         {
             _httpContext = new DefaultHttpContext();
-            _httpContext.Items.SetDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             _downstreamReRouteBuilder = new DownstreamReRouteBuilder();
             _ipSecurityPolicy = new IPSecurityPolicy();
@@ -95,7 +95,7 @@
 
         private void GivenSetDownstreamReRoute()
         {
-            _httpContext.Items.SetDownstreamReRoute(_downstreamReRouteBuilder.Build());
+            _httpContext.Items.UpsertDownstreamReRoute(_downstreamReRouteBuilder.Build());
         }
 
         private void WhenTheSecurityPolicy()
