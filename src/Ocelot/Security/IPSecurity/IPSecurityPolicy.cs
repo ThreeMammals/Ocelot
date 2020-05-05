@@ -9,7 +9,7 @@ public class IPSecurityPolicy : ISecurityPolicy
 {
     public Response Security(DownstreamRoute downstreamRoute, HttpContext context)
     {
-        var clientIp = context.Connection.RemoteIpAddress;
+        var clientIp = context.GetClientIpAddress();
         var options = downstreamRoute.SecurityOptions;
         if (options == null || clientIp == null)
         {
@@ -18,7 +18,7 @@ public class IPSecurityPolicy : ISecurityPolicy
 
         if (options.IPBlockedList?.Count > 0)
         {
-            if (options.IPBlockedList.Contains(clientIp.ToString()))
+            if (options.IPBlockedList.Contains(clientIp))
             {
                 var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP");
                 return new ErrorResponse(error);
@@ -27,7 +27,7 @@ public class IPSecurityPolicy : ISecurityPolicy
 
         if (options.IPAllowedList?.Count > 0)
         {
-            if (!options.IPAllowedList.Contains(clientIp.ToString()))
+            if (!options.IPAllowedList.Contains(clientIp))
             {
                 var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
                 return new ErrorResponse(error);
