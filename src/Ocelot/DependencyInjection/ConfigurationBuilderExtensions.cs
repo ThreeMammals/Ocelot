@@ -61,6 +61,39 @@ namespace Ocelot.DependencyInjection
         /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
         {
+            return builder.AddOcelot(folder, env, MergeOcelotJson.ToFile);
+        }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env, MergeOcelotJson mergeOcelotJson)
+        {
+            return builder.AddOcelot(".", env, mergeOcelotJson);
+        }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env, MergeOcelotJson mergeOcelotJson)
+        {
+            var json = GetMergedOcelotJson(folder, env);
+
+            if (mergeOcelotJson == MergeOcelotJson.ToFile)
+            {
+                File.WriteAllText(primaryConfigFile, json);
+                builder.AddJsonFile(primaryConfigFile, false, false);
+            }
+            else if (mergeOcelotJson == MergeOcelotJson.ToMemory)
+            { 
+                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
+            }
+
+            return builder;
+        }
+
+        const string primaryConfigFile = "ocelot.json";
+
+        private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env)
+        {
+            const string globalConfigFile = "ocelot.global.json";
+
+            const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
+
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
             var reg = SubConfigRegex();

@@ -27,6 +27,7 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
+using System;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
@@ -168,6 +169,12 @@ public class Steps : IDisposable
         File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
     }
 
+    public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration, string configurationPath)
+    {
+        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+        File.WriteAllText(configurationPath, jsonConfiguration);
+    }
+
     private void DeleteOcelotConfig()
     {
         if (!File.Exists(_ocelotConfigFileName))
@@ -193,24 +200,12 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
     {
-        _webHostBuilder = new WebHostBuilder();
+        StartMinimalTestServerWithOcelotConfiguration((hostingContext, config) => config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: shouldReload));
+    }
 
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, shouldReload);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot(); })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
-        _ocelotClient = _ocelotServer.CreateClient();
+    public void WhenOcelotIsRunningMergedConfig(MergeOcelotJson mergeTo)
+    {
+        StartMinimalTestServerWithOcelotConfiguration((hostingContext, config) => config.AddOcelot(hostingContext.HostingEnvironment, mergeTo));
     }
 
     public void GivenIHaveAChangeToken()
@@ -223,6 +218,11 @@ public class Steps : IDisposable
     /// </summary>
     public void GivenOcelotIsRunning()
     {
+        StartMinimalTestServerWithOcelotConfiguration((_, config) => config.AddJsonFile("ocelot.json", false, false));
+    }
+
+    private void StartMinimalTestServerWithOcelotConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> addOcelotConfigurationAction)
+    {
         _webHostBuilder = new WebHostBuilder();
 
         _webHostBuilder
@@ -233,13 +233,13 @@ public class Steps : IDisposable
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
                 config.AddJsonFile(_ocelotConfigFileName, false, false);
+                addOcelotConfigurationAction(hostingContext, config); // !!!
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s => { s.AddOcelot(); })
             .Configure(app => { app.UseOcelot().Wait(); });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
