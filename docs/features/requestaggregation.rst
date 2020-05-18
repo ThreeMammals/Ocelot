@@ -103,12 +103,10 @@ In order to make an Aggregator you must implement this interface.
 
     public interface IDefinedAggregator
     {
-        Task<DownstreamResponse> Aggregate(List<DownstreamResponse> responses);
+        Task<DownstreamResponse> Aggregate(List<HttpContext> responses);
     }
 
-With this feature you can pretty much do whatever you want because DownstreamResponse contains Content, Headers and Status Code. We can add extra things if needed
-just raise an issue on GitHub. Please note if the HttpClient throws an exception when making a request to a ReRoute in the aggregate then you will not get a DownstreamResponse for
-it but you would for any that succeed. If it does throw an exception this will be logged.
+With this feature you can pretty much do whatever you want because the HttpContext objects contain the results of all the aggregate requests. Please note if the HttpClient throws an exception when making a request to a ReRoute in the aggregate then you will not get a HttpContext for it but you would for any that succeed. If it does throw an exception this will be logged.
 
 Basic expecting JSON from Downstream Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

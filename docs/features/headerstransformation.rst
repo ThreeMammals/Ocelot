@@ -136,8 +136,7 @@ An example of using {RemoteIpAddress} placeholder...
 Future
 ^^^^^^
 
-Ideally this feature would be able to support the fact that a header can have multiple values. At the moment it just assumes one.
-It would also be nice if it could multi find and replace e.g. 
+Ideally this feature would be able to support the fact that a header can have multiple values. At the moment it just assumes one. It would also be nice if it could multi find and replace e.g. 
 
 .. code-block:: json
 

@@ -1,12 +1,10 @@
 Request Id / Correlation Id
 ===========================
 
-Ocelot supports a client sending a request id in the form of a header. If set Ocelot will
-use the requestid for logging as soon as it becomes available in the middleware pipeline. 
+Ocelot supports a client sending a request id in the form of a header. If set Ocelot willuse the requestid for logging as soon as it becomes available in the middleware pipeline. 
 Ocelot will also forward the request id with the specified header to the downstream service.
 
-You can still get the asp.net core request id in the logs if you set 
-IncludeScopes true in your logging config.
+You can still get the asp.net core request id in the logs if you set IncludeScopes true in your logging config.
 
 In order to use the request id feature you have two options.
 

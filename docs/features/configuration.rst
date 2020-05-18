@@ -1,11 +1,7 @@
 Configuration
 ============
 
-An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/master/test/Ocelot.ManualTest/ocelot.json>`_.
-There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
-The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global 
-configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful
-if you don't want to manage lots of ReRoute specific settings.
+An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/master/test/Ocelot.ManualTest/ocelot.json>`_. There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. The ReRoutes are the objects that tell Ocelot how to treat an upstream request. The Global configuration is a bit hacky and allows overrides of ReRoute specific settings. It's useful if you don't want to manage lots of ReRoute specific settings.
 
 .. code-block:: json
 
@@ -152,8 +148,7 @@ Then you add the following when you register your services Ocelot will attempt t
     .AddConsul()
     .AddConfigStoredInConsul();
 
-You also need to add the following to your ocelot.json. This is how Ocelot
-finds your Consul agent and interacts to load and store the configuration from Consul.
+You also need to add the following to your ocelot.json. This is how Ocelot finds your Consul agent and interacts to load and store the configuration from Consul.
 
 .. code-block:: json
 
@@ -164,8 +159,7 @@ finds your Consul agent and interacts to load and store the configuration from C
         }
     }
 
-I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! 
-I guess it means if you want to use Ocelot to its fullest you take on Consul as a dependency for now.
+I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! I guess it means if you want to use Ocelot to its fullest you take on Consul as a dependency for now.
 
 This feature has a 3 second ttl cache before making a new request to your local consul agent.
 
@@ -203,17 +197,9 @@ Follow Redirects / Use CookieContainer
 
 Use HttpHandlerOptions in ReRoute configuration to set up HttpHandler behavior:
 
-1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically 
-follow redirection responses from the Downstream resource; otherwise false. The default value is false.
+1. AllowAutoRedirect is a value that indicates whether the request should follow redirection responses. Set it true if the request should automatically follow redirection responses from the Downstream resource; otherwise false. The default value is false.
 
-2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer 
-property to store server cookies and uses these cookies when sending requests. The default value is false. Please note
-that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests
-to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user
-noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients
-that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight
-requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting 
-UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
+2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests. The default value is false. Please note that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
 
 SSL Errors
 ^^^^^^^^^^
