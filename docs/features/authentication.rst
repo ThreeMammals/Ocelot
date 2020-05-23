@@ -16,8 +16,7 @@ In order to authenticate ReRoutes and subsequently use any of Ocelot's claims ba
     }
 
 
-In this example TestKey is the scheme that this provider has been registered with.
-We then map this to a ReRoute in the configuration e.g.
+In this example TestKey is the scheme that this provider has been registered with. We then map this to a ReRoute in the configuration e.g.
 
 .. code-block:: json
 
@@ -39,9 +38,7 @@ We then map this to a ReRoute in the configuration e.g.
             }
         }]
 
-When Ocelot runs it will look at this ReRoutes AuthenticationOptions.AuthenticationProviderKey 
-and check that there is an Authentication provider registered with the given key. If there isn't then Ocelot 
-will not start up, if there is then the ReRoute will use that provider when it executes.
+When Ocelot runs it will look at this ReRoutes AuthenticationOptions.AuthenticationProviderKey and check that there is an Authentication provider registered with the given key. If there isn't then Ocelot will not start up, if there is then the ReRoute will use that provider when it executes.
 
 If a ReRoute is authenticated Ocelot will invoke whatever scheme is associated with it while executing the authentication middleware. If the request fails authentication Ocelot returns a http status code 401.
 

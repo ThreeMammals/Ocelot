@@ -1,7 +1,7 @@
-using Ocelot.Configuration;
-
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
+    using Ocelot.Configuration;
+
     public interface IResponseAggregatorFactory
     {
         IResponseAggregator Get(ReRoute reRoute);

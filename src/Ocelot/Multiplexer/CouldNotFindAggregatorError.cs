@@ -1,11 +1,11 @@
 using Ocelot.Errors;
 
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     public class CouldNotFindAggregatorError : Error
     {
         public CouldNotFindAggregatorError(string aggregator)
-            : base($"Could not find Aggregator: {aggregator}", OcelotErrorCode.CouldNotFindAggregatorError)
+            : base($"Could not find Aggregator: {aggregator}", OcelotErrorCode.CouldNotFindAggregatorError, 404)
         {
         }
     }

@@ -17,6 +17,7 @@ using Xunit;
 namespace Ocelot.UnitTests.LoadBalancer
 {
     using System;
+    using Microsoft.AspNetCore.Http;
 
     public class LoadBalancerFactoryTests
     {
@@ -228,7 +229,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancerOne : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new System.NotImplementedException();
             }
@@ -241,7 +242,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancerTwo : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new System.NotImplementedException();
             }
@@ -254,7 +255,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeNoLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new System.NotImplementedException();
             }
@@ -267,7 +268,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class BrokenLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new System.NotImplementedException();
             }

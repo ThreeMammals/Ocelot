@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
+    using Microsoft.AspNetCore.Http;
+
     public class LoadBalancerHouseTests
     {
         private DownstreamReRoute _reRoute;
@@ -155,7 +157,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }
@@ -168,7 +170,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeRoundRobinLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

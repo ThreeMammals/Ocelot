@@ -1,9 +1,11 @@
-using Ocelot.Configuration;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using Ocelot.Middleware;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     public class UserDefinedResponseAggregator : IResponseAggregator
     {
         private readonly IDefinedAggregatorProvider _provider;
@@ -13,7 +15,7 @@ namespace Ocelot.Middleware.Multiplexer
             _provider = provider;
         }
 
-        public async Task Aggregate(ReRoute reRoute, DownstreamContext originalContext, List<DownstreamContext> downstreamResponses)
+        public async Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamResponses)
         {
             var aggregator = _provider.Get(reRoute);
 
@@ -22,11 +24,11 @@ namespace Ocelot.Middleware.Multiplexer
                 var aggregateResponse = await aggregator.Data
                     .Aggregate(downstreamResponses);
 
-                originalContext.DownstreamResponse = aggregateResponse;
+                originalContext.Items.UpsertDownstreamResponse(aggregateResponse);
             }
             else
             {
-                originalContext.Errors.AddRange(aggregator.Errors);
+                originalContext.Items.UpsertErrors(aggregator.Errors);
             }
         }
     }

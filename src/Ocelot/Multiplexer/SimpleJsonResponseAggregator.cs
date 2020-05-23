@@ -1,4 +1,6 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,35 +9,35 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     public class SimpleJsonResponseAggregator : IResponseAggregator
     {
-        public async Task Aggregate(ReRoute reRoute, DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        public async Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamContexts)
         {
             await MapAggregateContent(originalContext, downstreamContexts);
         }
 
-        private static async Task MapAggregateContent(DownstreamContext originalContext, List<DownstreamContext> downstreamContexts)
+        private static async Task MapAggregateContent(HttpContext originalContext, List<HttpContext> downstreamContexts)
         {
             var contentBuilder = new StringBuilder();
 
             contentBuilder.Append("{");
 
-            var responseKeys = downstreamContexts.Select(s => s.DownstreamReRoute.Key).Distinct().ToList();
+            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamReRoute().Key).Distinct().ToList();
 
             for (var k = 0; k < responseKeys.Count; k++)
             {
-                var contexts = downstreamContexts.Where(w => w.DownstreamReRoute.Key == responseKeys[k]).ToList();
+                var contexts = downstreamContexts.Where(w => w.Items.DownstreamReRoute().Key == responseKeys[k]).ToList();
                 if (contexts.Count == 1)
                 {
-                    if (contexts[0].IsError)
+                    if (contexts[0].Items.Errors().Count > 0)
                     {
                         MapAggregateError(originalContext, contexts[0]);
                         return;
                     }
 
-                    var content = await contexts[0].DownstreamResponse.Content.ReadAsStringAsync();
+                    var content = await contexts[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
                     contentBuilder.Append($"\"{responseKeys[k]}\":{content}");
                 }
                 else
@@ -45,13 +47,13 @@ namespace Ocelot.Middleware.Multiplexer
 
                     for (var i = 0; i < contexts.Count; i++)
                     {
-                        if (contexts[i].IsError)
+                        if (contexts[i].Items.Errors().Count > 0)
                         {
                             MapAggregateError(originalContext, contexts[i]);
                             return;
                         }
 
-                        var content = await contexts[i].DownstreamResponse.Content.ReadAsStringAsync();
+                        var content = await contexts[i].Items.DownstreamResponse().Content.ReadAsStringAsync();
                         if (string.IsNullOrWhiteSpace(content))
                         {
                             continue;
@@ -81,13 +83,13 @@ namespace Ocelot.Middleware.Multiplexer
                 Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
             };
 
-            originalContext.DownstreamResponse = new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?");
+            originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));
         }
 
-        private static void MapAggregateError(DownstreamContext originalContext, DownstreamContext downstreamContext)
+        private static void MapAggregateError(HttpContext originalContext, HttpContext downstreamContext)
         {
-            originalContext.Errors.AddRange(downstreamContext.Errors);
-            originalContext.DownstreamResponse = downstreamContext.DownstreamResponse;
+            originalContext.Items.UpsertErrors(downstreamContext.Items.Errors());
+            originalContext.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
         }
     }
 }

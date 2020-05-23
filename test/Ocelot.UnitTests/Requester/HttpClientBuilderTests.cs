@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -27,7 +28,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
-        private DownstreamContext _context;
+        private HttpContext _context;
         private readonly Mock<IHttpClientCache> _cacheHandlers;
         private readonly Mock<IOcelotLogger> _logger;
         private int _count;
@@ -294,7 +295,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamPathTemplate}"), Times.Once);
+            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.Items.DownstreamReRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamReRoute().DownstreamPathTemplate}"), Times.Once);
         }
 
         private void GivenTheClientIsCached()
@@ -370,13 +371,9 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)
         {
-            var context = new DownstreamContext(new DefaultHttpContext())
-            {
-                DownstreamReRoute = downstream,
-                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }),
-            };
-
-            _context = context;
+            _context = new DefaultHttpContext();
+            _context.Items.UpsertDownstreamReRoute(downstream);
+            _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }));
         }
 
         private void ThenSomethingIsReturned()
@@ -421,18 +418,18 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIBuild()
         {
-            _httpClient = _builder.Create(_context);
+            _httpClient = _builder.Create(_context.Items.DownstreamReRoute());
         }
 
         private void WhenIBuildTheFirstTime()
         {
-            _firstHttpClient = _builder.Create(_context);
+            _firstHttpClient = _builder.Create(_context.Items.DownstreamReRoute());
         }
 
         private void WhenIBuildAgain()
         {
             _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
-            _againHttpClient = _builder.Create(_context);
+            _againHttpClient = _builder.Create(_context.Items.DownstreamReRoute());
         }
 
         private void ThenTheHttpClientShouldNotBeNull()

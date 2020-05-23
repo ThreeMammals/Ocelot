@@ -9,6 +9,7 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Responses;
@@ -23,13 +24,13 @@ namespace Ocelot.UnitTests.Claims
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly ClaimsToClaimsMiddleware _middleware;
-        private readonly DownstreamContext _downstreamContext;
-        private OcelotRequestDelegate _next;
+        private RequestDelegate _next;
+        private HttpContext _httpContext;
 
         public ClaimsToClaimsMiddlewareTests()
         {
+            _httpContext = new DefaultHttpContext();
             _addHeaders = new Mock<IAddClaimsToRequest>();
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
@@ -62,13 +63,14 @@ namespace Ocelot.UnitTests.Claims
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
-            _downstreamContext.TemplatePlaceholderNameAndValues = downstreamRoute.TemplatePlaceholderNameAndValues;
-            _downstreamContext.DownstreamReRoute = downstreamRoute.ReRoute.DownstreamReRoute[0];
+            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+
+            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
         }
 
         private void GivenTheAddClaimsToRequestReturns()

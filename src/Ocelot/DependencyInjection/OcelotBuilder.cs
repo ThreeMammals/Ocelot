@@ -27,7 +27,7 @@ namespace Ocelot.DependencyInjection
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.PathManipulation;
     using Ocelot.QueryStrings;
     using Ocelot.RateLimit;
@@ -128,7 +128,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
-            Services.TryAddSingleton<IMultiplexer, Multiplexer>();
             Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
             Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();

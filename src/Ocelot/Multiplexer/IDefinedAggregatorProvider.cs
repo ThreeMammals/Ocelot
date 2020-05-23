@@ -1,7 +1,7 @@
 using Ocelot.Configuration;
 using Ocelot.Responses;
 
-namespace Ocelot.Middleware.Multiplexer
+namespace Ocelot.Multiplexer
 {
     public interface IDefinedAggregatorProvider
     {

@@ -1,12 +1,10 @@
 Routing
 =======
 
-Ocelot's primary functionality is to take incoming http requests and forward them on
-to a downstream service. Ocelot currently only supports this in the form of another http request (in the future
+Ocelot's primary functionality is to take incoming http requests and forward them on to a downstream service. Ocelot currently only supports this in the form of another http request (in the future
 this could be any transport mechanism). 
 
-Ocelot's describes the routing of one request to another as a ReRoute. In order to get 
-anything working in Ocelot you need to set up a ReRoute in the configuration.
+Ocelot's describes the routing of one request to another as a ReRoute. In order to get anything working in Ocelot you need to set up a ReRoute in the configuration.
 
 .. code-block:: json
 
@@ -34,14 +32,11 @@ To configure a ReRoute you need to add one to the ReRoutes json array.
 
 The DownstreamPathTemplate, DownstreamScheme and DownstreamHostAndPorts define the URL that a request will be forwarded to. 
 
-DownstreamHostAndPorts is a collection that defines the host and port of any downstream services that you wish to forward requests to. 
-Usually this will just contain a single entry but sometimes you might want to load balance requests to your downstream services and Ocelot allows you add more than one entry and then select a load balancer.
+DownstreamHostAndPorts is a collection that defines the host and port of any downstream services that you wish to forward requests to. Usually this will just contain a single entry but sometimes you might want to load balance requests to your downstream services and Ocelot allows you add more than one entry and then select a load balancer.
 
-The UpstreamPathTemplate is the URL that Ocelot will use to identify which DownstreamPathTemplate to use for a given request. 
-The UpstreamHttpMethod is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL. You can set a specific list of HTTP Methods or set an empty list to allow any of them. 
+The UpstreamPathTemplate is the URL that Ocelot will use to identify which DownstreamPathTemplate to use for a given request. The UpstreamHttpMethod is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL. You can set a specific list of HTTP Methods or set an empty list to allow any of them. 
 
-In Ocelot you can add placeholders for variables to your Templates in the form of {something}.
-The placeholder variable needs to be present in both the DownstreamPathTemplate and UpstreamPathTemplate properties. When it is Ocelot will attempt to substitute the value in the UpstreamPathTemplate placeholder into the DownstreamPathTemplate for each request Ocelot processes.
+In Ocelot you can add placeholders for variables to your Templates in the form of {something}. The placeholder variable needs to be present in both the DownstreamPathTemplate and UpstreamPathTemplate properties. When it is Ocelot will attempt to substitute the value in the UpstreamPathTemplate placeholder into the DownstreamPathTemplate for each request Ocelot processes.
 
 You can also do a catch all type of ReRoute e.g. 
 
@@ -154,8 +149,7 @@ See `Issue 270 <https://github.com/ThreeMammals/Ocelot/pull/270>`_ for reference
         "Priority": 0
     }
 
-0 is the lowest priority, Ocelot will always use 0 for /{catchAll} ReRoutes and this is still hardcoded. After that you are free
-to set any priority you wish.
+0 is the lowest priority, Ocelot will always use 0 for /{catchAll} ReRoutes and this is still hardcoded. After that you are free to set any priority you wish.
 
 e.g. you could have
 
@@ -175,8 +169,7 @@ and
         "Priority": 1
     }
 
-In the example above if you make a request into Ocelot on /goods/delete Ocelot will match /goods/delete ReRoute. Previously it would have
-matched /goods/{catchAll} (because this is the first ReRoute in the list!).
+In the example above if you make a request into Ocelot on /goods/delete Ocelot will match /goods/delete ReRoute. Previously it would have matched /goods/{catchAll} (because this is the first ReRoute in the list!).
 
 Dynamic Routing
 ^^^^^^^^^^^^^^^

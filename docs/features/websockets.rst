@@ -31,9 +31,7 @@ Then in your ocelot.json add the following to proxy a ReRoute using websockets.
             ],
         }
 
-With this configuration set Ocelot will match any websocket traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer
-Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and 
-proxy these to the upstream client.
+With this configuration set Ocelot will match any websocket traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and proxy these to the upstream client.
 
 SignalR
 ^^^^^^^
@@ -77,9 +75,7 @@ Then in your ocelot.json add the following to proxy a ReRoute using SignalR. Not
  ]
 }
 
-With this configuration set Ocelot will match any SignalR traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer
-Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and 
-proxy these to the upstream client.
+With this configuration set Ocelot will match any SignalR traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and proxy these to the upstream client.
 
 Supported
 ^^^^^^^^^
@@ -88,8 +84,7 @@ Supported
 2. Routing
 3. Service Discovery
 
-This means that you can set up your downstream services running websockets and either have multiple DownstreamHostAndPorts in your ReRoute 
-config or hook your ReRoute into a service discovery provider and then load balance requests...Which I think is pretty cool :)
+This means that you can set up your downstream services running websockets and either have multiple DownstreamHostAndPorts in your ReRoute config or hook your ReRoute into a service discovery provider and then load balance requests...Which I think is pretty cool :)
 
 Not Supported
 ^^^^^^^^^^^^^

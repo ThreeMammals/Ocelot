@@ -1,13 +1,12 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Logging;
-using Ocelot.Middleware;
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-
-namespace Ocelot.Requester
+﻿namespace Ocelot.Requester
 {
+    using Ocelot.Configuration;
+    using Ocelot.Logging;
+    using System;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
@@ -32,9 +31,9 @@ namespace Ocelot.Requester
             _defaultTimeout = TimeSpan.FromSeconds(90);
         }
 
-        public IHttpClient Create(DownstreamContext context)
+        public IHttpClient Create(DownstreamReRoute downstreamReRoute)
         {
-            _cacheKey = context.DownstreamReRoute;
+            _cacheKey = downstreamReRoute;
 
             var httpClient = _cacheHandlers.Get(_cacheKey);
 
@@ -44,21 +43,21 @@ namespace Ocelot.Requester
                 return httpClient;
             }
 
-            var handler = CreateHandler(context);
+            var handler = CreateHandler(downstreamReRoute);
 
-            if (context.DownstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (downstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
             {
                 handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
-                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {context.DownstreamReRoute.DownstreamPathTemplate}");
+                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {downstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamReRoute.DownstreamPathTemplate}");
             }
 
-            var timeout = context.DownstreamReRoute.QosOptions.TimeoutValue == 0
+            var timeout = downstreamReRoute.QosOptions.TimeoutValue == 0
                 ? _defaultTimeout
-                : TimeSpan.FromMilliseconds(context.DownstreamReRoute.QosOptions.TimeoutValue);
+                : TimeSpan.FromMilliseconds(downstreamReRoute.QosOptions.TimeoutValue);
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, context.DownstreamReRoute))
+            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamReRoute))
             {
                 Timeout = timeout
             };
@@ -68,43 +67,35 @@ namespace Ocelot.Requester
             return _client;
         }
 
-        private HttpClientHandler CreateHandler(DownstreamContext context)
+        private HttpClientHandler CreateHandler(DownstreamReRoute downstreamReRoute)
         {
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
-            bool useCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer;
+            var useCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer;
 
-            if (useCookies)
-            {
-                return UseCookiesHandler(context);
-            }
-            else
-            {
-                return UseNonCookiesHandler(context);
-            }
+            return useCookies ? UseCookiesHandler(downstreamReRoute) : UseNonCookiesHandler(downstreamReRoute);
         }
 
-        private HttpClientHandler UseNonCookiesHandler(DownstreamContext context)
+        private HttpClientHandler UseNonCookiesHandler(DownstreamReRoute downstreamReRoute)
         {
             return new HttpClientHandler
             {
-                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
-                MaxConnectionsPerServer = context.DownstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer
-
+                AllowAutoRedirect = downstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = downstreamReRoute.HttpHandlerOptions.UseProxy,
+                MaxConnectionsPerServer = downstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer,
             };
         }
 
-        private HttpClientHandler UseCookiesHandler(DownstreamContext context)
+        private HttpClientHandler UseCookiesHandler(DownstreamReRoute downstreamReRoute)
         {
             return new HttpClientHandler
             {
-                AllowAutoRedirect = context.DownstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = context.DownstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                UseProxy = context.DownstreamReRoute.HttpHandlerOptions.UseProxy,
-                MaxConnectionsPerServer = context.DownstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer,
-                CookieContainer = new CookieContainer()
+                AllowAutoRedirect = downstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = downstreamReRoute.HttpHandlerOptions.UseProxy,
+                MaxConnectionsPerServer = downstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer,
+                CookieContainer = new CookieContainer(),
             };
         }
 

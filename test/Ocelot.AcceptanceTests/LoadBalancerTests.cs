@@ -189,7 +189,7 @@ namespace Ocelot.AcceptanceTests
                 _services = services;
             }
 
-            public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
+            public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 var services = await _services();
                 lock (_lock)
@@ -205,7 +205,7 @@ namespace Ocelot.AcceptanceTests
                 }
             }
 
-            public void Release(ServiceHostAndPort hostAndPort)
+        public void Release(ServiceHostAndPort hostAndPort)
             {
             }
         }
