@@ -22,7 +22,7 @@
     public class ClaimsToHeadersMiddlewareTests
     {
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
-        private Response<DownstreamRoute> _downstreamRoute;
+        private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _downstreamRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private ClaimsToHeadersMiddleware _middleware;
@@ -44,9 +44,9 @@
         [Fact]
         public void should_call_add_headers_to_request_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder()
-                    .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
+                new RouteBuilder()
+                    .WithDownstreamRoute(new DownstreamRouteBuilder()
                             .WithDownstreamPathTemplate("any old string")
                             .WithClaimsToHeaders(new List<ClaimToThing>
                             {
@@ -69,13 +69,13 @@
             _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
+            _downstreamRoute = new OkResponse<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder>(downstreamRoute);
 
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
 
         private void GivenTheAddHeadersToDownstreamRequestReturnsOk()

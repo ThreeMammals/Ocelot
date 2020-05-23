@@ -4,7 +4,7 @@ Service Discovery
 =================
 
 Ocelot allows you to specify a service discovery provider and will use this to find the host and port for the downstream service Ocelot is forwarding a request to. At the moment this is only supported in the
-GlobalConfiguration section which means the same service discovery provider will be used for all ReRoutes you specify a ServiceName for at ReRoute level. 
+GlobalConfiguration section which means the same service discovery provider will be used for all Routes you specify a ServiceName for at Route level. 
 
 Consul
 ^^^^^^
@@ -34,9 +34,9 @@ Please note the Scheme option defauls to HTTP. It was added in this `PR <https:/
         "Type": "Consul"
     }
 
-In the future we can add a feature that allows ReRoute specfic configuration. 
+In the future we can add a feature that allows Route specfic configuration. 
 
-In order to tell Ocelot a ReRoute is to use the service discovery provider for its host and port you must add the ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
+In order to tell Ocelot a Route is to use the service discovery provider for its host and port you must add the ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
 
 .. code-block:: json
 
@@ -157,16 +157,16 @@ This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot
 An example of this would be calling Ocelot with a url like https://api.mywebsite.com/product/products. Ocelot will take the first segment of 
 the path which is product and use it as a key to look up the service in Consul. If Consul returns a service Ocelot will request it on whatever host and port comes back from Consul plus the remaining path segments in this case products thus making the downstream call http://hostfromconsul:portfromconsul/products. Ocelot will apprend any query string to the downstream url as normal.
 
-In order to enable dynamic routing you need to have 0 ReRoutes in your config. At the moment you cannot mix dynamic and configuration ReRoutes. In addition to this you need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
+In order to enable dynamic routing you need to have 0 Routes in your config. At the moment you cannot mix dynamic and configuration Routes. In addition to this you need to specify the Service Discovery provider details as outlined above and the downstream http/https scheme as DownstreamScheme.
 
-In addition to that you can set RateLimitOptions, QoSOptions, LoadBalancerOptions and HttpHandlerOptions, DownstreamScheme (You might want to call Ocelot on https but talk to private services over http) that will be applied to all of the dynamic ReRoutes.
+In addition to that you can set RateLimitOptions, QoSOptions, LoadBalancerOptions and HttpHandlerOptions, DownstreamScheme (You might want to call Ocelot on https but talk to private services over http) that will be applied to all of the dynamic Routes.
 
 The config might look something like 
 
 .. code-block:: json
 
     {
-        "ReRoutes": [],
+        "Routes": [],
         "Aggregates": [],
         "GlobalConfiguration": {
             "RequestIdKey": null,
@@ -204,12 +204,12 @@ The config might look something like
         }
     }
 
-Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting rules per downstream service. This is useful if you have for example a product and search service and you want to rate limit one more than the other. An example of this would be as follows.
+Ocelot also allows you to set DynamicRoutes which lets you set rate limiting rules per downstream service. This is useful if you have for example a product and search service and you want to rate limit one more than the other. An example of this would be as follows.
 
 .. code-block:: json
 
     {
-        "DynamicReRoutes": [
+        "DynamicRoutes": [
             {
             "ServiceName": "product",
             "RateLimitRule": {
@@ -239,6 +239,6 @@ Ocelot also allows you to set DynamicReRoutes which lets you set rate limiting r
         }
     }
 
-This configuration means that if you have a request come into Ocelot on /product/* then dynamic routing will kick in and ocelot will use the rate limiting set against the product service in the DynamicReRoutes section.
+This configuration means that if you have a request come into Ocelot on /product/* then dynamic routing will kick in and ocelot will use the rate limiting set against the product service in the DynamicRoutes section.
 
 Please take a look through all of the docs to understand these options.

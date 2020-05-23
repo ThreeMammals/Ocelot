@@ -14,17 +14,17 @@ namespace Ocelot.UnitTests.Multiplexing
     {
         private ServiceLocatorDefinedAggregatorProvider _provider;
         private Response<IDefinedAggregator> _aggregator;
-        private ReRoute _reRoute;
+        private Route _route;
 
         [Fact]
         public void should_find_aggregator()
         {
-            var reRoute = new ReRouteBuilder()
+            var route = new RouteBuilder()
                 .WithAggregator("TestDefinedAggregator")
                 .Build();
 
             this.Given(_ => GivenDefinedAggregator())
-                .And(_ => GivenReRoute(reRoute))
+                .And(_ => GivenRoute(route))
                 .When(_ => WhenIGet())
                 .Then(_ => ThenTheAggregatorIsReturned())
                 .BDDfy();
@@ -33,12 +33,12 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_not_find_aggregator()
         {
-            var reRoute = new ReRouteBuilder()
+            var route = new RouteBuilder()
                 .WithAggregator("TestDefinedAggregator")
                 .Build();
 
             this.Given(_ => GivenNoDefinedAggregator())
-                .And(_ => GivenReRoute(reRoute))
+                .And(_ => GivenRoute(route))
                 .When(_ => WhenIGet())
                 .Then(_ => ThenAnErrorIsReturned())
                 .BDDfy();
@@ -66,14 +66,14 @@ namespace Ocelot.UnitTests.Multiplexing
             _provider = new ServiceLocatorDefinedAggregatorProvider(services);
         }
 
-        private void GivenReRoute(ReRoute reRoute)
+        private void GivenRoute(Route route)
         {
-            _reRoute = reRoute;
+            _route = route;
         }
 
         private void WhenIGet()
         {
-            _aggregator = _provider.Get(_reRoute);
+            _aggregator = _provider.Get(_route);
         }
 
         private void ThenAnErrorIsReturned()

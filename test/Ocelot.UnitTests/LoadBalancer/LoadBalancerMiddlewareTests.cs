@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var downstreamRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
@@ -76,7 +76,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_load_balancer()
         {
-            var downstreamRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
@@ -95,7 +95,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_least()
         {
-            var downstreamRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
@@ -115,7 +115,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_scheme()
         {
-            var downstreamRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
@@ -174,16 +174,16 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(_hostAndPort));
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamReRoute downstreamRoute, List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue> placeholder)
+        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute, List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue> placeholder)
         {
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(placeholder);
-            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute);
+            _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
         }
 
         private void GivenTheLoadBalancerHouseReturns()
         {
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamRoute>(), It.IsAny<ServiceProviderConfiguration>()))
                 .Returns(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
         }
 
@@ -195,7 +195,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             });
 
             _loadBalancerHouse
-                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>(), It.IsAny<ServiceProviderConfiguration>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamRoute>(), It.IsAny<ServiceProviderConfiguration>()))
                 .Returns(_getLoadBalancerHouseError);
         }
 

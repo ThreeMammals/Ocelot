@@ -18,7 +18,7 @@
     public class MultiplexingMiddlewareTests
     {
         private readonly MultiplexingMiddleware _middleware;
-        private DownstreamRoute _downstreamRoute;
+        private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
         private int _count;
         private Mock<IResponseAggregator> _aggregator;
         private Mock<IResponseAggregatorFactory> _factory;
@@ -32,7 +32,7 @@
             _httpContext = new DefaultHttpContext();
             _factory = new Mock<IResponseAggregatorFactory>();
             _aggregator = new Mock<IResponseAggregator>();
-            _factory.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(_aggregator.Object);
+            _factory.Setup(x => x.Get(It.IsAny<Route>())).Returns(_aggregator.Object);
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<MultiplexingMiddleware>()).Returns(_logger.Object);
@@ -43,9 +43,9 @@
         [Fact]
         public void should_multiplex()
         {
-            var reRoute = new ReRouteBuilder().WithDownstreamReRoute(new DownstreamReRouteBuilder().Build()).WithDownstreamReRoute(new DownstreamReRouteBuilder().Build()).Build();
+            var route = new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().Build()).WithDownstreamRoute(new DownstreamRouteBuilder().Build()).Build();
 
-            this.Given(x => GivenTheFollowing(reRoute))
+            this.Given(x => GivenTheFollowing(route))
                 .When(x => WhenIMultiplex())
                 .Then(x => ThePipelineIsCalled(2))
                 .BDDfy();
@@ -54,17 +54,17 @@
         [Fact]
         public void should_not_multiplex()
         {
-            var reRoute = new ReRouteBuilder().WithDownstreamReRoute(new DownstreamReRouteBuilder().Build()).Build();
+            var route = new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().Build()).Build();
 
-            this.Given(x => GivenTheFollowing(reRoute))
+            this.Given(x => GivenTheFollowing(route))
                 .When(x => WhenIMultiplex())
                 .Then(x => ThePipelineIsCalled(1))
                 .BDDfy();
         }
 
-        private void GivenTheFollowing(ReRoute reRoute)
+        private void GivenTheFollowing(Route route)
         {
-            _downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
+            _downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
             _httpContext.Items.UpsertDownstreamRoute(_downstreamRoute);
         }
 

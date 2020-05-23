@@ -29,19 +29,19 @@
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
                 //todo this is obviously stupid
-                httpContext.Items.UpsertDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
                 await _next.Invoke(httpContext);
                 return;
             }
 
-            var reRouteKeysConfigs = httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRouteConfig;
-            if (reRouteKeysConfigs == null || !reRouteKeysConfigs.Any())
+            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRouteConfig;
+            if (routeKeysConfigs == null || !routeKeysConfigs.Any())
             {
-                var downstreamRoute = httpContext.Items.DownstreamRoute();
+                var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
 
-                var tasks = new Task<HttpContext>[downstreamRoute.ReRoute.DownstreamReRoute.Count];
+                var tasks = new Task<HttpContext>[downstreamRouteHolder.Route.DownstreamRoute.Count];
 
-                for (var i = 0; i < downstreamRoute.ReRoute.DownstreamReRoute.Count; i++)
+                for (var i = 0; i < downstreamRouteHolder.Route.DownstreamRoute.Count; i++)
                 {
                     var newHttpContext = Copy(httpContext);
 
@@ -52,7 +52,7 @@
                     newHttpContext.Items
                         .UpsertTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
                     newHttpContext.Items
-                        .UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[i]);
+                        .UpsertDownstreamRoute(downstreamRouteHolder.Route.DownstreamRoute[i]);
 
                     tasks[i] = Fire(newHttpContext, _next);
                 }
@@ -67,14 +67,14 @@
                     contexts.Add(finished);
                 }
 
-                await Map(httpContext, downstreamRoute.ReRoute, contexts);
+                await Map(httpContext, downstreamRouteHolder.Route, contexts);
             }
             else
             {
-                httpContext.Items.UpsertDownstreamReRoute(httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
                 var mainResponse = await Fire(httpContext, _next);
 
-                if (httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute.Count == 1)
+                if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
                 {
                     MapNotAggregate(httpContext, new List<HttpContext>() { mainResponse });
                     return;
@@ -91,14 +91,14 @@
 
                 var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
 
-                for (var i = 1; i < httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute.Count; i++)
+                for (var i = 1; i < httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count; i++)
                 {
                     var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
 
-                    var downstreamReRoute = httpContext.Items.DownstreamRoute().ReRoute.DownstreamReRoute[i];
+                    var downstreamRoute = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[i];
 
-                    var matchAdvancedAgg = reRouteKeysConfigs
-                        .FirstOrDefault(q => q.ReRouteKey == downstreamReRoute.Key);
+                    var matchAdvancedAgg = routeKeysConfigs
+                        .FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
 
                     if (matchAdvancedAgg != null)
                     {
@@ -121,7 +121,7 @@
                                 .UpsertTemplatePlaceholderNameAndValues(tPNV);
 
                             newHttpContext.Items
-                                .UpsertDownstreamReRoute(downstreamReRoute);
+                                .UpsertDownstreamRoute(downstreamRoute);
 
                             tasks.Add(Fire(newHttpContext, _next));
                         }
@@ -140,7 +140,7 @@
                             .UpsertTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
 
                         newHttpContext.Items
-                            .UpsertDownstreamReRoute(downstreamReRoute);
+                            .UpsertDownstreamRoute(downstreamRoute);
 
                         tasks.Add(Fire(newHttpContext, _next));
                     }
@@ -156,7 +156,7 @@
                     contexts.Add(finished);
                 }
 
-                await Map(httpContext, httpContext.Items.DownstreamRoute().ReRoute, contexts);
+                await Map(httpContext, httpContext.Items.DownstreamRouteHolder().Route, contexts);
             }
         }
 
@@ -187,12 +187,12 @@
             return target;
         }
 
-        private async Task Map(HttpContext httpContext, ReRoute reRoute, List<HttpContext> contexts)
+        private async Task Map(HttpContext httpContext, Route route, List<HttpContext> contexts)
         {
-            if (reRoute.DownstreamReRoute.Count > 1)
+            if (route.DownstreamRoute.Count > 1)
             {
-                var aggregator = _factory.Get(reRoute);
-                await aggregator.Aggregate(reRoute, httpContext, contexts);
+                var aggregator = _factory.Get(route);
+                await aggregator.Aggregate(route, httpContext, contexts);
             }
             else
             {

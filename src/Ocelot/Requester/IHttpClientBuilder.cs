@@ -4,7 +4,7 @@
 
     public interface IHttpClientBuilder
     {
-        IHttpClient Create(DownstreamReRoute downstreamReRoute);
+        IHttpClient Create(DownstreamRoute downstreamRoute);
 
         void Save();
     }

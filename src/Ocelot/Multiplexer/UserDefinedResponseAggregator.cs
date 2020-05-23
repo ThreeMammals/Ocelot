@@ -15,9 +15,9 @@ namespace Ocelot.Multiplexer
             _provider = provider;
         }
 
-        public async Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamResponses)
+        public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamResponses)
         {
-            var aggregator = _provider.Get(reRoute);
+            var aggregator = _provider.Get(route);
 
             if (!aggregator.IsError)
             {

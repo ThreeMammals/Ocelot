@@ -47,7 +47,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 return;
             }
 
-            var downstreamPathTemplates = string.Join(", ", response.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
+            var downstreamPathTemplates = string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value));
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
             // why set both of these on HttpContext

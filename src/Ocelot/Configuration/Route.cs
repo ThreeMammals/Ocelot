@@ -5,18 +5,18 @@
     using System.Collections.Generic;
     using System.Net.Http;
 
-    public class ReRoute
+    public class Route
     {
-        public ReRoute(List<DownstreamReRoute> downstreamReRoute,
-            List<AggregateReRouteConfig> downstreamReRouteConfig,
+        public Route(List<DownstreamRoute> downstreamRoute,
+            List<AggregateRouteConfig> downstreamRouteConfig,
             List<HttpMethod> upstreamHttpMethod,
             UpstreamPathTemplate upstreamTemplatePattern,
             string upstreamHost,
             string aggregator)
         {
             UpstreamHost = upstreamHost;
-            DownstreamReRoute = downstreamReRoute;
-            DownstreamReRouteConfig = downstreamReRouteConfig;
+            DownstreamRoute = downstreamRoute;
+            DownstreamRouteConfig = downstreamRouteConfig;
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             Aggregator = aggregator;
@@ -25,8 +25,8 @@
         public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
         public List<HttpMethod> UpstreamHttpMethod { get; private set; }
         public string UpstreamHost { get; private set; }
-        public List<DownstreamReRoute> DownstreamReRoute { get; private set; }
-        public List<AggregateReRouteConfig> DownstreamReRouteConfig { get; private set; }
+        public List<DownstreamRoute> DownstreamRoute { get; private set; }
+        public List<AggregateRouteConfig> DownstreamRouteConfig { get; private set; }
         public string Aggregator { get; private set; }
     }
 }

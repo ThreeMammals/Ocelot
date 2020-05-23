@@ -32,12 +32,12 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
             var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
 
             var response = _replacer
-                .Replace(downstreamReRoute.DownstreamPathTemplate.Value, templatePlaceholderNameAndValues);
+                .Replace(downstreamRoute.DownstreamPathTemplate.Value, templatePlaceholderNameAndValues);
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
@@ -49,17 +49,17 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            if (!string.IsNullOrEmpty(downstreamReRoute.DownstreamScheme))
+            if (!string.IsNullOrEmpty(downstreamRoute.DownstreamScheme))
             {
                 //todo make sure this works, hopefully there is a test ;E
-                httpContext.Items.DownstreamRequest().Scheme = downstreamReRoute.DownstreamScheme;
+                httpContext.Items.DownstreamRequest().Scheme = downstreamRoute.DownstreamScheme;
             }
 
             var internalConfiguration = httpContext.Items.IInternalConfiguration();
 
-            if (ServiceFabricRequest(internalConfiguration, downstreamReRoute))
+            if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamReRoute, templatePlaceholderNameAndValues, response);
+                var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
 
                 //todo check this works again hope there is a test..
                 downstreamRequest.AbsolutePath = pathAndQuery.path;
@@ -133,17 +133,17 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             return dsPath.Value.Contains("?");
         }
 
-        private (string path, string query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamReRoute downstreamReRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
+        private (string path, string query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
         {
             var query = downstreamRequest.Query;
-            var serviceName = _replacer.Replace(downstreamReRoute.ServiceName, templatePlaceholderNameAndValues);
+            var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);
             var pathTemplate = $"/{serviceName.Data.Value}{dsPath.Data.Value}";
             return (pathTemplate, query);
         }
 
-        private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamReRoute downstreamReRoute)
+        private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
         {
-            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamReRoute.UseServiceDiscovery;
+            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
         }
     }
 }

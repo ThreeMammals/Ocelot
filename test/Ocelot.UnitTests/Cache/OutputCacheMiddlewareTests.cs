@@ -113,8 +113,8 @@
 
         private void GivenTheDownstreamRouteIs()
         {
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+            var route = new RouteBuilder()
+                .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithIsCached(true)
                     .WithCacheOptions(new CacheOptions(100, "kanken"))
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -122,11 +122,11 @@
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(new List<PlaceholderNameAndValue>(), reRoute);
+            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
 
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
 
         private void ThenTheCacheGetIsCalledCorrectly()

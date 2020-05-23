@@ -24,13 +24,13 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
             if (_securityPolicies != null)
             {
                 foreach (var policy in _securityPolicies)
                 {
-                    var result = await policy.Security(downstreamReRoute, httpContext);
+                    var result = await policy.Security(downstreamRoute, httpContext);
                     if (!result.IsError)
                     {
                         continue;

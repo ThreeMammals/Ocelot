@@ -13,7 +13,7 @@ namespace Ocelot.Multiplexer
 {
     public class SimpleJsonResponseAggregator : IResponseAggregator
     {
-        public async Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamContexts)
+        public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamContexts)
         {
             await MapAggregateContent(originalContext, downstreamContexts);
         }
@@ -24,11 +24,11 @@ namespace Ocelot.Multiplexer
 
             contentBuilder.Append("{");
 
-            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamReRoute().Key).Distinct().ToList();
+            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().Key).Distinct().ToList();
 
             for (var k = 0; k < responseKeys.Count; k++)
             {
-                var contexts = downstreamContexts.Where(w => w.Items.DownstreamReRoute().Key == responseKeys[k]).ToList();
+                var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == responseKeys[k]).ToList();
                 if (contexts.Count == 1)
                 {
                     if (contexts[0].Items.Errors().Count > 0)

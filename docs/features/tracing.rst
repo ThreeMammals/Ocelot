@@ -12,7 +12,7 @@ can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_.
 
 In order to use the tracing please read the Butterfly documentation.
 
-In ocelot you need to do the following if you wish to trace a ReRoute.
+In ocelot you need to do the following if you wish to trace a Route.
 
    ``Install-Package Ocelot.Tracing.Butterfly``
 
@@ -30,7 +30,7 @@ In your ConfigureServices method
             option.Service = "Ocelot";
         });
 
-Then in your ocelot.json add the following to the ReRoute you want to trace..
+Then in your ocelot.json add the following to the Route you want to trace..
 
 .. code-block:: json
 
@@ -38,4 +38,4 @@ Then in your ocelot.json add the following to the ReRoute you want to trace..
             "UseTracing": true
         },
 
-Ocelot will now send tracing information to Butterfly when this ReRoute is called.
+Ocelot will now send tracing information to Butterfly when this Route is called.

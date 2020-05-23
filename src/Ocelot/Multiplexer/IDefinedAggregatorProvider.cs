@@ -5,6 +5,6 @@ namespace Ocelot.Multiplexer
 {
     public interface IDefinedAggregatorProvider
     {
-        Response<IDefinedAggregator> Get(ReRoute reRoute);
+        Response<IDefinedAggregator> Get(Route route);
     }
 }

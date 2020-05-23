@@ -23,15 +23,15 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            if (downstreamReRoute.ClaimsToHeaders.Any())
+            if (downstreamRoute.ClaimsToHeaders.Any())
             {
-                Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
+                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
                 var downstreamRequest = httpContext.Items.DownstreamRequest();
 
-                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamReRoute.ClaimsToHeaders, httpContext.User.Claims, downstreamRequest);
+                var response = _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamRoute.ClaimsToHeaders, httpContext.User.Claims, downstreamRequest);
 
                 if (response.IsError)
                 {

@@ -7,6 +7,6 @@
 
     public interface IResponseAggregator
     {
-        Task Aggregate(ReRoute reRoute, HttpContext originalContext, List<HttpContext> downstreamResponses);
+        Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamResponses);
     }
 }

@@ -26,14 +26,14 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            var options = downstreamReRoute.RateLimitOptions;
+            var options = downstreamRoute.RateLimitOptions;
 
             // check if rate limiting is enabled
-            if (!downstreamReRoute.EnableEndpointEndpointRateLimiting)
+            if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
             {
-                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamReRoute.DownstreamPathTemplate.Value}");
+                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -44,7 +44,7 @@
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                Logger.LogInformation($"{downstreamReRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -62,7 +62,7 @@
                     var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                     // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamReRoute);
+                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute);
 
                     var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -112,10 +112,10 @@
             return false;
         }
 
-        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamReRoute downstreamReRoute)
+        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
         {
             Logger.LogInformation(
-                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamReRoute.UpstreamPathTemplate.OriginalValue }, TraceIdentifier {httpContext.TraceIdentifier}.");
+                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule { downstreamRoute.UpstreamPathTemplate.OriginalValue }, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
 
         public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)

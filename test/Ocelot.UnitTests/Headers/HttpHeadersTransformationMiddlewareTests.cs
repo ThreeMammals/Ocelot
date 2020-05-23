@@ -52,7 +52,7 @@ namespace Ocelot.UnitTests.Headers
         {
             this.Given(x => GivenTheFollowingRequest())
                 .And(x => GivenTheDownstreamRequestIs())
-                .And(x => GivenTheReRouteHasPreFindAndReplaceSetUp())
+                .And(x => GivenTheRouteHasPreFindAndReplaceSetUp())
                 .And(x => GivenTheHttpResponseMessageIs())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
@@ -65,13 +65,13 @@ namespace Ocelot.UnitTests.Headers
         private void ThenAddHeadersToResponseIsCalledCorrectly()
         {
             _addHeadersToResponse
-                .Verify(x => x.Add(_httpContext.Items.DownstreamReRoute().AddHeadersToDownstream, _httpContext.Items.DownstreamResponse()), Times.Once);
+                .Verify(x => x.Add(_httpContext.Items.DownstreamRoute().AddHeadersToDownstream, _httpContext.Items.DownstreamResponse()), Times.Once);
         }
 
         private void ThenAddHeadersToRequestIsCalledCorrectly()
         {
             _addHeadersToRequest
-                .Verify(x => x.SetHeadersOnDownstreamRequest(_httpContext.Items.DownstreamReRoute().AddHeadersToUpstream, _httpContext), Times.Once);
+                .Verify(x => x.SetHeadersOnDownstreamRequest(_httpContext.Items.DownstreamRoute().AddHeadersToUpstream, _httpContext), Times.Once);
         }
 
         private void WhenICallTheMiddleware()
@@ -89,18 +89,18 @@ namespace Ocelot.UnitTests.Headers
             _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
         }
 
-        private void GivenTheReRouteHasPreFindAndReplaceSetUp()
+        private void GivenTheRouteHasPreFindAndReplaceSetUp()
         {
             var fAndRs = new List<HeaderFindAndReplace>();
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoute(new DownstreamReRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs)
+            var route = new RouteBuilder()
+                .WithDownstreamRoute(new DownstreamRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs)
                     .WithDownstreamHeaderFindAndReplace(fAndRs).Build())
                 .Build();
 
-            var dR = new DownstreamRoute(null, reRoute);
+            var dR = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(null, route);
 
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);
-            _httpContext.Items.UpsertDownstreamReRoute(dR.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamRoute(dR.Route.DownstreamRoute[0]);
         }
 
         private void ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly()

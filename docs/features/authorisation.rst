@@ -1,7 +1,7 @@
 Authorisation
 =============
 
-Ocelot supports claims based authorisation which is run post authentication. This means if you have a route you want to authorise you can add the following to you ReRoute configuration.
+Ocelot supports claims based authorisation which is run post authentication. This means if you have a route you want to authorise you can add the following to you Route configuration.
 
 .. code-block:: json
 

@@ -7,6 +7,6 @@
 
     public interface ISecurityPolicy
     {
-        Task<Response> Security(DownstreamReRoute downstreamReRoute, HttpContext httpContext);
+        Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext);
     }
 }

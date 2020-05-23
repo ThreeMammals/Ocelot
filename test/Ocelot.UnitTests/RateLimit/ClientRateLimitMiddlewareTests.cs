@@ -50,23 +50,23 @@ namespace Ocelot.UnitTests.RateLimit
         {
             var upstreamTemplate = new UpstreamPathTemplateBuilder().Build();
 
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithEnableRateLimiting(true)
                 .WithRateLimitOptions(new RateLimitOptions(true, "ClientId", () => new List<string>(), false, "", "", new RateLimitRule("1s", 100, 3), 429))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithUpstreamPathTemplate(upstreamTemplate)
                 .Build();
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoute(downstreamReRoute)
+            var route = new RouteBuilder()
+                .WithDownstreamRoute(downstreamRoute)
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(), reRoute);
+            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(), route);
 
-            this.Given(x => x.WhenICallTheMiddlewareMultipleTimes(2, downstreamRoute))
+            this.Given(x => x.WhenICallTheMiddlewareMultipleTimes(2, downstreamRouteHolder))
                 .Then(x => x.ThenThereIsNoDownstreamResponse())
-                .When(x => x.WhenICallTheMiddlewareMultipleTimes(3, downstreamRoute))
+                .When(x => x.WhenICallTheMiddlewareMultipleTimes(3, downstreamRouteHolder))
                 .Then(x => x.ThenTheResponseIs429())
                 .BDDfy();
         }
@@ -74,9 +74,9 @@ namespace Ocelot.UnitTests.RateLimit
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
-                 new ReRouteBuilder()
-                     .WithDownstreamReRoute(new DownstreamReRouteBuilder()
+            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
+                 new RouteBuilder()
+                     .WithDownstreamRoute(new DownstreamRouteBuilder()
                          .WithEnableRateLimiting(true)
                          .WithRateLimitOptions(
                              new Ocelot.Configuration.RateLimitOptions(true, "ClientId", () => new List<string>() { "ocelotclient2" }, false, "", "", new RateLimitRule("1s", 100, 3), 429))
@@ -90,7 +90,7 @@ namespace Ocelot.UnitTests.RateLimit
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddlewareMultipleTimes(int times, DownstreamRoute downstreamRoute)
+        private void WhenICallTheMiddlewareMultipleTimes(int times, Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
             var httpContexts = new List<HttpContext>();
 
@@ -98,7 +98,7 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var httpContext = new DefaultHttpContext();
                 httpContext.Response.Body = new FakeStream();
-                httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
                 httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
                 httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
                 var clientId = "ocelotclient1";
@@ -116,7 +116,7 @@ namespace Ocelot.UnitTests.RateLimit
             }
         }
 
-        private void WhenICallTheMiddlewareWithWhiteClient(DownstreamRoute downstreamRoute)
+        private void WhenICallTheMiddlewareWithWhiteClient(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
             var clientId = "ocelotclient2";
 
@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.RateLimit
             {
                 var httpContext = new DefaultHttpContext();
                 httpContext.Response.Body = new FakeStream();
-                httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
                 httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
                 httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
                 var request = new HttpRequestMessage(new HttpMethod("GET"), _url);

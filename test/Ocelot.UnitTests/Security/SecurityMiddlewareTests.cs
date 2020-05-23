@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Security
             foreach (var item in _securityPolicyList)
             {
                 Response response = new OkResponse();
-                item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
+                item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(Task.FromResult(response));
             }
         }
 
@@ -82,12 +82,12 @@ namespace Ocelot.UnitTests.Security
                 {
                     Error error = new UnauthenticatedError($"Not passing security verification");
                     Response response = new ErrorResponse(error);
-                    item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(Task.FromResult(response));
                 }
                 else
                 {
                     Response response = new OkResponse();
-                    item.Setup(x => x.Security(_httpContext.Items.DownstreamReRoute(), _httpContext)).Returns(Task.FromResult(response));
+                    item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(Task.FromResult(response));
                 }
             }
         }

@@ -8,10 +8,10 @@
 
     public class IPSecurityPolicy : ISecurityPolicy
     {
-        public async Task<Response> Security(DownstreamReRoute downstreamReRoute, HttpContext httpContext)
+        public async Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext)
         {
             var clientIp = httpContext.Connection.RemoteIpAddress;
-            var securityOptions = downstreamReRoute.SecurityOptions;
+            var securityOptions = downstreamRoute.SecurityOptions;
             if (securityOptions == null)
             {
                 return new OkResponse();
