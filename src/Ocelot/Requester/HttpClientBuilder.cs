@@ -12,7 +12,7 @@
         private readonly IDelegatingHandlerHandlerFactory _factory;
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
-        private DownstreamReRoute _cacheKey;
+        private DownstreamRoute _cacheKey;
         private HttpClient _httpClient;
         private IHttpClient _client;
         private readonly TimeSpan _defaultTimeout;
@@ -31,9 +31,9 @@
             _defaultTimeout = TimeSpan.FromSeconds(90);
         }
 
-        public IHttpClient Create(DownstreamReRoute downstreamReRoute)
+        public IHttpClient Create(DownstreamRoute downstreamRoute)
         {
-            _cacheKey = downstreamReRoute;
+            _cacheKey = downstreamRoute;
 
             var httpClient = _cacheHandlers.Get(_cacheKey);
 
@@ -43,21 +43,21 @@
                 return httpClient;
             }
 
-            var handler = CreateHandler(downstreamReRoute);
+            var handler = CreateHandler(downstreamRoute);
 
-            if (downstreamReRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
             {
                 handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
 
                 _logger
-                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {downstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamReRoute.DownstreamPathTemplate}");
+                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
             }
 
-            var timeout = downstreamReRoute.QosOptions.TimeoutValue == 0
+            var timeout = downstreamRoute.QosOptions.TimeoutValue == 0
                 ? _defaultTimeout
-                : TimeSpan.FromMilliseconds(downstreamReRoute.QosOptions.TimeoutValue);
+                : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue);
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamReRoute))
+            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute))
             {
                 Timeout = timeout
             };
@@ -67,34 +67,34 @@
             return _client;
         }
 
-        private HttpClientHandler CreateHandler(DownstreamReRoute downstreamReRoute)
+        private HttpClientHandler CreateHandler(DownstreamRoute downstreamRoute)
         {
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
-            var useCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer;
+            var useCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer;
 
-            return useCookies ? UseCookiesHandler(downstreamReRoute) : UseNonCookiesHandler(downstreamReRoute);
+            return useCookies ? UseCookiesHandler(downstreamRoute) : UseNonCookiesHandler(downstreamRoute);
         }
 
-        private HttpClientHandler UseNonCookiesHandler(DownstreamReRoute downstreamReRoute)
+        private HttpClientHandler UseNonCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {
-                AllowAutoRedirect = downstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                UseProxy = downstreamReRoute.HttpHandlerOptions.UseProxy,
-                MaxConnectionsPerServer = downstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer,
+                AllowAutoRedirect = downstreamRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
+                MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
             };
         }
 
-        private HttpClientHandler UseCookiesHandler(DownstreamReRoute downstreamReRoute)
+        private HttpClientHandler UseCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {
-                AllowAutoRedirect = downstreamReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                UseCookies = downstreamReRoute.HttpHandlerOptions.UseCookieContainer,
-                UseProxy = downstreamReRoute.HttpHandlerOptions.UseProxy,
-                MaxConnectionsPerServer = downstreamReRoute.HttpHandlerOptions.MaxConnectionsPerServer,
+                AllowAutoRedirect = downstreamRoute.HttpHandlerOptions.AllowAutoRedirect,
+                UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
+                UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
+                MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
                 CookieContainer = new CookieContainer(),
             };
         }
@@ -104,7 +104,7 @@
             _cacheHandlers.Set(_cacheKey, _client, TimeSpan.FromHours(24));
         }
 
-        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, DownstreamReRoute request)
+        private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, DownstreamRoute request)
         {
             //todo handle error
             var handlers = _factory.Get(request).Data;

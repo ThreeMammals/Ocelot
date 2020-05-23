@@ -24,11 +24,11 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
             var internalConfiguration = httpContext.Items.IInternalConfiguration();
 
-            var loadBalancer = _loadBalancerHouse.Get(downstreamReRoute, internalConfiguration.ServiceProviderConfiguration);
+            var loadBalancer = _loadBalancerHouse.Get(downstreamRoute, internalConfiguration.ServiceProviderConfiguration);
 
             if (loadBalancer.IsError)
             {

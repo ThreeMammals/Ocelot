@@ -85,13 +85,13 @@
 
         private void GivenTheDownstreamRouteIs()
         {
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithIsCached(true)
                 .WithCacheOptions(new CacheOptions(100, "kanken"))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
-            _httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            _httpContext.Items.UpsertDownstreamRoute(route);
         }
     }
 }

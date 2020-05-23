@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Multiplexing
         private readonly SimpleJsonResponseAggregator _aggregator;
         private List<HttpContext> _downstreamContexts;
         private HttpContext _upstreamContext;
-        private ReRoute _reRoute;
+        private Route _route;
 
         public SimpleJsonResponseAggregatorTests()
         {
@@ -32,23 +32,23 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
         {
-            var commentsDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("Comments").Build();
+            var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
 
-            var userDetailsDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("UserDetails")
+            var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplate("", 0, false, "/v1/users/{userId}"))
                 .Build();
 
-            var downstreamReRoutes = new List<DownstreamReRoute>
+            var downstreamRoutes = new List<DownstreamRoute>
             {
-                commentsDownstreamReRoute,
-                userDetailsDownstreamReRoute
+                commentsDownstreamRoute,
+                userDetailsDownstreamRoute
             };
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoutes(downstreamReRoutes)
-                .WithAggregateReRouteConfig(new List<AggregateReRouteConfig>()
+            var route = new RouteBuilder()
+                .WithDownstreamRoutes(downstreamRoutes)
+                .WithAggregateRouteConfig(new List<AggregateRouteConfig>()
                 {
-                    new AggregateReRouteConfig(){ReRouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
+                    new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
                 })
                 .Build();
 
@@ -56,19 +56,19 @@ namespace Ocelot.UnitTests.Multiplexing
 
             var commentsDownstreamContext = new DefaultHttpContext();
             commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            commentsDownstreamContext.Items.UpsertDownstreamReRoute(commentsDownstreamReRoute);
+            commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
 
             var userDetailsResponseContent = @"[{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""},{""id"":2,""firstName"":""reza"",""lastName"":""rezaei""}]";
             var userDetailsDownstreamContext = new DefaultHttpContext();
             userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            userDetailsDownstreamContext.Items.UpsertDownstreamReRoute(userDetailsDownstreamReRoute);
+            userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
 
             var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
 
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
 
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
@@ -80,34 +80,34 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
         {
-            var billDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("Bill").Build();
+            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
-            var georgeDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("George").Build();
+            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
 
-            var downstreamReRoutes = new List<DownstreamReRoute>
+            var downstreamRoutes = new List<DownstreamRoute>
             {
-                billDownstreamReRoute,
-                georgeDownstreamReRoute
+                billDownstreamRoute,
+                georgeDownstreamRoute
             };
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoutes(downstreamReRoutes)
+            var route = new RouteBuilder()
+                .WithDownstreamRoutes(downstreamRoutes)
                 .Build();
 
             var billDownstreamContext = new DefaultHttpContext();
             billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.UpsertDownstreamReRoute(billDownstreamReRoute);
+            billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
 
             var georgeDownstreamContext = new DefaultHttpContext();
             georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.UpsertDownstreamReRoute(georgeDownstreamReRoute);
+            georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
 
             var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
 
             var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
 
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
@@ -119,27 +119,27 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_return_error_if_any_downstreams_have_errored()
         {
-            var billDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("Bill").Build();
+            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
-            var georgeDownstreamReRoute = new DownstreamReRouteBuilder().WithKey("George").Build();
+            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
 
-            var downstreamReRoutes = new List<DownstreamReRoute>
+            var downstreamRoutes = new List<DownstreamRoute>
             {
-                billDownstreamReRoute,
-                georgeDownstreamReRoute
+                billDownstreamRoute,
+                georgeDownstreamRoute
             };
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoutes(downstreamReRoutes)
+            var route = new RouteBuilder()
+                .WithDownstreamRoutes(downstreamRoutes)
                 .Build();
 
             var billDownstreamContext = new DefaultHttpContext();
             billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.UpsertDownstreamReRoute(billDownstreamReRoute);
+            billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
 
             var georgeDownstreamContext = new DefaultHttpContext();
             georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.UpsertDownstreamReRoute(georgeDownstreamReRoute);
+            georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
 
             georgeDownstreamContext.Items.SetError(new AnyError());
 
@@ -148,7 +148,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var expected = "Error";
 
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheReRoute(reRoute))
+                .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
                 .When(x => WhenIAggregate())
                 .Then(x => ThenTheContentIs(expected))
@@ -167,9 +167,9 @@ namespace Ocelot.UnitTests.Multiplexing
             _upstreamContext.Items.DownstreamResponse().ShouldBe(_downstreamContexts[1].Items.DownstreamResponse());
         }
 
-        private void GivenTheReRoute(ReRoute reRoute)
+        private void GivenTheRoute(Route route)
         {
-            _reRoute = reRoute;
+            _route = route;
         }
 
         private void GivenTheUpstreamContext(HttpContext upstreamContext)
@@ -184,7 +184,7 @@ namespace Ocelot.UnitTests.Multiplexing
 
         private void WhenIAggregate()
         {
-            _aggregator.Aggregate(_reRoute, _upstreamContext, _downstreamContexts).GetAwaiter().GetResult();
+            _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts).GetAwaiter().GetResult();
         }
 
         private void ThenTheContentIs(string expected)

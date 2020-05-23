@@ -16,14 +16,14 @@ namespace Ocelot.Multiplexer
             _aggregators = services.GetServices<IDefinedAggregator>().ToDictionary(x => x.GetType().Name);
         }
 
-        public Response<IDefinedAggregator> Get(ReRoute reRoute)
+        public Response<IDefinedAggregator> Get(Route route)
         {
-            if (_aggregators.ContainsKey(reRoute.Aggregator))
+            if (_aggregators.ContainsKey(route.Aggregator))
             {
-                return new OkResponse<IDefinedAggregator>(_aggregators[reRoute.Aggregator]);
+                return new OkResponse<IDefinedAggregator>(_aggregators[route.Aggregator]);
             }
 
-            return new ErrorResponse<IDefinedAggregator>(new CouldNotFindAggregatorError(reRoute.Aggregator));
+            return new ErrorResponse<IDefinedAggregator>(new CouldNotFindAggregatorError(route.Aggregator));
         }
     }
 }

@@ -29,9 +29,9 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            if (!downstreamReRoute.IsCached)
+            if (!downstreamRoute.IsCached)
             {
                 await _next.Invoke(httpContext);
                 return;
@@ -44,7 +44,7 @@
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
-            var cached = _outputCache.Get(downStreamRequestCacheKey, downstreamReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downStreamRequestCacheKey, downstreamRoute.CacheOptions.Region);
 
             if (cached != null)
             {
@@ -73,7 +73,7 @@
 
             cached = await CreateCachedResponse(downstreamResponse);
 
-            _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamReRoute.CacheOptions.TtlSeconds), downstreamReRoute.CacheOptions.Region);
+            _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
 
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }

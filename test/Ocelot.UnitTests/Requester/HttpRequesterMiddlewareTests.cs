@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheRequestIs()
         {
-            _httpContext.Items.UpsertDownstreamReRoute(new DownstreamReRouteBuilder().Build());
+            _httpContext.Items.UpsertDownstreamRoute(new DownstreamRouteBuilder().Build());
         }
 
         private void GivenTheRequesterReturns(Response<HttpResponseMessage> response)

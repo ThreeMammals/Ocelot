@@ -21,7 +21,7 @@ The second thing you need to do something like the following to your ConfigureSe
             x.WithDictionaryHandle();
         })
 
-Finally in order to use caching on a route in your ReRoute configuration add this setting.
+Finally in order to use caching on a route in your Route configuration add this setting.
 
 .. code-block:: json
 

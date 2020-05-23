@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.Multiplexing
     {
         private readonly UserDefinedResponseAggregator _aggregator;
         private readonly Mock<IDefinedAggregatorProvider> _provider;
-        private ReRoute _reRoute;
+        private Route _route;
         private List<HttpContext> _contexts;
         private HttpContext _context;
 
@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_call_aggregator()
         {
-            var reRoute = new ReRouteBuilder().Build();
+            var route = new RouteBuilder().Build();
 
             var context = new DefaultHttpContext();
 
@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Multiplexing
             };
 
             this.Given(_ => GivenTheProviderReturnsAggregator())
-                .And(_ => GivenReRoute(reRoute))
+                .And(_ => GivenRoute(route))
                 .And(_ => GivenContexts(contexts))
                 .And(_ => GivenContext(context))
                 .When(_ => WhenIAggregate())
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_not_find_aggregator()
         {
-            var reRoute = new ReRouteBuilder().Build();
+            var route = new RouteBuilder().Build();
 
             var context = new DefaultHttpContext();
 
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Multiplexing
             };
 
             this.Given(_ => GivenTheProviderReturnsError())
-                .And(_ => GivenReRoute(reRoute))
+                .And(_ => GivenRoute(route))
                 .And(_ => GivenContexts(contexts))
                 .And(_ => GivenContext(context))
                 .When(_ => WhenIAggregate())
@@ -97,7 +97,7 @@ namespace Ocelot.UnitTests.Multiplexing
 
         private void GivenTheProviderReturnsError()
         {
-            _provider.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(new ErrorResponse<IDefinedAggregator>(new AnyError()));
+            _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new ErrorResponse<IDefinedAggregator>(new AnyError()));
         }
 
         private async Task ThenTheContentIsCorrect()
@@ -108,7 +108,7 @@ namespace Ocelot.UnitTests.Multiplexing
 
         private void ThenTheProviderIsCalled()
         {
-            _provider.Verify(x => x.Get(_reRoute), Times.Once);
+            _provider.Verify(x => x.Get(_route), Times.Once);
         }
 
         private void GivenContext(HttpContext context)
@@ -123,18 +123,18 @@ namespace Ocelot.UnitTests.Multiplexing
 
         private async Task WhenIAggregate()
         {
-            await _aggregator.Aggregate(_reRoute, _context, _contexts);
+            await _aggregator.Aggregate(_route, _context, _contexts);
         }
 
         private void GivenTheProviderReturnsAggregator()
         {
             var aggregator = new TestDefinedAggregator();
-            _provider.Setup(x => x.Get(It.IsAny<ReRoute>())).Returns(new OkResponse<IDefinedAggregator>(aggregator));
+            _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new OkResponse<IDefinedAggregator>(aggregator));
         }
 
-        private void GivenReRoute(ReRoute reRoute)
+        private void GivenRoute(Route route)
         {
-            _reRoute = reRoute;
+            _route = route;
         }
 
         public class TestDefinedAggregator : IDefinedAggregator

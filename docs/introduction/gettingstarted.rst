@@ -22,7 +22,7 @@ The following is a very basic ocelot.json. It won't do anything but should get O
 .. code-block:: json
 
     {
-        "ReRoutes": [],
+        "Routes": [],
         "GlobalConfiguration": {
             "BaseUrl": "https://api.mybusiness.com"
         }
@@ -33,7 +33,7 @@ If you want some example that actually does something use the following:
 .. code-block:: json
 
     {
-        "ReRoutes": [
+        "Routes": [
             {
             "DownstreamPathTemplate": "/todos/{id}",
             "DownstreamScheme": "https",
@@ -124,7 +124,7 @@ The following is a very basic ocelot.json. It won't do anything but should get O
 .. code-block:: json
 
     {
-        "ReRoutes": [],
+        "Routes": [],
         "GlobalConfiguration": {}
     }
 

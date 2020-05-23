@@ -4,19 +4,19 @@
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using System.Collections.Generic;
 
-    public class DownstreamRoute
+    public class DownstreamRouteHolder
     {
-        public DownstreamRoute()
+        public DownstreamRouteHolder()
         {
         }
 
-        public DownstreamRoute(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, ReRoute reRoute)
+        public DownstreamRouteHolder(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Route route)
         {
             TemplatePlaceholderNameAndValues = templatePlaceholderNameAndValues;
-            ReRoute = reRoute;
+            Route = route;
         }
 
         public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; private set; }
-        public ReRoute ReRoute { get; private set; }
+        public Route Route { get; private set; }
     }
 }

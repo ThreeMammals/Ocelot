@@ -60,7 +60,7 @@
         }
 
         [Fact]
-        public void Should_map_downstream_reroute_method_to_downstream_request()
+        public void Should_map_downstream_route_method_to_downstream_request()
         {
             this.Given(_ => GivenTheHttpContextContainsARequest())
                 .And(_ => GivenTheMapperWillReturnAMappedRequest())
@@ -91,7 +91,7 @@
 
         private void GivenTheHttpContextContainsARequest()
         {
-            _httpContext.Items.UpsertDownstreamReRoute(new DownstreamReRouteBuilder().Build());
+            _httpContext.Items.UpsertDownstreamRoute(new DownstreamRouteBuilder().Build());
         }
 
         private void GivenTheMapperWillReturnAMappedRequest()
@@ -99,7 +99,7 @@
             _mappedRequest = new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "http://www.bbc.co.uk"));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -108,7 +108,7 @@
             _mappedRequest = new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(new System.Exception("boooom!")));
 
             _requestMapper
-                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamReRoute>()))
+                .Setup(rm => rm.Map(It.IsAny<HttpRequest>(), It.IsAny<DownstreamRoute>()))
                 .ReturnsAsync(_mappedRequest);
         }
 
@@ -119,7 +119,7 @@
 
         private void ThenTheContexRequestIsMappedToADownstreamRequest()
         {
-            _requestMapper.Verify(rm => rm.Map(_httpContext.Request, _httpContext.Items.DownstreamReRoute()), Times.Once);
+            _requestMapper.Verify(rm => rm.Map(_httpContext.Request, _httpContext.Items.DownstreamRoute()), Times.Once);
         }
 
         private void ThenTheDownstreamRequestIsStored()

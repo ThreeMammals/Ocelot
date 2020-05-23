@@ -11,14 +11,14 @@ namespace Ocelot.RequestId.Middleware
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    public class ReRouteRequestIdMiddleware : OcelotMiddleware
+    public class RequestIdMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
-        public ReRouteRequestIdMiddleware(RequestDelegate next,
+        public RequestIdMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
-                : base(loggerFactory.CreateLogger<ReRouteRequestIdMiddleware>())
+                : base(loggerFactory.CreateLogger<RequestIdMiddleware>())
         {
             _next = next;
             _requestScopedDataRepository = requestScopedDataRepository;
@@ -32,9 +32,9 @@ namespace Ocelot.RequestId.Middleware
 
         private void SetOcelotRequestId(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            var key = downstreamReRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
+            var key = downstreamRoute.RequestIdKey ?? DefaultRequestIdKey.Value;
 
             if (httpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
@@ -52,7 +52,7 @@ namespace Ocelot.RequestId.Middleware
                 }
             }
 
-            var requestId = new RequestId(downstreamReRoute.RequestIdKey, httpContext.TraceIdentifier);
+            var requestId = new RequestId(downstreamRoute.RequestIdKey, httpContext.TraceIdentifier);
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 

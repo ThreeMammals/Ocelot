@@ -5,7 +5,7 @@ Ocelot allows the user to access claims and transform them into headers, query s
 
 After the user is authenticated we run the claims to claims transformation middleware. This allows the user to transform claims before the authorisation middleware is called. After the user is authorised first we call the claims to headers middleware, thenthe claims to query string parameters middleware, and Finally the claims to downstream pathmiddleware.
 
-The syntax for performing the transforms is the same for each process. In the ReRoute configuration a json dictionary is added with a specific name either AddClaimsToRequest, AddHeadersToRequest, AddQueriesToRequest, or ChangeDownstreamPathTemplate.
+The syntax for performing the transforms is the same for each process. In the Route configuration a json dictionary is added with a specific name either AddClaimsToRequest, AddHeadersToRequest, AddQueriesToRequest, or ChangeDownstreamPathTemplate.
 
 Note: I'm not a hotshot programmer so have no idea if this syntax is good...
 

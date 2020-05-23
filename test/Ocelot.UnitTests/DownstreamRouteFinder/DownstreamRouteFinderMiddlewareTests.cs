@@ -24,7 +24,7 @@
     {
         private readonly Mock<IDownstreamRouteProvider> _finder;
         private readonly Mock<IDownstreamRouteProviderFactory> _factory;
-        private Response<DownstreamRoute> _downstreamRoute;
+        private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _downstreamRoute;
         private IInternalConfiguration _config;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
@@ -50,16 +50,16 @@
         {
             var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
 
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
-                new DownstreamRoute(
+                new DownstreamRouteHolder(
                     new List<PlaceholderNameAndValue>(),
-                    new ReRouteBuilder()
-                        .WithDownstreamReRoute(downstreamReRoute)
+                    new RouteBuilder()
+                        .WithDownstreamRoute(downstreamRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .And(x => GivenTheFollowingConfig(config))
@@ -79,9 +79,9 @@
             _httpContext.Items.SetIInternalConfiguration(config);
         }
 
-        private void GivenTheDownStreamRouteFinderReturns(DownstreamRoute downstreamRoute)
+        private void GivenTheDownStreamRouteFinderReturns(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
-            _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
+            _downstreamRoute = new OkResponse<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder>(downstreamRoute);
             _finder
                 .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
                 .Returns(_downstreamRoute);

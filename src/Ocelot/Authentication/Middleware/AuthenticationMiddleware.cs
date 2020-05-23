@@ -21,13 +21,13 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamReRoute))
+            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamRoute))
             {
                 Logger.LogInformation($"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
-                var result = await httpContext.AuthenticateAsync(downstreamReRoute.AuthenticationOptions.AuthenticationProviderKey);
+                var result = await httpContext.AuthenticateAsync(downstreamRoute.AuthenticationOptions.AuthenticationProviderKey);
 
                 httpContext.User = result.Principal;
 
@@ -54,9 +54,9 @@
             }
         }
 
-        private static bool IsAuthenticatedRoute(DownstreamReRoute reRoute)
+        private static bool IsAuthenticatedRoute(DownstreamRoute route)
         {
-            return reRoute.IsAuthenticated;
+            return route.IsAuthenticated;
         }
     }
 }

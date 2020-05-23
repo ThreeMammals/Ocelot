@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _httpContext = new DefaultHttpContext();
             _factory = new Mock<IDelegatingHandlerHandlerFactory>();
-            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(new List<Func<DelegatingHandler>>()));
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _loggerFactory
@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
                 .WithLoadBalancerKey("")
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRoute(route);
             httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
                 .WithLoadBalancerKey("")
@@ -93,7 +93,7 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRoute(route);
             httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
@@ -110,7 +110,7 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
                 .WithLoadBalancerKey("")
@@ -119,7 +119,7 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.UpsertDownstreamReRoute(reRoute);
+            httpContext.Items.UpsertDownstreamRoute(route);
             httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(_ => GivenTheRequestIs(httpContext))
@@ -163,7 +163,7 @@ namespace Ocelot.UnitTests.Requester
                 () => new OkDelegatingHandler()
             };
 
-            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
         private void GivenTheHouseReturnsTimeoutHandler()
@@ -173,7 +173,7 @@ namespace Ocelot.UnitTests.Requester
                 () => new TimeoutDelegatingHandler()
             };
 
-            _factory.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+            _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
 
             _mapper.Setup(x => x.Map(It.IsAny<Exception>())).Returns(new UnableToCompleteRequestError(new Exception()));
         }

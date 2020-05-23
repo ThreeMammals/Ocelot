@@ -4,6 +4,6 @@ namespace Ocelot.Multiplexer
 
     public interface IResponseAggregatorFactory
     {
-        IResponseAggregator Get(ReRoute reRoute);
+        IResponseAggregator Get(Route route);
     }
 }

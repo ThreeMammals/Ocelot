@@ -32,11 +32,11 @@ namespace Ocelot.Requester
         {
             var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
 
-            var downstreamReRoute = httpContext.Items.DownstreamReRoute();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
-            var httpClient = builder.Create(downstreamReRoute);
+            var httpClient = builder.Create(downstreamRoute);
 
             try
             {

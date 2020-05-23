@@ -19,9 +19,9 @@
             input.Upsert("DownstreamResponse", downstreamResponse);
         }
 
-        public static void UpsertDownstreamReRoute(this IDictionary<object, object> input, DownstreamReRoute downstreamReRoute)
+        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, Configuration.DownstreamRoute downstreamRoute)
         {
-            input.Upsert("DownstreamReRoute", downstreamReRoute);
+            input.Upsert("DownstreamRoute", downstreamRoute);
         }
 
         public static void UpsertTemplatePlaceholderNameAndValues(this IDictionary<object, object> input, List<PlaceholderNameAndValue> tPNV)
@@ -29,9 +29,9 @@
             input.Upsert("TemplatePlaceholderNameAndValues", tPNV);
         }
 
-        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, DownstreamRoute downstreamRoute)
+        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
-            input.Upsert("DownstreamRoute", downstreamRoute);
+            input.Upsert("DownstreamRouteHolder", downstreamRoute);
         }
 
         public static void UpsertErrors(this IDictionary<object, object> input, List<Error> errors)
@@ -61,9 +61,9 @@
             return errors == null ? new List<Error>() : errors;
         }
 
-        public static DownstreamRoute DownstreamRoute(this IDictionary<object, object> input)
+        public static DownstreamRouteFinder.DownstreamRouteHolder DownstreamRouteHolder(this IDictionary<object, object> input)
         {
-            return input.Get<DownstreamRoute>("DownstreamRoute");
+            return input.Get<DownstreamRouteFinder.DownstreamRouteHolder>("DownstreamRouteHolder");
         }
 
         public static List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues(this IDictionary<object, object> input)
@@ -81,9 +81,9 @@
             return input.Get<DownstreamResponse>("DownstreamResponse");
         }
 
-        public static DownstreamReRoute DownstreamReRoute(this IDictionary<object, object> input)
+        public static Configuration.DownstreamRoute DownstreamRoute(this IDictionary<object, object> input)
         {
-            return input.Get<DownstreamReRoute>("DownstreamReRoute");
+            return input.Get<Configuration.DownstreamRoute>("DownstreamRoute");
         }
 
         private static T Get<T>(this IDictionary<object, object> input, string key)

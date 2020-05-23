@@ -50,7 +50,7 @@
         [Fact]
         public void should_replace_scheme_and_path()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
@@ -60,10 +60,10 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                     new List<PlaceholderNameAndValue>(),
-                    new ReRouteBuilder()
-                        .WithDownstreamReRoute(downstreamReRoute)
+                    new RouteBuilder()
+                        .WithDownstreamRoute(downstreamRoute)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123"))
@@ -78,7 +78,7 @@
         [Fact]
         public void should_replace_query_string()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
@@ -88,14 +88,14 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
                             new PlaceholderNameAndValue("{subscriptionId}", "1"),
                             new PlaceholderNameAndValue("{unitId}", "2")
                         },
-                        new ReRouteBuilder()
-                            .WithDownstreamReRoute(downstreamReRoute)
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2"))
@@ -110,7 +110,7 @@
         [Fact]
         public void should_replace_query_string_but_leave_non_placeholder_queries()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
@@ -120,14 +120,14 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
                             new PlaceholderNameAndValue("{subscriptionId}", "1"),
                             new PlaceholderNameAndValue("{unitId}", "2")
                         },
-                        new ReRouteBuilder()
-                            .WithDownstreamReRoute(downstreamReRoute)
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2&productId=2"))
@@ -142,7 +142,7 @@
         [Fact]
         public void should_replace_query_string_exact_match()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates/{unitIdIty}")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
@@ -152,15 +152,15 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
                             new PlaceholderNameAndValue("{subscriptionId}", "1"),
                             new PlaceholderNameAndValue("{unitId}", "2"),
                             new PlaceholderNameAndValue("{unitIdIty}", "3")
                         },
-                        new ReRouteBuilder()
-                            .WithDownstreamReRoute(downstreamReRoute)
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2?unitIdIty=3"))
@@ -175,7 +175,7 @@
         [Fact]
         public void should_not_create_service_fabric_url()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .WithDownstreamScheme("https")
@@ -188,10 +188,10 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>(),
-                        new ReRouteBuilder()
-                            .WithDownstreamReRoute(downstreamReRoute)
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123"))
@@ -205,16 +205,16 @@
         [Fact]
         public void should_create_service_fabric_url()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
                 .WithServiceName("Ocelot/OcelotApp")
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(
+            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder()
-                    .WithDownstreamReRoute(downstreamReRoute)
+                new RouteBuilder()
+                    .WithDownstreamRoute(downstreamRoute)
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -223,7 +223,7 @@
                 .WithPort(19081)
                 .Build();
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRouteHolder))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081"))
                 .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
@@ -235,16 +235,16 @@
         [Fact]
         public void should_create_service_fabric_url_with_query_string_for_stateless_service()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
                 .WithServiceName("Ocelot/OcelotApp")
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(
+            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder()
-                    .WithDownstreamReRoute(downstreamReRoute)
+                new RouteBuilder()
+                    .WithDownstreamRoute(downstreamRoute)
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -253,7 +253,7 @@
                 .WithPort(19081)
                 .Build();
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRouteHolder))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?Tom=test&laura=1"))
                 .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
@@ -265,16 +265,16 @@
         [Fact]
         public void should_create_service_fabric_url_with_query_string_for_stateful_service()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
                 .WithServiceName("Ocelot/OcelotApp")
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(
+            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder()
-                    .WithDownstreamReRoute(downstreamReRoute)
+                new RouteBuilder()
+                    .WithDownstreamRoute(downstreamRoute)
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -283,7 +283,7 @@
                 .WithPort(19081)
                 .Build();
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRouteHolder))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:19081?PartitionKind=test&PartitionKey=1"))
                 .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
@@ -295,10 +295,10 @@
         [Fact]
         public void should_create_service_fabric_url_with_version_from_upstream_path_template()
         {
-            var downstreamRoute = new DownstreamRoute(
+            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder().WithDownstreamReRoute(
-                        new DownstreamReRouteBuilder()
+                new RouteBuilder().WithDownstreamRoute(
+                        new DownstreamRouteBuilder()
                             .WithDownstreamScheme("http")
                             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/products").Build())
                             .WithUseServiceDiscovery(true)
@@ -323,7 +323,7 @@
         [Fact]
         public void issue_473_should_not_remove_additional_query_string()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
                 .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                 .WithDownstreamScheme("http")
@@ -334,14 +334,14 @@
                 .Build();
 
             this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRoute(
+                    new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
                             new PlaceholderNameAndValue("{action}", "1"),
                             new PlaceholderNameAndValue("{server}", "2")
                         },
-                        new ReRouteBuilder()
-                            .WithDownstreamReRoute(downstreamReRoute)
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                             .Build())))
                 .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d"))
@@ -356,16 +356,16 @@
         [Fact]
         public void should_not_replace_by_empty_scheme()
         {
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("")
                 .WithServiceName("Ocelot/OcelotApp")
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRoute = new DownstreamRoute(
+            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new ReRouteBuilder()
-                    .WithDownstreamReRoute(downstreamReRoute)
+                new RouteBuilder()
+                    .WithDownstreamRoute(downstreamRoute)
                     .Build());
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -374,7 +374,7 @@
                 .WithPort(19081)
                 .Build();
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRouteHolder))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheDownstreamRequestUriIs("https://localhost:19081?PartitionKind=test&PartitionKey=1"))
                 .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
@@ -395,11 +395,11 @@
             _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
-        private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
+        private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
         {
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.UpsertDownstreamReRoute(downstreamRoute.ReRoute.DownstreamReRoute[0]);
+            _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
 
         private void GivenTheDownstreamRequestUriIs(string uri)

@@ -33,9 +33,9 @@ namespace Ocelot.AcceptanceTests
             var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key1data/{userid}",
@@ -51,7 +51,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key1",
                     },
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key2data/{userid}",
@@ -67,7 +67,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key2",
                     },
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key3data/{userid}",
@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key3",
                     },
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key4data/{userid}",
@@ -100,11 +100,11 @@ namespace Ocelot.AcceptanceTests
                         Key = "key4",
                     },
                 },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateReRoute
+                    new FileAggregateRoute
                     {
-                        ReRouteKeys = new List<string>{
+                        RouteKeys = new List<string>{
                             "key1",
                             "key2",
                             "key3",
@@ -112,9 +112,9 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                     },
-                    new FileAggregateReRoute
+                    new FileAggregateRoute
                     {
-                        ReRouteKeys = new List<string>{
+                        RouteKeys = new List<string>{
                             "key1",
                             "key2",
                         },
@@ -146,9 +146,9 @@ namespace Ocelot.AcceptanceTests
             var port3 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -164,7 +164,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Comments",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/users/{userId}",
                             DownstreamScheme = "http",
@@ -180,7 +180,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "UserDetails",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/posts/{postId}",
                             DownstreamScheme = "http",
@@ -197,22 +197,22 @@ namespace Ocelot.AcceptanceTests
                             Key = "PostDetails",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Comments",
                                 "UserDetails",
                                 "PostDetails",
                             },
-                            ReRouteKeysConfig = new List<AggregateReRouteConfig>()
+                            RouteKeysConfig = new List<AggregateRouteConfig>()
                             {
-                                new AggregateReRouteConfig(){ReRouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-                                new AggregateReRouteConfig(){ReRouteKey = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
+                                new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+                                new AggregateRouteConfig(){RouteKey = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
                             },
                         },
                     },
@@ -242,9 +242,9 @@ namespace Ocelot.AcceptanceTests
             var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -260,7 +260,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -277,13 +277,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -313,9 +313,9 @@ namespace Ocelot.AcceptanceTests
             var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -331,7 +331,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -348,13 +348,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -383,9 +383,9 @@ namespace Ocelot.AcceptanceTests
             var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -401,7 +401,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -418,13 +418,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -453,9 +453,9 @@ namespace Ocelot.AcceptanceTests
             var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -471,7 +471,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -488,13 +488,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -523,9 +523,9 @@ namespace Ocelot.AcceptanceTests
             var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -541,7 +541,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -558,13 +558,13 @@ namespace Ocelot.AcceptanceTests
                             Key = "Tom",
                         },
                     },
-                Aggregates = new List<FileAggregateReRoute>
+                Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateReRoute
+                        new FileAggregateRoute
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            ReRouteKeys = new List<string>
+                            RouteKeys = new List<string>
                             {
                                 "Laura",
                                 "Tom",
