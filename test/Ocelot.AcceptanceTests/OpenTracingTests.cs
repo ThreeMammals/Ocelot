@@ -41,9 +41,9 @@ namespace Ocelot.AcceptanceTests
             int port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration()
             {
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                     {
-                        new FileReRoute()
+                        new FileRoute()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
@@ -62,7 +62,7 @@ namespace Ocelot.AcceptanceTests
                                 UseTracing = true
                             }
                         },
-                        new FileReRoute()
+                        new FileRoute()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
@@ -100,13 +100,8 @@ namespace Ocelot.AcceptanceTests
                 .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
                 .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .And(_ => ThenTheTracerIsCalled(fakeTracer))
                 .BDDfy();
-
-            var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => fakeTracer.BuildSpanCalled >= 2);
-
-            _output.WriteLine($"fakeTracer.BuildSpanCalled is {fakeTracer.BuildSpanCalled}");
-
-            commandOnAllStateMachines.ShouldBeTrue();
         }
 
         [Fact]
@@ -115,9 +110,9 @@ namespace Ocelot.AcceptanceTests
             int port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
@@ -145,6 +140,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             var butterflyPort = RandomPortFinder.GetRandomPort();
+
             var butterflyUrl = $"http://localhost:{butterflyPort}";
 
             var fakeTracer = new FakeTracer();
@@ -159,6 +155,15 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
                 .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
                 .BDDfy();
+        }
+
+        private void ThenTheTracerIsCalled(FakeTracer fakeTracer)
+        {
+            var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => fakeTracer.BuildSpanCalled >= 2);
+
+            _output.WriteLine($"fakeTracer.BuildSpanCalled is {fakeTracer.BuildSpanCalled}");
+
+            commandOnAllStateMachines.ShouldBeTrue();
         }
 
         private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
