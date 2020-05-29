@@ -4,13 +4,13 @@ namespace Ocelot.Cache
 {
     public class CacheKeyGenerator : ICacheKeyGenerator
     {
-        public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest)
+        public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
         {
             string hashedContent = null;
-
             var downStreamUrlKeyBuilder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
 
-            var cacheOptionsHeader = context.DownstreamRoute?.CacheOptions?.Header;
+            var cacheOptionsHeader = downstreamRoute?.CacheOptions?.Header;
+
             if (!string.IsNullOrEmpty(cacheOptionsHeader))
             {
                 var header = downstreamRequest.Headers.FirstOrDefault(r =>
@@ -18,7 +18,9 @@ namespace Ocelot.Cache
                     .Value?.FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(header))
-                    downStreamUrlKeyBuilder = downStreamUrlKeyBuilder.Append(header);
+                {
+                    downStreamUrlKeyBuilder.Append(header);
+                }
             }
 
             if (downstreamRequest.Content != null)
