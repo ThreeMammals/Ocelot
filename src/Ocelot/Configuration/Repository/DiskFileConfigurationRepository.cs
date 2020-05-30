@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
+using Ocelot.Cache;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -12,15 +13,20 @@ namespace Ocelot.Configuration.Repository
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
+        private readonly IOcelotCache<FileConfiguration> _cache;
+        private readonly string _cacheKey;
         private FileInfo _ocelotFile;
         private FileInfo _environmentFile;
         private readonly object _lock = new();
 
-        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
+        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment,
+            IOcelotConfigurationChangeTokenSource changeTokenSource, Cache.IOcelotCache<FileConfiguration> cache)
         {
             _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
             Initialize(AppContext.BaseDirectory);
+            _cache = cache;
+            _cacheKey = "InternalDiskFileConfigurationRepository";
         }
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource, string folder)
@@ -42,6 +48,11 @@ namespace Ocelot.Configuration.Repository
 
         public Task<Response<FileConfiguration>> Get()
         {
+            var configuration = _cache.Get(_cacheKey, _cacheKey);
+
+            if (configuration != null)
+                return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(configuration));
+
             string jsonConfiguration;
 
             lock (_lock)
@@ -76,6 +87,9 @@ namespace Ocelot.Configuration.Repository
             }
 
             _changeTokenSource.Activate();
+
+            _cache.AddAndDelete(_cacheKey, fileConfiguration, TimeSpan.FromMinutes(5), _cacheKey);
+
             return Task.FromResult<Response>(new OkResponse());
         }
     }

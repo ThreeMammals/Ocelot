@@ -67,10 +67,10 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
             Value = bytes,
         };
 
-        var result = await _consul.KV.Put(kvPair);
-        if (result.Response)
-        {
-            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
+            var result = await _consul.KV.Put(kvPair);
+            if (result.Response)
+            {
+                _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(5), _configurationKey);
 
             return new OkResponse();
         }

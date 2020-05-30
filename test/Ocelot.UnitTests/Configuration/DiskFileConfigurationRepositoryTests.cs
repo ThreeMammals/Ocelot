@@ -20,6 +20,8 @@ namespace Ocelot.UnitTests.Configuration
             _hostingEnvironment = new Mock<IWebHostEnvironment>();
             _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
             _changeTokenSource.Setup(m => m.Activate());
+            var aspMemoryCache = new AspMemoryCache<FileConfiguration>(new MemoryCache(new MemoryCacheOptions()));
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, aspMemoryCache);
         }
 
         private void Arrange([CallerMemberName] string testName = null)
@@ -120,7 +122,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheEnvironmentNameIsUnavailable()
         {
-            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns((string)null);
+            _environmentName = null;
+            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
+            var aspMemoryCache = new AspMemoryCache<FileConfiguration>(new MemoryCache(new MemoryCacheOptions()));
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, aspMemoryCache);
         }
 
         private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)
