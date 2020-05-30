@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -49,7 +50,7 @@ namespace Ocelot.UnitTests.Authentication
                 isNextCalled = true;
                 return Task.CompletedTask;
             };
-            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
+            _middleware = new AuthenticationMiddleware(_next, _factory.Object, new MemoryCache(new MemoryCacheOptions()));
             var expected = _middleware.GetType().Name;
 
             // Act
@@ -259,7 +260,7 @@ namespace Ocelot.UnitTests.Authentication
                 _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
             };
-            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
+            _middleware = new AuthenticationMiddleware(_next, _factory.Object, new MemoryCache(new MemoryCacheOptions()));
             await _middleware.Invoke(_httpContext);
         }
     }

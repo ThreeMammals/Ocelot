@@ -3,17 +3,22 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System;
 
 namespace Ocelot.Authentication.Middleware
 {
     public sealed class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly IMemoryCache _memoryCache;
 
-        public AuthenticationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
+        public AuthenticationMiddleware(RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
+            IMemoryCache memoryCache)
             : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
+            _memoryCache = memoryCache;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -25,22 +30,30 @@ namespace Ocelot.Authentication.Middleware
             // reducing nesting, returning early when no authentication is needed.
             if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !downstreamRoute.IsAuthenticated)
             {
-                Logger.LogInformation($"No authentication needed for path '{path}'.");
+                Logger.LogInformation(() => $"No authentication needed for path '{path}'.");
                 await _next(httpContext);
                 return;
             }
 
             Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
-
-            var result = await AuthenticateAsync(httpContext, downstreamRoute);
-
-            if (result.Principal?.Identity == null)
+            var token = httpContext.Request.Headers.FirstOrDefault(r => r.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
+            var cacheKey = "identityToken." + token;
+            if (!_memoryCache.TryGetValue(cacheKey, out ClaimsPrincipal userClaim))
             {
-                SetUnauthenticatedError(httpContext, path, null);
-                return;
-            }
+                var result = await AuthenticateAsync(httpContext, downstreamRoute);
 
-            httpContext.User = result.Principal;
+                userClaim = result.Principal;
+
+                _memoryCache.Set(cacheKey, userClaim, TimeSpan.FromMinutes(5));
+            }
+            httpContext.User = userClaim;
+            //var result = await AuthenticateAsync(httpContext, downstreamRoute);
+            //if (result.Principal?.Identity == null)
+            //{
+            //    SetUnauthenticatedError(httpContext, path, null);
+            //    return;
+            //}
+            //httpContext.User = result.Principal;
 
             if (httpContext.User.Identity.IsAuthenticated)
             {
