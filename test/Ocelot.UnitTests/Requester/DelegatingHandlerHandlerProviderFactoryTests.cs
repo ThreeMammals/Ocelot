@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private readonly Mock<IOcelotLogger> _logger;
         private DownstreamRoute _downstreamRoute;
+        private HttpContext _httpContext;
         private Response<List<Func<DelegatingHandler>>> _result;
         private readonly Mock<IQoSFactory> _qosFactory;
         private readonly Mock<ITracingHandlerFactory> _tracingFactory;
@@ -228,6 +229,31 @@ namespace Ocelot.UnitTests.Requester
                 .When(x => WhenIGet())
                 .Then(x => ThenThereIsDelegatesInProvider(2))
                 .And(x => ThenTheDelegatesAreAddedCorrectly())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_attach_http_context_when_necessary()
+        {
+            var qosOptions = new QoSOptionsBuilder()
+                .Build();
+
+            var route = new DownstreamRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, int.MaxValue))
+                .WithDelegatingHandlers(new List<string>
+                {
+                    "FakeHandlerWithHttpContext",
+                })
+                .WithLoadBalancerKey(string.Empty)
+                .Build();
+
+            _httpContext = new DefaultHttpContext();
+
+            this.Given(x => GivenTheFollowingRequest(route))
+                .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeHandlerWithHttpContext, FakeDelegatingHandler>())
+                .When(x => WhenIGet())
+                .Then(x => ThenDelegateHasHttpContext())
                 .BDDfy();
         }
 
@@ -485,13 +511,22 @@ namespace Ocelot.UnitTests.Requester
         {
             _serviceProvider = _services.BuildServiceProvider();
             _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
-            _result = _factory.Get(_downstreamRoute);
+            _result = _factory.Get(_downstreamRoute, _httpContext);
         }
 
         private void ThenNoDelegatesAreInTheProvider()
         {
             _result.ShouldNotBeNull();
             _result.Data.Count.ShouldBe(0);
+        }
+
+        private void ThenDelegateHasHttpContext()
+        {
+            var delegates = _result.Data;
+
+            var del = delegates[1].Invoke();
+            var handler = (FakeHandlerWithHttpContext)del;
+            handler.HttpContext.ShouldBe(_httpContext);
         }
     }
 
@@ -501,5 +536,10 @@ namespace Ocelot.UnitTests.Requester
 
     internal class FakeQoSHandler : DelegatingHandler
     {
+    }
+
+    internal class FakeHandlerWithHttpContext : DelegatingHandler, IDelegatingHandlerWithHttpContext
+    {
+        public HttpContext HttpContext { get; set; }
     }
 }

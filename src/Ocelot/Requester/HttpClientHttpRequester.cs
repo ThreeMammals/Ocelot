@@ -31,7 +31,7 @@ namespace Ocelot.Requester
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
-            var httpClient = builder.Create(downstreamRoute);
+            var httpClient = builder.Create(downstreamRoute, httpContext);
 
             try
             {

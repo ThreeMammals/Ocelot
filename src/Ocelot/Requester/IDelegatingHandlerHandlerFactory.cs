@@ -5,6 +5,6 @@ namespace Ocelot.Requester
 {
     public interface IDelegatingHandlerHandlerFactory
     {
-        Response<List<Func<DelegatingHandler>>> Get(DownstreamRoute downstreamRoute);
+        Response<List<Func<DelegatingHandler>>> Get(DownstreamRoute downstreamRoute, HttpContext httpContext);
     }
 }

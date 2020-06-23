@@ -574,6 +574,38 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<TOne>(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
+            where TOne : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                     .AddDelegatingHandler<TOne>();
+                    s.AddAuthentication()
+                     .AddIdentityServerAuthentication(authenticationProviderKey, options);
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         public void GivenOcelotIsRunningWithSpecficAggregatorsRegisteredInDi<TAggregator, TDepedency>()
             where TAggregator : class, IDefinedAggregator
             where TDepedency : class
@@ -696,6 +728,38 @@ namespace Ocelot.AcceptanceTests
                 .Configure(a =>
                 {
                     a.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
+            where TOne : DelegatingHandler
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                     .AddDelegatingHandler<TOne>(true);
+                    s.AddAuthentication()
+                     .AddIdentityServerAuthentication(authenticationProviderKey, options);
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
                 });
 
             _ocelotServer = new TestServer(_webHostBuilder);
