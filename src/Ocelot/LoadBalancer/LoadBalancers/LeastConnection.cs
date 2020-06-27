@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
 
+using Ocelot.Middleware;
 using Ocelot.Responses;
 
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
-{
     public class LeastConnection : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
@@ -52,7 +51,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                 _leases.Add(leaseWithLeastConnections);
 
-                return new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort(leaseWithLeastConnections.HostAndPort.DownstreamHost, leaseWithLeastConnections.HostAndPort.DownstreamPort));
+                return new OkResponse<ServiceHostAndPort>(leaseWithLeastConnections.HostAndPort);
             }
         }
 
@@ -61,7 +60,8 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             lock (SyncLock)
             {
                 var matchingLease = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == hostAndPort.DownstreamHost
-                    && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort);
+                    && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort
+                    && l.HostAndPort.Scheme == hostAndPort.Scheme);
 
                 if (matchingLease != null)
                 {
@@ -111,7 +111,8 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 foreach (var lease in _leases)
                 {
                     var match = services.FirstOrDefault(s => s.HostAndPort.DownstreamHost == lease.HostAndPort.DownstreamHost
-                        && s.HostAndPort.DownstreamPort == lease.HostAndPort.DownstreamPort);
+                        && s.HostAndPort.DownstreamPort == lease.HostAndPort.DownstreamPort
+                        && s.HostAndPort.Scheme == lease.HostAndPort.Scheme);
 
                     if (match == null)
                     {
@@ -126,7 +127,9 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                 foreach (var service in services)
                 {
-                    var exists = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == service.HostAndPort.DownstreamHost && l.HostAndPort.DownstreamPort == service.HostAndPort.DownstreamPort);
+                    var exists = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == service.HostAndPort.DownstreamHost
+                                    && l.HostAndPort.DownstreamPort == service.HostAndPort.DownstreamPort
+                                    && l.HostAndPort.Scheme == service.HostAndPort.Scheme);
 
                     if (exists == null)
                     {
