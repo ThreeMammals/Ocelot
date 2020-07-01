@@ -93,7 +93,6 @@ namespace Ocelot.AcceptanceTests
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 10,
-                            ExceptionsAllowedBeforeBreaking = 10,
                         },
                     },
                 },
