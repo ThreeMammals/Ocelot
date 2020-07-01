@@ -369,12 +369,10 @@ namespace Ocelot.AcceptanceTests
 
                         endpoints.MapPost($"/{validationPath}", async context =>
                         {
-                            var bodyString = "";
-
                             StreamReader r = new StreamReader(context.Request.Body);
                             var streamBody = await r.ReadToEndAsync();
 
-                            var body = JsonConvert.DeserializeObject<dynamic>(bodyString);
+                            var body = JsonConvert.DeserializeObject<PostBody>(streamBody);
                             var key = body.key;
 
                             if (acceptedKeys.Any(x => x == key))
@@ -411,6 +409,11 @@ namespace Ocelot.AcceptanceTests
             _serviceHandler.Dispose();
             _steps.Dispose();
         }
+    }
+
+    public class PostBody
+    {
+        public string key { get; set; }
     }
 }
 
