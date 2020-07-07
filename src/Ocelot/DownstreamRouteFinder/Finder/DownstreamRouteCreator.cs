@@ -18,7 +18,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>>();
         }
 
-        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost, Dictionary<string, string> upstreamHeaders)
         {
             var serviceName = GetServiceName(upstreamUrlPath);
 
@@ -52,7 +52,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 .WithDownstreamScheme(configuration.DownstreamScheme)
                 .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
                 .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
-                .WithUpstreamPathTemplate(upstreamPathTemplate);
+                .WithUpstreamPathTemplate(upstreamPathTemplate)
+                .WithUpstreamHeaders(upstreamHeaders);
 
             var rateLimitOptions = configuration.Routes?.SelectMany(x => x.DownstreamRoute)
                 .FirstOrDefault(x => x.ServiceName == serviceName);
@@ -70,6 +71,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 .WithDownstreamRoute(downstreamRoute)
                 .WithUpstreamHttpMethod(new List<string> { upstreamHttpMethod })
                 .WithUpstreamPathTemplate(upstreamPathTemplate)
+                .WithUpstreamHeaders(upstreamHeaders)
                 .Build();
 
             downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));

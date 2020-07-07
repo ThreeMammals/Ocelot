@@ -32,13 +32,15 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
                 ? hostHeader.Split(':')[0]
                 : hostHeader;
 
-            Logger.LogDebug(() => $"Upstream url path is {upstreamUrlPath}");
+            var upstreamHeaders = httpContext.Request.Headers.ToDictionary(h => h.Key, h => string.Join(";", h.Value));
+
+            Logger.LogDebug(() => $"Upstream URL path is '{upstreamUrlPath}'.");
 
             var internalConfiguration = httpContext.Items.IInternalConfiguration();
 
             var provider = _factory.Get(internalConfiguration);
 
-            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost);
+            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
 
             if (response.IsError)
             {

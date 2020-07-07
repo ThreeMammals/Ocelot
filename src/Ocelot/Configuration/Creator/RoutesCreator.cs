@@ -143,6 +143,7 @@ namespace Ocelot.Configuration.Creator
                 .WithSecurityOptions(securityOptions)
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
+                .WithUpstreamHeaders(fileRoute.UpstreamHeaders)
                 .Build();
 
             return route;
@@ -157,6 +158,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamRoute(downstreamRoutes)
                 .WithUpstreamHost(fileRoute.UpstreamHost)
+                .WithUpstreamHeaders(fileRoute.UpstreamHeaders)
                 .Build();
 
             return route;
