@@ -16,7 +16,7 @@ The value of the entry is parsed to logic that will perform the transform. First
 Claims to Claims Transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Below is an example configuration that will transforms claims to claims
+Below is an example configuration that will transform claims to claims
 
 .. code-block:: json
 
@@ -30,7 +30,7 @@ This shows a transforms where Ocelot looks at the users sub claim and transforms
 Claims to Headers Tranformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Below is an example configuration that will transforms claims to headers
+Below is an example configuration that will transform claims to headers
 
 .. code-block:: json
 
@@ -43,7 +43,7 @@ This shows a transform where Ocelot looks at the users sub claim and transforms 
 Claims to Query String Parameters Transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Below is an example configuration that will transforms claims to query string parameters
+Below is an example configuration that will transform claims to query string parameters
 
 .. code-block:: json
 
