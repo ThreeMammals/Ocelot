@@ -49,6 +49,7 @@ namespace Ocelot.Configuration.Creator
                 .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
                 .WithUpstreamHost(aggregateRoute.UpstreamHost)
                 .WithAggregator(aggregateRoute.Aggregator)
+                .WithUpstreamHeaders(aggregateRoute.UpstreamHeaders)
                 .Build();
 
             return route;
