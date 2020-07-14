@@ -46,8 +46,9 @@
             }
 
             // Never change this to StreamContent again, I forgot it doesnt work in #464.
+            request.EnableBuffering();
             var content = new ByteArrayContent(await ToByteArray(request.Body));
-
+            request.Body.Position = 0;
             if (!string.IsNullOrEmpty(request.ContentType))
             {
                 content.Headers
@@ -106,13 +107,10 @@
 
         private async Task<byte[]> ToByteArray(Stream stream)
         {
-            using (stream)
+            using (var memStream = new MemoryStream())
             {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
-                }
+                await stream.CopyToAsync(memStream);
+                return memStream.ToArray();
             }
         }
     }
