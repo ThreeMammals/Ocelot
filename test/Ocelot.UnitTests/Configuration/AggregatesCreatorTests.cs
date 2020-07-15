@@ -10,6 +10,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         private readonly AggregatesCreator _creator;
         private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
         private FileConfiguration _fileConfiguration;
         private List<Route> _routes;
         private List<Route> _result;
@@ -19,7 +20,8 @@ namespace Ocelot.UnitTests.Configuration
         public AggregatesCreatorTests()
         {
             _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
-            _creator = new AggregatesCreator(_utpCreator.Object);
+            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
+            _creator = new AggregatesCreator(_utpCreator.Object, _uhtpCreator.Object);
         }
 
         [Fact]

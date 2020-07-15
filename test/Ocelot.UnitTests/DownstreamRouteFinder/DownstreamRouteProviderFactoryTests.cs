@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 
@@ -22,6 +24,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var services = new ServiceCollection();
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
+            services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
             services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
             services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
