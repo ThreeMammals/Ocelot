@@ -16,7 +16,7 @@ namespace Ocelot.Configuration.Builder
         private List<DownstreamRoute> _downstreamRoutes;
         private List<AggregateRouteConfig> _downstreamRoutesConfig;
         private string _aggregator;
-        private Dictionary<string, string> _upstreamHeaders;
+        private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
 
         public RouteBuilder()
         {
@@ -66,7 +66,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public RouteBuilder WithUpstreamHeaders(Dictionary<string, string> upstreamHeaders)
+        public RouteBuilder WithUpstreamHeaders(Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders)
         {
             _upstreamHeaders = upstreamHeaders;
             return this;
