@@ -17,6 +17,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IClaimsToThingCreator _claimsToThingCreator;
         private readonly IAuthenticationOptionsCreator _authOptionsCreator;
         private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
+        private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
         private readonly IRequestIdKeyCreator _requestIdKeyCreator;
         private readonly IQoSOptionsCreator _qosOptionsCreator;
         private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
@@ -44,7 +45,8 @@ namespace Ocelot.Configuration.Creator
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
-            IVersionCreator versionCreator
+            IVersionCreator versionCreator,
+            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator
             )
         {
             _routeKeyCreator = routeKeyCreator;
@@ -63,6 +65,7 @@ namespace Ocelot.Configuration.Creator
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _securityOptionsCreator = securityOptionsCreator;
             _versionCreator = versionCreator;
+            _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -159,8 +162,7 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-            //TODO
-            var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
+            var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute);
 
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)

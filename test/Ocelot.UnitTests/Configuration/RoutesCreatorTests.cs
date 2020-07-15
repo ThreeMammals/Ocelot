@@ -20,6 +20,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IClaimsToThingCreator> _cthCreator;
         private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
         private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
         private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
         private readonly Mock<IQoSOptionsCreator> _qosoCreator;
         private readonly Mock<IRouteOptionsCreator> _rroCreator;
@@ -47,6 +48,7 @@ namespace Ocelot.UnitTests.Configuration
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
+        private SecurityOptions _securityOptions;
         private Version _expectedVersion;
 
         public RoutesCreatorTests()
@@ -66,6 +68,7 @@ namespace Ocelot.UnitTests.Configuration
             _rrkCreator = new Mock<IRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
             _versionCreator = new Mock<IVersionCreator>();
+            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -82,7 +85,8 @@ namespace Ocelot.UnitTests.Configuration
                 _lboCreator.Object,
                 _rrkCreator.Object,
                 _soCreator.Object,
-                _versionCreator.Object
+                _versionCreator.Object,
+                _uhtpCreator.Object
                 );
         }
 
