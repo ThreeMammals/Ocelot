@@ -2,6 +2,8 @@ using Ocelot.Cache;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
+using Ocelot.Values;
+
 namespace Ocelot.Configuration.Creator
 {
     public class RoutesCreator : IRoutesCreator
@@ -152,12 +154,15 @@ namespace Ocelot.Configuration.Creator
         {
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
+            //TODO
+            var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
+
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamRoute(downstreamRoutes)
                 .WithUpstreamHost(fileRoute.UpstreamHost)
-                .WithUpstreamHeaders(fileRoute.UpstreamHeaders)
+                .WithUpstreamHeaders(upstreamHeaderTemplates)
                 .Build();
 
             return route;

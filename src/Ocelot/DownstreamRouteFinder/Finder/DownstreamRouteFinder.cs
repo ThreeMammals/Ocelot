@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
@@ -28,13 +29,11 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             {
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, route.UpstreamTemplatePattern);
 
-                if (urlMatch.Data.Match)
+                if (urlMatch.Data.Match && HeadersMatch(route, upstreamHeaders))
                 {
-                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route));
+                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route, upstreamHeaders));
                 }
             }
-
-            downstreamRoutes = downstreamRoutes.Where(r => HeadersMatch(r.Route, upstreamHeaders)).ToList();
 
             if (downstreamRoutes.Any())
             {
@@ -53,7 +52,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                    (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
         }
 
-        private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route)
+        private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, Dictionary<string, string> upstreamHeaders)
         {
             var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, route.UpstreamTemplatePattern.OriginalValue);
 
@@ -62,9 +61,10 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private bool HeadersMatch(Route route, Dictionary<string, string> upstreamHeaders)
         {
-            return route.UpstreamHeaders == null || 
-                upstreamHeaders != null && route.UpstreamHeaders.All(
-                    h => upstreamHeaders.ContainsKey(h.Key) && upstreamHeaders[h.Key] == route.UpstreamHeaders[h.Key]);
+            return true;
+            //return route.UpstreamHeaders == null || 
+            //    upstreamHeaders != null && route.UpstreamHeaders.All(
+            //        h => upstreamHeaders.ContainsKey(h.Key) && upstreamHeaders[h.Key] == route.UpstreamHeaders[h.Key]);
         }
     }
 }

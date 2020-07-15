@@ -11,7 +11,7 @@ namespace Ocelot.Configuration
             UpstreamPathTemplate upstreamTemplatePattern,
             string upstreamHost,
             string aggregator,
-            Dictionary<string, string> upstreamHeaders)
+            Dictionary<string, UpstreamHeaderTemplate> upstreamHeaderTemplates)
         {
             UpstreamHost = upstreamHost;
             DownstreamRoute = downstreamRoute;
@@ -19,15 +19,15 @@ namespace Ocelot.Configuration
             UpstreamHttpMethod = upstreamHttpMethod;
             UpstreamTemplatePattern = upstreamTemplatePattern;
             Aggregator = aggregator;
-            UpstreamHeaders = upstreamHeaders;
+            UpstreamHeaderTemplates = upstreamHeaderTemplates;
         }
 
-        public UpstreamPathTemplate UpstreamTemplatePattern { get; set; }
-        public List<HttpMethod> UpstreamHttpMethod { get; set; }
-        public string UpstreamHost { get; set; }
-        public List<DownstreamRoute> DownstreamRoute { get; set; }
-        public List<AggregateRouteConfig> DownstreamRouteConfig { get; set; }
-        public string Aggregator { get; set; }
-        public Dictionary<string, string> UpstreamHeaders { get; set; }
+        public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
+        public List<HttpMethod> UpstreamHttpMethod { get; private set; }
+        public string UpstreamHost { get; private set; }
+        public List<DownstreamRoute> DownstreamRoute { get; private set; }
+        public List<AggregateRouteConfig> DownstreamRouteConfig { get; private set; }
+        public string Aggregator { get; private set; }
+        public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; private set; }
     }
 }
