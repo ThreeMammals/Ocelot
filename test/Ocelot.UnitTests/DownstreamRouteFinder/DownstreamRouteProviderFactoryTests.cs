@@ -15,8 +15,6 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using Ocelot.DownstreamRouteFinder.Finder;
-
     public class DownstreamRouteProviderFactoryTests
     {
         private readonly DownstreamRouteProviderFactory _factory;
@@ -29,6 +27,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             var services = new ServiceCollection();
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
+            services.AddSingleton<IHeaderPlaceholderNameAndValueFinder, HeaderPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
             services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
