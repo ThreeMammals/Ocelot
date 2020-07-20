@@ -8,12 +8,10 @@ namespace Ocelot.Configuration.Creator
         public AuthenticationOptions Create(FileAuthenticationOptions reRouteAuthOptions, 
                                             FileAuthenticationOptions globalConfAuthOptions)
         {
-            var reRouteAuthOptionsEmpty = string.IsNullOrEmpty(reRouteAuthOptions.AuthenticationProviderKey)
-                && !reRouteAuthOptions.AllowedScopes.Any();
+            var routeAuthOptionsEmpty = string.IsNullOrEmpty(routeAuthOptions.AuthenticationProviderKey);
             
-            var resultAuthOptions = reRouteAuthOptionsEmpty ? globalConfAuthOptions : reRouteAuthOptions;
-
-            // Important! if you add a property to FileAuthenticationOptions, you must add checking its value in reRouteAuthOptionsEmpty variable (above)
+            var resultAuthOptions = routeAuthOptionsEmpty ? globalConfAuthOptions : routeAuthOptions;
+            
             return new AuthenticationOptions(resultAuthOptions.AllowedScopes, resultAuthOptions.AuthenticationProviderKey);
         }
     }

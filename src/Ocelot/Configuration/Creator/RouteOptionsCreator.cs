@@ -29,7 +29,7 @@ namespace Ocelot.Configuration.Creator
         private static bool IsAuthenticated(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
         {
             return (!string.IsNullOrEmpty(globalConfiguration?.AuthenticationOptions?.AuthenticationProviderKey) &&
-                                                              !fileRoute.AuthenticationOptions.AllowAnonymous) ||
+                                                              !fileRoute.AuthenticationOptions.AllowAnonymousForGlobalAuthenticationOptions) ||
                 !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
         }
 

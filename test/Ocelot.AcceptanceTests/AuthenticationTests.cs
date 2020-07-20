@@ -318,7 +318,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AllowAnonymous = true,
+                               AllowAnonymousForGlobalAuthenticationOptions = true,
                            },
                        },
                    },
