@@ -5,9 +5,9 @@ namespace Ocelot.Configuration.Creator
 {
     public class RouteOptionsCreator : IRouteOptionsCreator
     {
-        public RouteOptions Create(FileRoute fileRoute)
+        public RouteOptions Create(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var isAuthenticated = IsAuthenticated(fileRoute);
+            var isAuthenticated = IsAuthenticated(fileRoute, globalConfiguration);
             var isAuthorized = IsAuthorized(fileRoute);
             var isCached = IsCached(fileRoute);
             var enableRateLimiting = IsEnableRateLimiting(fileRoute);
@@ -26,7 +26,12 @@ namespace Ocelot.Configuration.Creator
 
         private static bool IsEnableRateLimiting(FileRoute fileRoute) => fileRoute.RateLimitOptions?.EnableRateLimiting == true;
 
-        private static bool IsAuthenticated(FileRoute fileRoute) => !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
+        private static bool IsAuthenticated(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            return (!string.IsNullOrEmpty(globalConfiguration?.AuthenticationOptions?.AuthenticationProviderKey) &&
+                                                              !fileRoute.AuthenticationOptions.AllowAnonymous) ||
+                !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
+        }
 
         private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;
 
