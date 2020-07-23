@@ -12,9 +12,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
     public class DownstreamRouteFinderTests : UnitTest
     {
         private readonly IDownstreamRouteProvider _downstreamRouteFinder;
-        private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;
+        private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockUrlMatcher;
         private readonly Mock<IHeadersToHeaderTemplatesMatcher> _mockHeadersMatcher;
-        private readonly Mock<IPlaceholderNameAndValueFinder> _finder;
+        private readonly Mock<IPlaceholderNameAndValueFinder> _urlPlaceholderFinder;
+        private readonly Mock<IHeaderPlaceholderNameAndValueFinder> _headerPlaceholderFinder;
         private string _upstreamUrlPath;
         private Response<DownstreamRouteHolder> _result;
         private List<Route> _routesConfig;
@@ -27,10 +28,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         public DownstreamRouteFinderTests()
         {
-            _mockMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
+            _mockUrlMatcher = new Mock<IUrlPathToUrlTemplateMatcher>();
             _mockHeadersMatcher = new Mock<IHeadersToHeaderTemplatesMatcher>();
-            _finder = new Mock<IPlaceholderNameAndValueFinder>();
-            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockMatcher.Object, _finder.Object, _mockHeadersMatcher.Object);
+            _urlPlaceholderFinder = new Mock<IPlaceholderNameAndValueFinder>();
+            _headerPlaceholderFinder = new Mock<IHeaderPlaceholderNameAndValueFinder>();
+            _downstreamRouteFinder = new Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder(_mockUrlMatcher.Object, _urlPlaceholderFinder.Object, _mockHeadersMatcher.Object, _headerPlaceholderFinder.Object);
         }
 
         [Fact]
@@ -41,6 +43,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -88,6 +91,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("someUpstreamPath"))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -136,6 +140,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                         new OkResponse<List<PlaceholderNameAndValue>>(
                             new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -179,6 +184,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                         new OkResponse<List<PlaceholderNameAndValue>>(
                             new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -223,6 +230,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -265,6 +273,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -345,6 +354,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -387,6 +397,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -429,6 +440,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     x =>
                         x.GivenTheTemplateVariableAndNameFinderReturns(
                             new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                 {
                     new RouteBuilder()
@@ -461,6 +473,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                     new OkResponse<List<PlaceholderNameAndValue>>(
                         new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -506,6 +519,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                     new OkResponse<List<PlaceholderNameAndValue>>(
                         new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -548,6 +562,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x => GivenTheUpstreamHostIs("DONTMATCH"))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -589,6 +604,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x => GivenTheUpstreamHostIs("DONTMATCH"))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -620,6 +636,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x => GivenTheUpstreamHostIs("MATCH"))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -652,6 +669,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                     new OkResponse<List<PlaceholderNameAndValue>>(
                         new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -718,6 +736,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(
                     new OkResponse<List<PlaceholderNameAndValue>>(
                         new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -767,6 +786,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             this.Given(x => x.GivenThereIsAnUpstreamUrlPath("matchInUrlMatcher/"))
                 .And(x => GivenTheUpstreamHeadersIs(new Dictionary<string, string>() { { "header1", "headerValue1" } }))
                 .And(x => x.GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>())))
+                .And(x => x.GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheConfigurationIs(new List<Route>
                     {
                         new RouteBuilder()
@@ -806,9 +826,16 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<PlaceholderNameAndValue>> response)
         {
-            _finder
+            _urlPlaceholderFinder
                 .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(response);
+        }
+
+        private void GivenTheHeaderPlaceholderAndNameFinderReturns(List<PlaceholderNameAndValue> placeholders)
+        {
+            _headerPlaceholderFinder
+                .Setup(x => x.Find(It.IsAny<Dictionary<string, string>>(), It.IsAny<Dictionary<string, UpstreamHeaderTemplate>>()))
+                .Returns(placeholders);
         }
 
         private void GivenTheUpstreamHttpMethodIs(string upstreamHttpMethod)
@@ -828,32 +855,32 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheUrlMatcherIsCalledCorrectly()
         {
-            _mockMatcher
+            _mockUrlMatcher
                 .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Once);
         }
 
         private void ThenTheUrlMatcherIsCalledCorrectly(int times, int index = 0)
         {
-            _mockMatcher
+            _mockUrlMatcher
                 .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[index].UpstreamTemplatePattern), Times.Exactly(times));
         }
 
         private void ThenTheUrlMatcherIsCalledCorrectly(string expectedUpstreamUrlPath)
         {
-            _mockMatcher
+            _mockUrlMatcher
                 .Verify(x => x.Match(expectedUpstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Once);
         }
 
         private void ThenTheUrlMatcherIsNotCalled()
         {
-            _mockMatcher
+            _mockUrlMatcher
                 .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Never);
         }
 
         private void GivenTheUrlMatcherReturns(Response<UrlMatch> match)
         {
             _match = match;
-            _mockMatcher
+            _mockUrlMatcher
                 .Setup(x => x.Match(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UpstreamPathTemplate>()))
                 .Returns(_match);
         }
