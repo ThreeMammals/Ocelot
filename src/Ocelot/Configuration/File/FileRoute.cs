@@ -13,6 +13,7 @@
             AddQueriesToRequest = new Dictionary<string, string>();
             ChangeDownstreamPathTemplate = new Dictionary<string, string>();
             DownstreamHeaderTransform = new Dictionary<string, string>();
+            MetaData = new Dictionary<string, object>();
             FileCacheOptions = new FileCacheOptions();
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
@@ -57,5 +58,6 @@
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
         public string DownstreamHttpVersion { get; set; }
+        public Dictionary<string, object> MetaData { get; set; }
     }
 }
