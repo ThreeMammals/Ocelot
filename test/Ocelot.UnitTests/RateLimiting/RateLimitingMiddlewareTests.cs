@@ -18,6 +18,7 @@ public class RateLimitingMiddlewareTests : UnitTest
     private readonly IRateLimitStorage _storage;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
+    private readonly Mock<IServiceProvider> _container;
     private readonly RateLimitingMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly IRateLimiting _rateLimiting;
@@ -34,7 +35,8 @@ public class RateLimitingMiddlewareTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<RateLimitingMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
         _rateLimiting = new _RateLimiting_(_storage);
-        _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimiting);
+        _container = new Mock<IServiceProvider>();
+        _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimiting, _container.Object);
         _downstreamResponses = new();
     }
 
