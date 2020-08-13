@@ -758,7 +758,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                         },
                         UpstreamHttpMethod = new List<string> {"Get"},
                         UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {                           
+                        {
                             { "header2", "value2" },
                             { "header1", "value1" },
                         },
@@ -817,7 +817,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsValid())                
+                .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
 

@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _downstreamRoute = new OkResponse<DownstreamRouteHolder>(downstreamRoute);
             _finder
-                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<Dictionary<string,string>>()))
+                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
                 .Returns(_downstreamRoute);
         }
 
