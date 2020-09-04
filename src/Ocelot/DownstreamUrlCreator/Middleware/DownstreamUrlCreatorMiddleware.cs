@@ -108,13 +108,12 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var name = nAndV.Name.Replace("{", string.Empty).Replace("}", string.Empty);
 
-                if (downstreamRequest.Query.Contains(name) &&
-                    downstreamRequest.Query.Contains(nAndV.Value))
+                var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
+
+                if (rgx.IsMatch(downstreamRequest.Query))
                 {
                     var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
                     downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
-
-                    var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
                     downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, string.Empty);
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
