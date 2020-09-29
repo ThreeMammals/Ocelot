@@ -12,13 +12,13 @@
         private List<HttpMethod> _upstreamHttpMethod;
         private string _upstreamHost;
         private List<DownstreamRoute> _downstreamRoutes;
-        private List<AggregateRouteConfig> _downstreamRoutesConfig;
+        private List<FileAggregateRouteConfig> _downstreamRoutesConfig;
         private string _aggregator;
 
         public RouteBuilder()
         {
             _downstreamRoutes = new List<DownstreamRoute>();
-            _downstreamRoutesConfig = new List<AggregateRouteConfig>();
+            _downstreamRoutesConfig = new List<FileAggregateRouteConfig>();
         }
 
         public RouteBuilder WithDownstreamRoute(DownstreamRoute value)
@@ -51,7 +51,7 @@
             return this;
         }
 
-        public RouteBuilder WithAggregateRouteConfig(List<AggregateRouteConfig> aggregateRouteConfigs)
+        public RouteBuilder WithAggregateRouteConfig(List<FileAggregateRouteConfig> aggregateRouteConfigs)
         {
             _downstreamRoutesConfig = aggregateRouteConfigs;
             return this;

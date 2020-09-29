@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>{"key1"}
+                        RouteIds = new List<string>{"key1"}
                     }
                 }
             };
@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>{"key1", "key2"},
+                        RouteIds = new List<string>{"key1", "key2"},
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Configuration
                     },
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>{"key3", "key4"},
+                        RouteIds = new List<string>{"key3", "key4"},
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",

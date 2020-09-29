@@ -184,7 +184,7 @@
                 {
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>
+                        RouteIds = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -193,7 +193,7 @@
                     },
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>
+                        RouteIds = new List<string>
                         {
                             "KeyB",
                             "KeyBB"

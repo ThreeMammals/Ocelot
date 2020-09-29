@@ -109,9 +109,9 @@
 
         private bool AllRoutesForAggregateExist(FileAggregateRoute fileAggregateRoute, List<FileRoute> routes)
         {
-            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.RouteId));
+            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteIds.Contains(r.RouteId));
 
-            return routesForAggregate.Count() == fileAggregateRoute.RouteKeys.Count;
+            return routesForAggregate.Count() == fileAggregateRoute.RouteIds.Count;
         }
 
         private bool IsPlaceholderNotDuplicatedIn(string upstreamPathTemplate)
@@ -125,7 +125,7 @@
         private static bool DoesNotContainRoutesWithSpecificRequestIdKeys(FileAggregateRoute fileAggregateRoute,
             List<FileRoute> routes)
         {
-            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.RouteId));
+            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteIds.Contains(r.RouteId));
 
             return routesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }

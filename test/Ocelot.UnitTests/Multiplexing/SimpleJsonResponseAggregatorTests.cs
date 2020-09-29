@@ -46,9 +46,9 @@ namespace Ocelot.UnitTests.Multiplexing
 
             var route = new RouteBuilder()
                 .WithDownstreamRoutes(downstreamRoutes)
-                .WithAggregateRouteConfig(new List<AggregateRouteConfig>()
+                .WithAggregateRouteConfig(new List<FileAggregateRouteConfig>()
                 {
-                    new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
+                    new FileAggregateRouteConfig(){RouteId = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
                 })
                 .Build();
 

@@ -27,7 +27,7 @@ namespace Ocelot.Configuration.Creator
             var applicableRoutes = new List<DownstreamRoute>();
             var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
 
-            foreach (var routeKey in aggregateRoute.RouteKeys)
+            foreach (var routeKey in aggregateRoute.RouteIds)
             {
                 var selec = allRoutes.FirstOrDefault(q => q.Key == routeKey);
                 if (selec == null)
@@ -44,7 +44,7 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamRoutes(applicableRoutes)
-                .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
+                .WithAggregateRouteConfig(aggregateRoute.RouteIdsConfig)
                 .WithUpstreamHost(aggregateRoute.UpstreamHost)
                 .WithAggregator(aggregateRoute.Aggregator)
                 .Build();

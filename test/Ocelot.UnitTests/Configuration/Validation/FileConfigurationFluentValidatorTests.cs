@@ -434,7 +434,7 @@
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -496,7 +496,7 @@
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -559,7 +559,7 @@
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -620,7 +620,7 @@
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -630,7 +630,7 @@
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -676,7 +676,7 @@
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"
@@ -739,7 +739,7 @@
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Tom",
                                 "Laura"

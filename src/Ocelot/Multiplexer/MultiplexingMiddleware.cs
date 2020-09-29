@@ -98,7 +98,7 @@
                     var downstreamRoute = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[i];
 
                     var matchAdvancedAgg = routeKeysConfigs
-                        .FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
+                        .FirstOrDefault(q => q.RouteId == downstreamRoute.Key);
 
                     if (matchAdvancedAgg != null)
                     {

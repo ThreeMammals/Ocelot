@@ -104,7 +104,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>{
+                        RouteIds = new List<string>{
                             "key1",
                             "key2",
                             "key3",
@@ -114,7 +114,7 @@ namespace Ocelot.AcceptanceTests
                     },
                     new FileAggregateRoute
                     {
-                        RouteKeys = new List<string>{
+                        RouteIds = new List<string>{
                             "key1",
                             "key2",
                         },
@@ -203,16 +203,16 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Comments",
                                 "UserDetails",
                                 "PostDetails",
                             },
-                            RouteKeysConfig = new List<AggregateRouteConfig>()
+                            RouteIdsConfig = new List<FileAggregateRouteConfig>()
                             {
-                                new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-                                new AggregateRouteConfig(){RouteKey = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
+                                new FileAggregateRouteConfig(){RouteId = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+                                new FileAggregateRouteConfig(){RouteId = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
                             },
                         },
                     },
@@ -283,7 +283,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -354,7 +354,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -424,7 +424,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -494,7 +494,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Laura",
                                 "Tom",
@@ -564,7 +564,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
+                            RouteIds = new List<string>
                             {
                                 "Laura",
                                 "Tom",

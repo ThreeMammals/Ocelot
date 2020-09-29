@@ -1,8 +1,8 @@
 ﻿namespace Ocelot.Configuration.File
 {
-    public class AggregateRouteConfig
+    public class FileAggregateRouteConfig
     {
-        public string RouteKey { get; set; }
+        public string RouteId { get; set; }
         public string Parameter { get; set; }
         public string JsonPath { get; set; }
     }
