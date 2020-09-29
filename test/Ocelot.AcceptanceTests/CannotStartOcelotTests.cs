@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                     }
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -160,7 +160,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,

@@ -109,7 +109,7 @@
 
         private bool AllRoutesForAggregateExist(FileAggregateRoute fileAggregateRoute, List<FileRoute> routes)
         {
-            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.Key));
+            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.RouteId));
 
             return routesForAggregate.Count() == fileAggregateRoute.RouteKeys.Count;
         }
@@ -125,7 +125,7 @@
         private static bool DoesNotContainRoutesWithSpecificRequestIdKeys(FileAggregateRoute fileAggregateRoute,
             List<FileRoute> routes)
         {
-            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.Key));
+            var routesForAggregate = routes.Where(r => fileAggregateRoute.RouteKeys.Contains(r.RouteId));
 
             return routesForAggregate.All(r => string.IsNullOrEmpty(r.RequestIdKey));
         }

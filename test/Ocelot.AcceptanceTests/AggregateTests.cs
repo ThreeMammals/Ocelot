@@ -49,7 +49,7 @@ namespace Ocelot.AcceptanceTests
                                 Port = port,
                             },
                         },
-                        Key = "key1",
+                        RouteId = "key1",
                     },
                     new FileRoute
                     {
@@ -65,7 +65,7 @@ namespace Ocelot.AcceptanceTests
                                 Port = port,
                             },
                         },
-                        Key = "key2",
+                        RouteId = "key2",
                     },
                     new FileRoute
                     {
@@ -81,7 +81,7 @@ namespace Ocelot.AcceptanceTests
                                 Port = port,
                             },
                         },
-                        Key = "key3",
+                        RouteId = "key3",
                     },
                     new FileRoute
                     {
@@ -97,7 +97,7 @@ namespace Ocelot.AcceptanceTests
                                 Port = port,
                             },
                         },
-                        Key = "key4",
+                        RouteId = "key4",
                     },
                 },
                 Aggregates = new List<FileAggregateRoute>
@@ -162,7 +162,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/Comments",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Comments",
+                            RouteId = "Comments",
                         },
                         new FileRoute
                         {
@@ -178,7 +178,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/UserDetails",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "UserDetails",
+                            RouteId = "UserDetails",
                         },
                         new FileRoute
                         {
@@ -194,7 +194,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/PostDetails",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "PostDetails",
+                            RouteId = "PostDetails",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -258,7 +258,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
+                            RouteId = "Laura",
                         },
                         new FileRoute
                         {
@@ -274,7 +274,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -329,7 +329,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
+                            RouteId = "Laura",
                         },
                         new FileRoute
                         {
@@ -345,7 +345,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -399,7 +399,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
+                            RouteId = "Laura",
                         },
                         new FileRoute
                         {
@@ -415,7 +415,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -469,7 +469,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
+                            RouteId = "Laura",
                         },
                         new FileRoute
                         {
@@ -485,7 +485,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -539,7 +539,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
+                            RouteId = "Laura",
                         },
                         new FileRoute
                         {
@@ -555,7 +555,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                         },
                     },
                 Aggregates = new List<FileAggregateRoute>

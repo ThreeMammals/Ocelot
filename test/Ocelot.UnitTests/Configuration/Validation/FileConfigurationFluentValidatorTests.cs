@@ -249,7 +249,7 @@
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
@@ -287,7 +287,7 @@
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                     }
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -328,7 +328,7 @@
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
@@ -367,7 +367,7 @@
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
+                        RouteId = "Laura",
                     }
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -409,7 +409,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         },
                         new FileRoute
                         {
@@ -425,7 +425,7 @@
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom"
+                            RouteId = "Tom"
                         }
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -470,7 +470,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         },
                         new FileRoute
                         {
@@ -486,7 +486,7 @@
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                             UpstreamHost = "localhost"
                         }
                     },
@@ -533,7 +533,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         },
                         new FileRoute
                         {
@@ -549,7 +549,7 @@
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Post" },
-                            Key = "Tom",
+                            RouteId = "Tom",
                             UpstreamHost = "localhost"
                         }
                     },
@@ -595,7 +595,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         },
                         new FileRoute
                         {
@@ -611,7 +611,7 @@
                             },
                             UpstreamPathTemplate = "/lol",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom"
+                            RouteId = "Tom"
                         }
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -667,7 +667,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         }
                     },
                 Aggregates = new List<FileAggregateRoute>
@@ -713,7 +713,7 @@
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            RouteId = "Laura"
                         },
                         new FileRoute
                         {
@@ -730,7 +730,7 @@
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = "should_fail",
-                            Key = "Tom"
+                            RouteId = "Tom"
                         }
                     },
                 Aggregates = new List<FileAggregateRoute>

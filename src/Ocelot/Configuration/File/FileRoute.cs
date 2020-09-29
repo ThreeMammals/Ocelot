@@ -50,7 +50,7 @@
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
         public string UpstreamHost { get; set; }
-        public string Key { get; set; }
+        public string RouteId { get; set; }
         public List<string> DelegatingHandlers { get; set; }
         public int Priority { get; set; }
         public int Timeout { get; set; }

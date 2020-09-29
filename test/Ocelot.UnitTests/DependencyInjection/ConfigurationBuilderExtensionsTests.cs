@@ -115,7 +115,7 @@
                     {
                         DownstreamScheme = "DownstreamScheme",
                         DownstreamPathTemplate = "DownstreamPathTemplate",
-                        Key = "Key",
+                        RouteId = "Key",
                         UpstreamHost = "UpstreamHost",
                         UpstreamHttpMethod = new List<string>
                         {
@@ -141,7 +141,7 @@
                     {
                         DownstreamScheme = "DownstreamSchemeB",
                         DownstreamPathTemplate = "DownstreamPathTemplateB",
-                        Key = "KeyB",
+                        RouteId = "KeyB",
                         UpstreamHost = "UpstreamHostB",
                         UpstreamHttpMethod = new List<string>
                         {
@@ -160,7 +160,7 @@
                     {
                         DownstreamScheme = "DownstreamSchemeBB",
                         DownstreamPathTemplate = "DownstreamPathTemplateBB",
-                        Key = "KeyBB",
+                        RouteId = "KeyBB",
                         UpstreamHost = "UpstreamHostBB",
                         UpstreamHttpMethod = new List<string>
                         {
@@ -211,7 +211,7 @@
                         {
                             DownstreamScheme = "DownstreamSchemeSpec",
                             DownstreamPathTemplate = "DownstreamPathTemplateSpec",
-                            Key = "KeySpec",
+                            RouteId = "KeySpec",
                             UpstreamHost = "UpstreamHostSpec",
                             UpstreamHttpMethod = new List<string>
                             {
@@ -293,9 +293,9 @@
             fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[0].DownstreamScheme);
             fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[1].DownstreamScheme);
 
-            fc.Routes.ShouldContain(x => x.Key == _routeA.Routes[0].Key);
-            fc.Routes.ShouldContain(x => x.Key == _routeB.Routes[0].Key);
-            fc.Routes.ShouldContain(x => x.Key == _routeB.Routes[1].Key);
+            fc.Routes.ShouldContain(x => x.RouteId == _routeA.Routes[0].RouteId);
+            fc.Routes.ShouldContain(x => x.RouteId == _routeB.Routes[0].RouteId);
+            fc.Routes.ShouldContain(x => x.RouteId == _routeB.Routes[1].RouteId);
 
             fc.Routes.ShouldContain(x => x.UpstreamHost == _routeA.Routes[0].UpstreamHost);
             fc.Routes.ShouldContain(x => x.UpstreamHost == _routeB.Routes[0].UpstreamHost);
@@ -309,7 +309,7 @@
             var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
             fc.Routes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.Routes[0].DownstreamScheme);
             fc.Routes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.Routes[0].DownstreamPathTemplate);
-            fc.Routes.ShouldNotContain(x => x.Key == _envSpecific.Routes[0].Key);
+            fc.Routes.ShouldNotContain(x => x.RouteId == _envSpecific.Routes[0].RouteId);
         }
 
         private void GivenTheBaseUrl(string baseUrl)

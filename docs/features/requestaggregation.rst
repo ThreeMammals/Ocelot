@@ -7,8 +7,8 @@ architecture with Ocelot.
 
 This feature was requested as part of `Issue 79 <https://github.com/ThreeMammals/Ocelot/pull/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/ThreeMammals/Ocelot/issue/298>`_.
 
-In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal Routes and each one has a Key property. 
-We then specify an Aggregate that composes the two Routes using their keys in the RouteKeys list and says then we have the UpstreamPathTemplate which works like a normal Route.
+In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal Routes and each one has a RouteId property. 
+We then specify an Aggregate that composes the two Routes using their RouteIds in the RouteKeys list and says then we have the UpstreamPathTemplate which works like a normal Route.
 Obviously you cannot have duplicate UpstreamPathTemplates between Routes and Aggregates. You can use all of Ocelot's normal Route options apart from RequestIdKey (explained in gotchas below).
 
 Advanced register your own Aggregators
@@ -36,7 +36,7 @@ The ocelot.json setup is pretty much the same as the basic aggregation approach 
                         "Port": 51881
                     }
                 ],
-                "Key": "Laura"
+                "RouteId": "Laura"
             },
             {
                 "DownstreamPathTemplate": "/",
@@ -51,7 +51,7 @@ The ocelot.json setup is pretty much the same as the basic aggregation approach 
                         "Port": 51882
                     }
                 ],
-                "Key": "Tom"
+                "RouteId": "Tom"
             }
         ],
         "Aggregates": [
@@ -128,7 +128,7 @@ Basic expecting JSON from Downstream Services
                         "Port": 51881
                     }
                 ],
-                "Key": "Laura"
+                "RouteId": "Laura"
             },
             {
                 "DownstreamPathTemplate": "/",
@@ -143,7 +143,7 @@ Basic expecting JSON from Downstream Services
                         "Port": 51882
                     }
                 ],
-                "Key": "Tom"
+                "RouteIds": "Tom"
             }
         ],
         "Aggregates": [
@@ -166,7 +166,7 @@ If the Route /tom returned a body of {"Age": 19} and /laura returned {"Age": 25}
     {"Tom":{"Age": 19},"Laura":{"Age": 25}}
 
 At the moment the aggregation is very simple. Ocelot just gets the response from your downstream service and sticks it into a json dictionary 
-as above. With the Route key being the key of the dictionary and the value the response body from your downstream service. You can see that the object is just
+as above. With the RouteId being the key of the dictionary and the value the response body from your downstream service. You can see that the object is just
 JSON without any pretty spaces etc.
 
 All headers will be lost from the downstream services response.
