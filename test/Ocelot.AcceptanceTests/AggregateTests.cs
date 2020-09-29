@@ -209,7 +209,7 @@ namespace Ocelot.AcceptanceTests
                                 "UserDetails",
                                 "PostDetails",
                             },
-                            RouteIdsConfig = new List<FileAggregateRouteConfig>()
+                            AggregateRouteConfigs = new List<FileAggregateRouteConfig>()
                             {
                                 new FileAggregateRouteConfig(){RouteId = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
                                 new FileAggregateRouteConfig(){RouteId = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},

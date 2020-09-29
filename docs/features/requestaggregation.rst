@@ -8,7 +8,7 @@ architecture with Ocelot.
 This feature was requested as part of `Issue 79 <https://github.com/ThreeMammals/Ocelot/pull/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/ThreeMammals/Ocelot/issue/298>`_.
 
 In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal Routes and each one has a RouteId property. 
-We then specify an Aggregate that composes the two Routes using their RouteIds in the RouteKeys list and says then we have the UpstreamPathTemplate which works like a normal Route.
+We then specify an Aggregate that composes the two Routes using their RouteIds in the RouteIds list and says then we have the UpstreamPathTemplate which works like a normal Route.
 Obviously you cannot have duplicate UpstreamPathTemplates between Routes and Aggregates. You can use all of Ocelot's normal Route options apart from RequestIdKey (explained in gotchas below).
 
 Advanced register your own Aggregators
@@ -56,7 +56,7 @@ The ocelot.json setup is pretty much the same as the basic aggregation approach 
         ],
         "Aggregates": [
             {
-                "RouteKeys": [
+                "RouteIds": [
                     "Tom",
                     "Laura"
                 ],
@@ -148,7 +148,7 @@ Basic expecting JSON from Downstream Services
         ],
         "Aggregates": [
             {
-                "RouteKeys": [
+                "RouteIds": [
                     "Tom",
                     "Laura"
                 ],

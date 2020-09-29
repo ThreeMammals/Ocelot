@@ -4,6 +4,7 @@ namespace Ocelot.Configuration.Creator
     using File;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection.Metadata.Ecma335;
 
     public class AggregatesCreator : IAggregatesCreator
     {
@@ -40,11 +41,13 @@ namespace Ocelot.Configuration.Creator
 
             var upstreamTemplatePattern = _creator.Create(aggregateRoute);
 
+            var aggregateRouteConfigs = aggregateRoute?.AggregateRouteConfigs?.Select(a => new AggregateRouteConfig(a.RouteId, a.Parameter, a.JsonPath));
+
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamRoutes(applicableRoutes)
-                .WithAggregateRouteConfig(aggregateRoute.RouteIdsConfig)
+                .WithAggregateRouteConfig(aggregateRouteConfigs)
                 .WithUpstreamHost(aggregateRoute.UpstreamHost)
                 .WithAggregator(aggregateRoute.Aggregator)
                 .Build();

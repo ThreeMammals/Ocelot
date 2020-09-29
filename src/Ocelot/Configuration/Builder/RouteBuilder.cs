@@ -1,7 +1,6 @@
 ﻿namespace Ocelot.Configuration.Builder
 {
-    using Ocelot.Configuration.File;
-    using Ocelot.Values;
+    using Ocelot.Values;    
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
@@ -12,13 +11,13 @@
         private List<HttpMethod> _upstreamHttpMethod;
         private string _upstreamHost;
         private List<DownstreamRoute> _downstreamRoutes;
-        private List<FileAggregateRouteConfig> _downstreamRoutesConfig;
+        private IEnumerable<AggregateRouteConfig> _downstreamRoutesConfig;
         private string _aggregator;
 
         public RouteBuilder()
         {
             _downstreamRoutes = new List<DownstreamRoute>();
-            _downstreamRoutesConfig = new List<FileAggregateRouteConfig>();
+            _downstreamRoutesConfig = new List<AggregateRouteConfig>();
         }
 
         public RouteBuilder WithDownstreamRoute(DownstreamRoute value)
@@ -51,7 +50,7 @@
             return this;
         }
 
-        public RouteBuilder WithAggregateRouteConfig(List<FileAggregateRouteConfig> aggregateRouteConfigs)
+        public RouteBuilder WithAggregateRouteConfig(IEnumerable<AggregateRouteConfig> aggregateRouteConfigs)
         {
             _downstreamRoutesConfig = aggregateRouteConfigs;
             return this;

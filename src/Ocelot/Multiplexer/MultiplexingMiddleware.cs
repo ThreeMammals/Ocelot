@@ -34,7 +34,7 @@
                 return;
             }
 
-            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRouteConfig;
+            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.AggregateRouteConfigs;
             if (routeKeysConfigs == null || !routeKeysConfigs.Any())
             {
                 var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
