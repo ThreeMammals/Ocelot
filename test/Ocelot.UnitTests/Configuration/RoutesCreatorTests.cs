@@ -246,7 +246,7 @@
             _result[routeIndex].DownstreamRoute[0].DownstreamScheme.ShouldBe(expected.DownstreamScheme);
             _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
             _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
-            _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.RouteId);
+            _result[routeIndex].DownstreamRoute[0].RouteId.Value.ShouldBe(expected.RouteId);
             _result[routeIndex].UpstreamHttpMethod
                 .Select(x => x.Method)
                 .ToList()

@@ -36,7 +36,7 @@ namespace Ocelot.Configuration.Builder
         private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
         private List<HeaderFindAndReplace> _downstreamHeaderFindAndReplace;
         private readonly List<DownstreamHostAndPort> _downstreamAddresses;
-        private string _key;
+        private RouteId _routeId;
         private List<string> _delegatingHandlers;
         private List<AddHeader> _addHeadersToDownstream;
         private List<AddHeader> _addHeadersToUpstream;
@@ -221,9 +221,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public DownstreamRouteBuilder WithKey(string key)
+        public DownstreamRouteBuilder WithRouteId(RouteId routeId)
         {
-            _key = key;
+            _routeId = routeId;
             return this;
         }
 
@@ -266,7 +266,7 @@ namespace Ocelot.Configuration.Builder
         public DownstreamRoute Build()
         {
             return new DownstreamRoute(
-                _key,
+                _routeId,
                 _upstreamTemplatePattern,
                 _upstreamHeaderFindAndReplace,
                 _downstreamHeaderFindAndReplace,

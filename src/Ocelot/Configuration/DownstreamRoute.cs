@@ -8,7 +8,7 @@ namespace Ocelot.Configuration
     public class DownstreamRoute
     {
         public DownstreamRoute(
-            string key,
+            RouteId routeId,
             UpstreamPathTemplate upstreamPathTemplate,
             List<HeaderFindAndReplace> upstreamHeadersFindAndReplace,
             List<HeaderFindAndReplace> downstreamHeadersFindAndReplace,
@@ -46,7 +46,7 @@ namespace Ocelot.Configuration
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
             DelegatingHandlers = delegatingHandlers;
-            Key = key;
+            RouteId = routeId;
             UpstreamPathTemplate = upstreamPathTemplate;
             UpstreamHeadersFindAndReplace = upstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
             DownstreamHeadersFindAndReplace = downstreamHeadersFindAndReplace ?? new List<HeaderFindAndReplace>();
@@ -79,7 +79,7 @@ namespace Ocelot.Configuration
             DownstreamHttpVersion = downstreamHttpVersion;
         }
 
-        public string Key { get; }
+        public RouteId RouteId { get; }
         public UpstreamPathTemplate UpstreamPathTemplate { get; }
         public List<HeaderFindAndReplace> UpstreamHeadersFindAndReplace { get; }
         public List<HeaderFindAndReplace> DownstreamHeadersFindAndReplace { get; }

@@ -34,8 +34,8 @@
                 return;
             }
 
-            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.AggregateRouteConfigs;
-            if (routeKeysConfigs == null || !routeKeysConfigs.Any())
+            var aggregateRouteConfigs = httpContext.Items.DownstreamRouteHolder().Route.AggregateRouteConfigs;
+            if (aggregateRouteConfigs == null || !aggregateRouteConfigs.Any())
             {
                 var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
 
@@ -97,8 +97,8 @@
 
                     var downstreamRoute = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[i];
 
-                    var matchAdvancedAgg = routeKeysConfigs
-                        .FirstOrDefault(q => q.RouteId == downstreamRoute.Key);
+                    var matchAdvancedAgg = aggregateRouteConfigs
+                        .FirstOrDefault(q => q.RouteId.Value == downstreamRoute.RouteId.Value);
 
                     if (matchAdvancedAgg != null)
                     {

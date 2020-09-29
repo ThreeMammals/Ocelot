@@ -24,11 +24,11 @@ namespace Ocelot.Multiplexer
 
             contentBuilder.Append("{");
 
-            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().Key).Distinct().ToList();
+            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().RouteId.Value).Distinct().ToList();
 
             for (var k = 0; k < responseKeys.Count; k++)
             {
-                var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == responseKeys[k]).ToList();
+                var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().RouteId.Value == responseKeys[k]).ToList();
                 if (contexts.Count == 1)
                 {
                     if (contexts[0].Items.Errors().Count > 0)
@@ -80,7 +80,7 @@ namespace Ocelot.Multiplexer
 
             var stringContent = new StringContent(contentBuilder.ToString())
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
             };
 
             originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));

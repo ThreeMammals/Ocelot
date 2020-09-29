@@ -32,9 +32,9 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
         {
-            var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
+            var commentsDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("Comments")).Build();
 
-            var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
+            var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("UserDetails"))
                 .WithUpstreamPathTemplate(new UpstreamPathTemplate("", 0, false, "/v1/users/{userId}"))
                 .Build();
 
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Multiplexing
                 .WithDownstreamRoutes(downstreamRoutes)
                 .WithAggregateRouteConfig(new List<AggregateRouteConfig>()
                 {
-                    new AggregateRouteConfig("UserDetails", "userId", "$[*].writerId"),
+                    new AggregateRouteConfig(new RouteId("UserDetails"), "userId", "$[*].writerId"),
                 })
                 .Build();
 
@@ -80,9 +80,9 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
         {
-            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
+            var billDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("Bill")).Build();
 
-            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
+            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("George")).Build();
 
             var downstreamRoutes = new List<DownstreamRoute>
             {
@@ -119,14 +119,14 @@ namespace Ocelot.UnitTests.Multiplexing
         [Fact]
         public void should_return_error_if_any_downstreams_have_errored()
         {
-            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
+            var billDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("Bill")).Build();
 
-            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
+            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithRouteId(new RouteId("George")).Build();
 
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 billDownstreamRoute,
-                georgeDownstreamRoute
+                georgeDownstreamRoute,
             };
 
             var route = new RouteBuilder()

@@ -1,10 +1,9 @@
 namespace Ocelot.Configuration.Creator
 {
-    using Builder;
-    using File;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.File;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection.Metadata.Ecma335;
 
     public class AggregatesCreator : IAggregatesCreator
     {
@@ -28,20 +27,22 @@ namespace Ocelot.Configuration.Creator
             var applicableRoutes = new List<DownstreamRoute>();
             var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
 
-            foreach (var routeKey in aggregateRoute.RouteIds)
+            //TODO: What is this logic?
+            foreach (var routeId in aggregateRoute.RouteIds)
             {
-                var selec = allRoutes.FirstOrDefault(q => q.Key == routeKey);
-                if (selec == null)
+                var applicableRoute = allRoutes.FirstOrDefault(q => q.RouteId.Value == routeId);
+                if (applicableRoute == null)
                 {
                     return null;
                 }
 
-                applicableRoutes.Add(selec);
+                applicableRoutes.Add(applicableRoute);
             }
 
             var upstreamTemplatePattern = _creator.Create(aggregateRoute);
 
-            var aggregateRouteConfigs = aggregateRoute?.AggregateRouteConfigs?.Select(a => new AggregateRouteConfig(a.RouteId, a.Parameter, a.JsonPath));
+            //TODO: extract and test
+            var aggregateRouteConfigs = aggregateRoute?.AggregateRouteConfigs?.Select(a => new AggregateRouteConfig(new RouteId(a.RouteId), a.Parameter, a.JsonPath));
 
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)

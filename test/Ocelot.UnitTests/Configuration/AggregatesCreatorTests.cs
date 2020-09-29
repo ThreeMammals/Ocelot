@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Configuration
     using System.Collections.Generic;
     using System.Net.Http;
     using TestStack.BDDfy;
-    using Values;
+    using Ocelot.Values;
     using Xunit;
 
     public class AggregatesCreatorTests
@@ -37,9 +37,9 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileAggregateRoute
                     {
-                        RouteIds = new List<string>{"key1"}
-                    }
-                }
+                        RouteIds = new List<string> { "key1" },
+                    },
+                },
             };
             var routes = new List<Route>();
 
@@ -61,29 +61,29 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileAggregateRoute
                     {
-                        RouteIds = new List<string>{"key1", "key2"},
+                        RouteIds = new List<string> { "key1", "key2" },
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true
+                        RouteIsCaseSensitive = true,
                     },
                     new FileAggregateRoute
                     {
-                        RouteIds = new List<string>{"key3", "key4"},
+                        RouteIds = new List<string> { "key3", "key4" },
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true
-                    }
-                }
+                        RouteIsCaseSensitive = true,
+                    },
+                },
             };
 
             var routes = new List<Route>
             {
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build()
+                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithRouteId(new RouteId("key1")).Build()).Build(),
+                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithRouteId(new RouteId("key2")).Build()).Build(),
+                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithRouteId(new RouteId("key3")).Build()).Build(),
+                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithRouteId(new RouteId("key4")).Build()).Build(),
             };
 
             this.Given(_ => GivenThe(fileConfig))

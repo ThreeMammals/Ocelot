@@ -110,7 +110,7 @@ namespace Ocelot.Configuration.Creator
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
             var route = new DownstreamRouteBuilder()
-                .WithKey(fileRoute.RouteId)
+                .WithRouteId(new RouteId(fileRoute.RouteId))
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
                 .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
