@@ -11,8 +11,8 @@ namespace Ocelot.UnitTests.Configuration
     public class DownstreamAddressesCreatorTests
     {
         public DownstreamAddressesCreator _creator;
-        private FileRoute _route;
         private List<DownstreamHostAndPort> _result;
+        private FileCluster _cluster;
 
         public DownstreamAddressesCreatorTests()
         {
@@ -22,32 +22,26 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_do_nothing()
         {
-            var route = new FileRoute
-            {
-            };
+            var cluster = new FileCluster();
 
             var expected = new List<DownstreamHostAndPort>
             {
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
-                .When(x => WhenICreate())
-                .Then(x => TheThenFollowingIsReturned(expected))
+            this.Given(_ => GivenTheFollowingCluster(cluster))
+                .When(_ => WhenICreate())
+                .Then(_ => TheThenFollowingIsReturned(expected))
                 .BDDfy();
         }
 
         [Fact]
         public void should_create_downstream_addresses_from_old_downstream_path_and_port()
         {
-            var route = new FileRoute
+            var cluster = new FileCluster
             {
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                Destinations = new Dictionary<string, FileDestination>
                 {
-                    new FileHostAndPort
-                    {
-                        Host = "test",
-                        Port = 80
-                    }
+                    {"cluster1/destination1", new FileDestination {Address = "http://test:80"} },
                 },
             };
 
@@ -56,52 +50,61 @@ namespace Ocelot.UnitTests.Configuration
                 new DownstreamHostAndPort("test", 80),
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
-                .When(x => WhenICreate())
-                .Then(x => TheThenFollowingIsReturned(expected))
+            this.Given(_ => GivenTheFollowingCluster(cluster))
+                .When(_ => WhenICreate())
+                .Then(_ => TheThenFollowingIsReturned(expected))
                 .BDDfy();
         }
 
         [Fact]
         public void should_create_downstream_addresses_from_downstream_host_and_ports()
         {
-            var route = new FileRoute
+            var cluster = new FileCluster
             {
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                Destinations = new Dictionary<string, FileDestination>
                 {
-                    new FileHostAndPort
-                    {
-                        Host = "test",
-                        Port = 80
-                    },
-                    new FileHostAndPort
-                    {
-                        Host = "west",
-                        Port = 443
-                    }
-                }
+                    {"cluster1/destination1", new FileDestination {Address = "http://test:80"} },
+                    {"cluster1/destination2", new FileDestination {Address = "http://west:443"} },
+                },
             };
+
+            //var route = new FileRoute
+            //{
+            //    DownstreamHostAndPorts = new List<FileHostAndPort>
+            //    {
+            //        new FileHostAndPort
+            //        {
+            //            Host = "test",
+            //            Port = 80
+            //        },
+            //        new FileHostAndPort
+            //        {
+            //            Host = "west",
+            //            Port = 443
+            //        }
+            //    }
+            //};
 
             var expected = new List<DownstreamHostAndPort>
             {
                 new DownstreamHostAndPort("test", 80),
-                new DownstreamHostAndPort("west", 443)
+                new DownstreamHostAndPort("west", 443),
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
+            this.Given(_ => GivenTheFollowingCluster(cluster))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingRoute(FileRoute route)
+        private void GivenTheFollowingCluster(FileCluster cluster)
         {
-            _route = route;
+            _cluster = cluster;
         }
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_route);
+            _result = _creator.Create(_cluster);
         }
 
         private void TheThenFollowingIsReturned(List<DownstreamHostAndPort> expecteds)

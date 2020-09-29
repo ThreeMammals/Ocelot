@@ -25,27 +25,37 @@ namespace Ocelot.AcceptanceTests
         public void should_not_match_forward_slash_in_pattern_before_next_forward_slash()
         {
             var port = RandomPortFinder.GetRandomPort();
+
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterId,
+                        DownstreamPathTemplate = "/api/v{apiVersion}/cards",
+                        UpstreamPathTemplate = "/api/v{apiVersion}/cards",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        Priority = 1,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/v{apiVersion}/cards",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/api/v{apiVersion}/cards",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            Priority = 1
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/aaaaaaaaa/cards", 200, "Hello from Laura"))
@@ -71,26 +81,35 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new FileRoute
+                {
+                    new FileRoute
+                    {                        
+                        ClusterId = ClusterId,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
-                            }
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
@@ -107,41 +126,55 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterIdOne = "cluster1";
+            const string ClusterIdTwo = "cluster2";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterIdOne,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = ClusterIdTwo,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterIdOne, new FileCluster
                         {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{ClusterIdOne}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 50810,
-                                }
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                    {ClusterIdTwo, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterIdTwo}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:50810",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/test", 200, "Hello from Laura"))
@@ -157,41 +190,56 @@ namespace Ocelot.AcceptanceTests
         public void should_return_response_200_favouring_forward_slash()
         {
             var port = RandomPortFinder.GetRandomPort();
+
+            const string ClusterIdOne = "cluster1";
+            const string ClusterIdTwo = "cluster2";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterIdTwo,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = ClusterIdOne,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterIdOne, new FileCluster
                         {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
+                                {$"{ClusterIdOne}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                    {ClusterIdTwo, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterIdTwo}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:51880",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
@@ -208,41 +256,55 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterIdOne = "cluster1";
+            const string ClusterIdTwo = "cluster2";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterIdOne,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },  
+                    new FileRoute
+                    {
+                        ClusterId = ClusterIdTwo,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterIdOne, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{ClusterIdOne}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51879,
-                                }
-                            },
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                    {ClusterIdTwo, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterIdTwo}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:51879",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
@@ -259,26 +321,35 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterId,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -295,26 +366,35 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
                         new FileRoute
                         {
+                            ClusterId = ClusterId,
                             DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
-                            },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
+                Clusters = new Dictionary<string, FileCluster>
+                { 
+                    {ClusterId, new FileCluster 
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        } 
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -331,43 +411,44 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
                     new FileRoute
                     {
+                        ClusterId = ClusterId,
                         DownstreamPathTemplate = "/api/v1/vacancy",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                     },
                     new FileRoute
-                    {
+                    {                        
+                        ClusterId = ClusterId,
                         DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
-                    }
-                }
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/v1/vacancy/1", 200, "Hello from Laura"))
@@ -384,26 +465,35 @@ namespace Ocelot.AcceptanceTests
         {
             var port = RandomPortFinder.GetRandomPort();
 
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterId,
+                        DownstreamPathTemplate = "/api/products",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products", 200, "Hello from Laura"))

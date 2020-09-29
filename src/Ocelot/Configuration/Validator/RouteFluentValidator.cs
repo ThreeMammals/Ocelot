@@ -12,7 +12,7 @@
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
+        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, ClusterValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
 
@@ -74,8 +74,8 @@
 
             When(route => string.IsNullOrEmpty(route.ServiceName), () =>
             {
-                RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
-                    .WithMessage("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!");
+                //RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
+                //    .WithMessage("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!");
             });
 
             When(route => string.IsNullOrEmpty(route.ServiceName), () =>

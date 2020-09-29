@@ -49,6 +49,7 @@
         private List<Route> _result;
         private SecurityOptions _securityOptions;
         private Version _expectedVersion;
+        private string _expectedDownstreamScheme;
 
         public RoutesCreatorTests()
         {
@@ -101,47 +102,66 @@
         [Fact]
         public void should_return_re_routes()
         {
+            _expectedDownstreamScheme = "http";
+
             var fileConfig = new FileConfiguration
             {
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {"cluster1", new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {"cluster1/destination1", new FileDestination
+                                    {
+                                        Address = $"{_expectedDownstreamScheme}://localhost:123",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Routes = new List<FileRoute>
                 {
                     new FileRoute
-                    {
+                    {                            
+                        ClusterId = "cluster1",
                         ServiceName = "dave",
                         DangerousAcceptAnyServerCertificateValidator = true,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "a","b" }
+                            { "a","b" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "c","d" }
+                            { "c","d" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "e","f" }
+                            { "e","f" },
                         },
-                        UpstreamHttpMethod = new List<string> { "GET", "POST" }
+                        UpstreamHttpMethod = new List<string> { "GET", "POST" },
                     },
                     new FileRoute
-                    {
+                    {                            
+                        ClusterId = "cluster1",
                         ServiceName = "wave",
                         DangerousAcceptAnyServerCertificateValidator = false,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "g","h" }
+                            { "g","h" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "i","j" }
+                            { "i","j" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "k","l" }
+                            { "k","l" },
                         },
-                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" }
-                    }
-                }
+                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))
@@ -154,8 +174,8 @@
 
         private void ThenTheDependenciesAreCalledCorrectly()
         {
-            ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
-            ThenTheDepsAreCalledFor(_fileConfig.Routes[1], _fileConfig.GlobalConfiguration);
+            ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig);
+            ThenTheDepsAreCalledFor(_fileConfig.Routes[1], _fileConfig);
         }
 
         private void GivenTheDependenciesAreSetUpCorrectly()
@@ -186,7 +206,7 @@
             _rCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_region);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
-            _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
+            _daCreator.Setup(x => x.Create(It.IsAny<FileCluster>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
         }
@@ -243,7 +263,7 @@
             _result[routeIndex].DownstreamRoute[0].DangerousAcceptAnyServerCertificateValidator.ShouldBe(expected.DangerousAcceptAnyServerCertificateValidator);
             _result[routeIndex].DownstreamRoute[0].DelegatingHandlers.ShouldBe(expected.DelegatingHandlers);
             _result[routeIndex].DownstreamRoute[0].ServiceName.ShouldBe(expected.ServiceName);
-            _result[routeIndex].DownstreamRoute[0].DownstreamScheme.ShouldBe(expected.DownstreamScheme);
+            _result[routeIndex].DownstreamRoute[0].DownstreamScheme.ShouldBe(_expectedDownstreamScheme);
             _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
             _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
             _result[routeIndex].DownstreamRoute[0].RouteId.Value.ShouldBe(expected.RouteId);
@@ -260,10 +280,10 @@
             _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);
         }
 
-        private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
+        private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileConfiguration globalConfig)
         {
             _rroCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
+            _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig.GlobalConfiguration), Times.Once);
             _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
             _aoCreator.Verify(x => x.Create(fileRoute), Times.Once);
@@ -271,11 +291,11 @@
             _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
             _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
             _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
-            _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
+            _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig.GlobalConfiguration), Times.Once);
             _rCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
+            _daCreator.Verify(x => x.Create(globalConfig.Clusters.First().Value), Times.Exactly(2));
             _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
             _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions), Times.Once);
         }

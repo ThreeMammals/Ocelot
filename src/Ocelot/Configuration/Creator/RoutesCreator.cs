@@ -5,6 +5,7 @@ namespace Ocelot.Configuration.Creator
     using Ocelot.Configuration.File;
     using System.Collections.Generic;
     using System.Linq;
+    using System;
 
     public class RoutesCreator : IRoutesCreator
     {
@@ -65,13 +66,13 @@ namespace Ocelot.Configuration.Creator
             return fileConfiguration.Routes
                 .Select(route =>
                 {
-                    var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration);
+                    var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration, fileConfiguration.Clusters);
                     return SetUpRoute(route, downstreamRoute);
                 })
                 .ToList();
         }
 
-        private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration, Dictionary<string, FileCluster> clusters)
         {
             var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute);
 
@@ -101,7 +102,17 @@ namespace Ocelot.Configuration.Creator
 
             var hAndRs = _headerFAndRCreator.Create(fileRoute);
 
-            var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute);
+            var cluster = clusters[fileRoute.ClusterId];
+
+            //TODO: extract this and test
+            var downstreamScheme = cluster.Destinations.Select(d =>
+            {
+                var uri = new Uri(d.Value.Address);
+
+                return uri.Scheme;
+            }).First();
+
+            var downstreamAddresses = _downstreamAddressesCreator.Create(cluster);
 
             var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
 
@@ -125,7 +136,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileRoute.FileCacheOptions.TtlSeconds, region))
-                .WithDownstreamScheme(fileRoute.DownstreamScheme)
+                .WithDownstreamScheme(downstreamScheme)
                 .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)
                 .WithLoadBalancerKey(routeKey)

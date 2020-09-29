@@ -9,13 +9,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
 {
     public class HostAndPortValidatorTests
     {
-        private HostAndPortValidator _validator;
+        private ClusterValidator _validator;
         private ValidationResult _result;
         private FileHostAndPort _hostAndPort;
 
         public HostAndPortValidatorTests()
         {
-            _validator = new HostAndPortValidator();
+            _validator = new ClusterValidator();
         }
 
         [Theory]

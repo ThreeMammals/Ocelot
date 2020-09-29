@@ -34,7 +34,7 @@
             var provider = new ServiceCollection()
                 .BuildServiceProvider();
             // Todo - replace with mocks
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         [Fact]
@@ -1544,7 +1544,7 @@
             QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
             collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         private void GivenAServiceDiscoveryHandler()
@@ -1553,7 +1553,7 @@
             ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
             collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
