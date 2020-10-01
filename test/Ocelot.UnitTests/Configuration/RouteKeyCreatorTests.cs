@@ -28,8 +28,8 @@ namespace Ocelot.UnitTests.Configuration
                 LoadBalancerOptions = new FileLoadBalancerOptions
                 {
                     Key = "testy",
-                    Type = nameof(CookieStickySessions)
-                }
+                    Type = nameof(CookieStickySessions),
+                },
             };
 
             this.Given(_ => GivenThe(route))
@@ -43,26 +43,14 @@ namespace Ocelot.UnitTests.Configuration
         {
             var route = new FileRoute
             {
+                ClusterId = "cluster1",
                 UpstreamPathTemplate = "/api/product",
                 UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 123
-                    },
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 123
-                    }
-                }
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(",", route.UpstreamHttpMethod)}|{string.Join(",", route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
+                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(",", route.UpstreamHttpMethod)}|cluster1"))
                 .BDDfy();
         }
 

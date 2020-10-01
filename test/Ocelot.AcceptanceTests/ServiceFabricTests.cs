@@ -32,11 +32,13 @@ namespace Ocelot.AcceptanceTests
                         new FileRoute
                         {
                             DownstreamPathTemplate = "/{everything}",
-                            DownstreamScheme = "http",
+
+                            //TODO: This wont work because Ocelot doesn't get the info to use http anywhere
+                            //DownstreamScheme = "http",
                             UpstreamPathTemplate = "/{everything}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                        }
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -44,9 +46,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
@@ -70,11 +72,13 @@ namespace Ocelot.AcceptanceTests
                         new FileRoute
                         {
                             DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
+
+                            //TODO: This wont work because Ocelot doesn't get the info to use http anywhere
+                            //DownstreamScheme = "http",
                             UpstreamPathTemplate = "/EquipmentInterfaces",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                        }
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -82,9 +86,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
@@ -108,11 +112,13 @@ namespace Ocelot.AcceptanceTests
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values",
-                        DownstreamScheme = "http",
+
+                        //TODO: This wont work because Ocelot doesn't get the info to use http anywhere
+                        //DownstreamScheme = "http",
                         UpstreamPathTemplate = "/EquipmentInterfaces",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                    }
+                        ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -120,9 +126,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
@@ -146,11 +152,13 @@ namespace Ocelot.AcceptanceTests
                         new FileRoute
                         {
                             DownstreamPathTemplate = "/values",
-                            DownstreamScheme = "http",
+
+                            //TODO: This wont work because Ocelot doesn't get the info to use http anywhere
+                            //DownstreamScheme = "http",
                             UpstreamPathTemplate = "/api/{version}/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "Service_{version}/Api"
-                        }
+                            ServiceName = "Service_{version}/Api",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -158,9 +166,9 @@ namespace Ocelot.AcceptanceTests
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/Service_1.0/Api/values", 200, "Hello from Laura", "test=best"))

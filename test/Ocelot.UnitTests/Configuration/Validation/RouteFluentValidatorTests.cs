@@ -243,7 +243,7 @@
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                ServiceName = "Lads"
+                ServiceName = "Lads",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -253,20 +253,13 @@
         }
 
         [Fact]
-        public void should_be_valid_re_route_using_host_and_port_and_paths()
+        public void should_be_valid_re_route_using_with_cluster_id_and_paths()
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "Dave",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 5000
-                    }
-                }
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -282,20 +275,13 @@
 
             var fileRoute = new FileRoute
             {
+                ClusterId = "Bob",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = key
+                    AuthenticationProviderKey = key,
                 },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 5000
-                    }
-                }
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -320,16 +306,9 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "Sara",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
-                },
                 DownstreamHttpVersion = version,
             };
 
@@ -346,20 +325,14 @@
         [InlineData("a1,1")]
         [InlineData("12,0")]
         [InlineData("asdf")]
+        [InlineData("asdf")]
         public void should_be_invalid_re_route_using_downstream_http_version(string version)
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "Sally",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new FileHostAndPort
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
-                },
                 DownstreamHttpVersion = version,
             };
 
@@ -374,7 +347,7 @@
         {
             var schemes = new List<AuthenticationScheme>
             {
-                new AuthenticationScheme(key, key, typeof(FakeAutheHandler))
+                new AuthenticationScheme(key, key, typeof(FakeAutheHandler)),
             };
 
             _authProvider

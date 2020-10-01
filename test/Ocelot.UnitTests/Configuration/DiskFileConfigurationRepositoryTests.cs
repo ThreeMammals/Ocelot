@@ -10,6 +10,7 @@ namespace Ocelot.UnitTests.Configuration
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using TestStack.BDDfy;
     using Xunit;
@@ -18,6 +19,7 @@ namespace Ocelot.UnitTests.Configuration
     {
         private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
         private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
+        private readonly string _clusterId;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
         private string _ocelotJsonPath;
@@ -40,6 +42,7 @@ namespace Ocelot.UnitTests.Configuration
             _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
             _changeTokenSource.Setup(m => m.Activate());
             _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
+            _clusterId = "cluster1";
         }
 
         [Fact]
@@ -143,19 +146,17 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for (var i = 0; i < _result.Routes.Count; i++)
+            for (var i = 0; i < _result.Clusters.Count; i++)
             {
-                for (int j = 0; j < _result.Routes[i].DownstreamHostAndPorts.Count; j++)
+                for (int j = 0; j < _result.Clusters.Values.ToList()[i].Destinations.Count; j++)
                 {
-                    var result = _result.Routes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.Routes[i].DownstreamHostAndPorts[j];
+                    var result = _result.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j];
+                    var expected = expecteds.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j];
 
-                    result.Host.ShouldBe(expected.Host);
-                    result.Port.ShouldBe(expected.Port);
+                    result.Address.ShouldBe(expected.Address);
                 }
 
                 _result.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
-                _result.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
             }
         }
 
@@ -201,19 +202,17 @@ namespace Ocelot.UnitTests.Configuration
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for (var i = 0; i < _result.Routes.Count; i++)
+            for (var i = 0; i < _result.Clusters.Count; i++)
             {
-                for (int j = 0; j < _result.Routes[i].DownstreamHostAndPorts.Count; j++)
+                for (int j = 0; j < _result.Clusters.Values.ToList()[i].Destinations.Count; j++)
                 {
-                    var result = _result.Routes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.Routes[i].DownstreamHostAndPorts[j];
+                    var result = _result.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j];
+                    var expected = expecteds.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j];
 
-                    result.Host.ShouldBe(expected.Host);
-                    result.Port.ShouldBe(expected.Port);
+                    result.Address.ShouldBe(expected.Address);
                 }
 
                 _result.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
-                _result.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
             }
         }
 
@@ -228,15 +227,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new FileRoute
                 {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "123.12.12.12",
-                            Port = 80,
-                        },
-                    },
-                    DownstreamScheme = "https",
+                    ClusterId = _clusterId,
                     DownstreamPathTemplate = "/asdfs/test/{test}",
                 },
             };
@@ -247,14 +238,31 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
+
+            var clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterId}/destination1", new FileDestination
+                                    {
+                                        Address = "https://123.12.12.12:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
+                Clusters = clusters,
             };
         }
 
@@ -264,17 +272,9 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new FileRoute
                 {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = 80,
-                        }
-                    },
-                    DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/test/test/{test}"
-                }
+                    ClusterId = _clusterId,
+                    DownstreamPathTemplate = "/test/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration
@@ -283,14 +283,31 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
+
+            var clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterId}/destination1", new FileDestination
+                                    {
+                                        Address = "https://localhost:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
+                Clusters = clusters,
             };
         }
 

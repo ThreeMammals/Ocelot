@@ -88,7 +88,7 @@
                         DownstreamPathTemplate = "/",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }.
+                    },
                 },
                 Clusters = new Dictionary<string, FileCluster>
                 {

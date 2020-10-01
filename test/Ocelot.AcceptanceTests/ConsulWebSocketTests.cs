@@ -43,6 +43,7 @@
             var serviceName = "websockets";
             var consulPort = RandomPortFinder.GetRandomPort();
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+
             var serviceEntryOne = new ServiceEntry()
             {
                 Service = new AgentService()
@@ -51,7 +52,7 @@
                     Address = downstreamHost,
                     Port = downstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
             var serviceEntryTwo = new ServiceEntry()
@@ -62,7 +63,7 @@
                     Address = secondDownstreamHost,
                     Port = secondDownstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = new string[0],
                 },
             };
 
@@ -74,10 +75,11 @@
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
-                        DownstreamScheme = "ws",
+                        //TODO: This wont work because Ocelot doesn't get the info to use websockets anywhere
+                        //DownstreamScheme = "ws",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
                         ServiceName = serviceName,
-                    }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -86,9 +88,9 @@
                         Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
-                        Type = "consul"
-                    }
-                }
+                        Type = "consul",
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))

@@ -5,13 +5,10 @@
     using Moq;
     using Newtonsoft.Json;
     using Ocelot.Cache;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Repository;
     using Ocelot.Logging;
-    using Provider.Consul;
-    using Responses;
+    using Ocelot.Provider.Consul;
+    using Ocelot.Responses;
     using Shouldly;
     using System.Collections.Generic;
     using System.Linq;
@@ -227,17 +224,9 @@
             {
                 new FileRoute
                 {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "123.12.12.12",
-                            Port = 80,
-                        }
-                    },
-                    DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}"
-                }
+                    ClusterId = "Ryan",
+                    DownstreamPathTemplate = "/asdfs/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration
@@ -246,14 +235,31 @@
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
+            };
+
+            var clusters = new Dictionary<string, FileCluster>
+            {
+                {routes[0].ClusterId, new FileCluster
+                    {
+                        Destinations = new Dictionary<string, FileDestination>
+                        {
+                            {$"{routes[0].ClusterId}/destination1", new FileDestination
+                                {
+                                    Address = "https://123.12.12.12:80",
+                                }
+                            },
+                        },
+                    }
+                },
             };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
+                Clusters = clusters,
             };
         }
     }

@@ -26,6 +26,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo;
         private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator;
         private IInternalConfiguration _internalConfig;
+        private readonly string _clusterId;
 
         public FileConfigurationPollerTests()
         {
@@ -41,6 +42,7 @@ namespace Ocelot.UnitTests.Configuration
             _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
             _internalConfigCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse<IInternalConfiguration>(_internalConfig));
             _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
+            _clusterId = "Lolly";
         }
 
         [Fact]
@@ -60,15 +62,24 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileRoute
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        ClusterId = _clusterId,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "test"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://test",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -86,15 +97,24 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileRoute
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        ClusterId = _clusterId,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "test"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://test",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -112,15 +132,24 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new FileRoute
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        ClusterId = _clusterId,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "test"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://test",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())

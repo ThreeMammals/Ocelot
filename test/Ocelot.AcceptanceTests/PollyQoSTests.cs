@@ -81,24 +81,16 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Post" },
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 10,
-                            ExceptionsAllowedBeforeBreaking = 10
-                        }
-                    }
+                            ExceptionsAllowedBeforeBreaking = 10,
+                        },
+                    },
                 },
                 Clusters = new Dictionary<string, FileCluster>
                 {

@@ -12,7 +12,8 @@
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, ClusterValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
+        //TODO: What is the cluster validator for?
+        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, ClusterValidator clusterValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
 

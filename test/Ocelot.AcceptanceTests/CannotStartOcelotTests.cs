@@ -27,9 +27,9 @@ namespace Ocelot.AcceptanceTests
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -57,11 +57,13 @@ namespace Ocelot.AcceptanceTests
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
+
+                        //TODO: This wont work because Ocelot doesn't get the info to use http anywhere
+                        //DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -70,9 +72,9 @@ namespace Ocelot.AcceptanceTests
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -209,9 +211,9 @@ namespace Ocelot.AcceptanceTests
                     new FileRoute
                     {
                         UpstreamPathTemplate = "api",
-                        DownstreamPathTemplate = "test"
-                    }
-                }
+                        DownstreamPathTemplate = "test",
+                    },
+                },
             };
 
             Exception exception = null;
