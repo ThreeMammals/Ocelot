@@ -72,6 +72,7 @@
                 .MustAsync(IsSupportedAuthenticationProviders)
                 .WithMessage("{PropertyName} {PropertyValue} is unsupported authentication provider");
 
+            //TODO: These two assertions need looking at in context of new configuration
             When(route => string.IsNullOrEmpty(route.ServiceName), () =>
             {
                 //RuleFor(r => r.DownstreamHostAndPorts).NotEmpty()
@@ -80,8 +81,8 @@
 
             When(route => string.IsNullOrEmpty(route.ServiceName), () =>
             {
-                RuleForEach(route => route.DownstreamHostAndPorts)
-                    .SetValidator(hostAndPortValidator);
+                //RuleForEach(route => route.DownstreamHostAndPorts)
+                //    .SetValidator(hostAndPortValidator);
             });
 
             When(route => !string.IsNullOrEmpty(route.DownstreamHttpVersion), () =>

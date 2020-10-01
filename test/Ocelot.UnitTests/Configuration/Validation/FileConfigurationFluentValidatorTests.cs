@@ -27,6 +27,8 @@
         private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
+        private readonly string _clusterOneId = "cluster1";
+        private readonly string _clusterTwoId = "cluster2";
 
         public FileConfigurationFluentValidatorTests()
         {
@@ -47,11 +49,10 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -60,9 +61,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "ServiceFabric",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -81,11 +82,10 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -94,9 +94,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -118,9 +118,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -140,11 +140,10 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -153,9 +152,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -178,9 +177,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -201,11 +200,10 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -214,9 +212,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -231,32 +229,40 @@
         [Fact]
         public void configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
         {
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -275,29 +281,36 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
-                    }
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -316,26 +329,33 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -355,29 +375,36 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
-                    }
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -394,53 +421,64 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom"
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new FileAggregateRoute
+                    {_clusterTwoId, new FileCluster
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "Tom",
-                                "Laura"
-                            }
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51880",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
+                Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -455,54 +493,65 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                        UpstreamHost = "localhost",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                            UpstreamHost = "localhost"
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new FileAggregateRoute
+                    {_clusterTwoId, new FileCluster
                         {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "Tom",
-                                "Laura"
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51880",
+                                    }
+                                },
                             },
                         }
-                    }
+                    },
+                },
+                Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -518,54 +567,65 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        RouteId = "Tom",
+                        UpstreamHost = "localhost",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Post" },
-                            RouteId = "Tom",
-                            UpstreamHost = "localhost"
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new FileAggregateRoute
+                    {_clusterTwoId, new FileCluster
                         {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "Tom",
-                                "Laura"
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51880",
+                                    }
+                                },
                             },
                         }
-                    }
+                    },
+                },
+                Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -580,63 +640,74 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/lol",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
-                            },
-                            UpstreamPathTemplate = "/lol",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom"
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new FileAggregateRoute
+                    {_clusterTwoId, new FileCluster
                         {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "Tom",
-                                "Laura"
-                            }
-                        },
-                        new FileAggregateRoute
-                        {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Tom",
-                                "Laura"
-                            }
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51880",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
+                Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -652,37 +723,44 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
                         }
                     },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Tom",
-                                "Laura"
-                            }
-                        }
-                    }
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -698,54 +776,65 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RequestIdKey = "should_fail",
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                }
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RequestIdKey = "should_fail",
-                            RouteId = "Tom"
                         }
                     },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new FileAggregateRoute
+                    {_clusterTwoId, new FileCluster
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "Tom",
-                                "Laura"
-                            }
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51880",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
+                Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
+                    {
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
+                        {
+                            "Tom",
+                            "Laura",
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -765,9 +854,9 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
-                        UpstreamPathTemplate = "http://asdf.com"
-                    }
-                }
+                        UpstreamPathTemplate = "http://asdf.com",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -791,17 +880,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -818,9 +916,9 @@
                     new FileRoute
                     {
                         DownstreamPathTemplate = "api/products/",
-                        UpstreamPathTemplate = "/asdf/"
-                    }
-                }
+                        UpstreamPathTemplate = "/asdf/",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -839,8 +937,8 @@
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "api/prod/",
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -857,18 +955,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "//api/prod/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk",
-                                Port = 80
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -885,18 +991,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "//api/products/",
                         UpstreamPathTemplate = "/api/prod/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk",
-                                Port = 80
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -913,21 +1027,30 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
-                            AuthenticationProviderKey = "Test"
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk:80",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .And(x => x.GivenTheAuthSchemeExists("Test"))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -948,10 +1071,10 @@
                         UpstreamPathTemplate = "/asdf/",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
-                            AuthenticationProviderKey = "Test"
-                        }
-                    }
-                }
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -968,29 +1091,32 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bb.co.uk"
-                            }
-                        },
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bb.co.uk"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bb.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1004,34 +1130,37 @@
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/api/products/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHost = "host1",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterOneId,
+                        DownstreamPathTemplate = "/www/test/",
+                        UpstreamPathTemplate = "/asdf/",
+                        UpstreamHost = "host2",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/",
-                            UpstreamPathTemplate = "/asdf/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "bb.co.uk"
-                                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bb.co.uk",
+                                    }
+                                },
                             },
-                            UpstreamHost = "host1"
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/www/test/",
-                            UpstreamPathTemplate = "/asdf/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "bb.co.uk"
-                                }
-                            },
-                            UpstreamHost = "host2"
                         }
-                    }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1047,31 +1176,34 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"}
+                        UpstreamHttpMethod = new List<string> {"Get"},
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk",
-                            }
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1088,31 +1220,34 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Post"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk",
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1128,33 +1263,36 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
+                        UpstreamHost = "upstreamhost",
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
-                    }
-                }
+                        UpstreamHost = "upstreamhost",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1171,33 +1309,36 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost111"
+                        UpstreamHost = "upstreamhost111",
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost222"
-                    }
-                }
+                        UpstreamHost = "upstreamhost222",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1213,32 +1354,35 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
+                        UpstreamHost = "upstreamhost",
                     },
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        UpstreamHttpMethod = new List<string>(),
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk",
-                            }
-                        },
-                        UpstreamHttpMethod = new List<string>()
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1254,23 +1398,32 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1x",
-                            EnableRateLimiting = true
+                            EnableRateLimiting = true,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1287,23 +1440,32 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "bbc.co.uk",
-                            }
-                        },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1d",
-                            EnableRateLimiting = true
+                            EnableRateLimiting = true,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1322,8 +1484,8 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        ServiceName = "Test"
-                    }
+                        ServiceName = "Test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -1332,9 +1494,9 @@
                         Scheme = "https",
                         Type = "servicefabric",
                         Host = "localhost",
-                        Port = 1234
-                    }
-                }
+                        Port = 1234,
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1352,18 +1514,27 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = downstreamHost,
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://{downstreamHost}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1380,18 +1551,27 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "bbc.co.uk"
-                            }
-                        },
-                    }
-                }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1410,15 +1590,23 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "test"
-                            }
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://test",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1426,7 +1614,7 @@
         }
 
         [Fact]
-        public void configuration_is_not_valid_when_no_host_and_port()
+        public void configuration_is_not_valid_when_no_destination()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
@@ -1434,14 +1622,22 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1450,7 +1646,7 @@
         }
 
         [Fact]
-        public void configuration_is_not_valid_when_host_and_port_is_empty()
+        public void configuration_is_not_valid_when_destination_address_is_empty()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
@@ -1458,15 +1654,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
                         {
-                            new FileHostAndPort()
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1483,14 +1690,25 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/bar/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort> 
-                        { 
-                            new FileHostAndPort() { Host = "a.b.cd" },
-                        },
                         UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
                         UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://a.b.cd",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             }))

@@ -37,49 +37,61 @@ namespace Ocelot.AcceptanceTests
         {
             int port1 = RandomPortFinder.GetRandomPort();
             int port2 = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/values",
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                }
-                            },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true
-                            }
+                            UseTracing = true,
                         },
-                        new FileRoute
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/api/values",
+                        UpstreamPathTemplate = "/api002/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            UseTracing = true,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/api002/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true
-                            }
                         }
-                    }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
             
             var butterflyPort = RandomPortFinder.GetRandomPort();
@@ -112,32 +124,39 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/values",
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            UseTracing = true,
+                        },
+                        DownstreamHeaderTransform = new Dictionary<string, string>()
+                        {
+                            {"Trace-Id", "{TraceId}"},
+                            {"Tom", "Laura"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true
-                            },
-                            DownstreamHeaderTransform = new Dictionary<string, string>()
-                            {
-                                {"Trace-Id", "{TraceId}"},
-                                {"Tom", "Laura"}
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             var butterflyPort = RandomPortFinder.GetRandomPort();

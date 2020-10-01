@@ -99,29 +99,36 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
-                    }
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -148,26 +155,33 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            }
-                        },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         RouteId = "Laura",
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51878",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             Exception exception = null;

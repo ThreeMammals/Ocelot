@@ -48,44 +48,51 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           },
-                           AddHeadersToRequest =
-                           {
-                               {"CustomerId", "Claims[CustomerId] > value"},
-                               {"LocationId", "Claims[LocationId] > value"},
-                               {"UserType", "Claims[sub] > value[0] > |"},
-                               {"UserId", "Claims[sub] > value[1] > |"}
-                           },
-                           AddClaimsToRequest =
-                           {
-                               {"CustomerId", "Claims[CustomerId] > value"},
-                               {"UserType", "Claims[sub] > value[0] > |"},
-                               {"UserId", "Claims[sub] > value[1] > |"}
-                           },
-                           RouteClaimsRequirement =
-                           {
-                               {"UserType", "registered"}
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                        AddHeadersToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                            {"LocationId", "Claims[LocationId] > value"},
+                            {"UserType", "Claims[sub] > value[0] > |"},
+                            {"UserId", "Claims[sub] > value[1] > |"},
+                        },
+                        AddClaimsToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                            {"UserType", "Claims[sub] > value[0] > |"},
+                            {"UserId", "Claims[sub] > value[1] > |"},
+                        },
+                        RouteClaimsRequirement =
+                        {
+                            {"UserType", "registered"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
@@ -108,43 +115,50 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           },
-                           AddHeadersToRequest =
-                           {
-                               {"CustomerId", "Claims[CustomerId] > value"},
-                               {"LocationId", "Claims[LocationId] > value"},
-                               {"UserType", "Claims[sub] > value[0] > |"},
-                               {"UserId", "Claims[sub] > value[1] > |"}
-                           },
-                           AddClaimsToRequest =
-                           {
-                               {"CustomerId", "Claims[CustomerId] > value"},
-                               {"UserId", "Claims[sub] > value[1] > |"}
-                           },
-                           RouteClaimsRequirement =
-                           {
-                               {"UserType", "registered"}
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                        AddHeadersToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                            {"LocationId", "Claims[LocationId] > value"},
+                            {"UserType", "Claims[sub] > value[0] > |"},
+                            {"UserId", "Claims[sub] > value[1] > |"},
+                        },
+                        AddClaimsToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                            {"UserId", "Claims[sub] > value[1] > |"},
+                        },
+                        RouteClaimsRequirement =
+                        {
+                            {"UserType", "registered"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
@@ -166,28 +180,35 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test",
-                               AllowedScopes = new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                           },
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                            AllowedScopes = new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
@@ -209,28 +230,35 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test",
-                               AllowedScopes = new List<string>{ "api", "openid", "offline_access" },
-                           },
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                            AllowedScopes = new List<string>{ "api", "openid", "offline_access" },
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
@@ -252,31 +280,38 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           },
-                           RouteClaimsRequirement =
-                           {
-                               {"Role", "User"}
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                        RouteClaimsRequirement =
+                        {
+                            {"Role", "User"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             var users = new List<TestUser>
@@ -289,9 +324,9 @@ namespace Ocelot.AcceptanceTests
                     Claims = new List<Claim>
                     {
                         new Claim("Role", "AdminUser"),
-                        new Claim("Role", "User")
+                        new Claim("Role", "User"),
                     },
-                }
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))

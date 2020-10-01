@@ -33,25 +33,32 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
-                        DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Post" },
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1000,
-                            ExceptionsAllowedBeforeBreaking = 10
+                            ExceptionsAllowedBeforeBreaking = 10,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
@@ -92,7 +99,22 @@
                             ExceptionsAllowedBeforeBreaking = 10
                         }
                     }
-                }
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
@@ -115,26 +137,33 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
                             TimeoutValue = 500,
-                            DurationOfBreak = 1000
+                            DurationOfBreak = 1000,
                         },
-                    }
-                }
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
@@ -168,41 +197,52 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            }
-                        },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
                             TimeoutValue = 500,
-                            DurationOfBreak = 1000
-                        }
+                            DurationOfBreak = 1000,
+                        },
                     },
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterTwoId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            }
-                        },
                         UpstreamPathTemplate = "/working",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))

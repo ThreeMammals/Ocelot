@@ -56,35 +56,42 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = "/users/{userId}",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               },
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/users",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test",
-                               AllowedScopes = new List<string>
-                               {
-                                   "openid", "offline_access", "api",
-                               },
-                           },
-                           ChangeDownstreamPathTemplate =
-                           {
-                               {"userId", "Claims[sub] > value[1] > |"},
-                           },
-                       },
-                   },
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/users/{userId}",
+                        UpstreamPathTemplate = "/users",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                            AllowedScopes = new List<string>
+                            {
+                                "openid", "offline_access", "api",
+                            },
+                        },
+                        ChangeDownstreamPathTemplate =
+                        {
+                            {"userId", "Claims[sub] > value[1] > |"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
@@ -151,20 +158,20 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     new Scope("api"),
                                     new Scope("openid"),
-                                    new Scope("offline_access")
+                                    new Scope("offline_access"),
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId", "UserType", "UserId"
-                                }
-                            }
+                                    "CustomerId", "LocationId", "UserType", "UserId",
+                                },
+                            },
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -176,8 +183,8 @@ namespace Ocelot.AcceptanceTests
                                 AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {

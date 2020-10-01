@@ -28,24 +28,30 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "https",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = true
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
@@ -65,24 +71,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DangerousAcceptAnyServerCertificateValidator = false,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "https",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = false
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))

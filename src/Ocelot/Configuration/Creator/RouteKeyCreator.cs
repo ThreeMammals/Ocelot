@@ -13,7 +13,8 @@ namespace Ocelot.Configuration.Creator
                 return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
             }
 
-            return $"{fileRoute.UpstreamPathTemplate}|{string.Join(",", fileRoute.UpstreamHttpMethod)}|{string.Join(",", fileRoute.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}";
+            //TODO: this is probably wrong..check the diff
+            return $"{fileRoute.UpstreamPathTemplate}|{string.Join(",", fileRoute.UpstreamHttpMethod)}|{fileRoute.ClusterId}";
         }
 
         private bool IsStickySession(FileRoute fileRoute)

@@ -19,12 +19,14 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
         private string _downstreamPathOne;
         private string _downstreamPathTwo;
+        private string _clusterThreeId;
         private readonly ServiceHandler _serviceHandler;
 
         public AggregateTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            _clusterThreeId = "cluster3";
         }
 
         [Fact]
@@ -37,66 +39,34 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key1data/{userid}",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         RouteId = "key1",
                     },
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key2data/{userid}",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         RouteId = "key2",
                     },
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key3data/{userid}",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         RouteId = "key3",
                     },
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key4data/{userid}",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         RouteId = "key4",
                     },
                 },
@@ -119,6 +89,21 @@ namespace Ocelot.AcceptanceTests
                             "key2",
                         },
                         UpstreamPathTemplate = "/EmpDetail/US/{userid}",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -147,75 +132,90 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/Comments",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Comments",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/users/{userId}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/UserDetails",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "UserDetails",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/posts/{postId}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port3,
-                                },
-                            },
-                            UpstreamPathTemplate = "/PostDetails",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "PostDetails",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/Comments",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Comments",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/users/{userId}",
+                        UpstreamPathTemplate = "/UserDetails",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "UserDetails",
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _clusterThreeId,
+                        DownstreamPathTemplate = "/posts/{postId}",
+                        UpstreamPathTemplate = "/PostDetails",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "PostDetails",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_clusterThreeId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterThreeId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port3}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Comments",
-                                "UserDetails",
-                                "PostDetails",
-                            },
-                            AggregateRouteConfigs = new List<FileAggregateRouteConfig>()
-                            {
-                                new FileAggregateRouteConfig(){RouteId = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-                                new FileAggregateRouteConfig(){RouteId = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
-                            },
+                            "Comments",
+                            "UserDetails",
+                            "PostDetails",
+                        },
+                        AggregateRouteConfigs = new List<FileAggregateRouteConfig>()
+                        {
+                            new FileAggregateRouteConfig(){RouteId = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+                            new FileAggregateRouteConfig(){RouteId = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
                         },
                     },
+                },
             };
 
             var userDetailsResponseContent = @"{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""}";
@@ -243,54 +243,65 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
-                            Aggregator = "FakeDefinedAggregator",
+                            "Laura",
+                            "Tom",
                         },
+                        Aggregator = "FakeDefinedAggregator",
                     },
+                },
             };
 
             var expected = "Bye from Laura, Bye from Tom";
@@ -314,53 +325,64 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
+                            "Laura",
+                            "Tom",
                         },
                     },
+                },
             };
 
             var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
@@ -384,53 +406,64 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
+                            "Laura",
+                            "Tom",
                         },
                     },
+                },
             };
 
             var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
@@ -454,53 +487,64 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
+                            "Laura",
+                            "Tom",
                         },
                     },
+                },
             };
 
             var expected = "{\"Laura\":,\"Tom\":}";
@@ -524,53 +568,64 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Laura",
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteId = "Tom",
-                        },
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/laura",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Laura",
                     },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/tom",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteId = "Tom",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port1}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 Aggregates = new List<FileAggregateRoute>
+                {
+                    new FileAggregateRoute
                     {
-                        new FileAggregateRoute
+                        UpstreamPathTemplate = "/",
+                        UpstreamHost = "localhost",
+                        RouteIds = new List<string>
                         {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteIds = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
+                            "Laura",
+                            "Tom",
                         },
                     },
+                },
             };
 
             this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))

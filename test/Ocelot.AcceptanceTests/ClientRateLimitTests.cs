@@ -28,31 +28,38 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RequestIdKey = _steps.RequestIdKey,
+                        RateLimitOptions = new FileRateLimitRule()
                         {
-                            DownstreamPathTemplate = "/api/ClientRateLimit",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            EnableRateLimiting = true,
+                            ClientWhitelist = new List<string>(),
+                            Limit = 3,
+                            Period = "1s",
+                            PeriodTimespan = 1000,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/api/ClientRateLimit",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RequestIdKey = _steps.RequestIdKey,
-                            RateLimitOptions = new FileRateLimitRule()
-                            {
-                                EnableRateLimiting = true,
-                                ClientWhitelist = new List<string>(),
-                                Limit = 3,
-                                Period = "1s",
-                                PeriodTimespan = 1000
-                            }
                         }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -62,10 +69,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
@@ -88,32 +95,38 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RequestIdKey = _steps.RequestIdKey,
+                        RateLimitOptions = new FileRateLimitRule()
                         {
-                            DownstreamPathTemplate = "/api/ClientRateLimit",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            EnableRateLimiting = true,
+                            ClientWhitelist = new List<string>(),
+                            Limit = 3,
+                            Period = "1s",
+                            PeriodTimespan = 2,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/api/ClientRateLimit",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RequestIdKey = _steps.RequestIdKey,
-
-                            RateLimitOptions = new FileRateLimitRule()
-                            {
-                                EnableRateLimiting = true,
-                                ClientWhitelist = new List<string>(),
-                                Limit = 3,
-                                Period = "1s",
-                                PeriodTimespan = 2
-                            }
                         }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -123,10 +136,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
@@ -155,32 +168,39 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/api/ClientRateLimit",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/api/ClientRateLimit",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RequestIdKey = _steps.RequestIdKey,
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamPathTemplate = "/api/ClientRateLimit",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RequestIdKey = _steps.RequestIdKey,
 
-                            RateLimitOptions = new FileRateLimitRule()
+                        RateLimitOptions = new FileRateLimitRule()
+                        {
+                            EnableRateLimiting = true,
+                            ClientWhitelist = new List<string>() { "ocelotclient1"},
+                            Limit = 3,
+                            Period = "1s",
+                            PeriodTimespan = 100,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                EnableRateLimiting = true,
-                                ClientWhitelist = new List<string>() { "ocelotclient1"},
-                                Limit = 3,
-                                Period = "1s",
-                                PeriodTimespan = 100
-                            }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
                         }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -189,10 +209,10 @@
                         ClientIdHeader = "ClientId",
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
-                        RateLimitCounterPrefix = ""
+                        RateLimitCounterPrefix = "",
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))

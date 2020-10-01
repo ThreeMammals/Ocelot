@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Configuration.File;
+    using Ocelot.Configuration.File;
     using Consul;
     using Microsoft.AspNetCore.Http;
     using Newtonsoft.Json;
@@ -38,47 +38,58 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/user/{user}",
+                        UpstreamPathTemplate = "/api/user/{user}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterTwoId,
+                        DownstreamPathTemplate = "/api/product/{product}",
+                        UpstreamPathTemplate = "/api/product/{product}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/user/{user}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort1,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort1}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/api/user/{user}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/api/product/{product}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort2,
-                                }
-                            },
-                            UpstreamPathTemplate = "/api/product/{product}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort2}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Scheme = "https",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, "/api/user/info", 200, "user"))

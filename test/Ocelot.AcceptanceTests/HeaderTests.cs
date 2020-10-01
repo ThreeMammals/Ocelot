@@ -30,27 +30,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {"Laz", "D, GP"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            UpstreamHeaderTransform = new Dictionary<string,string>
-                            {
-                                {"Laz", "D, GP"}
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Laz"))
@@ -71,27 +78,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {"Location", "http://www.bbc.co.uk/, http://ocelot.com/"},
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHeaderTransform = new Dictionary<string,string>
-                            {
-                                {"Location", "http://www.bbc.co.uk/, http://ocelot.com/"}
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Location", "http://www.bbc.co.uk/"))
@@ -111,31 +125,38 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {"Location", $"http://localhost:{port}, {{BaseUrl}}"},
+                        },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHeaderTransform = new Dictionary<string,string>
-                            {
-                                {"Location", $"http://localhost:{port}, {{BaseUrl}}"}
-                            },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                AllowAutoRedirect = false
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
@@ -155,31 +176,38 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {"Location", "{DownstreamBaseUrl}, {BaseUrl}"},
+                        },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHeaderTransform = new Dictionary<string,string>
-                            {
-                                {"Location", "{DownstreamBaseUrl}, {BaseUrl}"}
-                            },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                AllowAutoRedirect = false
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
@@ -199,35 +227,42 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {"Location", "{DownstreamBaseUrl}, {BaseUrl}"},
+                        },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHeaderTransform = new Dictionary<string,string>
-                            {
-                                {"Location", "{DownstreamBaseUrl}, {BaseUrl}"}
-                            },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                AllowAutoRedirect = false
-                            }
                         }
                     },
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    BaseUrl = "http://anotherapp.azurewebsites.net"
-                }
+                    BaseUrl = "http://anotherapp.azurewebsites.net",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
@@ -250,24 +285,31 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/sso/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
                         UpstreamPathTemplate = "/sso/{everything}",
                         UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            UseCookieContainer = true
+                            UseCookieContainer = true,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/sso/test", 200))
@@ -293,24 +335,31 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/sso/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-                        },
                         UpstreamPathTemplate = "/sso/{everything}",
                         UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            UseCookieContainer = false
+                            UseCookieContainer = false,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/sso/test", 200))
@@ -333,23 +382,30 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Accept"))
@@ -370,23 +426,30 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Accept"))

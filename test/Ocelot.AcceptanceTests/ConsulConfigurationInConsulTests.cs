@@ -40,32 +40,39 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
+                },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -94,9 +101,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -107,19 +114,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/status",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = servicePort,
-                            }
-                        },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort}",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -127,9 +141,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
@@ -157,9 +171,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -170,19 +184,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/status",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = servicePort,
-                            }
-                        },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort}",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -190,9 +211,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var secondConsulConfig = new FileConfiguration
@@ -201,19 +222,26 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/status",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = servicePort,
-                            }
-                        },
                         UpstreamPathTemplate = "/cs/status/awesome",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort}",
+                                    }
+                                },
+                            },
+                        }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
@@ -221,9 +249,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
@@ -259,6 +287,7 @@
                 },
             };
 
+            //TODO: this aint going to work because ClusterId not plugged into dynamic ReRoutes? Or will it.
             var consulConfig = new FileConfiguration
             {
                 DynamicRoutes = new List<FileDynamicRoute>
@@ -272,9 +301,9 @@
                             ClientWhitelist = new List<string>(),
                             Limit = 3,
                             Period = "1s",
-                            PeriodTimespan = 1000
-                        }
-                    }
+                            PeriodTimespan = 1000,
+                        },
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -282,7 +311,7 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
+                        Port = consulPort,
                     },
                     RateLimitOptions = new FileRateLimitOptions()
                     {
@@ -290,10 +319,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = "",
                         RateLimitCounterPrefix = "",
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
                     DownstreamScheme = "http",
-                }
+                },
             };
 
             var configuration = new FileConfiguration
@@ -304,9 +333,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))

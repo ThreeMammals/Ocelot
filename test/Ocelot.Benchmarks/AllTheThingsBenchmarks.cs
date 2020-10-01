@@ -40,23 +40,29 @@ namespace Ocelot.Benchmarks
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {"cluster1", new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51879,
-                                }
+                                {"cluster1/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:51879",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty);

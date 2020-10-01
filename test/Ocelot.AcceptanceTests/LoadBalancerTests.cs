@@ -41,32 +41,37 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = portOne
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{portOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = portTwo
-                                }
-                            }
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{portTwo}",
+                                    }
+                                },
+                            },
                         }
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration { },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -90,32 +95,37 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortTwo}",
+                                    }
+                                },
+                            },
                         }
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                }
+                },
+                GlobalConfiguration = new FileGlobalConfiguration() { },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -139,29 +149,36 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(CustomLoadBalancer) },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(CustomLoadBalancer) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne,
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo,
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortTwo}",
+                                    }
                                 },
                             },
-                        },
+                        }
                     },
+                },
                 GlobalConfiguration = new FileGlobalConfiguration(),
             };
 

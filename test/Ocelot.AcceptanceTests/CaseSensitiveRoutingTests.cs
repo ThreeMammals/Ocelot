@@ -27,23 +27,30 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
@@ -62,24 +69,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteIsCaseSensitive = false,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteIsCaseSensitive = false,
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
@@ -98,24 +112,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteIsCaseSensitive = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteIsCaseSensitive = true,
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
@@ -134,24 +155,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/PRODUCTS/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteIsCaseSensitive = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteIsCaseSensitive = true,
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
@@ -170,24 +198,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteIsCaseSensitive = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteIsCaseSensitive = true,
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
@@ -206,24 +241,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/api/products/{productId}",
+                        UpstreamPathTemplate = "/PRODUCTS/{productId}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        RouteIsCaseSensitive = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/PRODUCTS/{productId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RouteIsCaseSensitive = true,
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))

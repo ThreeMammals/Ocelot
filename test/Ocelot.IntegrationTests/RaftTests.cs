@@ -1,13 +1,13 @@
 ﻿namespace Ocelot.IntegrationTests
 {
-    using Administration;
-    using Configuration.File;
-    using DependencyInjection;
+    using Ocelot.Administration;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Data.Sqlite;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Middleware;
+    using Ocelot.Middleware;
     using Newtonsoft.Json;
     using Ocelot.Provider.Rafty;
     using Rafty.Infrastructure;
@@ -36,6 +36,8 @@
         private HttpResponseMessage _response;
         private static readonly object _lock = new object();
         private ITestOutputHelper _output;
+        private readonly string _clusterOneId;
+        private readonly string _clusterTwoId;
 
         public RaftTests(ITestOutputHelper output)
         {
@@ -44,6 +46,8 @@
             _webHostBuilders = new List<IWebHostBuilder>();
             _builders = new List<IWebHost>();
             _threads = new List<Thread>();
+            _clusterOneId = "cluster1";
+            _clusterTwoId = "cluster2";
         }
 
         [Fact(Skip = "Still not stable, more work required in rafty..")]
@@ -59,14 +63,12 @@
 
                 new FilePeer {HostAndPort = "http://localhost:5003"},
 
-                new FilePeer {HostAndPort = "http://localhost:5004"}
+                new FilePeer {HostAndPort = "http://localhost:5004"},
             };
 
             var configuration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                }
+                GlobalConfiguration = new FileGlobalConfiguration {},
             };
 
             var updatedConfiguration = new FileConfiguration
@@ -78,35 +80,46 @@
                 {
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "127.0.0.1",
-                                Port = 80,
-                            }
-                        },
-                        DownstreamScheme = "http",
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
                     },
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "123.123.123",
-                                Port = 443,
-                            }
-                        },
-                        DownstreamScheme = "https",
+                        ClusterId = _clusterTwoId,
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
-                        UpstreamPathTemplate = "/test"
-                    }
-                }
+                        UpstreamPathTemplate = "/test",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://127.0.0.1:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_clusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "https://123.123.123:443",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             var command = new UpdateFileConfiguration(updatedConfiguration);
@@ -145,35 +158,46 @@
                 {
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "127.0.0.1",
-                                Port = 80,
-                            }
-                        },
-                        DownstreamScheme = "http",
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
                     },
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "123.123.123",
-                                Port = 443,
-                            }
-                        },
-                        DownstreamScheme = "https",
+                        ClusterId = _clusterTwoId,
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
-                        UpstreamPathTemplate = "/test"
-                    }
-                }
+                        UpstreamPathTemplate = "/test",
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://127.0.0.1:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    {_clusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = "https://123.123.123:443",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             var command = new UpdateFileConfiguration(updatedConfiguration);
@@ -280,20 +304,13 @@
                         response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Host);
                         response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.Configuration.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-                        for (var i = 0; i < response.Routes.Count; i++)
-                        {
-                            for (var j = 0; j < response.Routes[i].DownstreamHostAndPorts.Count; j++)
-                            {
-                                var res = response.Routes[i].DownstreamHostAndPorts[j];
-                                var expected = expecteds.Configuration.Routes[i].DownstreamHostAndPorts[j];
-                                res.Host.ShouldBe(expected.Host);
-                                res.Port.ShouldBe(expected.Port);
-                            }
 
-                            response.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Configuration.Routes[i].DownstreamPathTemplate);
-                            response.Routes[i].DownstreamScheme.ShouldBe(expecteds.Configuration.Routes[i].DownstreamScheme);
-                            response.Routes[i].UpstreamPathTemplate.ShouldBe(expecteds.Configuration.Routes[i].UpstreamPathTemplate);
-                            response.Routes[i].UpstreamHttpMethod.ShouldBe(expecteds.Configuration.Routes[i].UpstreamHttpMethod);
+                        for (var i = 0; i < response.Clusters.Count; i++)
+                        {
+                            for (var j = 0; j < response.Clusters.Values.ToList()[i].Destinations.Count; j++)
+                            {
+                                response.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j].Address.ShouldBe(expecteds.Configuration.Clusters.Values.ToList()[i].Destinations.Values.ToList()[j].Address);
+                            }
                         }
 
                         passed++;

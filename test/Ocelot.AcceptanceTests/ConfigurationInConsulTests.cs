@@ -39,32 +39,39 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort,
-                                }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{servicePort}",
+                                    }
+                                },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
+                },
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";

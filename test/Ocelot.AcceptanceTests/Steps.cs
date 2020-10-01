@@ -65,7 +65,12 @@ namespace Ocelot.AcceptanceTests
         public Steps()
         {
             _random = new Random();
+            ClusterOneId = "cluster1";
+            ClusterTwoId = "cluster2";
         }
+
+        public string ClusterOneId { get; private set; }
+        public string ClusterTwoId { get; private set; }
 
         public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
         {

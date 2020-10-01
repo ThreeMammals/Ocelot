@@ -33,21 +33,28 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/{url}",
-                        DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.0",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             };
@@ -68,26 +75,33 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/{url}",
+                        UpstreamPathTemplate = "/{url}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        DownstreamHttpMethod = "POST",
+                        DownstreamHttpVersion = "1.1",
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "https",
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
                                 },
                             },
-                            DownstreamHttpMethod = "POST",
-                            DownstreamHttpVersion = "1.1",
-                            DangerousAcceptAnyServerCertificateValidator = true
-                        },
+                        }
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http1))
@@ -109,21 +123,28 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/{url}",
-                        DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "2.0",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             };
@@ -151,21 +172,28 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/{url}",
-                        DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.1",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             };
@@ -192,21 +220,28 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/{url}",
-                        DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "2.0",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"https://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             };

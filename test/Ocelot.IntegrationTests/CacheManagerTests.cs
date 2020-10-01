@@ -1,13 +1,12 @@
 namespace Ocelot.IntegrationTests
 {
-    using Configuration.File;
-    using DependencyInjection;
-    using global::CacheManager.Core;
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+    using CacheManager.Core;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Ocelot.Administration;
     using Ocelot.Cache.CacheManager;
@@ -31,6 +30,7 @@ namespace Ocelot.IntegrationTests
         private IHostBuilder _webHostBuilder;
         private string _ocelotBaseUrl;
         private BearerToken _token;
+        private readonly string _clusterOneId;
 
         public CacheManagerTests()
         {
@@ -38,6 +38,7 @@ namespace Ocelot.IntegrationTests
             _httpClientTwo = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5000";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
+            _clusterOneId = "cluster1";
         }
 
         [Fact]
@@ -52,15 +53,7 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 80,
-                            },
-                        },
-                        DownstreamScheme = "https",
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/",
@@ -71,15 +64,7 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileRoute()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 80,
-                            },
-                        },
-                        DownstreamScheme = "https",
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test",
@@ -87,6 +72,21 @@ namespace Ocelot.IntegrationTests
                         {
                             TtlSeconds = 10,
                         },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "https://localhost:80",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             };
@@ -214,7 +214,6 @@ namespace Ocelot.IntegrationTests
             Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "");
             _builder?.Dispose();
             _httpClient?.Dispose();
-            //_identityServerBuilder?.Dispose();
         }
     }
 }

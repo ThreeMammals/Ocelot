@@ -38,19 +38,26 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
-                        DownstreamScheme = "ws",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = downstreamHost,
-                                Port = downstreamPort
-                            }
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"ws://{downstreamHost}:{downstreamPort}",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
@@ -75,25 +82,32 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _steps.ClusterOneId,
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
-                        DownstreamScheme = "ws",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = downstreamHost,
-                                Port = downstreamPort
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"ws://{downstreamHost}:{downstreamPort}",
+                                    }
+                                },
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"ws://{secondDownstreamHost}:{secondDownstreamPort}",
+                                    }
+                                },
                             },
-                            new FileHostAndPort
-                            {
-                                Host = secondDownstreamHost,
-                                Port = secondDownstreamPort
-                            }
-                        },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" }
-                    }
-                }
+                        }
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))

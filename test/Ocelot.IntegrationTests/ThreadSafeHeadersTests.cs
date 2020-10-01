@@ -40,26 +40,35 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
         {
+            const string ClusterId = "cluster1";
+
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterId, new FileCluster
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 51611,
+                                {$"{ClusterId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:51611",
+                                    }
                                 },
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
+                        }
                     },
+                },
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))

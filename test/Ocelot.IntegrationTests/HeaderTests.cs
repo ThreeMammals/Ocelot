@@ -30,12 +30,14 @@ namespace Ocelot.IntegrationTests
         private readonly string _ocelotBaseUrl;
         private IWebHost _downstreamBuilder;
         private HttpResponseMessage _response;
+        private readonly string _clusterOneId;
 
         public HeaderTests()
         {
             _httpClient = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5010";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
+            _clusterOneId = "cluster1";
         }
 
         [Fact]
@@ -47,28 +49,35 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = 6773,
-                            }
-                        },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         UpstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            {"X-Forwarded-For", "{RemoteIpAddress}"}
+                            {"X-Forwarded-For", "{RemoteIpAddress}"},
                         },
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            AllowAutoRedirect = false
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://localhost:6773",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:6773", 200, "X-Forwarded-For"))

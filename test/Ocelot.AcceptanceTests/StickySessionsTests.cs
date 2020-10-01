@@ -33,34 +33,41 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions
+                            Type = "CookieStickySessions",
+                            Key = "sessionid",
+                            Expiry = 300000,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Type = "CookieStickySessions",
-                                Key = "sessionid",
-                                Expiry = 300000
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortTwo}",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -84,60 +91,54 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions
-                            {
-                                Type = "CookieStickySessions",
-                                Key = "sessionid",
-                                Expiry = 300000
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
-                                },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                            Type = "CookieStickySessions",
+                            Key = "sessionid",
+                            Expiry = 300000,
                         },
-                        new FileRoute
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/test",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/test",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions
+                            Type = "CookieStickySessions",
+                            Key = "bestid",
+                            Expiry = 300000,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Type = "CookieStickySessions",
-                                Key = "bestid",
-                                Expiry = 300000
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortTwo}",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -162,60 +163,54 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions
-                            {
-                                Type = "CookieStickySessions",
-                                Key = "sessionid",
-                                Expiry = 300000
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
-                                },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                            Type = "CookieStickySessions",
+                            Key = "sessionid",
+                            Expiry = 300000,
                         },
-                        new FileRoute
+                    },
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = "/",
+                        UpstreamPathTemplate = "/test",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/test",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            LoadBalancerOptions = new FileLoadBalancerOptions
+                            Type = "CookieStickySessions",
+                            Key = "sessionid",
+                            Expiry = 300000,
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Type = "CookieStickySessions",
-                                Key = "sessionid",
-                                Expiry = 300000
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortTwo
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortOne}",
+                                    }
                                 },
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
+                                {$"{_steps.ClusterOneId}/destination2", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{downstreamPortTwo}",
+                                    }
+                                },
+                            },
                         }
-                    }
+                    },
+                },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -251,6 +246,7 @@ namespace Ocelot.AcceptanceTests
                         _counterOne++;
                         response = _counterOne.ToString();
                     }
+
                     context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync(response);
                 }

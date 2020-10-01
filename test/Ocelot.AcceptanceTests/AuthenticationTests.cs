@@ -22,8 +22,8 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private string _identityServerRootUrl;
         private string _downstreamServicePath = "/";
-        private string _downstreamServiceHost = "localhost";
-        private string _downstreamServiceScheme = "http";
+        //private string _downstreamServiceHost = "localhost";
+        //private string _downstreamServiceScheme = "http";
         private string _downstreamServiceUrl = "http://localhost:";
         private readonly Action<IdentityServerAuthenticationOptions> _options;
         private readonly ServiceHandler _serviceHandler;
@@ -52,27 +52,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host =_downstreamServiceHost,
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = _downstreamServiceScheme,
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Post" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                                AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = _downstreamServicePath,
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -93,27 +100,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host =_downstreamServiceHost,
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = _downstreamServiceScheme,
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = _downstreamServicePath,
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -136,27 +150,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host =_downstreamServiceHost,
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = _downstreamServiceScheme,
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = _downstreamServicePath,
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -178,27 +199,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host =_downstreamServiceHost,
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = _downstreamServiceScheme,
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Post" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = _downstreamServicePath,
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -221,27 +249,34 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                   {
-                       new FileRoute
-                       {
-                           DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host =_downstreamServiceHost,
-                                   Port = port,
-                               }
-                           },
-                           DownstreamScheme = _downstreamServiceScheme,
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Post" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                {
+                    new FileRoute
+                    {
+                        ClusterId = _steps.ClusterOneId,
+                        DownstreamPathTemplate = _downstreamServicePath,
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Post" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_steps.ClusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_steps.ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://localhost:{port}",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))

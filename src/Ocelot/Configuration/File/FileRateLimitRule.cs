@@ -14,20 +14,29 @@ namespace Ocelot.Configuration.File
         public List<string> ClientWhitelist { get; set; }
 
         /// <summary>
-        /// Enables endpoint rate limiting based URL path and HTTP verb
+        /// Enables endpoint rate limiting based URL path and HTTP verb.
         /// </summary>
+        /// <value>
+        /// <placeholder>Enables endpoint rate limiting based URL path and HTTP verb.</placeholder>
+        /// </value>
         public bool EnableRateLimiting { get; set; }
 
         /// <summary>
-        /// Rate limit period as in 1s, 1m, 1h
+        /// Rate limit period as in 1s, 1m, 1h.
         /// </summary>
+        /// <value>
+        /// <placeholder>Rate limit period as in 1s, 1m, 1h</placeholder>
+        /// </value>
         public string Period { get; set; }
 
         public double PeriodTimespan { get; set; }
 
         /// <summary>
-        /// Maximum number of requests that a client can make in a defined period
+        /// Maximum number of requests that a client can make in a defined period.
         /// </summary>
+        /// <value>
+        /// <placeholder>Maximum number of requests that a client can make in a defined period.</placeholder>
+        /// </value>
         public long Limit { get; set; }
 
         public override string ToString()

@@ -94,18 +94,20 @@
                         ClientIdHeader = "ClientIdHeader",
                         DisableRateLimitHeaders = true,
                         QuotaExceededMessage = "QuotaExceededMessage",
-                        RateLimitCounterPrefix = "RateLimitCounterPrefix"
+                        RateLimitCounterPrefix = "RateLimitCounterPrefix",
                     },
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "https",
                         Host = "Host",
                         Port = 80,
-                        Type = "Type"
+                        Type = "Type",
                     },
-                    RequestIdKey = "RequestIdKey"
-                }
+                    RequestIdKey = "RequestIdKey",
+                },
             };
+
+            const string ClusterOneId = "cluster1";
 
             _routeA = new FileConfiguration
             {
@@ -113,7 +115,7 @@
                 {
                     new FileRoute
                     {
-                        DownstreamScheme = "DownstreamScheme",
+                        ClusterId = ClusterOneId,
                         DownstreamPathTemplate = "DownstreamPathTemplate",
                         RouteId = "Key",
                         UpstreamHost = "UpstreamHost",
@@ -121,17 +123,27 @@
                         {
                             "UpstreamHttpMethod"
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterOneId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "Host",
-                                Port = 80
-                            }
+                                {$"{ClusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://Host:80",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                },
             };
+
+            const string ClusterTwoId = "cluster2";
+            const string ClusterThreeId = "cluster3";
 
             _routeB = new FileConfiguration
             {
@@ -139,7 +151,7 @@
                 {
                     new FileRoute
                     {
-                        DownstreamScheme = "DownstreamSchemeB",
+                        ClusterId = ClusterTwoId,
                         DownstreamPathTemplate = "DownstreamPathTemplateB",
                         RouteId = "KeyB",
                         UpstreamHost = "UpstreamHostB",
@@ -147,18 +159,10 @@
                         {
                             "UpstreamHttpMethodB"
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "HostB",
-                                Port = 80
-                            }
-                        }
                     },
                     new FileRoute
                     {
-                        DownstreamScheme = "DownstreamSchemeBB",
+                        ClusterId = ClusterThreeId,
                         DownstreamPathTemplate = "DownstreamPathTemplateBB",
                         RouteId = "KeyBB",
                         UpstreamHost = "UpstreamHostBB",
@@ -166,16 +170,35 @@
                         {
                             "UpstreamHttpMethodBB"
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterTwoId, new FileCluster
                         {
-                            new FileHostAndPort
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                Host = "HostBB",
-                                Port = 80
-                            }
+                                {$"{ClusterTwoId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://HostB:80",
+                                    }
+                                },
+                            },
                         }
-                    }
-                }
+                    },
+                    {ClusterThreeId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{ClusterThreeId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://HostBB:80",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                },
             };
 
             _aggregate = new FileConfiguration
@@ -187,7 +210,7 @@
                         RouteIds = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
                     },
@@ -196,37 +219,46 @@
                         RouteIds = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
-                    }
-                }
+                    },
+                },
             };
+
+            const string ClusterFourId = "cluster4";
 
             _envSpecific = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        ClusterId = ClusterFourId,
+                        DownstreamPathTemplate = "DownstreamPathTemplateSpec",
+                        RouteId = "KeySpec",
+                        UpstreamHost = "UpstreamHostSpec",
+                        UpstreamHttpMethod = new List<string>
                         {
-                            DownstreamScheme = "DownstreamSchemeSpec",
-                            DownstreamPathTemplate = "DownstreamPathTemplateSpec",
-                            RouteId = "KeySpec",
-                            UpstreamHost = "UpstreamHostSpec",
-                            UpstreamHttpMethod = new List<string>
+                            "UpstreamHttpMethodSpec"
+                        },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {ClusterFourId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
                             {
-                                "UpstreamHttpMethodSpec"
+                                {$"{ClusterFourId}/destination1", new FileDestination
+                                    {
+                                        Address = $"http://HostSpec:80",
+                                    }
+                                },
                             },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "HostSpec",
-                                    Port = 80
-                                }
-                            }
                         }
-                    }
+                    },
+                },
             };
 
             string globalFilename = Path.Combine(folder, "ocelot.global.json");
@@ -289,10 +321,6 @@
             fc.Routes.ShouldContain(x => x.DownstreamPathTemplate == _routeB.Routes[0].DownstreamPathTemplate);
             fc.Routes.ShouldContain(x => x.DownstreamPathTemplate == _routeB.Routes[1].DownstreamPathTemplate);
 
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeA.Routes[0].DownstreamScheme);
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[0].DownstreamScheme);
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[1].DownstreamScheme);
-
             fc.Routes.ShouldContain(x => x.RouteId == _routeA.Routes[0].RouteId);
             fc.Routes.ShouldContain(x => x.RouteId == _routeB.Routes[0].RouteId);
             fc.Routes.ShouldContain(x => x.RouteId == _routeB.Routes[1].RouteId);
@@ -307,7 +335,7 @@
         private void NotContainsEnvSpecificConfig()
         {
             var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
-            fc.Routes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.Routes[0].DownstreamScheme);
+
             fc.Routes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.Routes[0].DownstreamPathTemplate);
             fc.Routes.ShouldNotContain(x => x.RouteId == _envSpecific.Routes[0].RouteId);
         }
