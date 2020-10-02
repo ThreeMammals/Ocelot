@@ -64,7 +64,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
             Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
             Services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
-            Services.TryAddSingleton<ClusterValidator>();
             Services.TryAddSingleton<IRoutesCreator, RoutesCreator>();
             Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
             Services.TryAddSingleton<IRouteKeyCreator, RouteKeyCreator>();
@@ -74,6 +73,8 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<RouteFluentValidator>();
             Services.TryAddSingleton<FileGlobalConfigurationFluentValidator>();
             Services.TryAddSingleton<FileQoSOptionsFluentValidator>();
+            Services.TryAddSingleton<ClusterValidator>();
+            Services.TryAddSingleton<DestinationValidator>();
             Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();

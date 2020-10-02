@@ -28,7 +28,7 @@
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
             _serviceProvider = new Mock<IServiceProvider>();
             // Todo - replace with mocks
-            _validator = new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+            _validator = new RouteFluentValidator(_authProvider.Object, new FileQoSOptionsFluentValidator(_serviceProvider.Object));
         }
 
         [Fact]
@@ -44,11 +44,43 @@
         }
 
         [Fact]
+        public void should_not_be_valid_when_no_cluster_id()
+        {
+            var fileRoute = new FileRoute
+            {
+                DownstreamPathTemplate = "/test",
+                UpstreamPathTemplate = "/test",
+            };
+
+            this.Given(_ => GivenThe(fileRoute))
+                .When(_ => WhenIValidate())
+                .Then(_ => ThenTheResultIsInvalid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_be_valid_when_no_cluster_id_and_using_service_discovery()
+        {
+            var fileRoute = new FileRoute
+            {
+                DownstreamPathTemplate = "/test",
+                UpstreamPathTemplate = "/test",
+                ServiceName = "boss",
+            };
+
+            this.Given(_ => GivenThe(fileRoute))
+                .When(_ => WhenIValidate())
+                .Then(_ => ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
         public void upstream_path_template_should_not_be_empty()
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                ClusterId = "DaveO",
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -63,7 +95,8 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                ClusterId = "DaveO",
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -78,7 +111,8 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "//test"
+                ClusterId = "DaveO",
+                DownstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -97,7 +131,8 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = downstreamPathTemplate
+                ClusterId = "DaveO",
+                DownstreamPathTemplate = downstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -112,8 +147,9 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "test"
+                UpstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -128,8 +164,9 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "//test"
+                UpstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -148,8 +185,9 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = upstreamPathTemplate
+                UpstreamPathTemplate = upstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -164,12 +202,13 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    EnableRateLimiting = true
-                }
+                    EnableRateLimiting = true,
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -184,13 +223,14 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
                 RateLimitOptions = new FileRateLimitRule
                 {
                     EnableRateLimiting = true,
-                    Period = "test"
-                }
+                    Period = "test",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -205,12 +245,13 @@
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "JwtLads"
-                }
+                    AuthenticationProviderKey = "JwtLads",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -220,27 +261,30 @@
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_not_be_valid_if_not_using_service_discovery_and_no_host_and_ports()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-            };
+        //TODO: Make sure this test deffo isnt needed. It should not be because it will fail as no 
+        //ClusterID and we are not saying use a ServiceName in the Route.
+        //[Fact]
+        //public void should_not_be_valid_if_not_using_service_discovery_and_no_host_and_ports()
+        //{
+        //    var fileRoute = new FileRoute
+        //    {
+        //        DownstreamPathTemplate = "/test",
+        //        UpstreamPathTemplate = "/test",
+        //    };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
-                .BDDfy();
-        }
+        //    this.Given(_ => GivenThe(fileRoute))
+        //        .When(_ => WhenIValidate())
+        //        .Then(_ => ThenTheResultIsInvalid())
+        //        .And(_ => ThenTheErrorsContains("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
+        //        .BDDfy();
+        //}
 
         [Fact]
         public void should_be_valid_if_using_service_discovery_and_no_host_and_ports()
         {
             var fileRoute = new FileRoute
             {
+                ClusterId = "DaveO",
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
                 ServiceName = "Lads",
@@ -324,7 +368,6 @@
         [InlineData("1,0a")]
         [InlineData("a1,1")]
         [InlineData("12,0")]
-        [InlineData("asdf")]
         [InlineData("asdf")]
         public void should_be_invalid_re_route_using_downstream_http_version(string version)
         {

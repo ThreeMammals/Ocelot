@@ -16,11 +16,11 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         public ClusterValidatorTests()
         {
-            _validator = new ClusterValidator();
+            _validator = new ClusterValidator(new DestinationValidator());
         }
 
         [Fact]
-        public void should_be_valid_because_destinations_empty()
+        public void should_not_be_valid_because_destinations_empty()
         {
             var cluster = new FileCluster
             {
@@ -28,48 +28,19 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
             this.Given(_ => GivenThe(cluster))
                 .When(_ => WhenIValidate())
-                .Then(_ => ThenTheErorrIs())
+                .Then(_ => ThenTheResultIsInValid())
+                .And(_ => ThenTheErorrIs())
                 .BDDfy();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void should_be_invalid_because_destinations_empty(string host)
-        {
-            var cluster = new FileCluster
-            {
-                Destinations = new Dictionary<string, FileDestination>
-                {
-                    {
-                        $"cluster1/destination1", new FileDestination
-                            {
-                                Address = host,
-                            }
-                    },
-                },
-            };
-
-            this.Given(_ => GivenThe(cluster))
-               .When(_ => WhenIValidate())
-               .Then(_ => ThenTheResultIsInValid())
-               .And(_ => ThenTheErorrIs())
-               .BDDfy();
-        }
-
         [Fact]
-        public void should_be_valid_because_destinations_set()
+        public void should_be_valid_because_destinations_are_not_empty()
         {
             var cluster = new FileCluster
             {
                 Destinations = new Dictionary<string, FileDestination>
                 {
-                    {
-                        $"cluster1/destination1", new FileDestination
-                            {
-                                Address = $"http://localhost:80",
-                            }
-                    },      
+                    {"doesntmatter", new FileDestination { Address = "http://api.dude.com:80"} },
                 },
             };
 

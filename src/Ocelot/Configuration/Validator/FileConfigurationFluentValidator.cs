@@ -16,7 +16,7 @@
     {
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
-        public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
+        public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator, ClusterValidator clusterValidator)
         {
             _serviceDiscoveryFinderDelegates = provider
                 .GetServices<ServiceDiscoveryFinderDelegate>()
@@ -24,6 +24,9 @@
 
             RuleForEach(configuration => configuration.Routes)
                 .SetValidator(routeFluentValidator);
+
+            RuleForEach(configuration => configuration.Clusters.Values)
+                .SetValidator(clusterValidator);
 
             RuleFor(configuration => configuration.GlobalConfiguration)
                 .SetValidator(fileGlobalConfigurationFluentValidator);

@@ -1,19 +1,18 @@
-﻿namespace Ocelot.Configuration.Validator
-{
-    using Ocelot.Configuration.File;
-    using FluentValidation;
-    using Microsoft.AspNetCore.Authentication;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
+﻿using Ocelot.Configuration.File;
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
+namespace Ocelot.Configuration.Validator
+{
     public class RouteFluentValidator : AbstractValidator<FileRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        //TODO: What is the cluster validator for?
-        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, ClusterValidator clusterValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
+        public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
             _authenticationSchemeProvider = authenticationSchemeProvider;
 
@@ -23,6 +22,13 @@
             RuleFor(route => route.DownstreamPathTemplate)
                 .NotEmpty()
                 .WithMessage("{PropertyName} cannot be empty");
+
+            When(route => string.IsNullOrEmpty(route.ServiceName), () =>
+            {
+                RuleFor(route => route.ClusterId)
+                    .NotEmpty()
+                    .WithMessage("{PropertyName} cannot be empty");
+            });
 
             RuleFor(route => route.UpstreamPathTemplate)
                 .NotEmpty()

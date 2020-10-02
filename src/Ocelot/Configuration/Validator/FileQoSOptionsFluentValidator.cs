@@ -1,11 +1,11 @@
+using Ocelot.Configuration.File;
+using Ocelot.Requester;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+
 namespace Ocelot.Configuration.Validator
 {
-    using File;
-    using FluentValidation;
-    using Microsoft.Extensions.DependencyInjection;
-    using Requester;
-    using System;
-
     public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
     {
         private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;

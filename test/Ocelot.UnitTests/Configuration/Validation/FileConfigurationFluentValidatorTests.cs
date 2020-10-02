@@ -36,7 +36,7 @@
             var provider = new ServiceCollection()
                 .BuildServiceProvider();
             // Todo - replace with mocks
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)), new ClusterValidator(new DestinationValidator()));
         }
 
         [Fact]
@@ -847,12 +847,14 @@
         [Fact]
         public void configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
+            //TODO: This test is in the wrong place should be RouteValidationTests
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
                     new FileRoute
-                    {
+                    { 
+                        ClusterId = "Dave",
                         DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
                         UpstreamPathTemplate = "http://asdf.com",
                     },
@@ -915,6 +917,7 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "api/products/",
                         UpstreamPathTemplate = "/asdf/",
                     },
@@ -935,6 +938,7 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "api/prod/",
                     },
@@ -1067,12 +1071,28 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test",
                         },
+                    },
+                },
+                Clusters = new Dictionary<string, FileCluster>
+                {
+                    {_clusterOneId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
+                                {$"{_clusterOneId}/destination1", new FileDestination
+                                    {
+                                        Address = "http://bbc.co.uk:80",
+                                    }
+                                },
+                            },
+                        }
                     },
                 },
             }))
@@ -1528,7 +1548,7 @@
                             {
                                 {$"{_clusterOneId}/destination1", new FileDestination
                                     {
-                                        Address = $"http://{downstreamHost}",
+                                        Address = downstreamHost,
                                     }
                                 },
                             },
@@ -1538,7 +1558,7 @@
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Address cannot be empty"))
                 .BDDfy();
         }
 
@@ -1587,6 +1607,7 @@
                 {
                     new FileRoute
                     {
+                        ClusterId = _clusterOneId,
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
@@ -1641,7 +1662,7 @@
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Cluster.Destinations must be set or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
@@ -1677,7 +1698,7 @@
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Address cannot be empty"))
                 .BDDfy();
         }
 
@@ -1752,7 +1773,7 @@
         {
             _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(new List<AuthenticationScheme>
             {
-                new AuthenticationScheme(name, name, typeof(TestHandler))
+                new AuthenticationScheme(name, name, typeof(TestHandler)),
             });
         }
 
@@ -1762,7 +1783,7 @@
             QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
             collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)), new ClusterValidator(new DestinationValidator()));
         }
 
         private void GivenAServiceDiscoveryHandler()
@@ -1771,7 +1792,7 @@
             ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
             collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
             var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new ClusterValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)), new ClusterValidator(new DestinationValidator()));
         }
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
