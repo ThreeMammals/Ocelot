@@ -8,6 +8,11 @@ namespace Ocelot.Configuration.Validator
     public class RouteFluentValidator : AbstractValidator<FileRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
+        private static readonly Regex _secondsRegEx = new Regex("^[0-9]+s", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        private static readonly Regex _minutesRegEx = new Regex("^[0-9]+m", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        private static readonly Regex _hoursRegEx = new Regex("^[0-9]+h", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        private static readonly Regex _daysRegEx = new Regex("^[0-9]+d", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        //
 
         public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {
@@ -116,15 +121,10 @@ namespace Ocelot.Configuration.Validator
 
             var period = rateLimitOptions.Period.Trim();
 
-            var secondsRegEx = new Regex("^[0-9]+s");
-            var minutesRegEx = new Regex("^[0-9]+m");
-            var hoursRegEx = new Regex("^[0-9]+h");
-            var daysRegEx = new Regex("^[0-9]+d");
-
-            return secondsRegEx.Match(period).Success
-                || minutesRegEx.Match(period).Success
-                || hoursRegEx.Match(period).Success
-                || daysRegEx.Match(period).Success;
+            return _secondsRegEx.Match(period).Success
+                   || _minutesRegEx.Match(period).Success
+                   || _hoursRegEx.Match(period).Success
+                   || _daysRegEx.Match(period).Success;
         }
     }
 }

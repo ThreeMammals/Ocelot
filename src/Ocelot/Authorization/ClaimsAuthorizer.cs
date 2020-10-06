@@ -8,6 +8,7 @@ namespace Ocelot.Authorization
     public class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
+        private readonly Regex _regexAuthorize = new Regex(@"^{(?<variable>.+)}$", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
 
         public ClaimsAuthorizer(IClaimsParser claimsParser)
         {
@@ -32,7 +33,7 @@ namespace Ocelot.Authorization
                 if (values.Data != null)
                 {
                     // dynamic claim
-                    var match = Regex.Match(required.Value, @"^{(?<variable>.+)}$");
+                    var match = _regexAuthorize.Match(required.Value);
                     if (match.Success)
                     {
                         var variableName = match.Captures[0].Value;

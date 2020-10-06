@@ -6,6 +6,8 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
+using System;
 using System.Web;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
@@ -125,7 +127,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
-                var rgx = new Regex($@"\b{name}={value}\b");
+                var rgx = new Regex($@"\b{name}={value}\b", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
 
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {

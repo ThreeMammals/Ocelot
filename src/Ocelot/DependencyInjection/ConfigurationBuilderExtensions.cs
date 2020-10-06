@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 
+
+using Newtonsoft.Json;
+
+
+using Newtonsoft.Json;
+
 namespace Ocelot.DependencyInjection
-{
-    /// <summary>
-    /// Defines extension-methods for the <see cref="IConfigurationBuilder"/> interface.
-    /// </summary>
-    public static partial class ConfigurationBuilderExtensions
-    {
         public const string PrimaryConfigFile = "ocelot.json";
         public const string GlobalConfigFile = "ocelot.global.json";
         public const string EnvironmentConfigFile = "ocelot.{0}.json";
@@ -23,9 +23,14 @@ namespace Ocelot.DependencyInjection
         private static Regex SubConfigRegex() => SubConfigRegexVar;
 #endif
 
+{
+    /// <summary>
+    /// Defines extension-methods for the <see cref="IConfigurationBuilder"/> interface.
+    {
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
+            Regex.CacheSize += 100;
             var memorySource = new MemoryConfigurationSource
             {
                 InitialData = new List<KeyValuePair<string, string>>
@@ -48,13 +53,13 @@ namespace Ocelot.DependencyInjection
 
         /// <summary>
         /// Adds Ocelot configuration by environment, reading the required files from the specified folder.
-        /// </summary>
-        /// <param name="builder">Configuration builder to extend.</param>
-        /// <param name="folder">Folder to read files from.</param>
-        /// <param name="env">Web hosting environment object.</param>
-        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
             => builder.AddOcelot(folder, env, MergeOcelotJson.ToFile);
+        /// <param name="folder">Folder to read files from.</param>
+        {
+            const string primaryConfigFile = "ocelot.json";
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
+        {
+            const string primaryConfigFile = "ocelot.json";
 
         /// <summary>
         /// Adds Ocelot configuration by environment and merge option, reading the required files from the current default folder.
@@ -67,12 +72,6 @@ namespace Ocelot.DependencyInjection
         /// <param name="globalConfigFile">Global config file.</param>
         /// <param name="environmentConfigFile">Environment config file.</param>
         /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
-        /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
-        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env, MergeOcelotJson mergeTo,
-            string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
-            => builder.AddOcelot(".", env, mergeTo, primaryConfigFile, globalConfigFile, environmentConfigFile, optional, reloadOnChange);
-
         /// <summary>
         /// Adds Ocelot configuration by environment and merge option, reading the required files from the specified folder.
         /// </summary>
@@ -94,7 +93,7 @@ namespace Ocelot.DependencyInjection
             primaryConfigFile ??= Path.Join(folder, PrimaryConfigFile); // if not specified, merge & write back to the same folder
             return ApplyMergeOcelotJsonOption(builder, mergeTo, json, primaryConfigFile, optional, reloadOnChange);
         }
-
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
             string primaryConfigFile, bool? optional, bool? reloadOnChange)
         {
@@ -106,15 +105,22 @@ namespace Ocelot.DependencyInjection
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
+            Regex.CacheSize += 100;
             var envName = string.IsNullOrEmpty(env?.EnvironmentName) ? "Development" : env.EnvironmentName;
             environmentFile ??= Path.Join(folder, string.Format(EnvironmentConfigFile, envName));
             var reg = SubConfigRegex();
             var environmentFileInfo = new FileInfo(environmentFile);
-            var files = new DirectoryInfo(folder)
-                .EnumerateFiles()
+
+            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 .Where(fi => reg.IsMatch(fi.Name) &&
                     !fi.Name.Equals(environmentFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
                     !fi.FullName.Equals(environmentFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+
+            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
+            var files = new DirectoryInfo(folder)
+                .EnumerateFiles()
+                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
                 .ToArray();
 
             fileConfiguration ??= new FileConfiguration();

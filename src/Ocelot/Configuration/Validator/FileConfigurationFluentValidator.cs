@@ -15,6 +15,9 @@ namespace Ocelot.Configuration.Validator
         private const string Servicefabric = "servicefabric";
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
+        private static readonly Regex _regExPlaceholder =
+            new Regex("{[^}]+}", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+
         public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
         {
             _serviceDiscoveryFinderDelegates = provider
