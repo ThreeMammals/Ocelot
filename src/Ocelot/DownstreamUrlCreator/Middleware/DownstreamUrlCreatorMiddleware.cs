@@ -16,6 +16,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
+        private static ConcurrentDictionary<string, Regex> _regex = new ConcurrentDictionary<string, Regex>();
 
         private const char Ampersand = '&';
         private const char QuestionMark = '?';
@@ -127,8 +128,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
-                var rgx = new Regex($@"\b{name}={value}\b", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
-
+                var pattern = $@"\b{name}={value}\b";
+                var rgx = _regex.AddOrUpdate(pattern,
+                    new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(100)),
+                    (key, oldValue) => oldValue);
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {
                     var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);                    
@@ -165,7 +168,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
         {
-            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
+            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" &&
+                   downstreamRoute.UseServiceDiscovery;
         }
     }
 }
