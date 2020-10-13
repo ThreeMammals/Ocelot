@@ -185,7 +185,7 @@ namespace Ocelot.UnitTests.Configuration
             _rCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_region);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
-            _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
+            _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
         }
@@ -274,7 +274,7 @@ namespace Ocelot.UnitTests.Configuration
             _rCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
+            _daCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
             _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
             _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions), Times.Once);
         }
