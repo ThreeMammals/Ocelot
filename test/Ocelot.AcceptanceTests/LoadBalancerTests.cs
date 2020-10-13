@@ -57,7 +57,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -104,7 +104,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -151,7 +151,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(CustomLoadBalancer) },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

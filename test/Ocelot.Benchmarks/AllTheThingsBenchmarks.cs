@@ -48,7 +48,7 @@ namespace Ocelot.Benchmarks
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

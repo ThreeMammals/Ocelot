@@ -258,7 +258,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                 {
                     new()
                     {
@@ -287,7 +287,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 {
                     AuthenticationProviderKey = key,
                 },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                 {
                     new()
                     {
@@ -321,7 +321,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                 {
                     new()
                     {
@@ -351,7 +351,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                 {
                     new()
                     {

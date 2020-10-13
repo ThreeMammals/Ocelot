@@ -50,7 +50,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -69,7 +69,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -122,7 +122,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

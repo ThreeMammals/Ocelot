@@ -54,7 +54,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -144,7 +144,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/41879/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -189,7 +189,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -234,7 +234,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -279,7 +279,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -328,7 +328,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/west",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

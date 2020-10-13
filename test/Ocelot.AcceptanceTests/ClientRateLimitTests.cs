@@ -36,7 +36,7 @@ namespace Ocelot.AcceptanceTests
                     new()
                     {
                         DownstreamPathTemplate = "/api/ClientRateLimit",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -96,7 +96,7 @@ namespace Ocelot.AcceptanceTests
                     new()
                     {
                         DownstreamPathTemplate = "/api/ClientRateLimit",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -163,7 +163,7 @@ namespace Ocelot.AcceptanceTests
                     new()
                     {
                         DownstreamPathTemplate = "/api/ClientRateLimit",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {

@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -87,7 +87,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {

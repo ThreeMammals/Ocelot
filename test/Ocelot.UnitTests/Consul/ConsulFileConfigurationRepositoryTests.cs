@@ -230,7 +230,7 @@ namespace Ocelot.UnitTests.Consul
             {
                 new()
                 {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                     {
                         new()
                         {

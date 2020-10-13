@@ -38,7 +38,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -76,7 +76,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -114,7 +114,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -152,7 +152,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -189,7 +189,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -226,7 +226,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {

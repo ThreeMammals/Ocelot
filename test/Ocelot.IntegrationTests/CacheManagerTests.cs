@@ -60,7 +60,7 @@ namespace Ocelot.IntegrationTests
                 {
                     new()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -79,7 +79,7 @@ namespace Ocelot.IntegrationTests
                     },
                     new()
                     {
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {

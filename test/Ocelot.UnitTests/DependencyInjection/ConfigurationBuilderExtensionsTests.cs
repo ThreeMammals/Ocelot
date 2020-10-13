@@ -129,7 +129,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                         {
                             "UpstreamHttpMethod",
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -155,7 +155,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                         {
                             "UpstreamHttpMethodB",
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -174,7 +174,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                         {
                             "UpstreamHttpMethodBB",
                         },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -225,7 +225,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                             {
                                 "UpstreamHttpMethodSpec",
                             },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

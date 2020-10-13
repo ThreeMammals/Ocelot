@@ -35,7 +35,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -70,7 +70,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -106,7 +106,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -142,7 +142,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -178,7 +178,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -214,7 +214,7 @@ namespace Ocelot.AcceptanceTests
                         new()
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {

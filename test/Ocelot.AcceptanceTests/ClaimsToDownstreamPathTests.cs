@@ -64,7 +64,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = "/users/{userId}",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {

@@ -61,7 +61,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {
@@ -102,7 +102,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {
@@ -145,7 +145,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {
@@ -187,7 +187,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {
@@ -230,7 +230,7 @@ namespace Ocelot.AcceptanceTests
                        new()
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                            {
                                new()
                                {

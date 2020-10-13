@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -78,7 +78,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/{url}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                             {
                                 new()
                                 {
@@ -115,7 +115,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -157,7 +157,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "https",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {
@@ -199,7 +199,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/{url}",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamHostAndPorts = new List<FileDownstreamHostConfig>
                         {
                             new()
                             {

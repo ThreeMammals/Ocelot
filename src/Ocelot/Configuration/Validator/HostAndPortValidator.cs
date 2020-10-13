@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Ocelot.Configuration.Validator
 {
-    public class HostAndPortValidator : AbstractValidator<FileHostAndPort>
+    public class HostAndPortValidator : AbstractValidator<FileDownstreamHostConfig>
     {
         public HostAndPortValidator()
         {
