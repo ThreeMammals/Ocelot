@@ -102,17 +102,20 @@ namespace Ocelot.Configuration.Creator
 
             var hAndRs = _headerFAndRCreator.Create(fileRoute);
 
-            var cluster = clusters[fileRoute.ClusterId];
-
-            //TODO: extract this and test
-            var downstreamScheme = cluster.Destinations.Select(d =>
+            if (!string.IsNullOrWhiteSpace(fileRoute.ServiceName))
             {
-                var uri = new Uri(d.Value.Address);
+                var cluster = clusters[fileRoute.ClusterId];
 
-                return uri.Scheme;
-            }).First();
+                //TODO: extract this and test
+                var downstreamScheme = cluster.Destinations.Select(d =>
+                {
+                    var uri = new Uri(d.Value.Address);
 
-            var downstreamAddresses = _downstreamAddressesCreator.Create(cluster);
+                    return uri.Scheme;
+                }).First();
+
+                var downstreamAddresses = _downstreamAddressesCreator.Create(cluster);
+            }
 
             var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
 

@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 {$"{_steps.ClusterTwoId}/destination1", new FileDestination
                                     {
-                                        Address = $"http://localhost:{port2}",
+                                        Address = $"http://DONTMATCH:{port2}",
                                     }
                                 },
                             },
@@ -141,7 +141,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     new FileRoute
                     {
-                        ClusterId = _steps.ClusterTwoId,
+                        ClusterId = _steps.ClusterOneId,
                         DownstreamPathTemplate = "/",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -149,7 +149,7 @@ namespace Ocelot.AcceptanceTests
                     },
                     new FileRoute
                     {
-                        ClusterId = _steps.ClusterOneId,
+                        ClusterId = _steps.ClusterTwoId,
                         DownstreamPathTemplate = "/",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -164,7 +164,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 {$"{_steps.ClusterOneId}/destination1", new FileDestination
                                     {
-                                        Address = $"http://localhost:{port1}",
+                                        Address = $"http://DONTMATCH:{port1}",
                                     }
                                 },
                             },

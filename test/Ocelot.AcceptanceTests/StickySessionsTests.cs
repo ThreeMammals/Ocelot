@@ -107,7 +107,7 @@ namespace Ocelot.AcceptanceTests
                     },
                     new FileRoute
                     {
-                        ClusterId = _steps.ClusterOneId,
+                        ClusterId = _steps.ClusterTwoId,
                         DownstreamPathTemplate = "/",
                         UpstreamPathTemplate = "/test",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -130,6 +130,13 @@ namespace Ocelot.AcceptanceTests
                                         Address = $"http://localhost:{downstreamPortOne}",
                                     }
                                 },
+                            },
+                        }
+                    },
+                    {_steps.ClusterTwoId, new FileCluster
+                        {
+                            Destinations = new Dictionary<string, FileDestination>
+                            {
                                 {$"{_steps.ClusterOneId}/destination2", new FileDestination
                                     {
                                         Address = $"http://localhost:{downstreamPortTwo}",
@@ -139,6 +146,7 @@ namespace Ocelot.AcceptanceTests
                         }
                     },
                 },
+
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
