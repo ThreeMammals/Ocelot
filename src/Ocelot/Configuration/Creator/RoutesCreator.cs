@@ -139,7 +139,7 @@ namespace Ocelot.Configuration.Creator
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileRouteOptions.IsCached)
                 .WithCacheOptions(new CacheOptions(fileRoute.FileCacheOptions.TtlSeconds, region))
-                .WithDownstreamScheme(downstreamScheme)
+                .WithDownstreamScheme(downstreamAddresses)
                 .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)
                 .WithLoadBalancerKey(routeKey)
