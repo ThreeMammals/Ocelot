@@ -184,6 +184,7 @@ namespace Ocelot.Multiplexer
             target.Request.RouteValues = source.Request.RouteValues;
             target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
             target.RequestServices = source.RequestServices;
+            target.RequestAborted = source.RequestAborted;
             return target;
         }
 
