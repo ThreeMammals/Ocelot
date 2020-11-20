@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.AcceptanceTests</PackageId>

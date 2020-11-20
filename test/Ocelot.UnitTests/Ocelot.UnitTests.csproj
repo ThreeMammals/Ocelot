@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Ocelot.UnitTests</AssemblyName>
     <PackageId>Ocelot.UnitTests</PackageId>
     <OutputType>Exe</OutputType>
