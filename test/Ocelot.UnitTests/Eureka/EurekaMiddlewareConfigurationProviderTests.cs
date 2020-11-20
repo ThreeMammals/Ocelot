@@ -25,7 +25,7 @@
             services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.ShouldBeOfType<Task>();
+            provider.GetType().BaseType.ShouldBeOfType<Task>();
         }
 
         [Fact]
@@ -41,7 +41,7 @@
             services.AddSingleton<IDiscoveryClient>(client.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.ShouldBeOfType<Task>();
+            provider.GetType().BaseType.ShouldBeOfType<Task>();
         }
     }
 }
