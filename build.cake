@@ -4,8 +4,8 @@
 #addin nuget:?package=System.Net.Http
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=0.7.0"
-#addin Cake.Coveralls&version=0.10.1
+#tool "nuget:?package=coveralls.net&version=2.0.0"
+#addin Cake.Coveralls&version=0.10.2
 
 // compile
 var compileConfig = Argument("configuration", "Release");
