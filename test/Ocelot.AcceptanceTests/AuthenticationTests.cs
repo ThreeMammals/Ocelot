@@ -62,17 +62,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                                AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                                AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -103,17 +103,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -146,17 +146,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -188,17 +188,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -231,7 +231,7 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
@@ -239,9 +239,9 @@ namespace Ocelot.AcceptanceTests
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
                                AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
@@ -291,19 +291,19 @@ namespace Ocelot.AcceptanceTests
                                     new Scope("api"),
                                     new Scope("api.readOnly"),
                                     new Scope("openid"),
-                                    new Scope("offline_access")
+                                    new Scope("offline_access"),
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId"
-                                }
+                                    "CustomerId", "LocationId",
+                                },
                             },
                             new ApiResource
                             {
@@ -320,13 +320,13 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId"
-                                }
+                                    "CustomerId", "LocationId",
+                                },
                             },
                         })
                         .AddInMemoryClients(new List<Client>
@@ -339,8 +339,8 @@ namespace Ocelot.AcceptanceTests
                                 AllowedScopes = new List<string> { apiName, api2Name, "api.readOnly", "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {
@@ -352,9 +352,9 @@ namespace Ocelot.AcceptanceTests
                                 Claims = new List<Claim>
                                 {
                                    new Claim("CustomerId", "123"),
-                                   new Claim("LocationId", "321")
-                                }
-                            }
+                                   new Claim("LocationId", "321"),
+                                },
+                            },
                         });
                 })
                 .Configure(app =>
