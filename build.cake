@@ -2,7 +2,7 @@
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Net.Http
-#addin nuget:?package=System.Text.Encodings.Web
+#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
