@@ -1,7 +1,7 @@
 NAME ?= ocelot
 
 build:
-	./build.sh
+	mono --version
 
 build_and_run_tests:
 	./build.sh --target=RunTests

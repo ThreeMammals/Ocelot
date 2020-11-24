@@ -1,2 +1,3 @@
-dotnet tool install Cake.Tool --version 0.38.5
-dotnet cake
+# dotnet tool restore --tool-manifest ./.config/dotnet-tools.json
+# echo "tool installed?"
+# dotnet cake
