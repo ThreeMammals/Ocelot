@@ -1,11 +1,42 @@
 # this is the dockerfile that create the ocelot build container
 # build with the docker-build.sh file in this folder
-FROM mcr.microsoft.com/dotnet/sdk:5.0-focal AS build
+FROM amd64/buildpack-deps:focal-curl AS build
 
+# update to we can install wget
 RUN apt update
-RUN apt install -y dirmngr gnupg apt-transport-https ca-certificates software-properties-common
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN apt-add-repository 'deb https://download.mono-project.com/repo/ubuntu stable-focal main'
-RUN apt install -y mono-complete
-RUN apt install -y make
-RUN apt install -y build-essential
+
+# this need to be installed like this so it doesnt block the UI
+RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
+
+# bunch of random things .NET and mono need
+RUN apt install -y wget apt-transport-https git make dirmngr gnupg apt-transport-https ca-certificates software-properties-common build-essential
+
+# install mono
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && apt-add-repository 'deb https://download.mono-project.com/repo/ubuntu stable-focal main' && apt install -y mono-complete
+
+# .NET Core dependencies
+# RUN apt-get update \
+#     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+#         ca-certificates \
+#         \
+#         # .NET Core dependencies
+#         libc6 \
+#         libgcc1 \
+#         libgssapi-krb5-2 \
+#         libicu66 \
+#         libssl1.1 \
+#         libstdc++6 \
+#         zlib1g
+
+# Versions of .NET we need
+RUN wget https://packages.microsoft.com/config/ubuntu/20.10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb
+RUN apt-get update && apt-get install -y  \
+    dotnet-sdk-5.0 \
+    dotnet-sdk-3.1
+
+RUN dotnet tool install --global GitVersion.Tool --version 5.5.1    
+
+ENV PATH="/root/.dotnet/tools:${PATH}"
+
+# RUN dotnet gitversion
