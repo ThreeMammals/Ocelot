@@ -1,7 +1,7 @@
 NAME ?= ocelot
 
 build:
-	mono --version
+	dotnet tool restore --tool-manifest ./.config/dotnet-tools.json && dotnet cake --verbosity=diagnostic
 
 build_and_run_tests:
 	./build.sh --target=RunTests
