@@ -6,10 +6,10 @@
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Repository;
-    using Provider.Eureka;
-    using Responses;
+    using Ocelot.Provider.Eureka;
+    using Ocelot.Responses;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
+    using Steeltoe.Discovery;
     using System.Threading.Tasks;
     using Xunit;
 

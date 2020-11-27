@@ -96,8 +96,13 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("UserId: 1231231"))
-                .And(x => _downstreamFinalPath.ShouldBe("/users/1231231"))
+                .And(x => ThenTheDownstreamPathIs("/users/1231231"))
                 .BDDfy();
+        }
+
+        private void ThenTheDownstreamPathIs(string path)
+        {
+            _downstreamFinalPath.ShouldBe(path);
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)

@@ -172,8 +172,13 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
-                .And(_ => _downstreamQueryString.ShouldBe("?test=1&test=2&CustomerId=123&LocationId=1&UserId=1231231&UserType=registered"))
+                .And(_ => ThenTheQueryStringIs("?test=1&test=2&CustomerId=123&LocationId=1&UserId=1231231&UserType=registered"))
                 .BDDfy();
+        }
+
+        private void ThenTheQueryStringIs(string queryString)
+        {
+            _downstreamQueryString.ShouldBe(queryString);
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
