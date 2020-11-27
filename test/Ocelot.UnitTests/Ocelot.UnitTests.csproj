@@ -75,7 +75,7 @@
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4" Version="3.1.1" />
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="2.4.2" />
-    <PackageReference Include="Consul" Version="0.7.2.6" />
+    <PackageReference Include="Consul" Version="1.6.1.1" />
     <PackageReference Include="CacheManager.Core" Version="2.0.0-beta-1629" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="2.0.0-beta-1629" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />

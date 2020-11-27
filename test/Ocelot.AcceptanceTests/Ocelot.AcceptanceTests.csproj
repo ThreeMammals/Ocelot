@@ -65,7 +65,7 @@
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4" Version="3.1.1" />
-    <PackageReference Include="Consul" Version="0.7.2.6" />
+    <PackageReference Include="Consul" Version="1.6.1.1" />
     <PackageReference Include="Rafty" Version="0.4.4" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
     <PackageReference Include="CacheManager.Serialization.Json" Version="2.0.0-beta-1629" />

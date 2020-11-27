@@ -12,6 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ocelot" Version="14.0.9" />
-    <PackageReference Include="GraphQL" Version="2.4.0" />
+    <PackageReference Include="GraphQL" Version="3.1.5" />
   </ItemGroup>
 </Project>
