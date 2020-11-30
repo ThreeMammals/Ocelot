@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.0.1" />
+    <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.0.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
