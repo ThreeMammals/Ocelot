@@ -25,7 +25,7 @@ In order for a PR to be merged the following must have occured.
 
 5. After the PR is merged to develop the Ocelot NuGet packages will not be updated until a release is created.
 
-6. When enough work has been completed to justify a new release develop will be merged into master the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
+6. When enough work has been completed to justify a new release. Develop will be merged into master the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
 
 7. The final step is to go back to GitHub and close any issues that are now fixed. You should see something like this in`GitHub <https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0>`_ and this in `NuGet <https://www.nuget.org/packages/Ocelot/13.0.0>`_.
 
