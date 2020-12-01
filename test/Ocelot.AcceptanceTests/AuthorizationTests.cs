@@ -16,7 +16,7 @@ namespace Ocelot.AcceptanceTests
     using TestStack.BDDfy;
     using Xunit;
 
-    public class AuthorisationTests : IDisposable
+    public class AuthorizationTests : IDisposable
     {
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
@@ -24,7 +24,7 @@ namespace Ocelot.AcceptanceTests
         private string _identityServerRootUrl;
         private readonly ServiceHandler _serviceHandler;
 
-        public AuthorisationTests()
+        public AuthorizationTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
@@ -41,7 +41,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_authorising_route()
+        public void should_return_response_200_authorizing_route()
         {
             int port = RandomPortFinder.GetRandomPort();
 
@@ -101,7 +101,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_403_authorising_route()
+        public void should_return_response_403_authorizing_route()
         {
             int port = RandomPortFinder.GetRandomPort();
 
