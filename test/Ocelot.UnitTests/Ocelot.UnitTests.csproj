@@ -72,7 +72,7 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageReference Include="IdentityServer4" Version="3.1.1" />
+    <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.0.1" />
     <PackageReference Include="Consul" Version="1.6.1.1" />
     <PackageReference Include="CacheManager.Core" Version="2.0.0-beta-1629" />

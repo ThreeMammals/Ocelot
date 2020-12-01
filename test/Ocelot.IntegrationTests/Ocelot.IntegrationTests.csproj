@@ -52,7 +52,7 @@
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="Microsoft.Data.SQLite" Version="5.0.0" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageReference Include="IdentityServer4" Version="3.1.1" />
+    <PackageReference Include="IdentityServer4" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />

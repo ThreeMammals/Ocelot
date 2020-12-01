@@ -97,16 +97,14 @@ In order to use IdentityServer bearer tokens, register your IdentityServer servi
     public void ConfigureServices(IServiceCollection services)
     {
         var authenticationProviderKey = "TestKey";
-        Action<IdentityServerAuthenticationOptions> options = o =>
+        Action<JwtBearerOptions> options = o =>
             {
                 o.Authority = "https://whereyouridentityserverlives.com";
-                o.ApiName = "api";
-                o.SupportedTokens = SupportedTokens.Both;
-                o.ApiSecret = "secret";
+                // etc
             };
 
         services.AddAuthentication()
-            .AddIdentityServerAuthentication(authenticationProviderKey, options);
+            .AddJwtBearer(authenticationProviderKey, options);
 
         services.AddOcelot();
     }

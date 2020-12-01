@@ -278,6 +278,11 @@ namespace Ocelot.AcceptanceTests
                     services.AddLogging();
                     services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope>
+                        {
+                            new ApiScope(apiName, "test"),
+                            new ApiScope(api2Name, "test"),
+                        })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource
@@ -286,12 +291,12 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("api.readOnly"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access"),
+                                    "api",
+                                    "api.readOnly",
+                                    "openid",
+                                    "offline_access",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
@@ -311,10 +316,10 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My second API",
                                 Enabled = true,
                                 DisplayName = "second test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api2"),
-                                    new Scope("api2.readOnly"),
+                                    "api2",
+                                    "api2.readOnly",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
