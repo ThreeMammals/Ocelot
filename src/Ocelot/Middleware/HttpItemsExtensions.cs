@@ -43,6 +43,12 @@ namespace Ocelot.Middleware
             input.Upsert("Errors", errors);
         }
 
+        public static void SetAuthChallenge(this IDictionary<object, object> input, string challengeString) =>
+            input.Upsert("AuthChallenge", challengeString);
+
+        public static string AuthChallenge(this IDictionary<object, object> input) =>
+            input.Get<string>("AuthChallenge");
+        
         public static void SetIInternalConfiguration(this IDictionary<object, object> input, IInternalConfiguration config)
         {
             input.Upsert("IInternalConfiguration", config);

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Runtime.Remoting.Contexts;
+using System.Threading.Tasks;
 
 namespace Ocelot.Authentication.Middleware
 {
@@ -36,6 +38,7 @@ namespace Ocelot.Authentication.Middleware
 
             if (result.Principal?.Identity == null)
             {
+                await ChallengeAsync(httpContext, downstreamRoute);
                 SetUnauthenticatedError(httpContext, path, null);
                 return;
             }
@@ -49,6 +52,7 @@ namespace Ocelot.Authentication.Middleware
                 return;
             }
 
+            await ChallengeAsync(httpContext, downstreamRoute);
             SetUnauthenticatedError(httpContext, path, httpContext.User.Identity.Name);
         }
 
@@ -57,6 +61,18 @@ namespace Ocelot.Authentication.Middleware
             var error = new UnauthenticatedError($"Request for authenticated route '{path}' {(string.IsNullOrEmpty(userName) ? "was unauthenticated" : $"by '{userName}' was unauthenticated!")}");
             Logger.LogWarning(() => $"Client has NOT been authenticated for path '{path}' and pipeline error set. {error};");
             httpContext.Items.SetError(error);
+        }
+
+        private async Task ChallengeAsync(HttpContext context, DownstreamRoute route)
+        {
+            // Perform a challenge. This populates the WWW-Authenticate header on the response
+            await context.ChallengeAsync(route.AuthenticationOptions.AuthenticationProviderKey);
+
+            // Since the response gets re-created down the pipeline, we store the challenge in the Items, so we can re-apply it when sending the response
+            if (context.Response.Headers.TryGetValue("WWW-Authenticate", out var authenticateHeader))
+            {
+                context.Items.SetAuthChallenge(authenticateHeader);
+            }
         }
 
         private async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)

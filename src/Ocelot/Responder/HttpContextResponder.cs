@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
 using Ocelot.Middleware;
+using System.Runtime.Remoting.Messaging;
 
 namespace Ocelot.Responder;
 
@@ -75,6 +76,11 @@ public class HttpContextResponder : IHttpResponder
             await using var content = await response.Content.ReadAsStreamAsync();
             await content.CopyToAsync(context.Response.Body, context.RequestAborted);
         }
+    }
+
+    public void SetAuthChallengeOnContext(HttpContext context, string challenge)
+    {
+        AddHeaderIfDoesntExist(context, new Header("WWW-Authenticate", new[] { challenge }));
     }
 
     private static void SetStatusCode(HttpContext context, int statusCode)

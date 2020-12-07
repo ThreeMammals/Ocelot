@@ -2,6 +2,8 @@ using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
+using System.Net.Http;
 
 namespace Ocelot.AcceptanceTests.Authentication
 {
@@ -110,6 +112,68 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .When(x => WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Feat", "1387")]
+        public void Should_return_www_authenticate_header_on_401()
+        {
+            var port = PortFinder.GetRandomPort();
+            var route = GivenDefaultAuthRoute(port);
+            var configuration = GivenConfiguration(route);
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithJwtAuth("Test"))
+                .And(x => GivenIHaveNoTokenForMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+                .And(x => ThenTheResponseShouldContainAuthChallenge())
+                .BDDfy();
+        }
+
+        public void GivenOcelotIsRunningWithJwtAuth(string authenticationProviderKey)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile("ocelot.json", false, false)
+                .AddEnvironmentVariables();
+
+            var configuration = builder.Build();
+            _webHostBuilder = new WebHostBuilder();
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseConfiguration(configuration)
+                .ConfigureServices(s =>
+                {
+                    s.AddAuthentication().AddJwtBearer(authenticationProviderKey, options =>
+                    {
+                    });
+                    s.AddOcelot(configuration);
+                })
+                .ConfigureLogging(l =>
+                {
+                    l.AddConsole();
+                    l.AddDebug();
+                })
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait();
+                }));
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+        public void GivenIHaveNoTokenForMyRequest()
+        {
+            _ocelotClient.DefaultRequestHeaders.Authorization = null;
+        }
+        public void ThenTheResponseShouldContainAuthChallenge()
+        {
+            _response.Headers.TryGetValues("WWW-Authenticate", out var headerValue).ShouldBeTrue();
+            headerValue.ShouldNotBeEmpty();
         }
 
         [IgnorePublicMethod]
