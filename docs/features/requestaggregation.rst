@@ -218,7 +218,7 @@ Gotchas
 -------
 
 * You cannot use Routes with specific **RequestIdKeys** as this would be crazy complicated to track.
-* Aggregation only supports the ``GET`` HTTP verb.
+* Aggregation supports the ``GET`` HTTP verb for pure REST, it supports other verbs for APIs which do not fully follow REST.
 * Aggregation allows for the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
   Form data and attached files should also be forwarded.
   It is essential to always specify the ``Content-Length`` header in requests to upstream; otherwise, Ocelot will log warnings like *"Aggregation does not support body copy without Content-Length header!"*.
