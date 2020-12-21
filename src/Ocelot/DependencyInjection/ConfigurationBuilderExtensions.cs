@@ -10,6 +10,7 @@ namespace Ocelot.DependencyInjection
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using Microsoft.Extensions.Hosting;
 
     public static class ConfigurationBuilderExtensions
     {
@@ -29,12 +30,12 @@ namespace Ocelot.DependencyInjection
             return builder;
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IHostEnvironment env)
         {
             return builder.AddOcelot(".", env);
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IHostEnvironment env)
         {
             const string primaryConfigFile = "ocelot.json";
 
