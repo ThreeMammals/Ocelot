@@ -13,7 +13,8 @@ public class CookieStickySessionsCreatorTests : UnitTest
 
     public CookieStickySessionsCreatorTests()
     {
-        _creator = new();
+        var sessionStorage = new InMemoryStickySessionStorage();
+        _creator = new(sessionStorage);
         _serviceProvider = new();
     }
 
