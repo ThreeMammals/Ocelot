@@ -2,6 +2,7 @@
 using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
@@ -14,8 +15,9 @@ public class CookieStickySessionsCreator : ILoadBalancerCreator
         var options = route.LoadBalancerOptions;
         var loadBalancer = new RoundRobin(serviceProvider.GetAsync, route.LoadBalancerKey);
         var bus = new InMemoryBus<StickySession>();
+        var sessionStorage = new InMemoryStickySessionStorage();
         return new OkResponse<ILoadBalancer>(
-            new CookieStickySessions(loadBalancer, options.Key, options.ExpiryInMs, bus));
+            new CookieStickySessions(loadBalancer, options.Key, options.ExpiryInMs, bus, sessionStorage));
     }
 
     public string Type => nameof(CookieStickySessions);
