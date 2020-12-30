@@ -2,6 +2,7 @@
 using Ocelot.Infrastructure;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using System.Threading.Tasks;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
