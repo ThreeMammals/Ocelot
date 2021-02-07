@@ -5,6 +5,8 @@ namespace Ocelot.Configuration.Creator
     public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
     {
         public AuthenticationOptions Create(FileRoute route)
-            => new(route?.AuthenticationOptions ?? new());
+        {
+            return new AuthenticationOptions(route.AuthenticationOptions.AllowedScopes, route.AuthenticationOptions.RequiredRole, route.AuthenticationOptions.AuthenticationProviderKey, route.AuthenticationOptions.ScopeKey, route.AuthenticationOptions.RoleKey, route.AuthenticationOptions.PolicyName);
+        }
     }
 }

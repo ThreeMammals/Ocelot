@@ -1,12 +1,15 @@
 ﻿using Ocelot.Configuration.File;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration
 {
     public sealed class AuthenticationOptions
     {
-        public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey)
+        public AuthenticationOptions(List<string> allowedScopes, List<string> requiredRole, string authenticationProviderKey, string scopeKey, string roleKey, string policyName)
         {
+            PolicyName = policyName;
             AllowedScopes = allowedScopes;
+            RequiredRole = requiredRole;
             AuthenticationProviderKey = authenticationProviderKey;
             AuthenticationProviderKeys = Array.Empty<string>();
         }
@@ -23,6 +26,16 @@ namespace Ocelot.Configuration
             AllowedScopes = allowedScopes ?? new();
             AuthenticationProviderKey = authenticationProviderKey ?? string.Empty;
             AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
+        }
+
+        public AuthenticationOptions(List<string> allowedScopes, List<string> requiredRole, string authenticationProviderKey, string scopeKey, string roleKey, string policyName)
+        {
+            PolicyName = policyName;
+            AllowedScopes = allowedScopes;
+            RequiredRole = requiredRole;
+            AuthenticationProviderKey = authenticationProviderKey;
+            ScopeKey = scopeKey;
+            RoleKey = roleKey;
         }
 
         public List<string> AllowedScopes { get; }
@@ -46,5 +59,10 @@ namespace Ocelot.Configuration
         /// An array of <see langword="string"/> values of the scheme names.
         /// </value>
         public string[] AuthenticationProviderKeys { get; }
+
+        public List<string> RequiredRole { get; }
+        public string ScopeKey { get; }
+        public string RoleKey { get; }
+        public string PolicyName { get; }
     }
 }
