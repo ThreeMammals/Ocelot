@@ -6,6 +6,6 @@ namespace Ocelot.Request.Mapper
 {
     public interface IRequestMapper
     {
-        Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute);
+        Response<HttpRequestMessage> Map(HttpRequest request, DownstreamRoute downstreamRoute);
     }
 }

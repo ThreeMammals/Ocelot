@@ -10,14 +10,15 @@ namespace Ocelot.Request.Mapper
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 
-        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
+        public Response<HttpRequestMessage> Map(HttpRequest request, DownstreamRoute downstreamRoute)
         {
             try
             {
-                var requestMessage = new HttpRequestMessage
+                var httpMethod = MapMethod(request, downstreamRoute);
+                var requestMessage = new HttpRequestMessage()
                 {
-                    Content = await MapContent(request),
-                    Method = MapMethod(request, downstreamRoute),
+                    Method = httpMethod,
+                    Content = MapContent(httpMethod.Method, request),
                     RequestUri = MapUri(request),
                     Version = downstreamRoute.DownstreamHttpVersion,
                 };
@@ -32,29 +33,35 @@ namespace Ocelot.Request.Mapper
             }
         }
 
-        private static async Task<HttpContent> MapContent(HttpRequest request)
+        private static bool BodyIsSupported(string method)
         {
+            return method != HttpMethod.Get.Method
+                && method != HttpMethod.Head.Method
+                && method != HttpMethod.Trace.Method;
+        }
+
+        private static HttpContent MapContent(string downstreamMethod, HttpRequest request)
+        {
+            if (!BodyIsSupported(downstreamMethod)
+                || !BodyIsSupported(request.Method))
+            {
+                return null;
+            }
+
             if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0))
             {
                 return null;
             }
 
-            // Never change this to StreamContent again, I forgot it doesnt work in #464.
-            var content = new ByteArrayContent(await ToByteArray(request.Body));
-
-            if (!string.IsNullOrEmpty(request.ContentType))
-            {
-                content.Headers
-                    .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
-            }
-
-            AddHeaderIfExistsOnRequest("Content-Language", content, request);
-            AddHeaderIfExistsOnRequest("Content-Location", content, request);
-            AddHeaderIfExistsOnRequest("Content-Range", content, request);
-            AddHeaderIfExistsOnRequest("Content-MD5", content, request);
-            AddHeaderIfExistsOnRequest("Content-Disposition", content, request);
+            var content = new StreamContent(request.Body);
             AddHeaderIfExistsOnRequest("Content-Encoding", content, request);
-
+            AddHeaderIfExistsOnRequest("Content-Disposition", content, request);
+            AddHeaderIfExistsOnRequest("Content-Language", content, request);
+            AddHeaderIfExistsOnRequest("Content-Length", content, request);
+            AddHeaderIfExistsOnRequest("Content-Location", content, request);
+            AddHeaderIfExistsOnRequest("Content-MD5", content, request);
+            AddHeaderIfExistsOnRequest("Content-Range", content, request);
+            AddHeaderIfExistsOnRequest("Content-Type", content, request);
             return content;
         }
 
@@ -93,18 +100,6 @@ namespace Ocelot.Request.Mapper
         private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
         {
             return !_unsupportedHeaders.Contains(header.Key.ToLower());
-        }
-
-        private static async Task<byte[]> ToByteArray(Stream stream)
-        {
-            await using (stream)
-            {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
-                }
-            }
         }
     }
 }

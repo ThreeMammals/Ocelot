@@ -949,7 +949,7 @@ namespace Ocelot.AcceptanceTests
 
         public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
         {
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, url) { Content = content };
             _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
         }
 
