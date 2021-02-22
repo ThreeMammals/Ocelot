@@ -26,6 +26,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IRouteKeyCreator _routeKeyCreator;
         private readonly ISecurityOptionsCreator _securityOptionsCreator;
         private readonly IVersionCreator _versionCreator;
+        private readonly IConnectionCloseCreator _connectionCloseCreator;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -42,7 +43,8 @@ namespace Ocelot.Configuration.Creator
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
-            IVersionCreator versionCreator
+            IVersionCreator versionCreator,
+            IConnectionCloseCreator connectionCloseCreator
             )
         {
             _routeKeyCreator = routeKeyCreator;
@@ -61,6 +63,7 @@ namespace Ocelot.Configuration.Creator
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _securityOptionsCreator = securityOptionsCreator;
             _versionCreator = versionCreator;
+            _connectionCloseCreator = connectionCloseCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -112,6 +115,8 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
+            var connectionClose = _connectionCloseCreator.Create(fileRoute.ConnectionClose, globalConfiguration);
+
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
@@ -148,6 +153,7 @@ namespace Ocelot.Configuration.Creator
                 .WithSecurityOptions(securityOptions)
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
+                .WithConnectionClose(connectionClose)
                 .Build();
 
             return route;
