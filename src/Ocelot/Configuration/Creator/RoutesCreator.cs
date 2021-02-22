@@ -23,6 +23,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IVersionCreator _versionCreator;
         private readonly IVersionPolicyCreator _versionPolicyCreator;
         private readonly IMetadataCreator _metadataCreator;
+        private readonly IConnectionCloseCreator _connectionCloseCreator;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -42,7 +43,8 @@ namespace Ocelot.Configuration.Creator
             IVersionCreator versionCreator,
             IVersionPolicyCreator versionPolicyCreator,
             IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
-            IMetadataCreator metadataCreator)
+            IMetadataCreator metadataCreator,
+            IConnectionCloseCreator connectionCloseCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -63,6 +65,7 @@ namespace Ocelot.Configuration.Creator
             _versionPolicyCreator = versionPolicyCreator;
             _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
             _metadataCreator = metadataCreator;
+            _connectionCloseCreator = connectionCloseCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -118,6 +121,8 @@ namespace Ocelot.Configuration.Creator
 
             var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
 
+            var connectionClose = _connectionCloseCreator.Create(fileRoute.ConnectionClose, globalConfiguration);
+
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
@@ -156,6 +161,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .WithMetadata(metadata)
+                .WithConnectionClose(connectionClose)
                 .Build();
 
             return route;
