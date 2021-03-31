@@ -50,7 +50,7 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Shouldly" Version="4.0.1" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
-    <PackageReference Include="Microsoft.Data.SQLite" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="5.0.4" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
   </ItemGroup>
