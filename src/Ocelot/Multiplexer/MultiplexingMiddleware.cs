@@ -34,6 +34,7 @@ namespace Ocelot.Multiplexer
             // don't do anything extra if downstream route is single
             if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
             {
+                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
                 var singleResponse = await Fire(httpContext, _next);
                 MapNotAggregate(httpContext, singleResponse);
                 return;
@@ -78,12 +79,6 @@ namespace Ocelot.Multiplexer
             {
                 httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
                 var mainResponse = await Fire(httpContext, _next);
-
-                if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
-                {
-                    MapNotAggregate(httpContext, mainResponse);
-                    return;
-                }
 
                 var tasks = new List<Task<HttpContext>>();
 
