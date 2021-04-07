@@ -31,6 +31,14 @@ namespace Ocelot.Multiplexer
                 return;
             }
 
+            // don't do anything extra if downstream route is single
+            if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
+            {
+                var singleResponse = await Fire(httpContext, _next);
+                MapNotAggregate(httpContext, singleResponse);
+                return;
+            }
+
             var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRouteConfig;
             if (routeKeysConfigs == null || !routeKeysConfigs.Any())
             {
@@ -73,7 +81,7 @@ namespace Ocelot.Multiplexer
 
                 if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
                 {
-                    MapNotAggregate(httpContext, new List<HttpContext> { mainResponse });
+                    MapNotAggregate(httpContext, mainResponse);
                     return;
                 }
 
@@ -195,15 +203,13 @@ namespace Ocelot.Multiplexer
             }
             else
             {
-                MapNotAggregate(httpContext, contexts);
+                //assume at least one..if this errors then it will be caught by global exception handler
+                MapNotAggregate(httpContext, contexts.First());
             }
         }
 
-        private static void MapNotAggregate(HttpContext httpContext, List<HttpContext> downstreamContexts)
+        private static void MapNotAggregate(HttpContext httpContext, HttpContext finished)
         {
-            //assume at least one..if this errors then it will be caught by global exception handler
-            var finished = downstreamContexts.First();
-
             httpContext.Items.UpsertErrors(finished.Items.Errors());
 
             httpContext.Items.UpsertDownstreamRequest(finished.Items.DownstreamRequest());
