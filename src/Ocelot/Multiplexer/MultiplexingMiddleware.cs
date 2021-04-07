@@ -182,6 +182,7 @@ namespace Ocelot.Multiplexer
             target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
             target.RequestServices = source.RequestServices;
             target.RequestAborted = source.RequestAborted;
+            target.User = source.User;
             return target;
         }
 
