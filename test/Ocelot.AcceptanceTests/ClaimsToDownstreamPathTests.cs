@@ -23,11 +23,13 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl = "http://localhost:57888";
+        private string _identityServerRootUrl;
         private string _downstreamFinalPath;
 
         public ClaimsToDownstreamPathTests()
         {
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _steps = new Steps();
             _options = o =>
             {
@@ -49,11 +51,13 @@ namespace Ocelot.AcceptanceTests
                 SubjectId = "registered|1231231",
             };
 
+            int port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = "/users/{userId}",
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -61,7 +65,7 @@ namespace Ocelot.AcceptanceTests
                                new FileHostAndPort
                                {
                                    Host = "localhost",
-                                   Port = 57876,
+                                   Port = port,
                                },
                            },
                            DownstreamScheme = "http",
@@ -83,17 +87,22 @@ namespace Ocelot.AcceptanceTests
                    },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:57888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:57876", 200))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:57888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("UserId: 1231231"))
-                .And(x => _downstreamFinalPath.ShouldBe("/users/1231231"))
+                .And(x => ThenTheDownstreamPathIs("/users/1231231"))
                 .BDDfy();
+        }
+
+        private void ThenTheDownstreamPathIs(string path)
+        {
+            _downstreamFinalPath.ShouldBe(path);
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
@@ -135,6 +144,13 @@ namespace Ocelot.AcceptanceTests
                     services.AddLogging();
                     services.AddIdentityServer()
                         .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope>
+                        {
+                            new ApiScope(apiName, "test"),
+                            new ApiScope("openid", "test"),
+                            new ApiScope("offline_access", "test"),
+                            new ApiScope("api.readOnly", "test"),
+                        })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource
@@ -143,24 +159,24 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
+                                    "api",
+                                    "openid",
+                                    "offline_access",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId", "UserType", "UserId"
-                                }
-                            }
+                                    "CustomerId", "LocationId", "UserType", "UserId",
+                                },
+                            },
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -172,12 +188,12 @@ namespace Ocelot.AcceptanceTests
                                 AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {
-                            user
+                            user,
                         });
                 })
                 .Configure(app =>

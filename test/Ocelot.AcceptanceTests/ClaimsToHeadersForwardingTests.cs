@@ -25,13 +25,15 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
         private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl = "http://localhost:52888";
+        private string _identityServerRootUrl;
         private readonly ServiceHandler _serviceHandler;
 
         public ClaimsToHeadersForwardingTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
                 o.Authority = _identityServerRootUrl;
@@ -51,52 +53,54 @@ namespace Ocelot.AcceptanceTests
                 Password = "test",
                 SubjectId = "registered|1231231",
                 Claims = new List<Claim>
-               {
-                   new Claim("CustomerId", "123"),
-                   new Claim("LocationId", "1")
-               }
+                {
+                    new Claim("CustomerId", "123"),
+                    new Claim("LocationId", "1"),
+                },
             };
+
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
-                   {
-                       new FileReRoute
-                       {
-                           DownstreamPathTemplate = "/",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new FileHostAndPort
-                               {
-                                   Host = "localhost",
-                                   Port = 52876,
-                               }
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                           AuthenticationOptions = new FileAuthenticationOptions
-                           {
-                               AuthenticationProviderKey = "Test",
-                               AllowedScopes = new List<string>
-                               {
-                                   "openid", "offline_access", "api"
-                               },
-                           },
-                           AddHeadersToRequest =
-                           {
-                               {"CustomerId", "Claims[CustomerId] > value"},
-                               {"LocationId", "Claims[LocationId] > value"},
-                               {"UserType", "Claims[sub] > value[0] > |"},
-                               {"UserId", "Claims[sub] > value[1] > |"}
-                           }
-                       }
-                   }
+                Routes = new List<FileRoute>
+                {
+                    new FileRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        AuthenticationOptions = new FileAuthenticationOptions
+                        {
+                            AuthenticationProviderKey = "Test",
+                            AllowedScopes = new List<string>
+                            {
+                                "openid", "offline_access", "api",
+                            },
+                        },
+                        AddHeadersToRequest =
+                        {
+                            {"CustomerId", "Claims[CustomerId] > value"},
+                            {"LocationId", "Claims[LocationId] > value"},
+                            {"UserType", "Claims[sub] > value[0] > |"},
+                            {"UserId", "Claims[sub] > value[1] > |"},
+                        },
+                    },
+                },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn("http://localhost:52888", "api", AccessTokenType.Jwt, user))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:52876", 200))
-                .And(x => _steps.GivenIHaveAToken("http://localhost:52888"))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
+                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
@@ -134,6 +138,13 @@ namespace Ocelot.AcceptanceTests
                     services.AddLogging();
                     services.AddIdentityServer()
                         .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope>
+                        {
+                            new ApiScope(apiName, "test"),
+                            new ApiScope("openid", "test"),
+                            new ApiScope("offline_access", "test"),
+                            new ApiScope("api.readOnly", "test"),
+                        })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource
@@ -142,24 +153,24 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
+                                    "api",
+                                    "openid",
+                                    "offline_access",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId", "UserType", "UserId"
-                                }
-                            }
+                                    "CustomerId", "LocationId", "UserType", "UserId",
+                                },
+                            },
                         })
                         .AddInMemoryClients(new List<Client>
                         {
@@ -171,12 +182,12 @@ namespace Ocelot.AcceptanceTests
                                 AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {
-                            user
+                            user,
                         });
                 })
                 .Configure(app =>

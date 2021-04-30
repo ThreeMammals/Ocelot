@@ -23,11 +23,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_555()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
@@ -41,13 +43,13 @@ namespace Ocelot.AcceptanceTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Host = "localhost",
-                        Port = 19081,
+                        Port = port,
                         Type = "ServiceFabric"
                     }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/a?b=c"))
@@ -59,11 +61,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
@@ -77,13 +81,13 @@ namespace Ocelot.AcceptanceTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Host = "localhost",
-                        Port = 19081,
+                        Port = port,
                         Type = "ServiceFabric"
                     }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
@@ -95,11 +99,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values",
                         DownstreamScheme = "http",
@@ -113,13 +119,13 @@ namespace Ocelot.AcceptanceTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Host = "localhost",
-                        Port = 19081,
+                        Port = port,
                         Type = "ServiceFabric"
                     }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
@@ -131,11 +137,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_placeholder_in_service_fabric_service_name()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/values",
                             DownstreamScheme = "http",
@@ -149,13 +157,13 @@ namespace Ocelot.AcceptanceTests
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
                         Host = "localhost",
-                        Port = 19081,
+                        Port = port,
                         Type = "ServiceFabric"
                     }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:19081", "/Service_1.0/Api/values", 200, "Hello from Laura", "test=best"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/Service_1.0/Api/values", 200, "Hello from Laura", "test=best"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/1.0/values?test=best"))

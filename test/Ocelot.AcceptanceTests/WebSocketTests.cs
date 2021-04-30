@@ -29,14 +29,14 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_proxy_websocket_input_to_downstream_service()
         {
-            var downstreamPort = 5001;
+            var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
 
             var config = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
@@ -57,23 +57,23 @@ namespace Ocelot.AcceptanceTests
                 .And(_ => _steps.StartFakeOcelotWithWebSockets())
                 .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
                 .When(_ => StartClient("ws://localhost:5000/"))
-                .Then(_ => _firstRecieved.Count.ShouldBe(10))
+                .Then(_ => ThenTheReceivedCountIs(10))
                 .BDDfy();
         }
 
         [Fact]
         public void should_proxy_websocket_input_to_downstream_service_and_use_load_balancer()
         {
-            var downstreamPort = 5005;
+            var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
-            var secondDownstreamPort = 5006;
+            var secondDownstreamPort = RandomPortFinder.GetRandomPort();
             var secondDownstreamHost = "localhost";
 
             var config = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
@@ -325,6 +325,10 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
+        private void ThenTheReceivedCountIs(int count)
+        {
+            _firstRecieved.Count.ShouldBe(count);
+        }
         public void Dispose()
         {
             _serviceHandler?.Dispose();

@@ -6,10 +6,10 @@
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Repository;
-    using Provider.Eureka;
-    using Responses;
+    using Ocelot.Provider.Eureka;
+    using Ocelot.Responses;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
+    using Steeltoe.Discovery;
     using System.Threading.Tasks;
     using Xunit;
 
@@ -20,12 +20,12 @@
         {
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.ShouldBeOfType<Task>();
+            provider.Status.ShouldBe(TaskStatus.RanToCompletion);
         }
 
         [Fact]
@@ -35,13 +35,13 @@
             var client = new Mock<IDiscoveryClient>();
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
             services.AddSingleton<IDiscoveryClient>(client.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.ShouldBeOfType<Task>();
+            provider.Status.ShouldBe(TaskStatus.RanToCompletion);
         }
     }
 }

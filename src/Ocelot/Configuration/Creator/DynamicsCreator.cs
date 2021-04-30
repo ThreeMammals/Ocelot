@@ -8,35 +8,40 @@ namespace Ocelot.Configuration.Creator
     public class DynamicsCreator : IDynamicsCreator
     {
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+        private readonly IVersionCreator _versionCreator;
 
-        public DynamicsCreator(IRateLimitOptionsCreator rateLimitOptionsCreator)
+        public DynamicsCreator(IRateLimitOptionsCreator rateLimitOptionsCreator, IVersionCreator versionCreator)
         {
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
+            _versionCreator = versionCreator;
         }
 
-        public List<ReRoute> Create(FileConfiguration fileConfiguration)
+        public List<Route> Create(FileConfiguration fileConfiguration)
         {
-            return fileConfiguration.DynamicReRoutes
-                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration))
+            return fileConfiguration.DynamicRoutes
+                .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))
                 .ToList();
         }
 
-        private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
+        private Route SetUpDynamicRoute(FileDynamicRoute fileDynamicRoute, FileGlobalConfiguration globalConfiguration)
         {
             var rateLimitOption = _rateLimitOptionsCreator
-                .Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
+                .Create(fileDynamicRoute.RateLimitRule, globalConfiguration);
 
-            var downstreamReRoute = new DownstreamReRouteBuilder()
+            var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
+
+            var downstreamRoute = new DownstreamRouteBuilder()
                 .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
-                .WithServiceName(fileDynamicReRoute.ServiceName)
+                .WithServiceName(fileDynamicRoute.ServiceName)
+                .WithDownstreamHttpVersion(version)
                 .Build();
 
-            var reRoute = new ReRouteBuilder()
-                .WithDownstreamReRoute(downstreamReRoute)
+            var route = new RouteBuilder()
+                .WithDownstreamRoute(downstreamRoute)
                 .Build();
 
-            return reRoute;
+            return route;
         }
     }
 }

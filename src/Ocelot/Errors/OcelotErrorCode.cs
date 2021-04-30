@@ -16,8 +16,8 @@
         NoInstructionsError = 11,
         InstructionNotForClaimsError = 12,
         UnauthorizedError = 13,
-        ClaimValueNotAuthorisedError = 14,
-        ScopeNotAuthorisedError = 15,
+        ClaimValueNotAuthorizedError = 14,
+        ScopeNotAuthorizedError = 15,
         UserDoesNotHaveClaimError = 16,
         DownstreamPathTemplateContainsSchemeError = 17,
         DownstreamPathNullOrEmptyError = 18,
@@ -40,5 +40,8 @@
         CannotRemovePlaceholderError = 35,
         QuotaExceededError = 36,
         RequestCanceled = 37,
+        ConnectionToDownstreamServiceError = 38,
+        CouldNotFindLoadBalancerCreator = 39,
+        ErrorInvokingLoadBalancerCreator = 40,
     }
 }

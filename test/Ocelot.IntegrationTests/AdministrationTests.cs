@@ -21,7 +21,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using TestStack.BDDfy;
+using Ocelot.Configuration.ChangeTracking;
 using Xunit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Ocelot.IntegrationTests
 {
@@ -60,6 +63,7 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+        //this seems to be be answer https://github.com/IdentityServer/IdentityServer4/issues/4914
         [Fact]
         public void should_return_response_200_with_call_re_routes_controller()
         {
@@ -85,8 +89,8 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    BaseUrl = _ocelotBaseUrl
-                }
+                    BaseUrl = _ocelotBaseUrl,
+                },
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
@@ -123,12 +127,13 @@ namespace Ocelot.IntegrationTests
                     RequestIdKey = "RequestId",
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "https",
                         Host = "127.0.0.1",
-                    }
+                    },
                 },
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -136,7 +141,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -145,10 +150,10 @@ namespace Ocelot.IntegrationTests
                         FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
-                            Region = "Geoff"
-                        }
+                            Region = "Geoff",
+                        },
                     },
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -156,7 +161,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -165,10 +170,10 @@ namespace Ocelot.IntegrationTests
                         FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
-                            Region = "Dave"
-                        }
-                    }
-                }
+                            Region = "Dave",
+                        },
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
@@ -189,9 +194,9 @@ namespace Ocelot.IntegrationTests
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                 },
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -199,14 +204,14 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
                     },
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -214,13 +219,13 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/test"
-                    }
+                        UpstreamPathTemplate = "/test",
+                    },
                 },
             };
 
@@ -229,9 +234,9 @@ namespace Ocelot.IntegrationTests
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                 },
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -239,14 +244,14 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/"
+                        UpstreamPathTemplate = "/",
                     },
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -254,14 +259,14 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "123.123.123",
                                 Port = 443,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
-                        UpstreamPathTemplate = "/test"
-                    }
-                }
+                        UpstreamPathTemplate = "/test",
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
@@ -278,6 +283,51 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_activate_change_token_when_configuration_is_updated()
+        {
+            var configuration = new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration(),
+                Routes = new List<FileRoute>
+                {
+                    new FileRoute
+                    {
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            },
+                        },
+                        DownstreamScheme = "https",
+                        DownstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "get" },
+                        UpstreamPathTemplate = "/",
+                    },
+                },
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", configuration))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => TheChangeTokenShouldBeActive())
+                .And(x => ThenTheResponseShouldBe(configuration))
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .And(x => ThenTheResponseShouldBe(configuration))
+                .And(_ => ThenTheConfigurationIsSavedCorrectly(configuration))
+                .BDDfy();
+        }
+
+        private void TheChangeTokenShouldBeActive()
+        {
+            _builder.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>().ChangeToken.HasChanged.ShouldBeTrue();
+        }
+
         private void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)
         {
             var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
@@ -292,16 +342,16 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_get_file_configuration_edit_and_post_updated_version_redirecting_reroute()
+        public void should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
             var fooPort = 47689;
-            var barPort = 47690;
+            var barPort = 27654;
 
             var initialConfiguration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -309,14 +359,14 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = fooPort,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/foo",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/foo"
-                    }
-                }
+                        UpstreamPathTemplate = "/foo",
+                    },
+                },
             };
 
             var updatedConfiguration = new FileConfiguration
@@ -324,9 +374,9 @@ namespace Ocelot.IntegrationTests
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                 },
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -334,14 +384,14 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = barPort,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/bar",
                         UpstreamHttpMethod = new List<string> { "get" },
-                        UpstreamPathTemplate = "/foo"
-                    }
-                }
+                        UpstreamPathTemplate = "/foo",
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
@@ -373,9 +423,9 @@ namespace Ocelot.IntegrationTests
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                 },
-                ReRoutes = new List<FileReRoute>()
+                Routes = new List<FileRoute>()
                 {
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -383,7 +433,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -391,10 +441,10 @@ namespace Ocelot.IntegrationTests
                         UpstreamPathTemplate = "/",
                         FileCacheOptions = new FileCacheOptions
                         {
-                            TtlSeconds = 10
-                        }
+                            TtlSeconds = 10,
+                        },
                     },
-                    new FileReRoute()
+                    new FileRoute()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -402,7 +452,7 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 80,
-                            }
+                            },
                         },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
@@ -410,10 +460,10 @@ namespace Ocelot.IntegrationTests
                         UpstreamPathTemplate = "/test",
                         FileCacheOptions = new FileCacheOptions
                         {
-                            TtlSeconds = 10
-                        }
-                    }
-                }
+                            TtlSeconds = 10,
+                        },
+                    },
+                },
             };
 
             var regionToClear = "gettest";
@@ -434,13 +484,14 @@ namespace Ocelot.IntegrationTests
 
             var identityServerRootUrl = "http://localhost:5123";
 
-            Action<IdentityServerAuthenticationOptions> options = o =>
+            Action<JwtBearerOptions> options = o =>
             {
                 o.Authority = identityServerRootUrl;
-                o.ApiName = "api";
                 o.RequireHttpsMetadata = false;
-                o.SupportedTokens = SupportedTokens.Both;
-                o.ApiSecret = "secret";
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                };
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
@@ -462,7 +513,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("scope", "api"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -488,6 +539,7 @@ namespace Ocelot.IntegrationTests
                         services.AddLogging();
                         services.AddIdentityServer()
                         .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope> { new ApiScope(apiName) })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                         new ApiResource
@@ -496,9 +548,9 @@ namespace Ocelot.IntegrationTests
                             Description = apiName,
                             Enabled = true,
                             DisplayName = apiName,
-                            Scopes = new List<Scope>()
+                            Scopes = new List<string>()
                             {
-                                new Scope(apiName),
+                                apiName,
                             },
                         },
                         })
@@ -511,7 +563,7 @@ namespace Ocelot.IntegrationTests
                             ClientSecrets = new List<Secret> { new Secret("secret".Sha256()) },
                             AllowedScopes = new List<string> { apiName },
                             AccessTokenType = AccessTokenType.Jwt,
-                            Enabled = true
+                            Enabled = true,
                         },
                         })
                         .AddTestUsers(new List<TestUser>
@@ -520,7 +572,7 @@ namespace Ocelot.IntegrationTests
                         {
                             Username = "test",
                             Password = "test",
-                            SubjectId = "1231231"
+                            SubjectId = "1231231",
                         },
                         });
                     })
@@ -614,23 +666,24 @@ namespace Ocelot.IntegrationTests
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
 
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for (var i = 0; i < response.ReRoutes.Count; i++)
+            for (var i = 0; i < response.Routes.Count; i++)
             {
-                for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                for (var j = 0; j < response.Routes[i].DownstreamHostAndPorts.Count; j++)
                 {
-                    var result = response.ReRoutes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var result = response.Routes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.Routes[i].DownstreamHostAndPorts[j];
                     result.Host.ShouldBe(expected.Host);
                     result.Port.ShouldBe(expected.Port);
                 }
 
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.ReRoutes[i].UpstreamHttpMethod);
+                response.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
+                response.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
+                response.Routes[i].UpstreamPathTemplate.ShouldBe(expecteds.Routes[i].UpstreamPathTemplate);
+                response.Routes[i].UpstreamHttpMethod.ShouldBe(expecteds.Routes[i].UpstreamHttpMethod);
             }
         }
 
@@ -647,7 +700,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("client_id", "admin"),
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("grant_type", "client_credentials")
+                new KeyValuePair<string, string>("grant_type", "client_credentials"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -660,7 +713,7 @@ namespace Ocelot.IntegrationTests
             response.EnsureSuccessStatusCode();
         }
 
-        private void GivenOcelotIsRunningWithIdentityServerSettings(Action<IdentityServerAuthenticationOptions> configOptions)
+        private void GivenOcelotIsRunningWithIdentityServerSettings(Action<JwtBearerOptions> configOptions)
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>

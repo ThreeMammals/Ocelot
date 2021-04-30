@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Extensions;
     using Microsoft.Extensions.Primitives;
+    using Ocelot.Configuration;
     using Ocelot.Responses;
     using System;
     using System.Collections.Generic;
@@ -15,15 +16,16 @@
     {
         private readonly string[] _unsupportedHeaders = { "host" };
 
-        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request)
+        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
         {
             try
             {
                 var requestMessage = new HttpRequestMessage()
                 {
                     Content = await MapContent(request),
-                    Method = MapMethod(request),
-                    RequestUri = MapUri(request)
+                    Method = MapMethod(request, downstreamRoute),
+                    RequestUri = MapUri(request),
+                    Version = downstreamRoute.DownstreamHttpVersion,
                 };
 
                 MapHeaders(request, requestMessage);
@@ -71,8 +73,13 @@
             }
         }
 
-        private HttpMethod MapMethod(HttpRequest request)
+        private HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute)
         {
+            if (!string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod))
+            {
+                return new HttpMethod(downstreamRoute.DownstreamHttpMethod);
+            }
+
             return new HttpMethod(request.Method);
         }
 

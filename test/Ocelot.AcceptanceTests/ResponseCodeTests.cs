@@ -21,11 +21,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_304_when_service_returns_304()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
@@ -34,7 +36,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51092,
+                                    Port = port,
                                 }
                             },
                             UpstreamPathTemplate = "/{everything}",
@@ -43,7 +45,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51092", "/inline.132.bundle.js", 304))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/inline.132.bundle.js", 304))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))

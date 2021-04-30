@@ -1,4 +1,6 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using Ocelot.Configuration.ChangeTracking;
+
+namespace Ocelot.AcceptanceTests
 {
     using Caching;
     using Configuration.Repository;
@@ -19,7 +21,7 @@
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Middleware.Multiplexer;
+    using Ocelot.Multiplexer;
     using Ocelot.Provider.Consul;
     using Ocelot.Provider.Eureka;
     using Ocelot.Provider.Polly;
@@ -37,10 +39,14 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Configuration;
+    using LoadBalancer.LoadBalancers;
+    using ServiceDiscovery.Providers;
     using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
     using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
     using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
+    using Ocelot.Tracing.OpenTracing;
 
     public class Steps : IDisposable
     {
@@ -54,6 +60,7 @@
         private IWebHostBuilder _webHostBuilder;
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
+        private IOcelotConfigurationChangeTokenSource _changeToken;
 
         public Steps()
         {
@@ -216,6 +223,11 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenIHaveAChangeToken()
+        {
+            _changeToken = _ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
+        }
+
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
@@ -236,6 +248,39 @@
                 .ConfigureServices(s =>
                 {
                     s.AddOcelot();
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            where T : ILoadBalancer
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddCustomLoadBalancer(loadBalancerFactoryFunc);
                 })
                 .Configure(app =>
                 {
@@ -384,6 +429,7 @@
             _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
+            Thread.Sleep(1000);
         }
 
         public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
@@ -768,7 +814,7 @@
                 new KeyValuePair<string, string>("scope", "api"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -791,7 +837,7 @@
                 new KeyValuePair<string, string>("scope", "api.readOnly"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -899,6 +945,18 @@
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) {Content = content};
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        }
+
+        public void WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
+        {
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
         }
 
         public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
@@ -1123,6 +1181,11 @@
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void TheChangeTokenShouldBeActive(bool itShouldBeActive)
+        {
+            _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
+        }
+        
         public void GivenOcelotIsRunningWithLogger()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -1144,6 +1207,41 @@
                 })
                 .Configure(app =>
                 {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        internal void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot()
+                        .AddOpenTracing();
+
+                    s.AddSingleton<OpenTracing.ITracer>(fakeTracer);
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (_, next) =>
+                    {
+                        await next.Invoke();
+                    });
                     app.UseOcelot().Wait();
                 });
 

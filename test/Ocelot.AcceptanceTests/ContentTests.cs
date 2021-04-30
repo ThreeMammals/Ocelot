@@ -26,11 +26,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_add_content_type_or_content_length_headers()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -39,7 +41,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51339,
+                                    Port = port,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -48,7 +50,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51339", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -62,11 +64,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_add_content_type_and_content_length_headers()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -74,7 +78,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51349,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -86,7 +90,7 @@ namespace Ocelot.AcceptanceTests
 
             var contentType = "application/json";
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51349", "/", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -101,11 +105,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_add_default_content_type_header()
         {
+            var port = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -113,7 +119,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51359,
+                                    Port = port,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -123,7 +129,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51359", "/", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -141,7 +147,7 @@ namespace Ocelot.AcceptanceTests
 
         private void ThenTheContentLengthShouldBeZero()
         {
-            _contentLength.ShouldBeEquivalentTo(0L);
+            _contentLength.ShouldBeNull();
         }
 
         private void ThenTheContentLengthIs(int expected)

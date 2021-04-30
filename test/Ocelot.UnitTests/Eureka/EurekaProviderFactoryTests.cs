@@ -5,7 +5,7 @@
     using Ocelot.Configuration.Builder;
     using Provider.Eureka;
     using Shouldly;
-    using Steeltoe.Common.Discovery;
+    using Steeltoe.Discovery;
     using Xunit;
 
     public class EurekaProviderFactoryTests
@@ -27,10 +27,10 @@
             var services = new ServiceCollection();
             services.AddSingleton<IDiscoveryClient>(client.Object);
             var sp = services.BuildServiceProvider();
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithServiceName("")
                 .Build();
-            var provider = EurekaProviderFactory.Get(sp, config, reRoute);
+            var provider = EurekaProviderFactory.Get(sp, config, route);
             provider.ShouldBeOfType<Eureka>();
         }
     }

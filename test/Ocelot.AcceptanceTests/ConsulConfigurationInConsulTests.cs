@@ -34,11 +34,14 @@
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
+            int consulPort = RandomPortFinder.GetRandomPort();
+            int servicePort = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new FileRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -47,7 +50,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51779,
+                                    Port = servicePort,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -58,16 +61,17 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
-                        Port = 9500
+                        Port = consulPort
                     }
                 }
             };
 
-            var fakeConsulServiceDiscoveryUrl = "http://localhost:9500";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -79,7 +83,8 @@
         [Fact]
         public void should_load_configuration_out_of_consul()
         {
-            var consulPort = 8500;
+            var consulPort = RandomPortFinder.GetRandomPort();
+            int servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -87,6 +92,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -97,9 +103,9 @@
 
             var consulConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
@@ -108,7 +114,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51779,
+                                Port = servicePort,
                             }
                         },
                         UpstreamPathTemplate = "/cs/status",
@@ -119,6 +125,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -127,7 +134,7 @@
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "/status", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
@@ -139,13 +146,16 @@
         [Fact]
         public void should_load_configuration_out_of_consul_if_it_is_changed()
         {
-            var consulPort = 8506;
+            var consulPort = RandomPortFinder.GetRandomPort();
+            int servicePort = RandomPortFinder.GetRandomPort();
+
             var configuration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration()
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -156,9 +166,9 @@
 
             var consulConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
@@ -167,7 +177,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51780,
+                                Port = servicePort,
                             }
                         },
                         UpstreamPathTemplate = "/cs/status",
@@ -178,6 +188,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -186,9 +197,9 @@
 
             var secondConsulConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new FileRoute
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
@@ -197,7 +208,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51780,
+                                Port = servicePort,
                             }
                         },
                         UpstreamPathTemplate = "/cs/status/awesome",
@@ -208,6 +219,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -216,7 +228,7 @@
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51780", "/status", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
@@ -230,9 +242,9 @@
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
         {
-            const int consulPort = 8523;
+            int consulPort = RandomPortFinder.GetRandomPort();
             const string serviceName = "web";
-            const int downstreamServicePort = 8187;
+            int downstreamServicePort = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
@@ -249,9 +261,9 @@
 
             var consulConfig = new FileConfiguration
             {
-                DynamicReRoutes = new List<FileDynamicReRoute>
+                DynamicRoutes = new List<FileDynamicRoute>
                 {
-                    new FileDynamicReRoute
+                    new FileDynamicRoute
                     {
                         ServiceName = serviceName,
                         RateLimitRule = new FileRateLimitRule()
@@ -268,6 +280,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     },
@@ -289,6 +302,7 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
+                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }

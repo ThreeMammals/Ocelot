@@ -1,8 +1,8 @@
 #tool "nuget:?package=GitVersion.CommandLine&version=5.0.1"
-#tool "nuget:?package=GitReleaseNotes"
 #addin nuget:?package=Cake.Json
 #addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Net.Http
+#addin nuget:?package=System.Net.Http&version=4.3.4
+#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
@@ -18,7 +18,7 @@ var artifactsDir = Directory("artifacts");
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 80d;
+var minCodeCoverage = 0.80d;
 var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
 var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
 
@@ -63,6 +63,9 @@ Task("Default")
 Task("Build")
 	.IsDependentOn("RunTests");
 
+Task("ReleaseNotes")
+	.IsDependentOn("CreateReleaseNotes");
+
 Task("RunTests")
 	.IsDependentOn("RunUnitTests")
 	.IsDependentOn("RunAcceptanceTests")
@@ -96,8 +99,62 @@ Task("Clean")
         }
         CreateDirectory(artifactsDir);
 	});
+
+Task("CreateReleaseNotes")
+	.Does(() =>
+	{	
+		Information("Generating release notes at " + releaseNotesFile);
+
+		IEnumerable<string> lastReleaseTag;
+
+		var lastReleaseTagExitCode = StartProcess(
+			"git", 
+			new ProcessSettings { 
+				Arguments = "describe --tags --abbrev=0",
+             	RedirectStandardOutput = true
+			},
+			out lastReleaseTag
+		);
+
+		if (lastReleaseTagExitCode != 0) 
+		{
+			throw new Exception("Failed to get latest release tag");
+		}
+
+		var lastRelease = lastReleaseTag.First();
+
+		Information("Last release tag is " + lastRelease);
+
+		IEnumerable<string> releaseNotes;
+
+		var releaseNotesExitCode = StartProcess(
+			"git", 
+			new ProcessSettings { 
+				Arguments = $"log --pretty=format:\"%h - %an - %s\" {lastRelease}..HEAD",
+             	RedirectStandardOutput = true
+			},
+			out releaseNotes
+		);
+
+		if (releaseNotesExitCode != 0) 
+		{
+			throw new Exception("Failed to generate release notes");
+		}
+
+		EnsureDirectoryExists(packagesDir);
+
+		System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
+
+		if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
+		{
+			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
+		}
+
+		Information("Release notes are\r\n" + System.IO.File.ReadAllText(releaseNotesFile));
+	});
 	
 Task("Version")
+	.IsDependentOn("CreateReleaseNotes")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
@@ -123,22 +180,23 @@ Task("RunUnitTests")
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
-			ArgumentCustomization = args => args
-				// this create the code coverage report
-				.Append("--settings test/Ocelot.UnitTests/UnitTests.runsettings")
+				ArgumentCustomization = args => args
+					// this create the code coverage report
+					.Append("--collect:\"XPlat Code Coverage\"")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetCoreTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.opencover.xml"));
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
+
 		// todo bring back report generator to get a friendly report
 		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		// https://github.com/danielpalme/ReportGenerator
-	
-		if (IsRunningOnCircleCI())
+		
+		if (IsRunningOnCircleCI() && IsMaster())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -157,8 +215,8 @@ Task("RunUnitTests")
 			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
 		}
 
-		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@sequenceCoverage");
-		var branchCoverage = XmlPeek(coverageSummaryFile, "//CoverageSession/Summary/@branchCoverage");
+		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 
 		Information("Sequence Coverage: " + sequenceCoverage);
 	
@@ -209,17 +267,13 @@ Task("CreateArtifacts")
 
 		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
 
-		// todo fix this for docker build
-		//GenerateReleaseNotes(releaseNotesFile);
-
 		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
 
 		foreach(var projectFile in projectFiles)
 		{
 			System.IO.File.AppendAllLines(artifactsFile, new[]{
 				projectFile.GetFilename().FullPath,
-				// todo fix this for docker build
-				//"releaseNotes:releasenotes.md"
+				"releasenotes.md"
 			});
 		}
 
@@ -273,6 +327,9 @@ Task("DownloadGitHubReleaseArtifacts")
 
 		try
 		{
+			// hack to let GitHub catch up, todo - refactor to poll
+			System.Threading.Thread.Sleep(5000);
+
 			EnsureDirectoryExists(packagesDir);
 
 			var releaseUrl = tagsUrl + versioning.NuGetVersion;
@@ -307,7 +364,7 @@ Task("PublishToNuget")
 
 RunTarget(target);
 
-/// Gets nuique nuget version for this commit
+/// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
     GitVersion(new GitVersionSettings{
@@ -338,32 +395,6 @@ private void PersistVersion(string committedVersion, string newVersion)
 	}
 }
 
-/// generates release notes based on issues closed in GitHub since the last release
-private void GenerateReleaseNotes(ConvertableFilePath file)
-{
-	if(!IsRunningOnWindows())
-	{
-        Warning("We are not running on Windows so we cannot generate release notes.");
-        return;		
-	}
-
-	Information("Generating release notes at " + file);
-
-    var releaseNotesExitCode = StartProcess(
-        @"tools/GitReleaseNotes/tools/gitreleasenotes.exe", 
-        new ProcessSettings { Arguments = ". /o " + file });
-
-    if (string.IsNullOrEmpty(System.IO.File.ReadAllText(file)))
-	{
-        System.IO.File.WriteAllText(file, "No issues closed since last release");
-	}
-
-    if (releaseNotesExitCode != 0) 
-	{
-		throw new Exception("Failed to generate release notes");
-	}
-}
-
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
@@ -374,6 +405,11 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		
 		foreach(var artifact in artifacts)
 		{
+			if (artifact == "releasenotes.md") 
+			{
+				continue;
+			}
+
 			var codePackage = packagesDir + File(artifact);
 
 			Information("Pushing package " + codePackage);
@@ -391,7 +427,8 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"todo: notes coming\", \"draft\": true, \"prerelease\": true }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
+	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using(var client = new System.Net.Http.HttpClient())
@@ -413,6 +450,11 @@ private void CreateGitHubRelease()
 		dynamic test = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(returnValue);
 		releaseId = test.id;
 	}
+}
+
+private string ReleaseNotesAsJson()
+{
+	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(System.IO.File.ReadAllText(releaseNotesFile));
 }
 
 private void UploadFileToGitHubRelease(FilePath file)
@@ -441,7 +483,7 @@ private void UploadFileToGitHubRelease(FilePath file)
 
 private void CompleteGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"todo: notes coming\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -497,4 +539,9 @@ private string GetResource(string url)
 private bool IsRunningOnCircleCI()
 {
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
+}
+
+private bool IsMaster()
+{
+    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "master";
 }

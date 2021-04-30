@@ -17,4 +17,8 @@ run_benchmarks:
 
 run_unit_tests:
 	./build.sh --target=RunUnitTests
+
+release_notes:
+	./build.sh --target=ReleaseNotes
+
 	

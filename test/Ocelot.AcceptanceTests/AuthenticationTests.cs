@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
     {
         private readonly Steps _steps;
         private IWebHost _identityServerBuilder;
-        private string _identityServerRootUrl = "http://localhost:51888";
+        private string _identityServerRootUrl;
         private string _downstreamServicePath = "/";
         private string _downstreamServiceHost = "localhost";
         private string _downstreamServiceScheme = "http";
@@ -32,6 +32,8 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            var identityServerPort = RandomPortFinder.GetRandomPort();
+            _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
                 o.Authority = _identityServerRootUrl;
@@ -45,13 +47,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_401_using_identity_server_access_token()
         {
-            int port = 54329;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -60,17 +62,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                                AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                                AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -86,13 +88,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_using_identity_server()
         {
-            int port = 54099;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -101,17 +103,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -129,13 +131,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_401_using_identity_server_with_token_requested_for_other_api()
         {
-            int port = 54196;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -144,17 +146,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -171,13 +173,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_201_using_identity_server_access_token()
         {
-            int port = 52226;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -186,17 +188,17 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                               AuthenticationProviderKey = "Test",
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
@@ -214,13 +216,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_201_using_identity_server_reference_token()
         {
-            int port = 52222;
+            int port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new FileRoute
                        {
                            DownstreamPathTemplate = _downstreamServicePath,
                            DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -229,7 +231,7 @@ namespace Ocelot.AcceptanceTests
                                {
                                    Host =_downstreamServiceHost,
                                    Port = port,
-                               }
+                               },
                            },
                            DownstreamScheme = _downstreamServiceScheme,
                            UpstreamPathTemplate = "/",
@@ -237,9 +239,9 @@ namespace Ocelot.AcceptanceTests
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
                                AuthenticationProviderKey = "Test"
-                           }
-                       }
-                   }
+                           },
+                       },
+                   },
             };
 
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
@@ -276,6 +278,11 @@ namespace Ocelot.AcceptanceTests
                     services.AddLogging();
                     services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope>
+                        {
+                            new ApiScope(apiName, "test"),
+                            new ApiScope(api2Name, "test"),
+                        })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
                             new ApiResource
@@ -284,24 +291,24 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("api.readOnly"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
+                                    "api",
+                                    "api.readOnly",
+                                    "openid",
+                                    "offline_access",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId"
-                                }
+                                    "CustomerId", "LocationId",
+                                },
                             },
                             new ApiResource
                             {
@@ -309,22 +316,22 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My second API",
                                 Enabled = true,
                                 DisplayName = "second test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api2"),
-                                    new Scope("api2.readOnly"),
+                                    "api2",
+                                    "api2.readOnly",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
                                     new Secret
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
                                 UserClaims = new List<string>()
                                 {
-                                    "CustomerId", "LocationId"
-                                }
+                                    "CustomerId", "LocationId",
+                                },
                             },
                         })
                         .AddInMemoryClients(new List<Client>
@@ -337,8 +344,8 @@ namespace Ocelot.AcceptanceTests
                                 AllowedScopes = new List<string> { apiName, api2Name, "api.readOnly", "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {
@@ -350,9 +357,9 @@ namespace Ocelot.AcceptanceTests
                                 Claims = new List<Claim>
                                 {
                                    new Claim("CustomerId", "123"),
-                                   new Claim("LocationId", "321")
-                                }
-                            }
+                                   new Claim("LocationId", "321"),
+                                },
+                            },
                         });
                 })
                 .Configure(app =>
