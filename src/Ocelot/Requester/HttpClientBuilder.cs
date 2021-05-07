@@ -36,6 +36,18 @@ namespace Ocelot.Requester
             if (httpClient != null)
             {
                 _client = httpClient;
+
+                var clientHandler = _client.ClientMainHandler;
+                while (clientHandler != null)
+                {
+                    if (clientHandler is IDelegatingHandlerWithHttpContext contextClientHandler)
+                    {
+                        contextClientHandler.HttpContext = httpContext;
+                    }
+
+                    clientHandler = clientHandler.InnerHandler as DelegatingHandler;
+                }
+
                 return httpClient;
             }
 
@@ -54,12 +66,13 @@ namespace Ocelot.Requester
                 ? _defaultTimeout
                 : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue);
 
-            _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute, httpContext))
+            var clientMainHandler = CreateHttpMessageHandler(handler, downstreamRoute, httpContext);
+            _httpClient = new HttpClient(clientMainHandler)
             {
                 Timeout = timeout,
             };
 
-            _client = new HttpClientWrapper(_httpClient);
+            _client = new HttpClientWrapper(_httpClient, clientMainHandler as DelegatingHandler);
 
             return _client;
         }

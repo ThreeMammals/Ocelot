@@ -541,7 +541,7 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void GivenOcelotIsRunningWithSpecficHandlersRegisteredInDi<TOne, TWo>()
+        public void GivenOcelotIsRunningWithSpecficHandlersRegisteredInDi<TOne, TWo>(Action<IdentityServerAuthenticationOptions> options, string authenticationProviderKey)
             where TOne : DelegatingHandler
             where TWo : DelegatingHandler
         {
@@ -563,6 +563,11 @@ namespace Ocelot.AcceptanceTests
                     s.AddOcelot()
                         .AddDelegatingHandler<TOne>()
                         .AddDelegatingHandler<TWo>();
+                    if (authenticationProviderKey != null && options != null)
+                    {
+                        s.AddAuthentication()
+                         .AddIdentityServerAuthentication(authenticationProviderKey, options);
+                    }
                 })
                 .Configure(a =>
                 {
@@ -860,13 +865,18 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenIHaveAToken(string url)
         {
+            GivenIHaveAToken(url, "test");
+        }
+
+        public void GivenIHaveAToken(string url, string username)
+        {
             var tokenUrl = $"{url}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
                 new("client_id", "client"),
                 new("client_secret", "secret"),
                 new("scope", "api"),
-                new("username", "test"),
+                new("username", username),
                 new("password", "test"),
                 new("grant_type", "password"),
             };
