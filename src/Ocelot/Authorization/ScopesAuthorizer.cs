@@ -32,10 +32,6 @@ namespace Ocelot.Authorization
                 {
                     userScopes = userScope.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 }
-                else
-                {
-                    userScopes = new[] { userScope };
-                }
             }
 
             if (routeAllowedScopes.Any(s => !userScopes.Contains(s)))
