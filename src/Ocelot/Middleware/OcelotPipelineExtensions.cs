@@ -100,6 +100,9 @@ namespace Ocelot.Middleware
                 app.Use(pipelineConfiguration.AuthenticationMiddleware);
             }
 
+            // Allow After authentication logic. The idea being people might want to run something custom after what is built in.
+            app.UseIfNotNull(pipelineConfiguration.AfterAuthenticationMiddleware);
+
             // The next thing we do is look at any claims transforms in case this is important for authorization
             app.UseClaimsToClaimsMiddleware();
 
@@ -118,6 +121,9 @@ namespace Ocelot.Middleware
             {
                 app.Use(pipelineConfiguration.AuthorizationMiddleware);
             }
+
+            // Allow after authorization logic. The idea being people might want to run something custom after what is built in.
+            app.UseIfNotNull(pipelineConfiguration.AfterAuthorizationMiddleware);
 
             // Now we can run the claims to headers transformation middleware
             app.UseClaimsToHeadersMiddleware();
