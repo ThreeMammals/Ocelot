@@ -257,7 +257,50 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.ThenTheCounterIs(1))
                 .BDDfy();
         }
+        [Fact]
+        public void should_call_after_authorization_middleware()
+        {
+            var configuration = new OcelotPipelineConfiguration
+            {
+                AfterAuthorizationMiddleware =  async (ctx, next) =>
+                {
+                    _counter++;
+                    await next.Invoke();
+                }
+            };
 
+            var port = RandomPortFinder.GetRandomPort();
+
+            var fileConfiguration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new FileRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunning(configuration))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheCounterIs(1))
+                .BDDfy();
+        }
         [Fact]
         public void should_call_pre_http_authentication_middleware()
         {
@@ -302,7 +345,50 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.ThenTheCounterIs(1))
                 .BDDfy();
         }
+        [Fact]
+        public void should_call_after_http_authentication_middleware()
+        {
+            var configuration = new OcelotPipelineConfiguration
+            {
+                AfterAuthenticationMiddleware =  async (ctx, next) =>
+                {
+                    _counter++;
+                    await next.Invoke();
+                }
+            };
 
+            var port = RandomPortFinder.GetRandomPort();
+
+            var fileConfiguration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new FileRoute
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            }
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    }
+                }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
+                .And(x => _steps.GivenOcelotIsRunning(configuration))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheCounterIs(1))
+                .BDDfy();
+        }
         [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
         public void should_fix_issue_237()
         {
