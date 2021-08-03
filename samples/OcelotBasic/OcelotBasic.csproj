@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="ocelot" Version="14.0.9" />
+    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
 
   <ItemGroup>
