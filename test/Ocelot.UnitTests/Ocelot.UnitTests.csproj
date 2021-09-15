@@ -67,7 +67,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Moq" Version="4.15.2" />
-    <PackageReference Include="Shouldly" Version="4.0.1" />
+    <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
