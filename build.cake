@@ -95,7 +95,7 @@ Task("Clean")
 	{
         if (DirectoryExists(artifactsDir))
         {
-            DeleteDirectory(artifactsDir, recursive:true);
+            DeleteDirectory(artifactsDir, new DeleteDirectorySettings { Recursive = true, Force = true });
         }
         CreateDirectory(artifactsDir);
 	});
