@@ -6,7 +6,7 @@
     public class HttpHandlerOptions
     {
         public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
-            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
+            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime, bool useDefaultCredentials)
         {
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
@@ -14,6 +14,7 @@
             UseProxy = useProxy;
             MaxConnectionsPerServer = maxConnectionsPerServer;
             PooledConnectionLifeTime = pooledConnectionLifeTime;
+            UseDefaultCredentials = useDefaultCredentials;
         }
 
         /// <summary>
@@ -51,5 +52,11 @@
         /// </summary>
         /// <value>PooledConnectionLifeTime.</value>
         public TimeSpan PooledConnectionLifeTime { get; }
+
+        /// <summary>
+        /// Specify is UseDefaultCredentials set on HttpClientHandler.
+        /// </summary>
+        /// <value>UseDefaultCredentials.</value>
+        public bool UseDefaultCredentials { get; private set; }
     }
 }
