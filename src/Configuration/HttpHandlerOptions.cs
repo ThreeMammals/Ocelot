@@ -24,6 +24,7 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
         UseCookieContainer = from.UseCookieContainer ?? false;
         UseProxy = from.UseProxy ?? false;
         UseTracing = from.UseTracing ?? false;
+        UseDefaultCredentials = from.UseDefaultCredentials ?? false;
     }
 
     public HttpHandlerOptions(FileHttpHandlerOptions from, bool useTracing)
@@ -67,4 +68,13 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// </summary>
     /// <value>PooledConnectionLifeTime.</value>
     public TimeSpan PooledConnectionLifeTime { get; init; }
+
+    /// <summary>
+    /// Specify is UseDefaultCredentials set on HttpClientHandler.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
+    /// The property value is assignable to the <see cref="HttpClientHandler.UseDefaultCredentials"/> one.
+    /// </value>
+    public bool UseDefaultCredentials { get; init; }
 }
