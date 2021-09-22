@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandler",
@@ -82,7 +82,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandlerTwo",
@@ -119,7 +119,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandlerTwo",
@@ -155,7 +155,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandler",
@@ -189,7 +189,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -215,7 +215,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandler",
@@ -243,7 +243,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -265,7 +265,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -287,7 +287,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -309,7 +309,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -333,7 +333,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 
@@ -363,7 +363,7 @@ namespace Ocelot.UnitTests.Requester
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false))
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
 

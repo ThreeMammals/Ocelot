@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -52,7 +52,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .And(x => GivenARealTracer())
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Configuration
         public void should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
         {
             var fileRoute = new FileRoute();
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
                 HttpHandlerOptions = new FileHttpHandlerOptions(),
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -121,7 +121,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -140,7 +140,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -159,7 +159,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
@@ -178,7 +178,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
 
             this.Given(x => GivenTheFollowing(fileRoute))
                 .When(x => WhenICreateHttpHandlerOptions())
