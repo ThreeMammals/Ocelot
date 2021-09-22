@@ -13,6 +13,7 @@ public class FileHttpHandlerOptions
         UseCookieContainer = from.UseCookieContainer;
         UseProxy = from.UseProxy;
         UseTracing = from.UseTracing;
+        UseDefaultCredentials = from.UseDefaultCredentials;
     }
 
     public bool? AllowAutoRedirect { get; set; }
@@ -21,4 +22,5 @@ public class FileHttpHandlerOptions
     public bool? UseCookieContainer { get; set; }
     public bool? UseProxy { get; set; }
     public bool? UseTracing { get; set; }
+    public bool? UseDefaultCredentials { get; set; }
 }

@@ -325,6 +325,49 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(hasTracer && !isDef, actual.UseTracing); // the useTracing parameter takes absolute priority
     }
 
+    [Fact]
+    [Trait("Feat", "657")]
+    public void Should_create_options_with_useDefaultCredentials_false_as_default()
+    {
+        // Arrange
+        var fileRoute = new FileRoute
+        {
+            HttpHandlerOptions = new(),
+        };
+        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
+            useDefaultCredentials: false);
+        GivenTheFollowing(fileRoute);
+
+        // Act
+        WhenICreateHttpHandlerOptions();
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
+    }
+
+    [Fact]
+    [Trait("Feat", "657")]
+    public void Should_create_options_with_UseDefaultCredentials_true_if_set()
+    {
+        // Arrange
+        var fileRoute = new FileRoute
+        {
+            HttpHandlerOptions = new()
+            {
+                UseDefaultCredentials = true,
+            },
+        };
+        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
+            useDefaultCredentials: true);
+        GivenTheFollowing(fileRoute);
+
+        // Act
+        WhenICreateHttpHandlerOptions();
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
+    }
+
     private static FileHttpHandlerOptions RouteOptions() => new()
     {
         AllowAutoRedirect = true,
