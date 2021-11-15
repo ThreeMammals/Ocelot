@@ -4,7 +4,7 @@ Routing
 Ocelot's primary functionality is to take incoming http requests and forward them on to a downstream service. Ocelot currently only supports this in the form of another http request (in the future
 this could be any transport mechanism). 
 
-Ocelot's describes the routing of one request to another as a Route. In order to get anything working in Ocelot you need to set up a Route in the configuration.
+Ocelot describes the routing of one request to another as a Route. In order to get anything working in Ocelot you need to set up a Route in the configuration.
 
 .. code-block:: json
 
