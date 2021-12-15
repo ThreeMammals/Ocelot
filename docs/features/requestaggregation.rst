@@ -5,7 +5,7 @@ Ocelot allows you to specify Aggregate Routes that compose multiple normal Route
 a client that is making multiple requests to a server where it could just be one. This feature allows you to start implementing back end for a front end type 
 architecture with Ocelot.
 
-This feature was requested as part of `Issue 79 <https://github.com/ThreeMammals/Ocelot/issues/79>`_ and further improvements were made as part of `PR 298 <https://github.com/ThreeMammals/Ocelot/pull/298>`_.
+This feature was requested as part of `Issue 79 <https://github.com/ThreeMammals/Ocelot/issues/79>`_ and further improvements were made as part of `Issue 298 <https://github.com/ThreeMammals/Ocelot/issues/298>`_.
 
 In order to set this up you must do something like the following in your ocelot.json. Here we have specified two normal Routes and each one has a Key property. 
 We then specify an Aggregate that composes the two Routes using their keys in the RouteKeys list and says then we have the UpstreamPathTemplate which works like a normal Route.
