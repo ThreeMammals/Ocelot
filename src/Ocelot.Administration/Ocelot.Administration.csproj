@@ -9,7 +9,6 @@
     <PackageId>Ocelot.Administration</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot.Administration</PackageProjectUrl>
-    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot.Administration</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
     <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
