@@ -1,4 +1,4 @@
-[<img src="https://threemammals.com/images/ocelot_logo.png">](https://threemammals.com/ocelot)
+ ![Ocelot Logo](/images/ocelot_logo.png)
 
 [![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master)
 
