@@ -6,7 +6,7 @@
     <Product>Ocelot</Product>
     <Description>Provides Ocelot extensions to use kubernetes</Description>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIconUrl>http://threemammals.com/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
     <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
     <PackageId>Ocelot.Provider.Kubernetes</PackageId>
