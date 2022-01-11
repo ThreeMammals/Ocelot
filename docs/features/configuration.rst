@@ -31,6 +31,10 @@ Here is an example Route configuration, You don't need to set all of these thing
                 "TtlSeconds": 0,
                 "Region": ""
             },
+            "SecurityOptions": {
+                "IPAllowedList": [],
+                "IPBlockedList": []
+            },
             "RouteIsCaseSensitive": false,
             "ServiceName": "",
             "DownstreamScheme": "http",
