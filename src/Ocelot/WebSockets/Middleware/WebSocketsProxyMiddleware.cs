@@ -14,6 +14,7 @@ namespace Ocelot.WebSockets.Middleware
     using System.Threading;
     using System.Threading.Tasks;
 
+
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
