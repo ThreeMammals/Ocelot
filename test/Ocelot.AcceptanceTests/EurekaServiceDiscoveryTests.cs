@@ -30,7 +30,7 @@
             var serviceName = "product";
             var downstreamServicePort = RandomPortFinder.GetRandomPort();           
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-            var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
+            var fakeEurekaServiceDiscoveryUrl = $"http://127.0.0.1:{eurekaPort}";
 
             var instanceOne = new FakeEurekaService(serviceName, "localhost", downstreamServicePort, false,
                 new Uri($"http://localhost:{downstreamServicePort}"), new Dictionary<string, string>());
