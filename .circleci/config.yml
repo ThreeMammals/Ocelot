@@ -7,7 +7,7 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
-      - run: make build
+      - run: dotnet tool restore && dotnet cake
   release:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
