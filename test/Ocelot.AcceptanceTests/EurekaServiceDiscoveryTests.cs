@@ -26,14 +26,16 @@
         [Fact]
         public void should_use_eureka_service_discovery_and_make_request()
         {
+            // Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")
+            Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", "true");
             var eurekaPort = 8761;
             var serviceName = "product";
             var downstreamServicePort = RandomPortFinder.GetRandomPort();           
-            var downstreamServiceOneUrl = $"http://127.0.0.1:{downstreamServicePort}";
-            var fakeEurekaServiceDiscoveryUrl = $"http://127.0.0.1:{eurekaPort}";
+            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
+            var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 
-            var instanceOne = new FakeEurekaService(serviceName, "127.0.0.1", downstreamServicePort, false,
-                new Uri($"http://127.0.0.1:{downstreamServicePort}"), new Dictionary<string, string>());
+            var instanceOne = new FakeEurekaService(serviceName, "localhost", downstreamServicePort, false,
+                new Uri($"http://localhost:{downstreamServicePort}"), new Dictionary<string, string>());
 
             var configuration = new FileConfiguration
             {
