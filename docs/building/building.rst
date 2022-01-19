@@ -1,7 +1,7 @@
 Building
 ========
 
-* The best way to build Ocelot is using the Dockerfile.build file which can be found in the docker folder in Ocelot root. Use the following command `docker build -f ./docker/Dockerfile.build .`.
+* The best way to build Ocelot is using the Dockerfile.build file which can be found in the docker folder in Ocelot root. Use the following command `docker build --platform linux/amd64 -f ./docker/Dockerfile.build .`.
 
 * You'll can run the `./build.ps1` or `./build.sh` script depending on your OS. This will compile, run unit and acceptance tests and build the output packages locally. Output will got to the `./artifacts` directory.
 

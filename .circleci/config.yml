@@ -4,13 +4,13 @@ orbs:
 jobs:
   build:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.4
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
       - run: make build
   release:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.4
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
       - run: make release
