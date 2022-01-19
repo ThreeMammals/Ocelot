@@ -13,7 +13,7 @@ jobs:
       - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
-      - run: make release
+      - run: dotnet tool restore && dotnet cake --target=Release
 workflows:
   version: 2
   master:
