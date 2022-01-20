@@ -23,9 +23,12 @@
             _eurekaInstances = new List<IServiceInstance>();
         }
 
-        [Fact]
-        public void should_use_eureka_service_discovery_and_make_request()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
         {
+            Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
             var eurekaPort = 8761;
             var serviceName = "product";
             var downstreamServicePort = RandomPortFinder.GetRandomPort();           

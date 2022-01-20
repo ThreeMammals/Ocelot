@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Description>Provides Ocelot extensions to use CacheManager.Net</Description>
     <AssemblyTitle>Ocelot.Cache.CacheManager</AssemblyTitle>

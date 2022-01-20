@@ -4,16 +4,16 @@ orbs:
 jobs:
   build:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.3
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
-      - run: make build
+      - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.3
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - checkout
-      - run: make release
+      - run: dotnet tool restore && dotnet cake --target=Release
 workflows:
   version: 2
   master:
