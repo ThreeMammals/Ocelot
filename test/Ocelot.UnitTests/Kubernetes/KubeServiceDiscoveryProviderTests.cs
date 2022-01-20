@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _serviceName = "test";
             _namespaces = "dev";
-            _port = 86;
+            _port = 5567;
             _kubeHost = "localhost";
             _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
             _endpointEntries = new EndpointsV1();

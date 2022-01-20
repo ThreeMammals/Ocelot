@@ -1,11 +1,9 @@
-// #tool "nuget:?package=GitVersion.CommandLine&version=5.8.1"
 #tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
+#tool "dotnet:?package=coveralls.net&version=3.0.0"
 #addin nuget:?package=Cake.Json&version=4.0.0
 #addin nuget:?package=Newtonsoft.Json
-// #addin nuget:?package=System.Net.Http&version=4.3.4
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
 
 // compile
