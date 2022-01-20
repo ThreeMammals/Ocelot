@@ -7,7 +7,7 @@ namespace Ocelot.Errors.Middleware
     {
         public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<ExceptionHandlerMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ExceptionHandlerMiddleware>();
         }
     }
 }

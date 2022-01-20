@@ -1,6 +1,5 @@
 #tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
 #tool "dotnet:?package=coveralls.net&version=3.0.0"
-#tool nuget:?package=NuGet.CommandLine.XPlat&version=6.0.0
 #addin nuget:?package=Cake.Json&version=4.0.0
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
@@ -419,9 +418,9 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			
 			Information("Calling NuGetPush");
 
-			NuGetPush(
+			DotNetNuGetPush(
 				codePackage,
-				new NuGetPushSettings {
+				new DotNetNuGetPushSettings {
 					ApiKey = feedApiKey,
 					Source = codeFeedUrl
 				});

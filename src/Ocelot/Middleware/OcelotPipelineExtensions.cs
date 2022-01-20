@@ -23,6 +23,8 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.WebSockets.Middleware;
     using Ocelot.Multiplexer;
+    using Ocelot.Infrastructure;
+    using Microsoft.Extensions.DependencyInjection;
 
     public static class OcelotPipelineExtensions
     {
@@ -146,6 +148,27 @@
             app.UseHttpRequesterMiddleware();
 
             return app.Build();
+        }
+
+        public static IApplicationBuilder TryUseOcelotMiddleware<T1, T2>(this IApplicationBuilder builder)
+            where T1 : IOcelotMiddleware
+            where T2 : class, T1
+        {
+            var ocelotPipeLineRegistry = builder.ApplicationServices.GetService<IOcelotPipeLineInfoRegistry>();
+            if (ocelotPipeLineRegistry == null)
+            {
+                throw new ArgumentNullException(typeof(IOcelotPipeLineInfoRegistry).Name);
+            }
+
+            if (ocelotPipeLineRegistry.Exist<T1>())
+            {
+                return builder;
+            }
+
+            ocelotPipeLineRegistry.Add<T1>(typeof(T2));
+
+            builder.UseMiddleware<T2>();
+            return builder;
         }
 
         private static void UseIfNotNull(this IApplicationBuilder builder,

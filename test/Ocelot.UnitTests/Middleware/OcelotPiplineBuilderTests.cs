@@ -106,6 +106,16 @@
             del.Invoke(_httpContext);
         }
 
+        [Fact]
+        public void Middleware_TryAddMiddleware_Way()
+        {
+            var provider = _services.BuildServiceProvider();
+            IApplicationBuilder builder = new ApplicationBuilder(provider);
+            builder = builder.TryUseOcelotMiddleware<IOcelotMiddleware,MultiParametersInvokeMiddleware>();
+            var del = builder.Build();
+            del.Invoke(_httpContext);
+        }
+
         private class MultiParametersInvokeMiddleware : OcelotMiddleware
         {
             private readonly RequestDelegate _next;

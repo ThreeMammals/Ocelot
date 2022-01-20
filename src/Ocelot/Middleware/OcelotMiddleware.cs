@@ -2,7 +2,7 @@
 {
     using Ocelot.Logging;
 
-    public abstract class OcelotMiddleware
+    public abstract class OcelotMiddleware : IOcelotMiddleware
     {
         protected OcelotMiddleware(IOcelotLogger logger)
         {
