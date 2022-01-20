@@ -200,7 +200,7 @@ Task("RunUnitTests")
 		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		// https://github.com/danielpalme/ReportGenerator
 		
-		if (IsRunningOnCircleCI() && IsMaster())
+		if (IsRunningOnCircleCI() && IsMain())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -431,7 +431,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
 	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -487,7 +487,7 @@ private void UploadFileToGitHubRelease(FilePath file)
 
 private void CompleteGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -545,7 +545,7 @@ private bool IsRunningOnCircleCI()
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
 
-private bool IsMaster()
+private bool IsMain()
 {
-    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "master";
+    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "main";
 }
