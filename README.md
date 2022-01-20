@@ -43,7 +43,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET Core only and it targets `netcoreapp3.1`.
+Ocelot is designed to work with ASP.NET and it targets `net6.0`.
 
 Install Ocelot and it's dependencies using NuGet.
 
