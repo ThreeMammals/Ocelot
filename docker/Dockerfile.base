@@ -7,4 +7,4 @@ RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 
 RUN chmod u+x ./dotnet-install.sh 
 
-RUN ./dotnet-install.sh -c 5.0
+RUN ./dotnet-install.sh -c 5.0 -i /usr/share/dotnet

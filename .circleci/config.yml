@@ -4,13 +4,13 @@ orbs:
 jobs:
   build:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.5
+      - image: mijitt0m/ocelot-build:0.0.6
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.5
+      - image: mijitt0m/ocelot-build:0.0.6
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake --target=Release
