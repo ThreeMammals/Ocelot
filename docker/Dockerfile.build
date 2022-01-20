@@ -2,7 +2,7 @@
 # call from ocelot repo root with
 # docker build --platform linux/arm64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
 # docker build --platform linux/amd64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build-env
+FROM mijitt0m/ocelot-build:0.0.5
 
 ARG OCELOT_COVERALLS_TOKEN
 
