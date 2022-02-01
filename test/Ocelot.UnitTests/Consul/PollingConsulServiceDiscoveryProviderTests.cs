@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Moq;
+using Ocelot.Configuration;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
@@ -14,17 +16,17 @@ namespace Ocelot.UnitTests.Consul
 {
     public class PollingConsulServiceDiscoveryProviderTests
     {
-        private readonly int _delay;
         private readonly List<Service> _services;
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
         private readonly Mock<IServiceDiscoveryProvider> _consulServiceDiscoveryProvider;
         private List<Service> _result;
+        private readonly IMemoryCache _memoryCache;
 
         public PollingConsulServiceDiscoveryProviderTests()
         {
             _services = new List<Service>();
-            _delay = 1;
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
@@ -55,7 +57,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServices(int expected)
         {
-            using (var provider = new PollConsul(_delay, _factory.Object, _consulServiceDiscoveryProvider.Object))
+            using (var provider = new PollConsul(1, "Test-Svc", _factory.Object, _consulServiceDiscoveryProvider.Object, _memoryCache))
             {
                 var result = Wait.WaitFor(3000).Until(() =>
                 {

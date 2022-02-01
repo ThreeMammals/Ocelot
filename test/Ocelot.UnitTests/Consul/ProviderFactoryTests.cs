@@ -24,6 +24,7 @@ namespace Ocelot.UnitTests.Consul
             var consulFactory = new Mock<IConsulClientFactory>();
             services.AddSingleton(consulFactory.Object);
             services.AddSingleton(loggerFactory.Object);
+            services.AddMemoryCache();
             _provider = services.BuildServiceProvider();
         }
 

@@ -1,5 +1,6 @@
 ﻿using Ocelot.Logging;
 
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 using Ocelot.ServiceDiscovery;
@@ -13,6 +14,7 @@ namespace Ocelot.Provider.Consul
             var factory = provider.GetService<IOcelotLoggerFactory>();
 
             var consulFactory = provider.GetService<IConsulClientFactory>();
+            var memoryCache = provider.GetRequiredService<IMemoryCache>();
 
             var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
 
@@ -20,7 +22,7 @@ namespace Ocelot.Provider.Consul
 
             if (config.Type?.ToLower() == "pollconsul")
             {
-                return new PollConsul(config.PollingInterval, factory, consulServiceDiscoveryProvider);
+                return new PollConsul(config.PollingInterval, route.ServiceName, factory, consulServiceDiscoveryProvider, memoryCache);
             }
 
             return consulServiceDiscoveryProvider;
