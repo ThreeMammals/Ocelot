@@ -84,5 +84,20 @@ namespace Ocelot.DependencyInjection
 
             return builder;
         }
+
+
+        public static IConfigurationBuilder AddOcelot(
+            this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env)
+        {
+            const string primaryConfigFile = "ocelot.json";
+
+            var json = JsonConvert.SerializeObject(fileConfiguration);
+
+            File.WriteAllText(primaryConfigFile, json);
+
+            builder.AddJsonFile(primaryConfigFile, false, false);
+
+            return builder;
+        }
     }
 }
