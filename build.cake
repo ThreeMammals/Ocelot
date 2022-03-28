@@ -1,10 +1,9 @@
-#tool "nuget:?package=GitVersion.CommandLine&version=5.0.1"
+#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
+#tool "dotnet:?package=coveralls.net&version=3.0.0"
 #addin nuget:?package=Cake.Json&version=4.0.0
 #addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Net.Http&version=4.3.4
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=0.7.0"
 #addin Cake.Coveralls&version=0.10.1
 
 // compile
@@ -82,12 +81,12 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
-		var settings = new DotNetCoreBuildSettings
+		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
 		
-		DotNetCoreBuild(slnFile, settings);
+		DotNetBuild(slnFile, settings);
 	});
 
 Task("Clean")
@@ -199,7 +198,7 @@ Task("RunUnitTests")
 		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
 		// https://github.com/danielpalme/ReportGenerator
 		
-		if (IsRunningOnCircleCI() && IsMaster())
+		if (IsRunningOnCircleCI() && IsMain())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -419,9 +418,9 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			
 			Information("Calling NuGetPush");
 
-			NuGetPush(
+			DotNetNuGetPush(
 				codePackage,
-				new NuGetPushSettings {
+				new DotNetNuGetPushSettings {
 					ApiKey = feedApiKey,
 					Source = codeFeedUrl
 				});
@@ -430,7 +429,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
 	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -486,7 +485,7 @@ private void UploadFileToGitHubRelease(FilePath file)
 
 private void CompleteGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -544,7 +543,7 @@ private bool IsRunningOnCircleCI()
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
 
-private bool IsMaster()
+private bool IsMain()
 {
-    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "master";
+    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "main";
 }

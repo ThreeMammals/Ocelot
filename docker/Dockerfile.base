@@ -1,16 +1,10 @@
-# this is the dockerfile that create the ocelot build container
-# build with the docker-build.sh file in this folder
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS build
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine
 
-RUN apt install gnupg ca-certificates
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list
-RUN apt update
-RUN apt-get -y install mono-devel
+RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib
 
-RUN wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && apt-get update; \
-    apt-get install -y apt-transport-https && \
-    apt-get update && \
-    apt-get install -y dotnet-sdk-5.0
+RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
+
+RUN chmod u+x ./dotnet-install.sh 
+
+RUN ./dotnet-install.sh -c 5.0 -i /usr/share/dotnet

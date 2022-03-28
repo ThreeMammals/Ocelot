@@ -4,29 +4,29 @@ orbs:
 jobs:
   build:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.3
+      - image: mijitt0m/ocelot-build:0.0.6
     steps:
       - checkout
-      - run: make build
+      - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.3
+      - image: mijitt0m/ocelot-build:0.0.6
     steps:
       - checkout
-      - run: make release
+      - run: dotnet tool restore && dotnet cake --target=Release
 workflows:
   version: 2
-  master:
+  main:
     jobs:
       - queue/block_workflow:
           time: "20"
-          only-on-branch: master
+          only-on-branch: main
       - release:
           requires:
             - queue/block_workflow
           filters:
             branches:
-              only: master
+              only: main
   develop:
     jobs:
       - build:
@@ -39,5 +39,5 @@ workflows:
           filters:
             branches:
               ignore: 
-                - master
+                - main
                 - develop

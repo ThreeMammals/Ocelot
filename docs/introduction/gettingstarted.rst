@@ -1,14 +1,14 @@
 Getting Started
 ===============
 
-Ocelot is designed to work with .NET Core only and is currently on netcoreapp3.1.
+Ocelot is designed to work with ASP.NET and is currently on net6.0.
 
-.NET Core 3.1
-^^^^^^^^^^^^^
+.NET 6.0
+^^^^^^^^
 
 **Install NuGet package**
 
-Install Ocelot and it's dependencies using nuget. You will need to create a netcoreapp3.1 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
+Install Ocelot and it's dependencies using nuget. You will need to create a net6.0 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
 to get up and running.
 
    ``Install-Package Ocelot``
@@ -104,86 +104,3 @@ Then in your Program.cs you will want to have the following. The main things to 
             }
         }
     }
-
-    
- **Note:** When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace **.UseIISIntegration()** with **.UseIIS()**, otherwise you'll get startup errors.
-
-.NET Core 1.0
-^^^^^^^^^^^^^
-
-**Install NuGet package**
-
-Install Ocelot and it's dependecies using nuget. You will need to create a netcoreapp1.0+ projct and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections to get up and running. Please note you will need to choose one of the Ocelot packages from the NuGet feed.
-
-All versions can be found `here <https://www.nuget.org/packages/Ocelot/>`_.
-
-**Configuration**
-
-The following is a very basic ocelot.json. It won't do anything but should get Ocelot starting.
-
-.. code-block:: json
-
-    {
-        "Routes": [],
-        "GlobalConfiguration": {}
-    }
-
-**Program**
-
-Then in your Program.cs you will want to have the following. 
-
-.. code-block:: csharp
-
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            IWebHostBuilder builder = new WebHostBuilder();
-            
-            builder.ConfigureServices(s => {
-            });
-
-            builder.UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
-
-            var host = builder.Build();
-
-            host.Run();
-        }
-    }
-
-**Startup**
-
-An example startup using a json file for configuration can be seen below. 
-
-.. code-block:: csharp
-
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("ocelot.json")
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddOcelot(Configuration);
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseOcelot().Wait();
-        }
-    }
-
-This is pretty much all you need to get going.

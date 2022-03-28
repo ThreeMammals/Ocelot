@@ -1,7 +1,8 @@
+# syntax=docker/dockerfile:1
 # call from ocelot repo root with
-# docker build --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN --build-arg OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.release .
-
-FROM mijitt0m/ocelot-build:0.0.3
+# docker build --platform linux/arm64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN --build-arg OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
+# docker build --platform linux/amd64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN --build-arg OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
+FROM mijitt0m/ocelot-build:0.0.6
 
 ARG OCELOT_COVERALLS_TOKEN
 ARG OCELOT_NUTGET_API_KEY
@@ -11,10 +12,10 @@ ENV OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN
 ENV OCELOT_NUTGET_API_KEY=$OCELOT_NUTGET_API_KEY
 ENV OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY
 
-WORKDIR /src
+WORKDIR /build
 
 COPY ./. .
 
-RUN chmod u+x build.sh
+RUN dotnet tool restore
 
-RUN make release
+RUN	dotnet cake

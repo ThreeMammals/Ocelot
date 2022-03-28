@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Stateless Web Service for Stateful OcelotApplicationApiGateway App</Description>
     <Authors> </Authors>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>OcelotApplicationApiGateway</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>OcelotApplicationApiGateway</PackageId>
@@ -13,8 +13,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceFabric" Version="7.2.434" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="4.2.434" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="8.2.1363" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="5.2.1363" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Ocelot\Ocelot.csproj" />
