@@ -29,7 +29,7 @@ namespace Ocelot.RateLimit
                 if (entry.HasValue)
                 {
                     // entry has not expired
-                    if (entry.Value.Timestamp + TimeSpan.FromSeconds(rule.PeriodTimespan) >= DateTime.UtcNow)
+                    if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
                     {
                         // increment request count
                         var totalRequests = entry.Value.TotalRequests + 1;
