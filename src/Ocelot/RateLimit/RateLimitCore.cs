@@ -17,7 +17,7 @@ namespace Ocelot.RateLimit
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            RateLimitCounter counter = new RateLimitCounter(DateTime.UtcNow, 1);
+            RateLimitCounter counter;
             var rule = option.RateLimitRule;
 
             var counterId = ComputeCounterKey(requestIdentity, option);
@@ -26,40 +26,57 @@ namespace Ocelot.RateLimit
             lock (ProcessLocker)
             {
                 var entry = _counterHandler.Get(counterId);
-                if (entry.HasValue)
-                {
-                    // entry has not expired
-                    if (entry.Value.Timestamp + TimeSpan.FromSeconds(rule.PeriodTimespan) >= DateTime.UtcNow)
-                    {
-                        // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
-
-                        // deep copy
-                        counter = new RateLimitCounter(entry.Value.Timestamp, totalRequests);
-                    }
-                }
+                counter = CountRequests(entry, rule);
             }
 
+            TimeSpan expirationTime = ConvertToTimeSpan(rule.Period);
             if (counter.TotalRequests > rule.Limit)
             {
                 var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
                 if (retryAfter > 0)
                 {
-                    var expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
-                    _counterHandler.Set(counterId, counter, expirationTime);
+                    // rate limit exceeded, ban period is active
+                    expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
                 }
                 else
                 {
+                    // ban period elapsed, start counting
                     _counterHandler.Remove(counterId);
+                    counter = new RateLimitCounter(counter.Timestamp, 1);
                 }
             }
-            else
-            {
-                var expirationTime = ConvertToTimeSpan(rule.Period);
-                _counterHandler.Set(counterId, counter, expirationTime);
-            }
+
+            _counterHandler.Set(counterId, counter, expirationTime);
 
             return counter;
+        }
+
+        private RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
+        {
+            // no entry - start counting
+            if (!entry.HasValue)
+            {
+                return new RateLimitCounter(DateTime.UtcNow, 1);
+            }
+            
+            // entry has not expired
+            if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
+            {
+                // increment request count
+                var totalRequests = entry.Value.TotalRequests + 1;
+
+                // deep copy
+                return new RateLimitCounter(entry.Value.Timestamp, totalRequests);
+            }
+            
+            // entry not expired, rate limit exceeded
+            if (entry.Value.TotalRequests > rule.Limit)
+            {
+                return entry.Value;
+            }
+
+            // rate limit not exceeded, period elapsed, start counting
+            return new RateLimitCounter(DateTime.UtcNow, 1);
         }
 
         public void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
