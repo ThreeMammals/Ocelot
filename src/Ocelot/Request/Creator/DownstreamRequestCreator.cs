@@ -7,7 +7,7 @@ namespace Ocelot.Request.Creator
     public class DownstreamRequestCreator : IDownstreamRequestCreator
     {
         private readonly IFrameworkDescription _framework;
-        private const string DotNetFramework = ".NET Framework";
+        private const string DotNet = ".NET ";
 
         public DownstreamRequestCreator(IFrameworkDescription framework)
         {
@@ -23,7 +23,7 @@ namespace Ocelot.Request.Creator
                 * And MS HttpClient in Full Framework actually rejects it.
                 * see #366 issue
             **/
-            if (_framework.Get().Contains(DotNetFramework))
+            if (_framework.Get().StartsWith(DotNet))
             {
                 if (request.Method == HttpMethod.Get ||
                     request.Method == HttpMethod.Head ||
