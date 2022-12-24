@@ -66,7 +66,7 @@ Then in your ocelot.json add the following to proxy a Route using SignalR. Note 
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 50000
+          "Port": 5000
         }
       ],
       "UpstreamPathTemplate": "/gateway/{catchAll}",
