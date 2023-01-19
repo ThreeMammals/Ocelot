@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Modified https://github.com/aspnet/Proxy websockets class to use in Ocelot.
 
+using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
+
 namespace Ocelot.WebSockets.Middleware
 {
     using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
+    using Logging;
     using Ocelot.Middleware;
     using System;
     using System.Linq;
@@ -16,19 +18,24 @@ namespace Ocelot.WebSockets.Middleware
 
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
+        private static readonly string[] NotForwardedWebSocketHeaders = new[]
+        {
+            "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key",
+            "Sec-WebSocket-Version", "Sec-WebSocket-Extensions"
+        };
+
         private const int DefaultWebSocketBufferSize = 4096;
-        private const int StreamCopyBufferSize = 81920;
         private readonly RequestDelegate _next;
 
         public WebSocketsProxyMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory)
-                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+            : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
         }
 
-        private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
+        private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize,
+            CancellationToken cancellationToken)
         {
             if (bufferSize <= 0)
             {
@@ -38,43 +45,94 @@ namespace Ocelot.WebSockets.Middleware
             var buffer = new byte[bufferSize];
             while (true)
             {
-                WebSocketReceiveResult result;
-                try
+                var (succeeded, result) = await TryReceiveAsync(source, destination, buffer, cancellationToken);
+                if (!succeeded)
                 {
-                    result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
                     return;
-                }
-                catch (WebSocketException e)
-                {
-                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
-                    {
-                        await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
-                        return;
-                    }
-                    throw;
                 }
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                    await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription,
+                        cancellationToken);
                     return;
                 }
 
-                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType,
+                    result.EndOfMessage, cancellationToken);
             }
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        private static async Task<(bool Succeeded, WebSocketReceiveResult Result)> TryReceiveAsync(WebSocket source,
+            WebSocket destination, byte[] buffer, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                return (true, result);
+            }
+            catch (OperationCanceledException)
+            {
+                await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                return (false, default);
+            }
+            catch (WebSocketException e)
+            {
+                if (e.WebSocketErrorCode != WebSocketError.ConnectionClosedPrematurely) throw;
+                await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                return (false, default);
+            }
+        }
+
+        public static async Task Invoke(HttpContext httpContext)
         {
             var uri = httpContext.Items.DownstreamRequest().ToUri();
             await Proxy(httpContext, uri);
         }
 
-        private async Task Proxy(HttpContext context, string serverEndpoint)
+        private static async Task Proxy(HttpContext context, string serverEndpoint)
+        {
+            Validate(context, serverEndpoint);
+
+            var client = new ClientWebSocket();
+            foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
+            {
+                client.Options.AddSubProtocol(protocol);
+            }
+
+            SetHeaders(context, client);
+
+            var destinationUri = new Uri(serverEndpoint);
+            await client.ConnectAsync(destinationUri, context.RequestAborted);
+            using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
+            await Task.WhenAll(PumpWebSocket(client, server, DefaultWebSocketBufferSize, context.RequestAborted),
+                PumpWebSocket(server, client, DefaultWebSocketBufferSize, context.RequestAborted));
+        }
+
+        private static void SetHeaders(HttpContext context, ClientWebSocket client)
+        {
+            foreach (var headerEntry in context.Request.Headers)
+            {
+                if (NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase)) continue;
+                TrySetHeader(client, headerEntry);
+            }
+        }
+
+        private static void TrySetHeader(ClientWebSocket client, KeyValuePair<string, StringValues> headerEntry)
+        {
+            try
+            {
+                client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+            }
+            catch (ArgumentException)
+            {
+                // Expected in .NET Framework for headers that are mistakenly considered restricted.
+                // See: https://github.com/dotnet/corefx/issues/26627
+                // .NET Core does not exhibit this issue, ironically due to a separate bug (https://github.com/dotnet/corefx/issues/18784)
+            }
+        }
+
+        private static void Validate(HttpContext context, string serverEndpoint)
         {
             if (context == null)
             {
@@ -89,37 +147,6 @@ namespace Ocelot.WebSockets.Middleware
             if (!context.WebSockets.IsWebSocketRequest)
             {
                 throw new InvalidOperationException();
-            }
-
-            var client = new ClientWebSocket();
-            foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
-            {
-                client.Options.AddSubProtocol(protocol);
-            }
-
-            foreach (var headerEntry in context.Request.Headers)
-            {
-                if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
-                {
-                    try
-                    {
-                        client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // Expected in .NET Framework for headers that are mistakenly considered restricted.
-                        // See: https://github.com/dotnet/corefx/issues/26627
-                        // .NET Core does not exhibit this issue, ironically due to a separate bug (https://github.com/dotnet/corefx/issues/18784)
-                    }
-                }
-            }
-
-            var destinationUri = new Uri(serverEndpoint);
-            await client.ConnectAsync(destinationUri, context.RequestAborted);
-            using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
-            {
-                var bufferSize = DefaultWebSocketBufferSize;
-                await Task.WhenAll(PumpWebSocket(client, server, bufferSize, context.RequestAborted), PumpWebSocket(server, client, bufferSize, context.RequestAborted));
             }
         }
     }
