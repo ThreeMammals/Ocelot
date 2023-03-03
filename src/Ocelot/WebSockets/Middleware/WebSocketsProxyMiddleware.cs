@@ -98,7 +98,7 @@ namespace Ocelot.WebSockets.Middleware
 
             if (context.Items.DownstreamRoute()?.DangerousAcceptAnyServerCertificateValidator == true)
             {
-                client.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                client.Options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             }
 
             foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
