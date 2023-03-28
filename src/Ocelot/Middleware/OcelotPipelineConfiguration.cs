@@ -21,6 +21,14 @@
         public Func<HttpContext, Func<Task>, Task> PreErrorResponderMiddleware { get; set; }
 
         /// <summary>
+        /// This is allow the user to run any custome rate limit on requests.
+        /// </summary>
+        /// <value>
+        /// <placeholder>called after DownstreamRequestInitialiser</placeholder>
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> RateLimitMiddleware { get; set; }
+
+        /// <summary>
         /// This is to allow the user to run any extra authentication before the Ocelot authentication
         /// kicks in
         /// </summary>

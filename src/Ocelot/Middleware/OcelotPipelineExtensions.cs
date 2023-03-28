@@ -79,8 +79,16 @@
             // Initialises downstream request
             app.UseDownstreamRequestInitialiser();
 
-            // We check whether the request is ratelimit, and if there is no continue processing
-            app.UseRateLimiting();
+            if (pipelineConfiguration.RateLimitMiddleware == null)
+            {
+                // We check whether the request is ratelimit, and if there is no continue processing
+                app.UseRateLimiting();
+            }
+            else
+            {
+                //use user wanted ratelimit implementation
+                app.Use(pipelineConfiguration.RateLimitMiddleware);
+            }
 
             // This adds or updates the request id (initally we try and set this based on global config in the error handling middleware)
             // If anything was set at global level and we have a different setting at re route level the global stuff will be overwritten
