@@ -11,7 +11,7 @@ namespace Ocelot.RequestId.Middleware
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    public class RequestIdMiddleware : OcelotMiddleware
+    public class RequestIdMiddleware : OcelotMiddleware, IOcelotRequestIdMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;

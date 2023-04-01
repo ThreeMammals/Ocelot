@@ -7,7 +7,7 @@ namespace Ocelot.Requester.Middleware
     {
         public static IApplicationBuilder UseHttpRequesterMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, HttpRequesterMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotHttpRequesterMiddleware, HttpRequesterMiddleware>();
         }
     }
 }

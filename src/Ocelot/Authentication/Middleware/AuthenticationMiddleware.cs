@@ -8,7 +8,7 @@
     using System.Threading.Tasks;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class AuthenticationMiddleware : OcelotMiddleware
+    public class AuthenticationMiddleware : OcelotMiddleware, IOcelotAuthenticationMiddleware
     {
         private readonly RequestDelegate _next;
 

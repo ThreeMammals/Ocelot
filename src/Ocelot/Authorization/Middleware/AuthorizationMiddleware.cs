@@ -8,7 +8,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class AuthorizationMiddleware : OcelotMiddleware
+    public class AuthorizationMiddleware : OcelotMiddleware, IOcelotAuthorizationMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IClaimsAuthorizer _claimsAuthorizer;

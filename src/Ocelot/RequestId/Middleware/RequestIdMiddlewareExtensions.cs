@@ -7,7 +7,7 @@ namespace Ocelot.RequestId.Middleware
     {
         public static IApplicationBuilder UseRequestIdMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, RequestIdMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotRequestIdMiddleware, RequestIdMiddleware>();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Ocelot.Requester.Middleware
     using Ocelot.Responses;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class HttpRequesterMiddleware : OcelotMiddleware
+    public class HttpRequesterMiddleware : OcelotMiddleware, IOcelotHttpRequesterMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;

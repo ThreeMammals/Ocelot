@@ -6,7 +6,7 @@ namespace Ocelot.Middleware
     {
         public static IApplicationBuilder UseDownstreamContextMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ConfigurationMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotConfigurationMiddleware, ConfigurationMiddleware>();
         }
     }
 }

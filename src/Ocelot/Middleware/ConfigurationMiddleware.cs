@@ -7,7 +7,7 @@ namespace Ocelot.Middleware
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class ConfigurationMiddleware : OcelotMiddleware
+    public class ConfigurationMiddleware : OcelotMiddleware, IOcelotConfigurationMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IInternalConfigurationRepository _configRepo;

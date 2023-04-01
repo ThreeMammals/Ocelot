@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseOutputCacheMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, OutputCacheMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotOutputCacheMiddleware, OutputCacheMiddleware>();
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Ocelot.Request.Middleware
     {
         public static IApplicationBuilder UseDownstreamRequestInitialiser(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, DownstreamRequestInitialiserMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotDownstreamRequestInitialiserMiddleware, DownstreamRequestInitialiserMiddleware>();
         }
     }
 }

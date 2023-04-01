@@ -9,7 +9,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class MultiplexingMiddleware : OcelotMiddleware
+    public class MultiplexingMiddleware : OcelotMiddleware, IOcelotMultiplexingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IResponseAggregatorFactory _factory;

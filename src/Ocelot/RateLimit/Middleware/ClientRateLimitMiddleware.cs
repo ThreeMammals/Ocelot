@@ -10,7 +10,7 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    public class ClientRateLimitMiddleware : OcelotMiddleware
+    public class ClientRateLimitMiddleware : OcelotMiddleware, IOcelotClientRateLimitMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ClientRateLimitProcessor _processor;

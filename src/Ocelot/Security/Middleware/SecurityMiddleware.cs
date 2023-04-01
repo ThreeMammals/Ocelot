@@ -7,7 +7,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class SecurityMiddleware : OcelotMiddleware
+    public class SecurityMiddleware : OcelotMiddleware, IOcelotSecurityMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IEnumerable<ISecurityPolicy> _securityPolicies;

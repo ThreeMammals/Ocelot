@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseClaimsToQueryStringMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ClaimsToQueryStringMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotClaimsToQueryStringMiddleware, ClaimsToQueryStringMiddleware>();
         }
     }
 }

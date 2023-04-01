@@ -13,7 +13,7 @@ namespace Ocelot.Responder.Middleware
     /// <summary>
     /// Completes and returns the request and request body, if any pipeline errors occured then sets the appropriate HTTP status code instead.
     /// </summary>
-    public class ResponderMiddleware : OcelotMiddleware
+    public class ResponderMiddleware : OcelotMiddleware , IOcelotResponderMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpResponder _responder;

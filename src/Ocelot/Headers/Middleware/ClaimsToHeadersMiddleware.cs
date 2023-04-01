@@ -7,7 +7,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class ClaimsToHeadersMiddleware : OcelotMiddleware
+    public class ClaimsToHeadersMiddleware : OcelotMiddleware, IOcelotClaimsToHeadersMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IAddHeadersToRequest _addHeadersToRequest;

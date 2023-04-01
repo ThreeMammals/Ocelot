@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseHttpHeadersTransformationMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, HttpHeadersTransformationMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotHttpHeadersTransformationMiddleware, HttpHeadersTransformationMiddleware>();
         }
     }
 }

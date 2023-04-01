@@ -7,7 +7,7 @@ namespace Ocelot.Responder.Middleware
     {
         public static IApplicationBuilder UseResponderMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ResponderMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotResponderMiddleware, ResponderMiddleware>();
         }
     }
 }

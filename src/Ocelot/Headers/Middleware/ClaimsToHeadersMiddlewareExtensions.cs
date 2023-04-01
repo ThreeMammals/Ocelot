@@ -7,7 +7,7 @@ namespace Ocelot.Headers.Middleware
     {
         public static IApplicationBuilder UseClaimsToHeadersMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ClaimsToHeadersMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotClaimsToHeadersMiddleware, ClaimsToHeadersMiddleware>();
         }
     }
 }

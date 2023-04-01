@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseClaimsToDownstreamPathMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ClaimsToDownstreamPathMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotClaimsToDownstreamPathMiddleware, ClaimsToDownstreamPathMiddleware>();
         }
     }
 }

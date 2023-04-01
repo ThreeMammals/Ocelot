@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseMultiplexingMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, MultiplexingMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotMultiplexingMiddleware, MultiplexingMiddleware>();
         }
     }
 }

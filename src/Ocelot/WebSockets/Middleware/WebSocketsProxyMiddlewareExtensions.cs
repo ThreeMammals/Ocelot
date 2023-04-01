@@ -7,7 +7,7 @@ namespace Ocelot.WebSockets.Middleware
     {
         public static IApplicationBuilder UseWebSocketsProxyMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, WebSocketsProxyMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotWebSocketsProxyMiddleware, WebSocketsProxyMiddleware>();
         }
     }
 }

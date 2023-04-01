@@ -8,7 +8,7 @@
     using System;
     using System.Threading.Tasks;
 
-    public class LoadBalancingMiddleware : OcelotMiddleware
+    public class LoadBalancingMiddleware : OcelotMiddleware, IOcelotLoadBalancingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILoadBalancerHouse _loadBalancerHouse;

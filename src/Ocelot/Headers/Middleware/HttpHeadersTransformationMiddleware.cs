@@ -6,7 +6,7 @@ namespace Ocelot.Headers.Middleware
     using Ocelot.Middleware;
     using System.Threading.Tasks;
 
-    public class HttpHeadersTransformationMiddleware : OcelotMiddleware
+    public class HttpHeadersTransformationMiddleware : OcelotMiddleware, IOcelotHttpHeadersTransformationMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;

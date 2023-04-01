@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ClientRateLimitMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotClientRateLimitMiddleware, ClientRateLimitMiddleware>();
         }
     }
 }

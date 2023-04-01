@@ -8,7 +8,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class DownstreamRouteFinderMiddleware : OcelotMiddleware
+    public class DownstreamRouteFinderMiddleware : OcelotMiddleware , IOcelotDownstreamRouteFinderMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteProviderFactory _factory;

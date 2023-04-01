@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseSecurityMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, SecurityMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotSecurityMiddleware, SecurityMiddleware>();
         }
     }
 }

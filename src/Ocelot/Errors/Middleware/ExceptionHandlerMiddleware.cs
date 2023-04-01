@@ -13,7 +13,7 @@ namespace Ocelot.Errors.Middleware
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500.
     /// </summary>
-    public class ExceptionHandlerMiddleware : OcelotMiddleware
+    public class ExceptionHandlerMiddleware : OcelotMiddleware, IOcelotExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _repo;

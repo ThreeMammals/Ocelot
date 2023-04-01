@@ -7,7 +7,7 @@ namespace Ocelot.Authentication.Middleware
     {
         public static IApplicationBuilder UseAuthenticationMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, AuthenticationMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotAuthenticationMiddleware, AuthenticationMiddleware>();
         }
     }
 }

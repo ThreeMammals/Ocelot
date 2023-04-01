@@ -7,7 +7,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class ClaimsToQueryStringMiddleware : OcelotMiddleware
+    public class ClaimsToQueryStringMiddleware : OcelotMiddleware , IOcelotClaimsToQueryStringMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IAddQueriesToRequest _addQueriesToRequest;

@@ -10,7 +10,7 @@
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class OutputCacheMiddleware : OcelotMiddleware
+    public class OutputCacheMiddleware : OcelotMiddleware, IOcelotOutputCacheMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotCache<CachedResponse> _outputCache;

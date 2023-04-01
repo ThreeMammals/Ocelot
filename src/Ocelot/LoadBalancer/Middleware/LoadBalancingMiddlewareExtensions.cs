@@ -7,7 +7,7 @@ namespace Ocelot.LoadBalancer.Middleware
     {
         public static IApplicationBuilder UseLoadBalancingMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, LoadBalancingMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotLoadBalancingMiddleware, LoadBalancingMiddleware>();
         }
     }
 }

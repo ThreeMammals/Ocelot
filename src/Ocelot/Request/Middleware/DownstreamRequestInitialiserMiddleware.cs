@@ -7,7 +7,7 @@ namespace Ocelot.Request.Middleware
     using Microsoft.AspNetCore.Http;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
+    public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware , IOcelotDownstreamRequestInitialiserMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly Mapper.IRequestMapper _requestMapper;

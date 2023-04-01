@@ -7,7 +7,7 @@
     {
         public static IApplicationBuilder UseClaimsToClaimsMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, ClaimsToClaimsMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotClaimsToClaimsMiddleware, ClaimsToClaimsMiddleware>();
         }
     }
 }

@@ -8,7 +8,7 @@
     using Ocelot.PathManipulation;
     using Ocelot.DownstreamRouteFinder.Middleware;
 
-    public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
+    public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware, IOcelotClaimsToDownstreamPathMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IChangeDownstreamPathTemplate _changeDownstreamPathTemplate;

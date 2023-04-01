@@ -7,7 +7,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         public static IApplicationBuilder UseDownstreamUrlCreatorMiddleware(this IApplicationBuilder builder)
         {
-            return builder.TryUseOcelotMiddleware<IOcelotMiddleware, DownstreamUrlCreatorMiddleware>();
+            return builder.TryUseOcelotMiddleware<IOcelotDownstreamUrlCreatorMiddleware, DownstreamUrlCreatorMiddleware>();
         }
     }
 }
