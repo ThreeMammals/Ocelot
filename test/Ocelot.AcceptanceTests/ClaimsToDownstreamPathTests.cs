@@ -7,6 +7,8 @@ namespace Ocelot.AcceptanceTests
     using System.IO;
     using System.Net;
 
+    using Configuration.File;
+
     using IdentityServer4.AccessTokenValidation;
     using IdentityServer4.Models;
     using IdentityServer4.Test;
@@ -15,8 +17,6 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
-
-    using Configuration.File;
 
     using Shouldly;
 

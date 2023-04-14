@@ -4,11 +4,11 @@
     using System.Collections.Generic;
     using System.Net;
 
+    using Configuration.File;
+
     using Microsoft.AspNetCore.Http;
 
     using Newtonsoft.Json;
-
-    using Configuration.File;
 
     using Steeltoe.Common.Discovery;
 

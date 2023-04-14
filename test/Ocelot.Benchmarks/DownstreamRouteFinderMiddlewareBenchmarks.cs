@@ -10,16 +10,21 @@ namespace Ocelot.Benchmarks
     using BenchmarkDotNet.Diagnosers;
     using BenchmarkDotNet.Validators;
 
+    using Configuration;
+
+    using DependencyInjection;
+
+    using DownstreamRouteFinder.Finder;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
-    using Configuration;
-    using DependencyInjection;
-    using DownstreamRouteFinder.Finder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Logging;
     using Middleware;
+
+    using Ocelot.DownstreamRouteFinder.Middleware;
 
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]

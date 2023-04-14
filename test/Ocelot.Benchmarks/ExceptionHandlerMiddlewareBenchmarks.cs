@@ -10,14 +10,17 @@ namespace Ocelot.Benchmarks
     using BenchmarkDotNet.Diagnosers;
     using BenchmarkDotNet.Validators;
 
+    using DependencyInjection;
+
+    using Infrastructure.RequestData;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
-    using DependencyInjection;
     using Ocelot.Errors.Middleware;
-    using Infrastructure.RequestData;
-    using Logging;
 
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(ExceptionHandlerMiddlewareBenchmarks))]

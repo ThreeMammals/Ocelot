@@ -12,6 +12,7 @@ namespace Ocelot.UnitTests.Infrastructure
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     using Shouldly;

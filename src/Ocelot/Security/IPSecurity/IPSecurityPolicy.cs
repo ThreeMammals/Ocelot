@@ -2,10 +2,12 @@
 {
     using System.Threading.Tasks;
 
+    using Configuration;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
     using Ocelot.Middleware;
+
     using Responses;
 
     public class IPSecurityPolicy : ISecurityPolicy

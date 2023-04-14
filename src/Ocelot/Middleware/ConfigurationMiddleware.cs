@@ -2,11 +2,13 @@ namespace Ocelot.Middleware
 {
     using System.Threading.Tasks;
 
+    using Configuration.Repository;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration.Repository;
     using Ocelot.Errors.Middleware;
-    using Logging;
 
     public class ConfigurationMiddleware : OcelotMiddleware
     {

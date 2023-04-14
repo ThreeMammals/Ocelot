@@ -6,13 +6,13 @@ namespace Ocelot.DependencyInjection
     using System.Linq;
     using System.Text.RegularExpressions;
 
+    using Configuration.File;
+
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Configuration.Memory;
 
     using Newtonsoft.Json;
-
-    using Configuration.File;
 
     public static class ConfigurationBuilderExtensions
     {

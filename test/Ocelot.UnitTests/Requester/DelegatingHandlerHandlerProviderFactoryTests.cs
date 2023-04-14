@@ -13,9 +13,10 @@ namespace Ocelot.UnitTests.Requester
     using Ocelot.Logging;
     using Ocelot.Requester;
     using Ocelot.Requester.QoS;
-    using Responses;
 
     using Responder;
+
+    using Responses;
 
     using Shouldly;
 

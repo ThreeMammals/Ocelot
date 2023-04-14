@@ -3,9 +3,9 @@ namespace Ocelot.AcceptanceTests
     using System;
     using System.Collections.Generic;
 
-    using Microsoft.AspNetCore.Http;
-
     using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
 
     using Shouldly;
 

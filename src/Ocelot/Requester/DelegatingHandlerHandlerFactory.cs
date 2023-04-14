@@ -5,14 +5,15 @@ namespace Ocelot.Requester
     using System.Linq;
     using System.Net.Http;
 
+    using Configuration;
+
     using Logging;
 
     using Microsoft.Extensions.DependencyInjection;
 
-    using Configuration;
-    using Responses;
-
     using QoS;
+
+    using Responses;
 
     public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {
@@ -61,7 +62,7 @@ namespace Ocelot.Requester
             {
                 var sorted = SortByConfigOrder(downstreamRoute, routeSpecificHandlers);
 
-                handlers.AddRange(sorted.Select(handler => (Func<DelegatingHandler>) (() => handler)));
+                handlers.AddRange(sorted.Select(handler => (Func<DelegatingHandler>)(() => handler)));
             }
 
             if (downstreamRoute.HttpHandlerOptions.UseTracing)

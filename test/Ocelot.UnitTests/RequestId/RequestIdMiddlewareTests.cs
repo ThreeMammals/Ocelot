@@ -18,6 +18,7 @@
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.RequestId.Middleware;
+
     using Responses;
 
     using Shouldly;

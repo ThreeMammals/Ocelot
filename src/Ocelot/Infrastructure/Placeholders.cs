@@ -6,9 +6,12 @@ namespace Ocelot.Infrastructure
 
     using Microsoft.AspNetCore.Http;
 
-    using RequestData;
     using Middleware;
+
     using Ocelot.Request.Middleware;
+
+    using RequestData;
+
     using Responses;
 
     public class Placeholders : IPlaceholders

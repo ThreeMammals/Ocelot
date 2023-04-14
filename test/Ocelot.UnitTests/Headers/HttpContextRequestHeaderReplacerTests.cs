@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Headers
             var context = new DefaultHttpContext();
             context.Request.Headers.Add("test", "test");
 
-            var fAndRs = new List<HeaderFindAndReplace> {new("test", "test", "chiken", 0)};
+            var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
 
             this.Given(x => GivenTheFollowingHttpRequest(context))
                 .And(x => GivenTheFollowingHeaderReplacements(fAndRs))

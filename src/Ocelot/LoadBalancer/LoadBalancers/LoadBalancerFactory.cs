@@ -4,7 +4,9 @@
     using System.Linq;
 
     using Configuration;
+
     using Responses;
+
     using ServiceDiscovery;
 
     public class LoadBalancerFactory : ILoadBalancerFactory

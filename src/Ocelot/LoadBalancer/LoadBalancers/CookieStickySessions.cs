@@ -4,10 +4,12 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
+    using Infrastructure;
+
     using Microsoft.AspNetCore.Http;
 
-    using Infrastructure;
     using Responses;
+
     using Values;
 
     public class CookieStickySessions : ILoadBalancer

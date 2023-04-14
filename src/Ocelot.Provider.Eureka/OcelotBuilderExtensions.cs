@@ -3,6 +3,7 @@
     using DependencyInjection;
 
     using Microsoft.Extensions.DependencyInjection;
+
     using Steeltoe.Discovery.Client;
 
     public static class OcelotBuilderExtensions

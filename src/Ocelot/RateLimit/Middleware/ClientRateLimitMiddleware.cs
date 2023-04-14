@@ -5,10 +5,12 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Configuration;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
-    using Logging;
     using Ocelot.Middleware;
 
     public class ClientRateLimitMiddleware : OcelotMiddleware

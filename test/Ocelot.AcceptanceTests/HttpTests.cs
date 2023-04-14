@@ -6,10 +6,10 @@ namespace Ocelot.AcceptanceTests
     using System.Net;
     using System.Net.Http;
 
+    using Configuration.File;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Server.Kestrel.Core;
-
-    using Configuration.File;
 
     using TestStack.BDDfy;
 

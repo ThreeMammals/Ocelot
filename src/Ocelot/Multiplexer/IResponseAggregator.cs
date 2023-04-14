@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using Microsoft.AspNetCore.Http;
-
     using Configuration;
+
+    using Microsoft.AspNetCore.Http;
 
     public interface IResponseAggregator
     {

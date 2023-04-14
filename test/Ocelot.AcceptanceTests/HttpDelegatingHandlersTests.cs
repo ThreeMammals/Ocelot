@@ -7,9 +7,9 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Microsoft.AspNetCore.Http;
-
     using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
 
     using Shouldly;
 

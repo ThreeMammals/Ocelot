@@ -12,8 +12,10 @@
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Validator;
     using Ocelot.Errors;
-    using Responses;
+
     using Responder;
+
+    using Responses;
 
     using Shouldly;
 

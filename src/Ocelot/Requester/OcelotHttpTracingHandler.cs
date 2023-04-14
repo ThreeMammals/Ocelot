@@ -5,9 +5,9 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Logging;
-
     using Infrastructure.RequestData;
+
+    using Logging;
 
     public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
     {

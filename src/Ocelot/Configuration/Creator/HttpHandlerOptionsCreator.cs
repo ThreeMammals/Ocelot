@@ -2,11 +2,11 @@
 {
     using System;
 
+    using File;
+
     using Logging;
 
     using Microsoft.Extensions.DependencyInjection;
-
-    using File;
 
     public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {

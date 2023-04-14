@@ -11,13 +11,16 @@ namespace Ocelot.UnitTests.LoadBalancer
 
     using Ocelot.Infrastructure;
     using Ocelot.LoadBalancer.LoadBalancers;
-    using Responses;
+
     using Responder;
-    using Values;
+
+    using Responses;
 
     using Shouldly;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

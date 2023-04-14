@@ -7,11 +7,12 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Configuration;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Extensions;
     using Microsoft.Extensions.Primitives;
 
-    using Configuration;
     using Responses;
 
     public class RequestMapper : IRequestMapper

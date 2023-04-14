@@ -3,13 +3,18 @@ namespace Ocelot.ServiceDiscovery
     using System;
     using System.Collections.Generic;
 
+    using Configuration;
+
+    using Logging;
+
     using Microsoft.Extensions.DependencyInjection;
 
     using Ocelot.Configuration;
-    using Logging;
-    using Responses;
-    using Configuration;
+
     using Providers;
+
+    using Responses;
+
     using Values;
 
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory

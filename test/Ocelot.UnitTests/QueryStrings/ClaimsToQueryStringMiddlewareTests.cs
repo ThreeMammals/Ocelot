@@ -19,6 +19,7 @@ namespace Ocelot.UnitTests.QueryStrings
     using Ocelot.QueryStrings;
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     using TestStack.BDDfy;

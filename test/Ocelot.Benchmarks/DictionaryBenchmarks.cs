@@ -11,6 +11,7 @@ namespace Ocelot.Benchmarks
 
     using Configuration;
     using Configuration.Builder;
+
     using Requester;
 
     [Config(typeof(DictionaryBenchmarks))]

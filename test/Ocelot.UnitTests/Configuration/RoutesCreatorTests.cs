@@ -11,11 +11,12 @@
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
-    using Values;
 
     using Shouldly;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

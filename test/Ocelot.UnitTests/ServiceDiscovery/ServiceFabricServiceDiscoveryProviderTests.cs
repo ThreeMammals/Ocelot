@@ -4,11 +4,12 @@
 
     using Ocelot.ServiceDiscovery.Configuration;
     using Ocelot.ServiceDiscovery.Providers;
-    using Values;
 
     using Shouldly;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

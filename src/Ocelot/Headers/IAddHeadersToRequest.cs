@@ -6,7 +6,9 @@ namespace Ocelot.Headers
 
     using Configuration;
     using Configuration.Creator;
+
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     public interface IAddHeadersToRequest

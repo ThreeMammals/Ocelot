@@ -7,21 +7,24 @@ namespace Ocelot.IntegrationTests
     using System.Net.Http;
     using System.Net.Http.Headers;
 
+    using Administration;
+
+    using CacheManager.Core;
+
     using Configuration.File;
 
     using DependencyInjection;
-
-    using CacheManager.Core;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+
+    using Middleware;
+
     using Newtonsoft.Json;
 
-    using Administration;
     using Ocelot.Cache.CacheManager;
-    using Middleware;
 
     using Shouldly;
 

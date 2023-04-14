@@ -6,9 +6,10 @@
     using System.Net;
     using System.Threading.Tasks;
 
+    using Configuration.File;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration.File;
     using Middleware;
 
     using Shouldly;

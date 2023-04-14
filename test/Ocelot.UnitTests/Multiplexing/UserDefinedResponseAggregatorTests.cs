@@ -10,12 +10,15 @@ namespace Ocelot.UnitTests.Multiplexing
 
     using Moq;
 
+    using Multiplexer;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Middleware;
-    using Multiplexer;
-    using Responses;
+
     using Responder;
+
+    using Responses;
 
     using Shouldly;
 

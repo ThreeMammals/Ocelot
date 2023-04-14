@@ -4,11 +4,14 @@ namespace Ocelot.Errors.Middleware
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Configuration;
+
+    using Infrastructure.RequestData;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
-    using Infrastructure.RequestData;
-    using Logging;
     using Ocelot.Middleware;
 
     /// <summary>

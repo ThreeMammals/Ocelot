@@ -4,6 +4,7 @@ namespace Ocelot.Configuration.Creator
     using System.Linq;
 
     using Builder;
+
     using File;
 
     public class QoSOptionsCreator : IQoSOptionsCreator

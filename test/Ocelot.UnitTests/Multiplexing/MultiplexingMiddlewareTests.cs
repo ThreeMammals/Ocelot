@@ -7,12 +7,13 @@
 
     using Moq;
 
+    using Multiplexer;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Multiplexer;
 
     using Shouldly;
 

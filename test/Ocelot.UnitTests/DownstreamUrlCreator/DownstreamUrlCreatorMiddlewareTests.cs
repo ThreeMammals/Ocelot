@@ -19,12 +19,14 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
+
     using Responses;
-    using Values;
 
     using Shouldly;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

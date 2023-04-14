@@ -6,6 +6,8 @@
     using System.Net;
     using System.Security.Claims;
 
+    using Configuration.File;
+
     using IdentityServer4.AccessTokenValidation;
     using IdentityServer4.Models;
     using IdentityServer4.Test;
@@ -14,7 +16,6 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
-    using Configuration.File;
 
     using Shouldly;
 

@@ -6,7 +6,9 @@
     using System.Text.RegularExpressions;
 
     using DownstreamRouteFinder.UrlMatcher;
+
     using Ocelot.Infrastructure.Claims.Parser;
+
     using Responses;
 
     public class ClaimsAuthorizer : IClaimsAuthorizer

@@ -3,8 +3,11 @@ namespace Ocelot.Headers
     using System.Collections.Generic;
 
     using Configuration.Creator;
+
     using Infrastructure;
+
     using Logging;
+
     using Ocelot.Middleware;
 
     public class AddHeadersToResponse : IAddHeadersToResponse

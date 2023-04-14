@@ -5,9 +5,10 @@
     using System.Threading.Tasks;
 
     using ServiceDiscovery.Providers;
-    using Values;
 
     using Steeltoe.Discovery;
+
+    using Values;
 
     public class Eureka : IServiceDiscoveryProvider
     {

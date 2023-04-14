@@ -7,9 +7,12 @@
     using Configuration;
     using Configuration.Builder;
     using Configuration.Creator;
-    using UrlMatcher;
+
     using LoadBalancer.LoadBalancers;
+
     using Responses;
+
+    using UrlMatcher;
 
     public class DownstreamRouteCreator : IDownstreamRouteProvider
     {

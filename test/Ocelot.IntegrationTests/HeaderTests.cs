@@ -12,16 +12,18 @@ namespace Ocelot.IntegrationTests
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Configuration.File;
+
+    using DependencyInjection;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
 
-    using Newtonsoft.Json;
-
-    using Configuration.File;
-    using DependencyInjection;
     using Middleware;
+
+    using Newtonsoft.Json;
 
     using Shouldly;
 

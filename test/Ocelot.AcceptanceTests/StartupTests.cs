@@ -5,11 +5,10 @@
     using System.Net;
     using System.Threading.Tasks;
 
+    using Configuration.File;
     using Configuration.Repository;
 
     using Microsoft.AspNetCore.Http;
-
-    using Configuration.File;
 
     using Responses;
 

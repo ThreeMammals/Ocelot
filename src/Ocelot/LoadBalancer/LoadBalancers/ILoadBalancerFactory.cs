@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
     using Configuration;
+
     using Responses;
 
     public interface ILoadBalancerFactory

@@ -4,6 +4,7 @@ namespace Ocelot.Configuration
     using System.Collections.Generic;
 
     using Creator;
+
     using Values;
 
     public class DownstreamRoute

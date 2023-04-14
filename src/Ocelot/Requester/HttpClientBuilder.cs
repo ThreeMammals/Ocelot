@@ -6,6 +6,7 @@
     using System.Net.Http;
 
     using Configuration;
+
     using Logging;
 
     public class HttpClientBuilder : IHttpClientBuilder

@@ -3,11 +3,14 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Finder;
+
+    using Infrastructure.Extensions;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Finder;
-    using Infrastructure.Extensions;
-    using Logging;
     using Ocelot.Middleware;
 
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware

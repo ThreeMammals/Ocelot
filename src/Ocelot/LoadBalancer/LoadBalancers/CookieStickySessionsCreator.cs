@@ -1,8 +1,11 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
     using Configuration;
+
     using Infrastructure;
+
     using Responses;
+
     using ServiceDiscovery.Providers;
 
     public class CookieStickySessionsCreator : ILoadBalancerCreator

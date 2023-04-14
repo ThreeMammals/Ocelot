@@ -6,10 +6,9 @@ namespace Ocelot.AcceptanceTests
     using System.Net;
 
     using Configuration;
+    using Configuration.File;
 
     using Microsoft.AspNetCore.Http;
-
-    using Configuration.File;
 
     using Requester;
 

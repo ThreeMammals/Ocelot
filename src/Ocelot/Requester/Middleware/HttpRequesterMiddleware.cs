@@ -4,10 +4,12 @@ namespace Ocelot.Requester.Middleware
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Logging;
     using Ocelot.Middleware;
+
     using Responses;
 
     public class HttpRequesterMiddleware : OcelotMiddleware

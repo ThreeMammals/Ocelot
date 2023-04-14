@@ -2,9 +2,10 @@ namespace Ocelot.UnitTests.Multiplexing
 {
     using Moq;
 
+    using Multiplexer;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Multiplexer;
 
     using Shouldly;
 

@@ -5,6 +5,7 @@ namespace Ocelot.Requester
     using System.Net.Http;
 
     using Configuration;
+
     using Responses;
 
     public interface IDelegatingHandlerHandlerFactory

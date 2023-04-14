@@ -14,8 +14,10 @@ namespace Ocelot.UnitTests.Requester
     using Ocelot.Middleware;
     using Ocelot.Requester;
     using Ocelot.Requester.Middleware;
-    using Responses;
+
     using Responder;
+
+    using Responses;
 
     using Shouldly;
 

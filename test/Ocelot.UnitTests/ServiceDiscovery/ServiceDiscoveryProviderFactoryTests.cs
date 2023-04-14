@@ -11,9 +11,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
-    using Responses;
     using Ocelot.ServiceDiscovery;
     using Ocelot.ServiceDiscovery.Providers;
+
+    using Responses;
 
     using Shouldly;
 

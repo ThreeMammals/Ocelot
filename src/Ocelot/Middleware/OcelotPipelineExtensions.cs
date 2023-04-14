@@ -6,6 +6,8 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
 
+    using Multiplexer;
+
     using Ocelot.Authentication.Middleware;
     using Ocelot.Authorization.Middleware;
     using Ocelot.Cache.Middleware;
@@ -16,7 +18,6 @@
     using Ocelot.Errors.Middleware;
     using Ocelot.Headers.Middleware;
     using Ocelot.LoadBalancer.Middleware;
-    using Multiplexer;
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.RateLimit.Middleware;
     using Ocelot.Request.Middleware;

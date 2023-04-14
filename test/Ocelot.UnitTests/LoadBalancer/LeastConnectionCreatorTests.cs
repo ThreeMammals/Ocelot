@@ -5,8 +5,9 @@
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.LoadBalancer.LoadBalancers;
-    using Responses;
     using Ocelot.ServiceDiscovery.Providers;
+
+    using Responses;
 
     using Shouldly;
 

@@ -3,9 +3,10 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    using Configuration;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
     using Responses;
 
     public interface IRequestMapper

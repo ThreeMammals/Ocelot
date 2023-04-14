@@ -1,8 +1,10 @@
 namespace Ocelot.ServiceDiscovery
 {
     using Ocelot.Configuration;
-    using Responses;
+
     using Providers;
+
+    using Responses;
 
     public interface IServiceDiscoveryProviderFactory
     {

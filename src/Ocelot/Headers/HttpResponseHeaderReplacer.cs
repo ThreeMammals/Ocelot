@@ -3,12 +3,15 @@ namespace Ocelot.Headers
     using System.Collections.Generic;
     using System.Linq;
 
-    using Microsoft.AspNetCore.Http;
-
     using Configuration;
+
     using Infrastructure;
     using Infrastructure.Extensions;
+
+    using Microsoft.AspNetCore.Http;
+
     using Ocelot.Middleware;
+
     using Responses;
 
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer

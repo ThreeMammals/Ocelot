@@ -13,6 +13,7 @@
     using Ocelot.DependencyInjection;
     using Ocelot.Middleware;
     using Ocelot.Tracing.OpenTracing;
+
     using OpenTracing.Util;
 
     internal static class Program

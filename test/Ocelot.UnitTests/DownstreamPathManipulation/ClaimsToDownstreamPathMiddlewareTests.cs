@@ -14,12 +14,15 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using PathManipulation;
     using Ocelot.Request.Middleware;
+
+    using PathManipulation;
+
     using Responses;
-    using Values;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

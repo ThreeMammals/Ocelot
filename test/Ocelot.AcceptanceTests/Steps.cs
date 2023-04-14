@@ -14,16 +14,22 @@ namespace Ocelot.AcceptanceTests
     using System.Threading;
     using System.Threading.Tasks;
 
+    using CacheManager.Core;
+
     using Caching;
 
     using Configuration;
+    using Configuration.Creator;
+    using Configuration.File;
     using Configuration.Repository;
 
-    using CacheManager.Core;
+    using DependencyInjection;
 
     using IdentityServer4.AccessTokenValidation;
 
     using LoadBalancer.LoadBalancers;
+
+    using Logging;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -32,22 +38,21 @@ namespace Ocelot.AcceptanceTests
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
+    using Middleware;
+
     using Moq;
+
+    using Multiplexer;
 
     using Newtonsoft.Json;
 
     using Ocelot.Cache.CacheManager;
-    using Configuration.Creator;
-    using Configuration.File;
-    using DependencyInjection;
-    using Logging;
-    using Middleware;
-    using Multiplexer;
     using Ocelot.Provider.Consul;
-    using Provider.Eureka;
     using Ocelot.Provider.Polly;
     using Ocelot.Tracing.Butterfly;
     using Ocelot.Tracing.OpenTracing;
+
+    using Provider.Eureka;
 
     using Requester;
 

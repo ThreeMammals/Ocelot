@@ -4,10 +4,12 @@ namespace Ocelot.RequestId.Middleware
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
+    using Infrastructure.RequestData;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Infrastructure.RequestData;
-    using Logging;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
 

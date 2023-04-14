@@ -2,11 +2,13 @@
 {
     using System.Threading.Tasks;
 
+    using Configuration;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
-    using Logging;
     using Ocelot.Middleware;
 
     public class AuthenticationMiddleware : OcelotMiddleware

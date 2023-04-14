@@ -16,6 +16,7 @@
     using Ocelot.Logging;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     using TestStack.BDDfy;

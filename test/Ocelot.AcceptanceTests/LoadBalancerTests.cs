@@ -5,11 +5,11 @@ namespace Ocelot.AcceptanceTests
     using System.Threading.Tasks;
 
     using Configuration;
+    using Configuration.File;
+
+    using LoadBalancer.LoadBalancers;
 
     using Microsoft.AspNetCore.Http;
-
-    using Configuration.File;
-    using LoadBalancer.LoadBalancers;
 
     using Responses;
 

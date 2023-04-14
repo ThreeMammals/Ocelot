@@ -10,9 +10,10 @@ namespace Ocelot.WebSockets.Middleware
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Logging;
     using Ocelot.Middleware;
 
     public class WebSocketsProxyMiddleware : OcelotMiddleware

@@ -9,11 +9,11 @@ namespace Ocelot.AcceptanceTests
 
     using Butterfly.Client.AspNetCore;
 
+    using Configuration.File;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-
-    using Configuration.File;
 
     using OpenTracing;
     using OpenTracing.Propagation;

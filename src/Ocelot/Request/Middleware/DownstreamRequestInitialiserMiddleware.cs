@@ -2,11 +2,13 @@ namespace Ocelot.Request.Middleware
 {
     using System.Threading.Tasks;
 
-    using Microsoft.AspNetCore.Http;
+    using Creator;
 
     using Logging;
+
+    using Microsoft.AspNetCore.Http;
+
     using Ocelot.Middleware;
-    using Creator;
 
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {

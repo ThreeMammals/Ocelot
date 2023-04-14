@@ -5,15 +5,12 @@ namespace Ocelot.DependencyInjection
     using System.Net.Http;
     using System.Reflection;
 
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-    using Microsoft.Extensions.Options;
-
     using Authorization;
+
     using Cache;
+
     using Claims;
+
     using Configuration;
     using Configuration.ChangeTracking;
     using Configuration.Creator;
@@ -22,27 +19,50 @@ namespace Ocelot.DependencyInjection
     using Configuration.Repository;
     using Configuration.Setter;
     using Configuration.Validator;
+
     using DownstreamRouteFinder.Finder;
     using DownstreamRouteFinder.UrlMatcher;
+
     using DownstreamUrlCreator.UrlTemplateReplacer;
+
     using Headers;
+
     using Infrastructure;
-    using Ocelot.Infrastructure.Claims.Parser;
     using Infrastructure.RequestData;
+
     using LoadBalancer.LoadBalancers;
+
     using Logging;
+
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
+    using Microsoft.Extensions.Options;
+
     using Middleware;
+
     using Multiplexer;
+
+    using Ocelot.Infrastructure.Claims.Parser;
+
     using PathManipulation;
+
     using QueryStrings;
+
     using RateLimit;
+
     using Request.Creator;
     using Request.Mapper;
+
     using Requester;
     using Requester.QoS;
+
     using Responder;
+
     using Security;
     using Security.IPSecurity;
+
     using ServiceDiscovery;
     using ServiceDiscovery.Providers;
 

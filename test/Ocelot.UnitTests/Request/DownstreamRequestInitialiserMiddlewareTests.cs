@@ -14,6 +14,7 @@
     using Ocelot.Request.Creator;
     using Ocelot.Request.Mapper;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     using Shouldly;

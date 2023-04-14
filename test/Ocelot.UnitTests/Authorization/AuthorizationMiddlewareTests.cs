@@ -16,6 +16,7 @@ namespace Ocelot.UnitTests.Authorization
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+
     using Responses;
 
     using TestStack.BDDfy;

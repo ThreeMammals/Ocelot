@@ -3,10 +3,12 @@
     using System;
     using System.Threading.Tasks;
 
+    using LoadBalancers;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using LoadBalancers;
-    using Logging;
     using Ocelot.Middleware;
 
     public class LoadBalancingMiddleware : OcelotMiddleware

@@ -3,9 +3,10 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Logging;
     using Ocelot.Middleware;
 
     public class ClaimsToClaimsMiddleware : OcelotMiddleware

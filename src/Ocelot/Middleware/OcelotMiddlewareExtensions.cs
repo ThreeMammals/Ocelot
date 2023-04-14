@@ -5,18 +5,21 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Options;
-
     using Configuration;
     using Configuration.Creator;
     using Configuration.File;
     using Configuration.Repository;
     using Configuration.Setter;
+
     using DependencyInjection;
+
     using Logging;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
+
     using Responses;
 
     public static class OcelotMiddlewareExtensions

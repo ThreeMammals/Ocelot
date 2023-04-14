@@ -7,7 +7,6 @@
     using Moq;
 
     using Ocelot.Provider.Eureka;
-    using Values;
 
     using Shouldly;
 
@@ -15,6 +14,8 @@
     using Steeltoe.Discovery;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

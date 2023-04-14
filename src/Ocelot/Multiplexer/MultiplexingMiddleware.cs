@@ -4,11 +4,14 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Configuration;
+
+    using DownstreamRouteFinder.UrlMatcher;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Configuration;
-    using DownstreamRouteFinder.UrlMatcher;
-    using Logging;
     using Middleware;
 
     public class MultiplexingMiddleware : OcelotMiddleware

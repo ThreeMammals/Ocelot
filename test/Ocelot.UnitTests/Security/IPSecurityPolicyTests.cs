@@ -10,8 +10,9 @@
     using Ocelot.Configuration.Builder;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
-    using Responses;
     using Ocelot.Security.IPSecurity;
+
+    using Responses;
 
     using TestStack.BDDfy;
 

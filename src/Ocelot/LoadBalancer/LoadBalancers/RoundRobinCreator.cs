@@ -1,7 +1,9 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
     using Configuration;
+
     using Responses;
+
     using ServiceDiscovery.Providers;
 
     public class RoundRobinCreator : ILoadBalancerCreator

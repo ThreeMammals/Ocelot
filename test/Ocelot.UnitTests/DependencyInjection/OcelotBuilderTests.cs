@@ -14,19 +14,23 @@ namespace Ocelot.UnitTests.DependencyInjection
 
     using Moq;
 
+    using Multiplexer;
+
     using Ocelot.Configuration.Setter;
     using Ocelot.DependencyInjection;
     using Ocelot.Infrastructure;
     using Ocelot.LoadBalancer.LoadBalancers;
-    using Multiplexer;
     using Ocelot.Requester;
-    using Responses;
+
     using Requester;
-    using Values;
+
+    using Responses;
 
     using Shouldly;
 
     using TestStack.BDDfy;
+
+    using Values;
 
     using Xunit;
 

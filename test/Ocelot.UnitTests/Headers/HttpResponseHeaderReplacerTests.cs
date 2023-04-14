@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Headers
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     using Shouldly;

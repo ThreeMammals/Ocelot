@@ -5,11 +5,11 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using File;
+
     using FluentValidation;
 
     using Microsoft.AspNetCore.Authentication;
-
-    using File;
 
     public class RouteFluentValidator : AbstractValidator<FileRoute>
     {

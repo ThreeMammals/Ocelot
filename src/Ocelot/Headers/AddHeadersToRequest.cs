@@ -3,6 +3,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using Configuration;
+    using Configuration.Creator;
+
     using Infrastructure;
 
     using Logging;
@@ -10,10 +13,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
 
-    using Configuration;
-    using Configuration.Creator;
     using Ocelot.Infrastructure.Claims.Parser;
     using Ocelot.Request.Middleware;
+
     using Responses;
 
     public class AddHeadersToRequest : IAddHeadersToRequest

@@ -6,9 +6,9 @@
 
     using Configuration;
 
-    using Microsoft.Extensions.DependencyInjection;
-
     using Logging;
+
+    using Microsoft.Extensions.DependencyInjection;
 
     public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
     {

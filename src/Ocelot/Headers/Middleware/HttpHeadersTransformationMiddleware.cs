@@ -2,9 +2,10 @@ namespace Ocelot.Headers.Middleware
 {
     using System.Threading.Tasks;
 
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
 
-    using Logging;
     using Ocelot.Middleware;
 
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware

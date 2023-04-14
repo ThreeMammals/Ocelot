@@ -3,11 +3,12 @@ namespace Ocelot.Provider.Polly
     using System;
     using System.Net.Http;
 
+    using Configuration;
+
     using global::Polly;
     using global::Polly.CircuitBreaker;
     using global::Polly.Timeout;
 
-    using Configuration;
     using Logging;
 
     public class PollyQoSProvider

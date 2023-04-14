@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Claims
     using Ocelot.Configuration.Builder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
+
     using Responses;
 
     using TestStack.BDDfy;

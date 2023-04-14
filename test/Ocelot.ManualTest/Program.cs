@@ -8,12 +8,13 @@ namespace Ocelot.ManualTest
     using System.Threading;
     using System.Threading.Tasks;
 
+    using DependencyInjection;
+
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
-    using DependencyInjection;
     using Middleware;
 
     public class Program
