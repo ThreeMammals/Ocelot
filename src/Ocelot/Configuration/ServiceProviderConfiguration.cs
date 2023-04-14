@@ -2,7 +2,7 @@
 {
     public class ServiceProviderConfiguration
     {
-        public ServiceProviderConfiguration(string type, string scheme, string host, int port, string token, string configurationKey, int pollingInterval, string @namespace = "")
+        public ServiceProviderConfiguration(string type, string scheme, string host, int port, string token, string configurationKey, int pollingInterval, string @namespace ="")
         {
             ConfigurationKey = configurationKey;
             Scheme = scheme;

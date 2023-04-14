@@ -9,10 +9,10 @@
             HttpVerb = httpverb;
         }
 
-        public string ClientId { get; private set; }
+        public string ClientId { get; }
 
-        public string Path { get; private set; }
+        public string Path { get; }
 
-        public string HttpVerb { get; private set; }
+        public string HttpVerb { get; }
     }
 }

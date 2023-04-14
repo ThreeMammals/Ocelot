@@ -1,5 +1,6 @@
-﻿using Ocelot.Errors;
-using System;
+﻿using System;
+
+using Ocelot.Errors;
 
 namespace Ocelot.Requester
 {

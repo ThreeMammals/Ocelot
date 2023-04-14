@@ -1,10 +1,14 @@
 ﻿namespace Ocelot.UnitTests.Polly
 {
     using Moq;
+
     using Ocelot.Configuration.Builder;
     using Ocelot.Logging;
+
     using Provider.Polly;
+
     using Shouldly;
+
     using Xunit;
 
     public class PollyQoSProviderTests

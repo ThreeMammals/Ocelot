@@ -1,7 +1,7 @@
 using System.IO;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -23,7 +23,8 @@ namespace OcelotBasic
                        .AddJsonFile("ocelot.json")
                        .AddEnvironmentVariables();
                })
-               .ConfigureServices(s => {
+               .ConfigureServices(s =>
+               {
                    s.AddOcelot();
                })
                .ConfigureLogging((hostingContext, logging) =>

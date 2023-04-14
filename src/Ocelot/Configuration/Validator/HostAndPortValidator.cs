@@ -1,7 +1,8 @@
 namespace Ocelot.Configuration.Validator
 {
     using FluentValidation;
-    using Ocelot.Configuration.File;
+
+    using File;
 
     public class HostAndPortValidator : AbstractValidator<FileHostAndPort>
     {

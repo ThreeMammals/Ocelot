@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Authorization
 {
-    using Ocelot.Errors;
+    using Errors;
 
     public class UserDoesNotHaveClaimError : Error
     {

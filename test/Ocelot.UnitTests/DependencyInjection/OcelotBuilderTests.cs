@@ -1,29 +1,36 @@
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration.Setter;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Infrastructure;
-    using Ocelot.Multiplexer;
-    using Ocelot.Requester;
-    using Ocelot.UnitTests.Requester;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
     using System.Reflection;
-    using Microsoft.AspNetCore.Http;
-    using TestStack.BDDfy;
-    using Xunit;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+
+    using Moq;
+
+    using Ocelot.Configuration.Setter;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Infrastructure;
     using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
+    using Multiplexer;
+    using Ocelot.Requester;
+    using Responses;
+    using Requester;
+    using Values;
+
+    using Shouldly;
+
+    using TestStack.BDDfy;
+
+    using Xunit;
+
+    using static Multiplexing.UserDefinedResponseAggregatorTests;
 
     public class OcelotBuilderTests
     {
@@ -38,12 +45,12 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
             _maxRetries = 100;
         }
 
-        private IWebHostEnvironment GetHostingEnvironment()
+        private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();
             environment
@@ -188,7 +195,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void should_replace_iplaceholder()
         {
@@ -213,7 +220,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
-        
+
         private void AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
@@ -288,7 +295,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
         }
-        
+
         private void ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators()
         {
             _serviceProvider = _services.BuildServiceProvider();

@@ -4,15 +4,16 @@
 
 namespace Ocelot.WebSockets.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System;
     using System.Linq;
     using System.Net.WebSockets;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Logging;
+    using Ocelot.Middleware;
 
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
@@ -74,7 +75,7 @@ namespace Ocelot.WebSockets.Middleware
             await Proxy(httpContext, uri);
         }
 
-        private async Task Proxy(HttpContext context, string serverEndpoint)
+        private static async Task Proxy(HttpContext context, string serverEndpoint)
         {
             if (context == null)
             {

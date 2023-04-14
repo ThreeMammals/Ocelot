@@ -1,15 +1,21 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using Configuration.File;
-    using Configuration.Repository;
-    using global::Consul;
-    using Logging;
-    using Microsoft.Extensions.Options;
-    using Newtonsoft.Json;
-    using Responses;
     using System;
     using System.Text;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+    using Configuration.Repository;
+
+    using global::Consul;
+
+    using Logging;
+
+    using Microsoft.Extensions.Options;
+
+    using Newtonsoft.Json;
+
+    using Responses;
 
     public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {

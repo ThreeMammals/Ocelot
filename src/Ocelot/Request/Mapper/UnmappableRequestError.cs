@@ -1,7 +1,8 @@
 ﻿namespace Ocelot.Request.Mapper
 {
-    using Ocelot.Errors;
     using System;
+
+    using Errors;
 
     public class UnmappableRequestError : Error
     {

@@ -1,14 +1,19 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
     using System;
+    using System.Collections.Generic;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
+
     using Shouldly;
-    using System.Collections.Generic;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class DynamicsCreatorTests
@@ -48,7 +53,7 @@
             {
                 DynamicRoutes = new List<FileDynamicRoute>
                 {
-                    new FileDynamicRoute
+                    new()
                     {
                         ServiceName = "1",
                         RateLimitRule = new FileRateLimitRule
@@ -57,7 +62,7 @@
                         },
                         DownstreamHttpVersion = "1.1"
                     },
-                    new FileDynamicRoute
+                    new()
                     {
                         ServiceName = "2",
                         RateLimitRule = new FileRateLimitRule

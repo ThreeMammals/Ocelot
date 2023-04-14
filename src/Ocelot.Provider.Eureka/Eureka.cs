@@ -1,11 +1,13 @@
 ﻿namespace Ocelot.Provider.Eureka
 {
-    using Ocelot.ServiceDiscovery.Providers;
-    using Steeltoe.Discovery;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Ocelot.Values;
+
+    using ServiceDiscovery.Providers;
+    using Values;
+
+    using Steeltoe.Discovery;
 
     public class Eureka : IServiceDiscoveryProvider
     {
@@ -26,7 +28,7 @@
 
             if (instances != null && instances.Any())
             {
-                services.AddRange(instances.Select(i => new Service(i.ServiceId, new ServiceHostAndPort(i.Host, i.Port, i.Uri.Scheme), "", "", new List<string>())));
+                services.AddRange(instances.Select(i => new Service(i.ServiceId, new ServiceHostAndPort(i.Host, i.Port, i.Uri.Scheme), string.Empty, string.Empty, new List<string>())));
             }
 
             return Task.FromResult(services);

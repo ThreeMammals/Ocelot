@@ -1,11 +1,12 @@
 ﻿namespace Ocelot.Requester
 {
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
     using System;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+
+    using Configuration;
+    using Logging;
 
     public class HttpClientBuilder : IHttpClientBuilder
     {
@@ -67,7 +68,7 @@
             return _client;
         }
 
-        private HttpClientHandler CreateHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler CreateHandler(DownstreamRoute downstreamRoute)
         {
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
@@ -76,7 +77,7 @@
             return useCookies ? UseCookiesHandler(downstreamRoute) : UseNonCookiesHandler(downstreamRoute);
         }
 
-        private HttpClientHandler UseNonCookiesHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler UseNonCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {
@@ -87,7 +88,7 @@
             };
         }
 
-        private HttpClientHandler UseCookiesHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler UseCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {

@@ -1,12 +1,15 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
-    using Ocelot.Configuration.File;
-    using FluentValidation;
-    using Microsoft.AspNetCore.Authentication;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using FluentValidation;
+
+    using Microsoft.AspNetCore.Authentication;
+
+    using File;
 
     public class RouteFluentValidator : AbstractValidator<FileRoute>
     {
@@ -99,7 +102,7 @@
 
             var schemes = await _authenticationSchemeProvider.GetAllSchemesAsync();
 
-            var supportedSchemes = schemes.Select(scheme => scheme.Name).ToList();
+            var supportedSchemes = schemes.Select(scheme => scheme.Name);
 
             return supportedSchemes.Contains(authenticationOptions.AuthenticationProviderKey);
         }

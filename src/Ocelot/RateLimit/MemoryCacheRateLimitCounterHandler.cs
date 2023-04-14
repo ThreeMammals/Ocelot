@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
+
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Ocelot.RateLimit
 {
@@ -17,22 +18,9 @@ namespace Ocelot.RateLimit
             _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
         }
 
-        public bool Exists(string id)
-        {
-            RateLimitCounter counter;
-            return _memoryCache.TryGetValue(id, out counter);
-        }
+        public bool Exists(string id) => _memoryCache.TryGetValue(id, out RateLimitCounter counter);
 
-        public RateLimitCounter? Get(string id)
-        {
-            RateLimitCounter counter;
-            if (_memoryCache.TryGetValue(id, out counter))
-            {
-                return counter;
-            }
-
-            return null;
-        }
+        public RateLimitCounter? Get(string id) => _memoryCache.TryGetValue(id, out RateLimitCounter counter) ? counter : null;
 
         public void Remove(string id)
         {

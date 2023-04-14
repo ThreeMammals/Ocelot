@@ -1,7 +1,9 @@
 ﻿namespace Ocelot.Provider.Consul
 {
     using Logging;
+
     using Microsoft.Extensions.DependencyInjection;
+
     using ServiceDiscovery;
 
     public static class ConsulProviderFactory

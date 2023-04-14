@@ -1,29 +1,35 @@
 namespace Ocelot.UnitTests.Errors
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Http;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Errors;
     using Ocelot.Errors.Middleware;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
+
     using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Threading.Tasks;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ExceptionHandlerMiddlewareTests
     {
         private bool _shouldThrowAnException;
         private readonly Mock<IRequestScopedDataRepository> _repo;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly ExceptionHandlerMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public ExceptionHandlerMiddlewareTests()
         {

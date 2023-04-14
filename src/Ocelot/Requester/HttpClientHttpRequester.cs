@@ -1,14 +1,14 @@
 namespace Ocelot.Requester
 {
-    using Ocelot.Configuration;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
     using System;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Logging;
+    using Ocelot.Middleware;
+    using Responses;
 
     public class HttpClientHttpRequester : IHttpRequester
     {

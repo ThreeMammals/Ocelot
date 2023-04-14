@@ -2,32 +2,6 @@
 
 namespace Ocelot.AcceptanceTests
 {
-    using Caching;
-    using Configuration.Repository;
-    using global::CacheManager.Core;
-    using IdentityServer4.AccessTokenValidation;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Multiplexer;
-    using Ocelot.Provider.Consul;
-    using Ocelot.Provider.Eureka;
-    using Ocelot.Provider.Polly;
-    using Ocelot.Tracing.Butterfly;
-    using Requester;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -39,14 +13,53 @@ namespace Ocelot.AcceptanceTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Caching;
+
     using Configuration;
+    using Configuration.Repository;
+
+    using CacheManager.Core;
+
+    using IdentityServer4.AccessTokenValidation;
+
     using LoadBalancer.LoadBalancers;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.TestHost;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+
+    using Moq;
+
+    using Newtonsoft.Json;
+
+    using Ocelot.Cache.CacheManager;
+    using Configuration.Creator;
+    using Configuration.File;
+    using DependencyInjection;
+    using Logging;
+    using Middleware;
+    using Multiplexer;
+    using Ocelot.Provider.Consul;
+    using Provider.Eureka;
+    using Ocelot.Provider.Polly;
+    using Ocelot.Tracing.Butterfly;
+    using Ocelot.Tracing.OpenTracing;
+
+    using Requester;
+
     using ServiceDiscovery.Providers;
-    using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+
+    using Shouldly;
+
+    using static HttpDelegatingHandlersTests;
+
     using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
     using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
     using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
-    using Ocelot.Tracing.OpenTracing;
 
     public class Steps : IDisposable
     {
@@ -504,7 +517,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddSingleton<IHttpClientCache>(cache);
+                    s.AddSingleton(cache);
                     s.AddOcelot();
                 })
                 .Configure(app =>
@@ -699,7 +712,7 @@ namespace Ocelot.AcceptanceTests
                 .ConfigureServices(s =>
                 {
                     s.AddSingleton(_webHostBuilder);
-                    s.AddSingleton<FakeDependency>(dependency);
+                    s.AddSingleton(dependency);
                     s.AddOcelot()
                         .AddDelegatingHandler<TOne>(true);
                 })
@@ -809,12 +822,12 @@ namespace Ocelot.AcceptanceTests
             var tokenUrl = $"{url}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "client"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "api"),
-                new KeyValuePair<string, string>("username", "test"),
-                new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password"),
+                new("client_id", "client"),
+                new("client_secret", "secret"),
+                new("scope", "api"),
+                new("username", "test"),
+                new("password", "test"),
+                new("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -832,12 +845,12 @@ namespace Ocelot.AcceptanceTests
             var tokenUrl = $"{url}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "client"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "api.readOnly"),
-                new KeyValuePair<string, string>("username", "test"),
-                new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password"),
+                new("client_id", "client"),
+                new("client_secret", "secret"),
+                new("scope", "api.readOnly"),
+                new("username", "test"),
+                new("password", "test"),
+                new("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -855,12 +868,12 @@ namespace Ocelot.AcceptanceTests
             var tokenUrl = $"{url}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "client"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "api2"),
-                new KeyValuePair<string, string>("username", "test"),
-                new KeyValuePair<string, string>("password", "test"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new("client_id", "client"),
+                new("client_secret", "secret"),
+                new("scope", "api2"),
+                new("username", "test"),
+                new("password", "test"),
+                new("grant_type", "password")
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -949,7 +962,7 @@ namespace Ocelot.AcceptanceTests
 
         public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
         {
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) {Content = content};
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
             _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
         }
 
@@ -976,7 +989,7 @@ namespace Ocelot.AcceptanceTests
         {
             var tasks = new Task[times];
 
-            for (int i = 0; i < times; i++)
+            for (var i = 0; i < times; i++)
             {
                 var urlCopy = url;
                 tasks[i] = GetForServiceDiscoveryTest(urlCopy);
@@ -990,7 +1003,7 @@ namespace Ocelot.AcceptanceTests
         {
             var tasks = new Task[times];
 
-            for (int i = 0; i < times; i++)
+            for (var i = 0; i < times; i++)
             {
                 var urlCopy = url;
                 tasks[i] = GetForServiceDiscoveryTest(urlCopy, cookie, value);
@@ -1006,7 +1019,7 @@ namespace Ocelot.AcceptanceTests
             request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
             var response = await request.GetAsync();
             var content = await response.Content.ReadAsStringAsync();
-            int count = int.Parse(content);
+            var count = int.Parse(content);
             count.ShouldBeGreaterThan(0);
         }
 
@@ -1014,13 +1027,13 @@ namespace Ocelot.AcceptanceTests
         {
             var response = await _ocelotClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
-            int count = int.Parse(content);
+            var count = int.Parse(content);
             count.ShouldBeGreaterThan(0);
         }
 
         public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
         {
-            for (int i = 0; i < times; i++)
+            for (var i = 0; i < times; i++)
             {
                 var clientId = "ocelotclient1";
                 var request = new HttpRequestMessage(new HttpMethod("GET"), url);
@@ -1108,7 +1121,7 @@ namespace Ocelot.AcceptanceTests
 
         public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
         {
-            int numberOfRequests = 100;
+            var numberOfRequests = 100;
             var aggregateUrl = "/";
             var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
             var tomUrl = "/tom";
@@ -1119,21 +1132,21 @@ namespace Ocelot.AcceptanceTests
 
             var aggregateTasks = new Task[numberOfRequests];
 
-            for (int i = 0; i < numberOfRequests; i++)
+            for (var i = 0; i < numberOfRequests; i++)
             {
                 aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
             }
 
             var tomTasks = new Task[numberOfRequests];
 
-            for (int i = 0; i < numberOfRequests; i++)
+            for (var i = 0; i < numberOfRequests; i++)
             {
                 tomTasks[i] = Fire(tomUrl, tomExpected, random);
             }
 
             var lauraTasks = new Task[numberOfRequests];
 
-            for (int i = 0; i < numberOfRequests; i++)
+            for (var i = 0; i < numberOfRequests; i++)
             {
                 lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
             }
@@ -1168,7 +1181,7 @@ namespace Ocelot.AcceptanceTests
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddSingleton<IFileConfigurationRepository>(fake);
+                    s.AddSingleton(fake);
                     s.AddOcelot();
                 })
                 .Configure(app =>
@@ -1185,7 +1198,7 @@ namespace Ocelot.AcceptanceTests
         {
             _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
         }
-        
+
         public void GivenOcelotIsRunningWithLogger()
         {
             _webHostBuilder = new WebHostBuilder();
@@ -1234,7 +1247,7 @@ namespace Ocelot.AcceptanceTests
                     s.AddOcelot()
                         .AddOpenTracing();
 
-                    s.AddSingleton<OpenTracing.ITracer>(fakeTracer);
+                    s.AddSingleton(fakeTracer);
                 })
                 .Configure(app =>
                 {
@@ -1252,7 +1265,7 @@ namespace Ocelot.AcceptanceTests
 
         public void ThenWarningShouldBeLogged()
         {
-            MockLoggerFactory loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+            var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
             loggerFactory.Verify();
         }
 

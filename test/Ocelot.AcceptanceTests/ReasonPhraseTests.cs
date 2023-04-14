@@ -1,11 +1,15 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Features;
-    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
+
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Features;
+
+    using Configuration.File;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ReasonPhraseTests : IDisposable
@@ -31,13 +35,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,

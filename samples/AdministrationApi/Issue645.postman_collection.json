@@ -132,7 +132,7 @@
 				"id": "0f60e7b3-e4f1-4458-bbc4-fc4809e86b2d",
 				"type": "text/javascript",
 				"exec": [
-					""
+					string.Empty
 				]
 			}
 		},
@@ -142,7 +142,7 @@
 				"id": "1279a2cf-b771-4a86-9dfa-302b240fac62",
 				"type": "text/javascript",
 				"exec": [
-					""
+					string.Empty
 				]
 			}
 		}

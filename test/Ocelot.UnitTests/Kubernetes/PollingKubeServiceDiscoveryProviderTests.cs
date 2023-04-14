@@ -1,13 +1,18 @@
-﻿using Moq;
+﻿using System;
+using System.Collections.Generic;
+
+using Moq;
+
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
+
 using Shouldly;
-using System;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes
@@ -35,7 +40,7 @@ namespace Ocelot.UnitTests.Kubernetes
         [Fact]
         public void should_return_service_from_kube()
         {
-            var service = new Service("", new ServiceHostAndPort("", 0), "", "", new List<string>());
+            var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
 
             this.Given(x => GivenKubeReturns(service))
                 .When(x => WhenIGetTheServices(1))

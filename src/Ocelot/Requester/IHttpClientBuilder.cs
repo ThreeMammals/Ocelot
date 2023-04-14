@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Requester
 {
-    using Ocelot.Configuration;
+    using Configuration;
 
     public interface IHttpClientBuilder
     {

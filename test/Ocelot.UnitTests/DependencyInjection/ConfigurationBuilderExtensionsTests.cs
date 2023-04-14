@@ -1,15 +1,22 @@
 ﻿namespace Ocelot.UnitTests.DependencyInjection
 {
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-    using Shouldly;
     using System.Collections.Generic;
     using System.IO;
+
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+
+    using Moq;
+
+    using Newtonsoft.Json;
+
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ConfigurationBuilderExtensionsTests
@@ -22,7 +29,7 @@
         private FileConfiguration _routeB;
         private FileConfiguration _aggregate;
         private FileConfiguration _envSpecific;
-        private Mock<IWebHostEnvironment> _hostingEnvironment;
+        private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
 
         public ConfigurationBuilderExtensionsTests()
         {
@@ -48,7 +55,7 @@
         [Fact]
         public void should_merge_files()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles("", false))
+            this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
                 .And(_ => GivenTheEnvironmentIs(null))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -58,7 +65,7 @@
         [Fact]
         public void should_merge_files_except_env()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles("", true))
+            this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, true))
                 .And(_ => GivenTheEnvironmentIs("Env"))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -69,7 +76,7 @@
         [Fact]
         public void should_merge_files_in_specific_folder()
         {
-            string configFolder = "ConfigFiles";
+            var configFolder = "ConfigFiles";
             this.Given(_ => GivenMultipleConfigurationFiles(configFolder, false))
                 .When(_ => WhenIAddOcelotConfigurationWithSpecificFolder(configFolder))
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -111,7 +118,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamScheme",
                         DownstreamPathTemplate = "DownstreamPathTemplate",
@@ -123,7 +130,7 @@
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "Host",
                                 Port = 80
@@ -137,7 +144,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamSchemeB",
                         DownstreamPathTemplate = "DownstreamPathTemplateB",
@@ -149,14 +156,14 @@
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "HostB",
                                 Port = 80
                             }
                         }
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamSchemeBB",
                         DownstreamPathTemplate = "DownstreamPathTemplateBB",
@@ -168,7 +175,7 @@
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "HostBB",
                                 Port = 80
@@ -182,7 +189,7 @@
             {
                 Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>
                         {
@@ -191,7 +198,7 @@
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
                     },
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>
                         {
@@ -207,7 +214,7 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamScheme = "DownstreamSchemeSpec",
                             DownstreamPathTemplate = "DownstreamPathTemplateSpec",
@@ -219,7 +226,7 @@
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "HostSpec",
                                     Port = 80
@@ -229,10 +236,10 @@
                     }
             };
 
-            string globalFilename = Path.Combine(folder, "ocelot.global.json");
-            string routesAFilename = Path.Combine(folder, "ocelot.routesA.json");
-            string routesBFilename = Path.Combine(folder, "ocelot.routesB.json");
-            string aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
+            var globalFilename = Path.Combine(folder, "ocelot.global.json");
+            var routesAFilename = Path.Combine(folder, "ocelot.routesA.json");
+            var routesBFilename = Path.Combine(folder, "ocelot.routesB.json");
+            var aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
 
             File.WriteAllText(globalFilename, JsonConvert.SerializeObject(_globalConfig));
             File.WriteAllText(routesAFilename, JsonConvert.SerializeObject(_routeA));
@@ -241,7 +248,7 @@
 
             if (addEnvSpecificConfig)
             {
-                string envSpecificFilename = Path.Combine(folder, "ocelot.Env.json");
+                var envSpecificFilename = Path.Combine(folder, "ocelot.Env.json");
                 File.WriteAllText(envSpecificFilename, JsonConvert.SerializeObject(_envSpecific));
             }
         }
@@ -323,7 +330,7 @@
 
         private void WhenIGet(string key)
         {
-            _result = _configuration.GetValue(key, "");
+            _result = _configuration.GetValue(key, string.Empty);
         }
 
         private void ThenTheResultIs(string expected)

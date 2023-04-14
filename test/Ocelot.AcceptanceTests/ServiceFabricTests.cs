@@ -1,11 +1,15 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.Net;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Configuration.File;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ServiceFabricTests : IDisposable
@@ -29,7 +33,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
@@ -40,7 +44,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
@@ -67,7 +71,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
@@ -78,7 +82,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
@@ -105,7 +109,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values",
                         DownstreamScheme = "http",
@@ -116,7 +120,7 @@ namespace Ocelot.AcceptanceTests
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
@@ -143,7 +147,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/values",
                             DownstreamScheme = "http",
@@ -154,7 +158,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,

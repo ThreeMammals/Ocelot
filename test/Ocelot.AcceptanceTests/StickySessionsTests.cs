@@ -1,11 +1,16 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Configuration.File;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class StickySessionsTests : IDisposable
@@ -13,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
-        private static readonly object SyncLock = new object();
+        private static readonly object SyncLock = new();
         private readonly ServiceHandler _serviceHandler;
 
         public StickySessionsTests()
@@ -34,7 +39,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -48,12 +53,12 @@ namespace Ocelot.AcceptanceTests
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo
@@ -85,7 +90,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -99,19 +104,19 @@ namespace Ocelot.AcceptanceTests
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo
                                 }
                             }
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -125,12 +130,12 @@ namespace Ocelot.AcceptanceTests
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne
@@ -163,7 +168,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -177,19 +182,19 @@ namespace Ocelot.AcceptanceTests
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo
                                 }
                             }
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -203,12 +208,12 @@ namespace Ocelot.AcceptanceTests
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne
@@ -245,7 +250,7 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
+                    string response;
                     lock (SyncLock)
                     {
                         _counterOne++;
@@ -267,7 +272,7 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
+                    string response;
                     lock (SyncLock)
                     {
                         _counterTwo++;

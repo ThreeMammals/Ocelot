@@ -1,8 +1,9 @@
 ﻿namespace Ocelot.Configuration.Validator
 {
-    using Ocelot.Configuration.File;
-    using Ocelot.Responses;
     using System.Threading.Tasks;
+
+    using File;
+    using Responses;
 
     public interface IConfigurationValidator
     {

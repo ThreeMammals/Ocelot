@@ -1,15 +1,21 @@
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
+
     using Shouldly;
-    using System.Collections.Generic;
-    using System.Net.Http;
+
     using TestStack.BDDfy;
+
     using Values;
+
     using Xunit;
 
     public class AggregatesCreatorTests
@@ -35,7 +41,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>{"key1"}
                     }
@@ -59,7 +65,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>{"key1", "key2"},
                         UpstreamHost = "hosty",
@@ -67,7 +73,7 @@ namespace Ocelot.UnitTests.Configuration
                         Aggregator = "aggregatory",
                         RouteIsCaseSensitive = true
                     },
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>{"key3", "key4"},
                         UpstreamHost = "hosty",

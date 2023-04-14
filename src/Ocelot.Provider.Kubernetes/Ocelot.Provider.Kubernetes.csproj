@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Product>Ocelot</Product>
     <Description>Provides Ocelot extensions to use kubernetes</Description>
@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubeClient" Version="2.4.6" />
-    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.4.6" />
+    <PackageReference Include="KubeClient" Version="2.4.10" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.4.10" />
   </ItemGroup>
 
   <ItemGroup>

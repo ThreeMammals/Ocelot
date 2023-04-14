@@ -1,13 +1,14 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Responses;
+    using Values;
 
     public class NoLoadBalancer : ILoadBalancer
     {

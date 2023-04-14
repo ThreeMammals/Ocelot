@@ -1,8 +1,8 @@
 ﻿namespace Ocelot.Responder
 {
-    using System.Net;
-    using Ocelot.Errors;
     using System.Collections.Generic;
+
+    using Errors;
 
     /// <summary>
     /// Map a list OceoltErrors to a single appropriate HTTP status code

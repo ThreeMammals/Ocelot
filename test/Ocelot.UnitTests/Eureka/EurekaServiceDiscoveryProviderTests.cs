@@ -1,15 +1,21 @@
 ﻿namespace Ocelot.UnitTests.Eureka
 {
-    using Moq;
-    using Ocelot.Provider.Eureka;
-    using Shouldly;
-    using Steeltoe.Common.Discovery;
-    using Steeltoe.Discovery;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
+    using Moq;
+
+    using Ocelot.Provider.Eureka;
+    using Values;
+
+    using Shouldly;
+
+    using Steeltoe.Common.Discovery;
+    using Steeltoe.Discovery;
+
     using TestStack.BDDfy;
-    using Ocelot.Values;
+
     using Xunit;
 
     public class EurekaServiceDiscoveryProviderTests

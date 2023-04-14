@@ -1,9 +1,12 @@
 namespace Ocelot.Configuration.Creator
 {
-    using File;
-    using Responses;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using File;
+
+    using Responses;
+
     using Validator;
 
     public class FileInternalConfigurationCreator : IInternalConfigurationCreator

@@ -1,35 +1,38 @@
 ﻿namespace Ocelot.UnitTests.Cache
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Cache;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Moq;
+
+    using Ocelot.Cache;
+    using Ocelot.Cache.Middleware;
+    using Ocelot.Configuration;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+
     using TestStack.BDDfy;
+
     using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class OutputCacheMiddlewareTests
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private OutputCacheMiddleware _middleware;
         private readonly RequestDelegate _next;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private CachedResponse _response;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
         private Mock<IRequestScopedDataRepository> _repo;
 
         public OutputCacheMiddlewareTests()
@@ -58,7 +61,7 @@
                 { "content-type", new List<string> { "application/json" } }
             };
 
-            var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, "", contentHeaders, "some reason");
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())
@@ -74,7 +77,7 @@
                 { "Expires", new List<string> { "-1" } }
             };
 
-            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), "", contentHeaders, "some reason");
+            var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), string.Empty, contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
                 .When(x => x.WhenICallTheMiddleware())

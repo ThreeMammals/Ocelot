@@ -1,8 +1,10 @@
 namespace Ocelot.Request.Creator
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Request.Middleware;
     using System.Net.Http;
+
+    using Infrastructure;
+
+    using Middleware;
 
     public class DownstreamRequestCreator : IDownstreamRequestCreator
     {
@@ -14,15 +16,15 @@ namespace Ocelot.Request.Creator
             _framework = framework;
         }
 
+        /**
+             * According to https://tools.ietf.org/html/rfc7231
+             * GET,HEAD,DELETE,CONNECT,TRACE
+             * Can have body but server can reject the request.
+             * And MS HttpClient in Full Framework actually rejects it.
+             * see #366 issue
+         **/
         public DownstreamRequest Create(HttpRequestMessage request)
         {
-            /**
-                * According to https://tools.ietf.org/html/rfc7231
-                * GET,HEAD,DELETE,CONNECT,TRACE
-                * Can have body but server can reject the request.
-                * And MS HttpClient in Full Framework actually rejects it.
-                * see #366 issue
-            **/
             if (_framework.Get().Contains(DotNetFramework))
             {
                 if (request.Method == HttpMethod.Get ||

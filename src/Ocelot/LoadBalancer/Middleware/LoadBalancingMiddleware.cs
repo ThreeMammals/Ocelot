@@ -1,12 +1,13 @@
 ﻿namespace Ocelot.LoadBalancer.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using LoadBalancers;
+    using Logging;
+    using Ocelot.Middleware;
 
     public class LoadBalancingMiddleware : OcelotMiddleware
     {

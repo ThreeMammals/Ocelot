@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+
+using Microsoft.AspNetCore.Http;
+
 using Ocelot.Configuration;
-using System;
 
 namespace Ocelot.RateLimit
 {
     public class ClientRateLimitProcessor
     {
-        private readonly IRateLimitCounterHandler _counterHandler;
         private readonly RateLimitCore _core;
 
         public ClientRateLimitProcessor(IRateLimitCounterHandler counterHandler)
         {
-            _counterHandler = counterHandler;
-            _core = new RateLimitCore(_counterHandler);
+            _core = new RateLimitCore(counterHandler);
         }
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)

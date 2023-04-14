@@ -1,15 +1,20 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Configuration.File;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class HttpDelegatingHandlersTests : IDisposable
@@ -33,13 +38,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -75,13 +80,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -112,13 +117,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -165,13 +170,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -195,17 +200,17 @@
                 .BDDfy();
         }
 
-        private void ThenTheDependencyIsCalled(FakeDependency dependency)
+        private static void ThenTheDependencyIsCalled(FakeDependency dependency)
         {
             dependency.Called.ShouldBeTrue();
         }
 
-        private void ThenTheHandlersAreCalledCorrectly()
+        private static void ThenTheHandlersAreCalledCorrectly()
         {
             FakeHandler.TimeCalled.ShouldBeLessThan(FakeHandlerTwo.TimeCalled);
         }
 
-        private void ThenTheOrderedHandlersAreCalledCorrectly()
+        private static void ThenTheOrderedHandlersAreCalledCorrectly()
         {
             FakeHandlerTwo.TimeCalled.ShouldBeLessThan(FakeHandler.TimeCalled);
         }

@@ -1,9 +1,10 @@
 namespace Ocelot.Configuration
 {
-    using Ocelot.Configuration.Creator;
     using System;
     using System.Collections.Generic;
-    using Ocelot.Values;
+
+    using Creator;
+    using Values;
 
     public class DownstreamRoute
     {
@@ -112,6 +113,6 @@ namespace Ocelot.Configuration
         public bool DangerousAcceptAnyServerCertificateValidator { get; }
         public SecurityOptions SecurityOptions { get; }
         public string DownstreamHttpMethod { get; }
-        public Version DownstreamHttpVersion { get;  }
+        public Version DownstreamHttpVersion { get; }
     }
 }

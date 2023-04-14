@@ -3,8 +3,11 @@ namespace Ocelot.UnitTests.Configuration
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
+
     using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class LoadBalancerOptionsCreatorTests

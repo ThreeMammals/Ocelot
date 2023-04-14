@@ -2,11 +2,12 @@
 {
     using System.Linq;
     using System.Threading.Tasks;
-    using Ocelot.Logging;
+
     using Microsoft.AspNetCore.Http;
+
+    using Logging;
     using Ocelot.Middleware;
-    using Ocelot.PathManipulation;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+    using PathManipulation;
 
     public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
     {

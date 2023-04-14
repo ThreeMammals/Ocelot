@@ -1,32 +1,36 @@
 ﻿
 namespace Ocelot.UnitTests.Authorization
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Http;
+
     using Moq;
+
     using Ocelot.Authorization;
     using Ocelot.Authorization.Middleware;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
+    using Responses;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class AuthorizationMiddlewareTests
     {
         private readonly Mock<IClaimsAuthorizer> _authService;
         private readonly Mock<IScopesAuthorizer> _authScopesService;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly AuthorizationMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public AuthorizationMiddlewareTests()
         {

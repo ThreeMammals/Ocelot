@@ -1,10 +1,13 @@
 namespace Ocelot.Configuration.Creator
 {
-    using DependencyInjection;
-    using File;
-    using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.Collections.Generic;
+
+    using DependencyInjection;
+
+    using File;
+
+    using Microsoft.Extensions.DependencyInjection;
 
     public class ConfigurationCreator : IConfigurationCreator
     {
@@ -42,7 +45,7 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
 
-            var adminPath = _adminPath != null ? _adminPath.Path : null;
+            var adminPath = _adminPath?.Path;
 
             var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
 

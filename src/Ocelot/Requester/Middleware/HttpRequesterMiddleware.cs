@@ -1,13 +1,14 @@
 namespace Ocelot.Requester.Middleware
 {
-    using Microsoft.AspNetCore.Http;
     using System.Net;
     using System.Net.Http;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System.Threading.Tasks;
-    using Ocelot.Responses;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Logging;
+    using Ocelot.Middleware;
+    using Responses;
 
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
@@ -52,11 +53,11 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogInformation(
                     $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
-            } 
+            }
             else if (response.Data?.StatusCode >= HttpStatusCode.BadRequest)
             {
                 Logger.LogWarning(
-                    $"{(int) response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
+                    $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
             }
         }
     }

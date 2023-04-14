@@ -1,16 +1,22 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Butterfly.Client.AspNetCore;
-    using Ocelot.Configuration.File;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
+
+    using Butterfly.Client.AspNetCore;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+
+    using Configuration.File;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
     using Xunit.Abstractions;
 
@@ -34,19 +40,19 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_forward_tracing_information_from_ocelot_and_downstream_services()
         {
-            int port1 = RandomPortFinder.GetRandomPort();
-            int port2 = RandomPortFinder.GetRandomPort();
+            var port1 = RandomPortFinder.GetRandomPort();
+            var port2 = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -59,13 +65,13 @@ namespace Ocelot.AcceptanceTests
                                 UseTracing = true
                             }
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -80,7 +86,7 @@ namespace Ocelot.AcceptanceTests
                         }
                     }
             };
-            
+
             var butterflyPort = RandomPortFinder.GetRandomPort();
             var butterflyUrl = $"http://localhost:{butterflyPort}";
 
@@ -107,18 +113,18 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_tracing_header()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
@@ -130,7 +136,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 UseTracing = true
                             },
-                            DownstreamHeaderTransform = new Dictionary<string, string>()
+                            DownstreamHeaderTransform = new Dictionary<string, string>
                             {
                                 {"Trace-Id", "{TraceId}"},
                                 {"Tom", "Laura"}
@@ -167,7 +173,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         option.CollectorUrl = butterflyUrl;
                         option.Service = "Service One";
-                        option.IgnoredRoutesRegexPatterns = new string[0];
+                        option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
                     });
                 })
                 .Configure(app =>
@@ -227,7 +233,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         option.CollectorUrl = butterflyUrl;
                         option.Service = "Service Two";
-                        option.IgnoredRoutesRegexPatterns = new string[0];
+                        option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
                     });
                 })
                 .Configure(app =>

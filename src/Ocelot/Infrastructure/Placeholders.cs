@@ -1,13 +1,15 @@
 namespace Ocelot.Infrastructure
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using Microsoft.AspNetCore.Http;
+
+    using RequestData;
+    using Middleware;
+    using Ocelot.Request.Middleware;
+    using Responses;
 
     public class Placeholders : IPlaceholders
     {
@@ -99,7 +101,7 @@ namespace Ocelot.Infrastructure
             };
         }
 
-        private Func<DownstreamRequest, string> GetDownstreamBaseUrl()
+        private static Func<DownstreamRequest, string> GetDownstreamBaseUrl()
         {
             return x =>
             {

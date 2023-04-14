@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Stateless Web Service for Stateful OcelotApplicationApiGateway App</Description>
     <Authors> </Authors>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>OcelotApplicationApiGateway</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>OcelotApplicationApiGateway</PackageId>

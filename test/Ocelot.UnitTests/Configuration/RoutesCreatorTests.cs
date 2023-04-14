@@ -1,37 +1,42 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     using Moq;
+
     using Ocelot.Cache;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
-    using Ocelot.Values;
+    using Values;
+
     using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class RoutesCreatorTests
     {
-        private RoutesCreator _creator;
-        private Mock<IClaimsToThingCreator> _cthCreator;
-        private Mock<IAuthenticationOptionsCreator> _aoCreator;
-        private Mock<IUpstreamTemplatePatternCreator> _utpCreator;
-        private Mock<IRequestIdKeyCreator> _ridkCreator;
-        private Mock<IQoSOptionsCreator> _qosoCreator;
-        private Mock<IRouteOptionsCreator> _rroCreator;
-        private Mock<IRateLimitOptionsCreator> _rloCreator;
-        private Mock<IRegionCreator> _rCreator;
-        private Mock<IHttpHandlerOptionsCreator> _hhoCreator;
-        private Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
-        private Mock<IDownstreamAddressesCreator> _daCreator;
-        private Mock<ILoadBalancerOptionsCreator> _lboCreator;
-        private Mock<IRouteKeyCreator> _rrkCreator;
-        private Mock<ISecurityOptionsCreator> _soCreator;
-        private Mock<IVersionCreator> _versionCreator;
+        private readonly RoutesCreator _creator;
+        private readonly Mock<IClaimsToThingCreator> _cthCreator;
+        private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
+        private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
+        private readonly Mock<IQoSOptionsCreator> _qosoCreator;
+        private readonly Mock<IRouteOptionsCreator> _rroCreator;
+        private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
+        private readonly Mock<IRegionCreator> _rCreator;
+        private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
+        private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
+        private readonly Mock<IDownstreamAddressesCreator> _daCreator;
+        private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
+        private readonly Mock<IRouteKeyCreator> _rrkCreator;
+        private readonly Mock<ISecurityOptionsCreator> _soCreator;
+        private readonly Mock<IVersionCreator> _versionCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -105,7 +110,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         ServiceName = "dave",
                         DangerousAcceptAnyServerCertificateValidator = true,
@@ -123,7 +128,7 @@
                         },
                         UpstreamHttpMethod = new List<string> { "GET", "POST" }
                     },
-                    new FileRoute
+                    new()
                     {
                         ServiceName = "wave",
                         DangerousAcceptAnyServerCertificateValidator = false,
