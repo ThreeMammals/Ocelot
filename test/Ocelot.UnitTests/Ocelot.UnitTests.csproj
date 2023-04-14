@@ -49,7 +49,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="7.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="7.0.5" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
 			<PrivateAssets>all</PrivateAssets>
@@ -73,7 +73,7 @@
 		<PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
 		<PackageReference Include="IdentityServer4" Version="4.1.2" />
 		<PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.3" />
-		<PackageReference Include="Consul" Version="1.6.10.8" />
+		<PackageReference Include="Consul" Version="1.6.10.9" />
 		<PackageReference Include="CacheManager.Core" Version="2.0.0-beta-1629" />
 		<PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="2.0.0-beta-1629" />
 		<PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
