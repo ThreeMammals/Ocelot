@@ -346,7 +346,7 @@
                 .BDDfy();
         }
 
-        [Theory(Skip = "Not work on non-english windows")]
+        [Theory]
         [InlineData("retg1.1")]
         [InlineData("re2.0")]
         [InlineData("1,0a")]
