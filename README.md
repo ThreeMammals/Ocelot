@@ -1,10 +1,8 @@
- ![Ocelot Logo](/images/ocelot_logo.png)
+![Ocelot Logo](/images/ocelot_logo.png)
 
 [![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main)
 
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
-
-[Slack](https://threemammals.slack.com)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
 
 # Ocelot
 
