@@ -4,7 +4,7 @@
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator"
-#addin Cake.Coveralls&version=0.10.1
+#addin Cake.Coveralls&version=1.1.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
