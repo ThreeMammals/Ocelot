@@ -1,20 +1,26 @@
 namespace Ocelot.Benchmarks
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Columns;
     using BenchmarkDotNet.Configs;
     using BenchmarkDotNet.Diagnosers;
     using BenchmarkDotNet.Validators;
+
+    using DependencyInjection;
+
+    using Infrastructure.RequestData;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.DependencyInjection;
+
     using Ocelot.Errors.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
 
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(ExceptionHandlerMiddlewareBenchmarks))]

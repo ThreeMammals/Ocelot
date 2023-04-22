@@ -1,14 +1,18 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class WebSocketTests : IDisposable
@@ -36,14 +40,14 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
                         DownstreamScheme = "ws",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = downstreamHost,
                                 Port = downstreamPort
@@ -73,19 +77,19 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
                         DownstreamScheme = "ws",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = downstreamHost,
                                 Port = downstreamPort
                             },
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = secondDownstreamHost,
                                 Port = secondDownstreamPort
@@ -137,8 +141,8 @@ namespace Ocelot.AcceptanceTests
 
             var sending = Task.Run(async () =>
             {
-                string line = "test";
-                for (int i = 0; i < 10; i++)
+                var line = "test";
+                for (var i = 0; i < 10; i++)
                 {
                     var bytes = Encoding.UTF8.GetBytes(line);
 
@@ -147,7 +151,7 @@ namespace Ocelot.AcceptanceTests
                     await Task.Delay(10);
                 }
 
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
             });
 
             var receiving = Task.Run(async () =>
@@ -168,7 +172,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             // Last version, the client state is CloseReceived
                             // Valid states are: Open, CloseReceived, CloseSent
-                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         }
 
                         break;
@@ -189,8 +193,8 @@ namespace Ocelot.AcceptanceTests
 
             var sending = Task.Run(async () =>
             {
-                string line = "test";
-                for (int i = 0; i < 10; i++)
+                var line = "test";
+                for (var i = 0; i < 10; i++)
                 {
                     var bytes = Encoding.UTF8.GetBytes(line);
 
@@ -199,7 +203,7 @@ namespace Ocelot.AcceptanceTests
                     await Task.Delay(10);
                 }
 
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
             });
 
             var receiving = Task.Run(async () =>
@@ -220,7 +224,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             // Last version, the client state is CloseReceived
                             // Valid states are: Open, CloseReceived, CloseSent
-                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         }
 
                         break;
@@ -262,7 +266,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await Message(webSocket);
                     }
                     else
@@ -277,7 +281,7 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private async Task Echo(WebSocket webSocket)
+        private static async Task Echo(WebSocket webSocket)
         {
             try
             {
@@ -285,13 +289,13 @@ namespace Ocelot.AcceptanceTests
 
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-                while (!result.CloseStatus.HasValue)                                
+                while (!result.CloseStatus.HasValue)
                 {
                     await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 }
-                
+
                 await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             catch (Exception e)
@@ -300,7 +304,7 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        private async Task Message(WebSocket webSocket)
+        private static async Task Message(WebSocket webSocket)
         {
             try
             {

@@ -1,10 +1,13 @@
 ﻿namespace Ocelot.Request.Mapper
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
     using System.Net.Http;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Responses;
 
     public interface IRequestMapper
     {

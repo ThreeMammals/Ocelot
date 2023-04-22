@@ -8,7 +8,7 @@
             RequestIdValue = requestIdValue;
         }
 
-        public string RequestIdKey { get; private set; }
-        public string RequestIdValue { get; private set; }
+        public string RequestIdKey { get; }
+        public string RequestIdValue { get; }
     }
 }

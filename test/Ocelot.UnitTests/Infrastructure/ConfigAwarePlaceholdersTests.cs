@@ -1,11 +1,17 @@
 namespace Ocelot.UnitTests.Infrastructure
 {
     using System;
-    using Moq;
-    using Ocelot.Infrastructure;
-    using Responses;
-    using Shouldly;
+
     using Microsoft.Extensions.Configuration;
+
+    using Moq;
+
+    using Ocelot.Infrastructure;
+
+    using Responses;
+
+    using Shouldly;
+
     using Xunit;
 
     public class ConfigAwarePlaceholdersTests
@@ -28,7 +34,7 @@ namespace Ocelot.UnitTests.Infrastructure
         {
             var baseUrl = "http://www.bbc.co.uk";
             const string key = "{BaseUrl}";
-            
+
             _basePlaceholders.Setup(x => x.Get(key)).Returns(new OkResponse<string>(baseUrl));
             var result = _placeholders.Get(key);
             result.Data.ShouldBe(baseUrl);
@@ -40,7 +46,7 @@ namespace Ocelot.UnitTests.Infrastructure
             const string expected = "http://foo-bar.co.uk";
             var baseUrl = "http://www.bbc.co.uk";
             const string key = "{BaseUrl}";
-            
+
             _basePlaceholders.Setup(x => x.Get(key)).Returns(new ErrorResponse<string>(new FakeError()));
             var result = _placeholders.Get(key);
             result.Data.ShouldBe(expected);
@@ -52,7 +58,7 @@ namespace Ocelot.UnitTests.Infrastructure
         public void should_return_value_from_config(string key)
         {
             const string expected = "foo";
-            
+
             _basePlaceholders.Setup(x => x.Get(key)).Returns(new ErrorResponse<string>(new FakeError()));
             var result = _placeholders.Get(key);
             result.Data.ShouldBe(expected);

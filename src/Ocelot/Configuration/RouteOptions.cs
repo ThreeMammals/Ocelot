@@ -11,10 +11,10 @@ namespace Ocelot.Configuration
             UseServiceDiscovery = useServiceDiscovery;
         }
 
-        public bool IsAuthenticated { get; private set; }
-        public bool IsAuthorized { get; private set; }
-        public bool IsCached { get; private set; }
-        public bool EnableRateLimiting { get; private set; }
-        public bool UseServiceDiscovery { get; private set; }
+        public bool IsAuthenticated { get; }
+        public bool IsAuthorized { get; }
+        public bool IsCached { get; }
+        public bool EnableRateLimiting { get; }
+        public bool UseServiceDiscovery { get; }
     }
 }

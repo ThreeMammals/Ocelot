@@ -1,10 +1,13 @@
 ﻿namespace Ocelot.Administration
 {
+    using System.Threading.Tasks;
+
     using Configuration.Repository;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Middleware;
-    using System.Threading.Tasks;
+
+    using Middleware;
 
     public static class IdentityServerMiddlewareConfigurationProvider
     {

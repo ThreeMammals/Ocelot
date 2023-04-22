@@ -11,8 +11,8 @@
         private const int TrialNumber = 100;
         private const int BeginPortRange = 20000;
         private const int EndPortRange = 45000;
-        private static readonly Random Random = new Random();
-        private static readonly ConcurrentBag<int> UsedPorts = new ConcurrentBag<int>();
+        private static readonly Random Random = new();
+        private static readonly ConcurrentBag<int> UsedPorts = new();
 
         public static int GetRandomPort()
         {

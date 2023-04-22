@@ -22,6 +22,6 @@ namespace Ocelot.Configuration
 
         HttpHandlerOptions HttpHandlerOptions { get; }
 
-        Version DownstreamHttpVersion { get;  }
+        Version DownstreamHttpVersion { get; }
     }
 }

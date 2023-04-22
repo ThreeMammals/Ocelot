@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+
+using GraphQL;
+using GraphQL.Types;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Ocelot.Middleware;
-using Ocelot.DependencyInjection;
-using GraphQL.Types;
-using GraphQL;
-using Ocelot.Requester;
-using Ocelot.Responses;
-using System.Net.Http;
-using System.Net;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading;
+using Microsoft.Extensions.Logging;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace OcelotGraphQL
 {
@@ -28,7 +27,7 @@ namespace OcelotGraphQL
 
     public class Query
     {
-        private readonly List<Hero> _heroes = new List<Hero>
+        private readonly List<Hero> _heroes = new()
         {
             new Hero { Id = 1, Name = "R2-D2" },
             new Hero { Id = 2, Name = "Batman" },
@@ -55,16 +54,16 @@ namespace OcelotGraphQL
             _writer = writer;
         }
 
-        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             //try get query from body, could check http method :)
-            var query = await request.Content.ReadAsStringAsync();
+            var query = await request.Content.ReadAsStringAsync(cancellationToken);
 
             //if not body try query string, dont hack like this in real world..
             if (query.Length == 0)
             {
                 var decoded = WebUtility.UrlDecode(request.RequestUri.Query);
-                query = decoded.Replace("?query=", "");
+                query = decoded.Replace("?query=", string.Empty);
             }
 
             var result = await _executer.ExecuteAsync(_ =>

@@ -4,7 +4,7 @@ namespace Ocelot.Configuration.ChangeTracking
 
     public class OcelotConfigurationChangeTokenSource : IOcelotConfigurationChangeTokenSource
     {
-        private readonly OcelotConfigurationChangeToken _changeToken = new OcelotConfigurationChangeToken();
+        private readonly OcelotConfigurationChangeToken _changeToken = new();
 
         public IChangeToken ChangeToken => _changeToken;
 

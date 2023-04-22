@@ -1,7 +1,8 @@
 ﻿namespace Ocelot.Requester
 {
-    using Configuration;
     using System;
+
+    using Configuration;
 
     public interface IHttpClientCache
     {

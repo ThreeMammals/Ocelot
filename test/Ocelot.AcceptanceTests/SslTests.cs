@@ -1,11 +1,15 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.Net;
+
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class SslTests : IDisposable
@@ -23,19 +27,19 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
@@ -60,19 +64,19 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,

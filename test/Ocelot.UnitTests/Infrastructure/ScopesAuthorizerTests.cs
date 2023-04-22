@@ -1,19 +1,24 @@
+using System.Collections.Generic;
+using System.Security.Claims;
+
 using Moq;
+
 using Ocelot.Authorization;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
+
 using Shouldly;
-using System.Collections.Generic;
-using System.Security.Claims;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
     public class ScopesAuthorizerTests
     {
-        private ScopesAuthorizer _authorizer;
+        private readonly ScopesAuthorizer _authorizer;
         public Mock<IClaimsParser> _parser;
         private ClaimsPrincipal _principal;
         private List<string> _allowedScopes;
@@ -51,7 +56,7 @@ namespace Ocelot.UnitTests.Infrastructure
             var fakeError = new FakeError();
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError)))
-            .And(_ => GivenTheFollowing(new List<string>() { "doesntmatter" }))
+            .And(_ => GivenTheFollowing(new List<string> { "doesntmatter" }))
             .When(_ => WhenIAuthorize())
             .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
             .BDDfy();
@@ -61,7 +66,7 @@ namespace Ocelot.UnitTests.Infrastructure
         public void should_match_scopes_and_return_ok_result()
         {
             var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string>() { "someScope" };
+            var allowedScopes = new List<string> { "someScope" };
 
             this.Given(_ => GivenTheFollowing(claimsPrincipal))
             .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes)))
@@ -76,8 +81,8 @@ namespace Ocelot.UnitTests.Infrastructure
         {
             var fakeError = new FakeError();
             var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string>() { "someScope" };
-            var userScopes = new List<string>() { "anotherScope" };
+            var allowedScopes = new List<string> { "someScope" };
+            var userScopes = new List<string> { "anotherScope" };
 
             this.Given(_ => GivenTheFollowing(claimsPrincipal))
             .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userScopes)))

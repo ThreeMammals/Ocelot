@@ -1,13 +1,19 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Ocelot.Configuration.File;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Steeltoe.Common.Discovery;
     using System;
     using System.Collections.Generic;
     using System.Net;
+
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Newtonsoft.Json;
+
+    using Steeltoe.Common.Discovery;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class EurekaServiceDiscoveryTests : IDisposable
@@ -31,7 +37,7 @@
             Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
             var eurekaPort = 8761;
             var serviceName = "product";
-            var downstreamServicePort = RandomPortFinder.GetRandomPort();           
+            var downstreamServicePort = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 
@@ -42,7 +48,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -52,9 +58,9 @@
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
                     },
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Type = "Eureka",
                     },
@@ -95,7 +101,7 @@
                             name = serviceName,
                             instance = new List<Instance>
                             {
-                                new Instance
+                                new()
                                 {
                                     instanceId = $"{serviceInstance.Host}:{serviceInstance}",
                                     hostName = serviceInstance.Host,

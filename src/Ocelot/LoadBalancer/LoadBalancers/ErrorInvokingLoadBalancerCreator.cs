@@ -1,6 +1,7 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
     using System;
+
     using Errors;
 
     public class ErrorInvokingLoadBalancerCreator : Error

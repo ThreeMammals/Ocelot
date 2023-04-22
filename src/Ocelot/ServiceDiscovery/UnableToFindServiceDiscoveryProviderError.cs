@@ -1,6 +1,6 @@
 namespace Ocelot.ServiceDiscovery
 {
-    using Ocelot.Errors;
+    using Errors;
 
     public class UnableToFindServiceDiscoveryProviderError : Error
     {

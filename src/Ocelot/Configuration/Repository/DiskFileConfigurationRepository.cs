@@ -1,10 +1,13 @@
-using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.Responses;
 using System;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Hosting;
+
+using Newtonsoft.Json;
+
 using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.File;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository
 {
@@ -13,7 +16,7 @@ namespace Ocelot.Configuration.Repository
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
         private readonly string _environmentFilePath;
         private readonly string _ocelotFilePath;
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private const string ConfigurationFileName = "ocelot";
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
@@ -40,7 +43,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
-            string jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
             lock (_lock)
             {

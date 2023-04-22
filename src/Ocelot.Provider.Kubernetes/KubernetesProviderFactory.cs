@@ -1,9 +1,12 @@
-﻿using KubeClient;
+﻿using System;
+
+using KubeClient;
+
 using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
-using System;
-using Ocelot.Configuration;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -19,7 +22,7 @@ namespace Ocelot.Provider.Kubernetes
         {
             var kubeClient = provider.GetService<IKubeApiClient>();
 
-            var k8sRegistryConfiguration = new KubeRegistryConfiguration()
+            var k8sRegistryConfiguration = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = route.ServiceName,
                 KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace

@@ -1,14 +1,18 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Net.Http;
+
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Server.Kestrel.Core;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class HttpTests : IDisposable
@@ -31,7 +35,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/{url}",
                         DownstreamScheme = "https",
@@ -39,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamHttpMethod = new List<string> { "Get" },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -69,7 +73,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/{url}",
                             DownstreamScheme = "https",
@@ -77,7 +81,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
@@ -107,7 +111,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/{url}",
                         DownstreamScheme = "https",
@@ -115,7 +119,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamHttpMethod = new List<string> { "Get" },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -149,7 +153,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/{url}",
                         DownstreamScheme = "https",
@@ -157,7 +161,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamHttpMethod = new List<string> { "Get" },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -190,7 +194,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/{url}",
                         DownstreamScheme = "https",
@@ -198,7 +202,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamHttpMethod = new List<string> { "Get" },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,

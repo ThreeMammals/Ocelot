@@ -1,11 +1,15 @@
-﻿using Ocelot.Configuration;
+﻿using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+
 using Shouldly;
-using System;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
@@ -15,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration
         private FileRoute _fileRoute;
         private FileGlobalConfiguration _fileGlobalConfig;
         private bool _enabled;
-        private RateLimitOptionsCreator _creator;
+        private readonly RateLimitOptionsCreator _creator;
         private RateLimitOptions _result;
 
         public RateLimitOptionsCreatorTests()

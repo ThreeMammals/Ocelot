@@ -1,9 +1,12 @@
 ﻿namespace Ocelot.Configuration.Creator
 {
-    using Logging;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration.File;
     using System;
+
+    using File;
+
+    using Logging;
+
+    using Microsoft.Extensions.DependencyInjection;
 
     public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {
@@ -19,7 +22,7 @@
             var useTracing = _tracer != null && options.UseTracing;
 
             //be sure that maxConnectionPerServer is in correct range of values
-            int maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? maxConnectionPerServer = options.MaxConnectionsPerServer : maxConnectionPerServer = int.MaxValue;
+            var maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? options.MaxConnectionsPerServer : int.MaxValue;
 
             return new HttpHandlerOptions(options.AllowAutoRedirect,
                 options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer);

@@ -1,9 +1,11 @@
-using Ocelot.Logging;
-using Polly;
-using Polly.CircuitBreaker;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Polly;
+using Polly.CircuitBreaker;
 
 namespace Ocelot.Provider.Polly
 {
@@ -30,12 +32,12 @@ namespace Ocelot.Provider.Polly
             }
             catch (BrokenCircuitException ex)
             {
-                _logger.LogError($"Reached to allowed number of exceptions. Circuit is open", ex);
+                _logger.LogError("Reached to allowed number of exceptions. Circuit is open", ex);
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError($"Error in CircuitBreakingDelegatingHandler.SendAync", ex);
+                _logger.LogError("Error in CircuitBreakingDelegatingHandler.SendAync", ex);
                 throw;
             }
         }

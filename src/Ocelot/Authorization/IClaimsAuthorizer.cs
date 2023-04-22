@@ -1,6 +1,7 @@
-﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
+﻿using System.Security.Claims;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
-using System.Security.Claims;
 
 namespace Ocelot.Authorization
 {

@@ -1,14 +1,16 @@
 ﻿namespace Ocelot.Tracing.OpenTracing
 {
-    using global::OpenTracing;
-    using global::OpenTracing.Propagation;
-    using global::OpenTracing.Tag;
-    using Microsoft.AspNetCore.Http;
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using global::OpenTracing;
+    using global::OpenTracing.Propagation;
+    using global::OpenTracing.Tag;
+
+    using Microsoft.AspNetCore.Http;
 
     class OpenTracingTracer : Logging.ITracer
     {
@@ -16,21 +18,21 @@
 
         public OpenTracingTracer(ITracer tracer)
         {
-           _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
         }
 
         public void Event(HttpContext httpContext, string @event)
         {
         }
 
-        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, 
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken,
-            Action<string> addTraceIdToRepo, 
-            Func<HttpRequestMessage, 
-            CancellationToken, 
+            Action<string> addTraceIdToRepo,
+            Func<HttpRequestMessage,
+            CancellationToken,
             Task<HttpResponseMessage>> baseSendAsync)
         {
-            using (IScope scope = _tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
+            using (var scope = _tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
             {
                 var span = scope.Span;
 

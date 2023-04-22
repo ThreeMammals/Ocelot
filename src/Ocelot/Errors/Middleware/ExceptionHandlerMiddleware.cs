@@ -1,14 +1,18 @@
 namespace Ocelot.Errors.Middleware
 {
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Infrastructure.RequestData;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+
+    using Ocelot.Middleware;
 
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500.
@@ -75,7 +79,7 @@ namespace Ocelot.Errors.Middleware
             _repo.Add("RequestId", httpContext.TraceIdentifier);
         }
 
-        private void SetInternalServerErrorOnResponse(HttpContext httpContext)
+        private static void SetInternalServerErrorOnResponse(HttpContext httpContext)
         {
             if (!httpContext.Response.HasStarted)
             {
@@ -83,7 +87,7 @@ namespace Ocelot.Errors.Middleware
             }
         }
 
-        private string CreateMessage(HttpContext httpContext, Exception e)
+        private static string CreateMessage(HttpContext httpContext, Exception e)
         {
             var message =
                 $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";

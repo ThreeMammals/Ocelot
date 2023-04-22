@@ -4,15 +4,6 @@ using Xunit;
 
 namespace Ocelot.IntegrationTests
 {
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Newtonsoft.Json;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -20,6 +11,22 @@ namespace Ocelot.IntegrationTests
     using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+
+    using DependencyInjection;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Configuration;
+
+    using Middleware;
+
+    using Newtonsoft.Json;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
 
     public class HeaderTests : IDisposable
@@ -45,13 +52,13 @@ namespace Ocelot.IntegrationTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 6773,
@@ -134,7 +141,7 @@ namespace Ocelot.IntegrationTests
             _builder.Start();
         }
 
-        private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
@@ -179,12 +186,7 @@ namespace Ocelot.IntegrationTests
 
             var header = _response.Content.ReadAsStringAsync().Result;
 
-            bool passed = false;
-
-            if (header == windowsOrMac || header == linux)
-            {
-                passed = true;
-            }
+            var passed = header == windowsOrMac || header == linux;
 
             passed.ShouldBeTrue();
         }

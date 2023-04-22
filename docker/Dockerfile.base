@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine
 
 RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib
 
@@ -7,4 +6,4 @@ RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 
 RUN chmod u+x ./dotnet-install.sh 
 
-RUN ./dotnet-install.sh -c 5.0 -i /usr/share/dotnet
+RUN ./dotnet-install.sh -c 6.0 -i /usr/share/dotnet

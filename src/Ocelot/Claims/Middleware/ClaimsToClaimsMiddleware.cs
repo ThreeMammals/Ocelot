@@ -1,11 +1,13 @@
 ﻿namespace Ocelot.Claims.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Logging;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Ocelot.Middleware;
 
     public class ClaimsToClaimsMiddleware : OcelotMiddleware
     {
