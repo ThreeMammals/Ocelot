@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  queue: eddiewebb/queue@1.5.0
+  queue: eddiewebb/queue@2.2.1
 jobs:
   build:
     docker:
