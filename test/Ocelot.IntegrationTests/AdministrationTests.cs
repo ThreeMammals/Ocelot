@@ -628,8 +628,8 @@ namespace Ocelot.IntegrationTests
 
         private static void GivenIdentityServerSigningEnvironmentalVariablesAreSet()
         {
-            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "idsrv3test.pfx");
-            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "idsrv3test");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "mycert.pfx");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "password");
         }
 
         private void WhenIGetUrlOnTheSecondOcelot(string url)

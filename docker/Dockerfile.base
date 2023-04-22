@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine
 
-RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib
+RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib git openssh-client
 
 RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 

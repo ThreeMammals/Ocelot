@@ -4,6 +4,7 @@
     using System.IO;
     using System.Net;
     using System.Threading.Tasks;
+    using System.Security.Authentication;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,7 @@
     using Microsoft.AspNetCore.Server.Kestrel.Core;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Hosting;
 
     public class ServiceHandler : IDisposable
     {
@@ -58,7 +60,34 @@
                 {
                     serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
                         {
-                            listenOptions.UseHttps("idsrv3test.pfx", "idsrv3test");
+                            listenOptions.Protocols = protocols;
+                        });
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(del);
+                })
+                .Build();
+
+            _builder.Start();
+        }
+
+        public void GivenThereIsAServiceRunningOnUsingHttps(string baseUrl, string basePath, RequestDelegate del, int port, HttpProtocols protocols)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .ConfigureKestrel(serverOptions =>
+                {
+                    serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
+                        {
+                            listenOptions.UseHttps("mycert.pfx", "password", options =>
+                            {
+                                options.SslProtocols = SslProtocols.Tls12;
+                            });
                             listenOptions.Protocols = protocols;
                         });
                 })
