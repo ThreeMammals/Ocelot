@@ -2,7 +2,7 @@
 #tool "dotnet:?package=coveralls.net&version=4.0.1"
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator"
+#tool "nuget:?package=ReportGenerator&version=5.1.19"
 #addin Cake.Coveralls&version=1.1.0
 
 // compile
@@ -193,9 +193,7 @@ Task("RunUnitTests")
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
-		// todo bring back report generator to get a friendly report
-		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		// https://github.com/danielpalme/ReportGenerator
+		GenerateReport(coverageSummaryFile);
 		
 		if (IsRunningOnCircleCI() && IsMain())
 		{
@@ -364,6 +362,21 @@ Task("PublishToNuget")
     });
 
 RunTarget(target);
+
+private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
+{
+	var dir = System.IO.Directory.GetCurrentDirectory();
+	Information(dir);
+
+	var reportSettings = new ProcessArgumentBuilder();
+	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
+	reportSettings.Append($"-reports:" + coverageSummaryFile);
+
+	var toolpath = Context.Tools.Resolve("net7.0/ReportGenerator.dll");
+	Information($"Tool Path : {toolpath.ToString()}");
+
+	DotNetExecute(toolpath, reportSettings);
+}
 
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
