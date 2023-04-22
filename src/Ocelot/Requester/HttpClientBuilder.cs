@@ -49,7 +49,8 @@
 
             if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
             {
-                handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
+                handler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
                 _logger
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");

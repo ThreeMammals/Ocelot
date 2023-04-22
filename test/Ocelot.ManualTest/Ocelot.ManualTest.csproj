@@ -20,7 +20,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Update="ocelot.json;appsettings.json;idsrv3test.pfx">
+    <None Update="ocelot.json;appsettings.json;mycert.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
