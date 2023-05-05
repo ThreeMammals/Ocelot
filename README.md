@@ -11,7 +11,7 @@ that need a unified point of entry into their system. However it will work with 
 
 In particular I want easy integration with IdentityServer reference and bearer tokens. 
 
-We have been unable to find this in my current workplace without having to write our own Javascript middlewares to handle the IdentityServer reference tokens. We would rather use the IdentityServer code that already existsto do this.
+We have been unable to find this in my current workplace without having to write our own Javascript middlewares to handle the IdentityServer reference tokens. We would rather use the IdentityServer code that already exists to do this.
 
 Ocelot is a bunch of middlewares in a specific order.
 
@@ -79,4 +79,4 @@ If you think this project is worth supporting financially please make a contribu
 
 ## Things that are currently annoying me
 
-[![](https://codescene.io/projects/697/status.svg) Get more details at **codescene.io**.](https://codescene.io/projects/697/jobs/latest-successful/results)
+[![Ocelot Code Health](https://codescene.io/projects/697/status-badges/code-health)](https://codescene.io/projects/697) Get more details at [**codescene.io**](https://codescene.io/projects/697/jobs/latest-successful/results)
