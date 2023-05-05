@@ -1,24 +1,25 @@
-﻿using Ocelot.Responses;
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
+
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {
     public class ClaimToThingConfigurationParser : IClaimToThingConfigurationParser
     {
-        private readonly Regex _claimRegex = new Regex("Claims\\[.*\\]");
-        private readonly Regex _indexRegex = new Regex("value\\[.*\\]");
-        private const string SplitToken = ">";
+        private readonly Regex _claimRegex = new("Claims\\[.*\\]");
+        private readonly Regex _indexRegex = new("value\\[.*\\]");
+        private const char SplitToken = '>';
 
         public Response<ClaimToThing> Extract(string existingKey, string value)
         {
             try
             {
-                var instructions = value.Split(SplitToken.ToCharArray());
+                var instructions = value.Split(SplitToken);
 
                 if (instructions.Length <= 1)
                 {
-                    return new ErrorResponse<ClaimToThing>(new NoInstructionsError(SplitToken));
+                    return new ErrorResponse<ClaimToThing>(new NoInstructionsError(SplitToken.ToString()));
                 }
 
                 var claimMatch = _claimRegex.IsMatch(instructions[0]);
@@ -47,10 +48,10 @@ namespace Ocelot.Configuration.Parser
             }
         }
 
-        private string GetIndexValue(string instruction)
+        private static string GetIndexValue(string instruction)
         {
-            var firstIndexer = instruction.IndexOf("[", StringComparison.Ordinal);
-            var lastIndexer = instruction.IndexOf("]", StringComparison.Ordinal);
+            var firstIndexer = instruction.IndexOf('[', StringComparison.Ordinal);
+            var lastIndexer = instruction.IndexOf(']', StringComparison.Ordinal);
             var length = lastIndexer - firstIndexer;
             var claimKey = instruction.Substring(firstIndexer + 1, length - 1);
             return claimKey;

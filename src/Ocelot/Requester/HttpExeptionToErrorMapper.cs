@@ -1,10 +1,12 @@
 namespace Ocelot.Requester
 {
-    using Ocelot.Errors;
-    using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
+
+    using Errors;
+
+    using Microsoft.Extensions.DependencyInjection;
 
     public class HttpExeptionToErrorMapper : IExceptionToErrorMapper
     {

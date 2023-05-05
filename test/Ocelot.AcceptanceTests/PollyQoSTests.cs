@@ -1,13 +1,17 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Configuration.File;
-    using Microsoft.AspNetCore.Http;
     using System;
     using System.Collections.Generic;
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class PollyQoSTests : IDisposable
@@ -31,12 +35,12 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -72,12 +76,12 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -113,13 +117,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -149,7 +153,7 @@
                 .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => x.GivenIWaitMilliseconds(3000))
+                .Given(x => GivenIWaitMilliseconds(3000))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -166,13 +170,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port1,
@@ -187,13 +191,13 @@
                             DurationOfBreak = 1000
                         }
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port2,
@@ -221,14 +225,14 @@
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => x.GivenIWaitMilliseconds(3000))
+                .And(x => GivenIWaitMilliseconds(3000))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
-        private void GivenIWaitMilliseconds(int ms)
+        private static void GivenIWaitMilliseconds(int ms)
         {
             Thread.Sleep(ms);
         }

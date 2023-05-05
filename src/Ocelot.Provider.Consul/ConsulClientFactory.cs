@@ -1,7 +1,8 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using global::Consul;
     using System;
+
+    using global::Consul;
 
     public class ConsulClientFactory : IConsulClientFactory
     {

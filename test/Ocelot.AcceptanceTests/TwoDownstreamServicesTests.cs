@@ -1,13 +1,19 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Configuration.File;
-    using Consul;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Net;
+
+    using Configuration.File;
+
+    using Consul;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Newtonsoft.Json;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class TwoDownstreamServicesTests : IDisposable
@@ -39,13 +45,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/user/{user}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = servicePort1,
@@ -54,13 +60,13 @@
                             UpstreamPathTemplate = "/api/user/{user}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/product/{product}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = servicePort2,
@@ -70,9 +76,9 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "https",
                         Host = "localhost",

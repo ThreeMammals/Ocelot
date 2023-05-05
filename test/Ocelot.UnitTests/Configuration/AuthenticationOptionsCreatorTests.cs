@@ -1,12 +1,16 @@
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
+
     using Shouldly;
-    using System.Collections.Generic;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class AuthenticationOptionsCreatorTests
@@ -23,7 +27,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_return_auth_options()
         {
-            var fileRoute = new FileRoute()
+            var fileRoute = new FileRoute
             {
                 AuthenticationOptions = new FileAuthenticationOptions
                 {

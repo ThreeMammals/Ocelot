@@ -2,17 +2,20 @@
 
 namespace Ocelot.ManualTest
 {
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
     using System;
     using System.IO;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using DependencyInjection;
+
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+
+    using Middleware;
 
     public class Program
     {
@@ -33,11 +36,11 @@ namespace Ocelot.ManualTest
                 .ConfigureServices(s =>
                 {
                     s.AddAuthentication();
-                       //.AddJwtBearer("TestKey", x =>
-                       //{
-                       //    x.Authority = "test";
-                       //    x.Audience = "test";
-                       //});
+                    //.AddJwtBearer("TestKey", x =>
+                    //{
+                    //    x.Authority = "test";
+                    //    x.Audience = "test";
+                    //});
 
                     s.AddSingleton<QosDelegatingHandlerDelegate>((x, t) => new FakeHandler());
                     s.AddOcelot()

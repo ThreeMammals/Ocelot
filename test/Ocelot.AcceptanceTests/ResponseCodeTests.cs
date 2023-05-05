@@ -1,10 +1,13 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Ocelot.Configuration.File;
     using System;
     using System.Collections.Generic;
     using System.Net;
+
+    using Configuration.File;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ResponseCodeTests : IDisposable
@@ -27,13 +30,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,

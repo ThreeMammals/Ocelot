@@ -8,7 +8,7 @@ namespace Ocelot.Configuration.Repository
     /// </summary>
     public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
     {
-        private static readonly object LockObject = new object();
+        private static readonly object LockObject = new();
 
         private IInternalConfiguration _internalConfiguration;
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;

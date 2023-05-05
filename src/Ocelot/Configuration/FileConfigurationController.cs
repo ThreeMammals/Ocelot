@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
 using System;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Setter;
 
 namespace Ocelot.Configuration
 {
@@ -38,7 +40,7 @@ namespace Ocelot.Configuration
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
+        public async Task<IActionResult> Post([FromBody] FileConfiguration fileConfiguration)
         {
             try
             {

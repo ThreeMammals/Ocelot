@@ -1,8 +1,12 @@
+using System.Collections.Generic;
+
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
+
 using Shouldly;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Cache
@@ -51,7 +55,7 @@ namespace Ocelot.UnitTests.Cache
 
         private void WhenICreateTheRegion()
         {
-            RegionCreator regionCreator = new RegionCreator();
+            var regionCreator = new RegionCreator();
             _result = regionCreator.Create(_route);
         }
 

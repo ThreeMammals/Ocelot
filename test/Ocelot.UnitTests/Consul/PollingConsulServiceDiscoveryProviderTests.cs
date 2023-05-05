@@ -1,15 +1,22 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
+    using System;
+    using System.Collections.Generic;
+
     using Moq;
+
     using Ocelot.Infrastructure;
     using Ocelot.Logging;
     using Ocelot.ServiceDiscovery.Providers;
+
     using Provider.Consul;
+
     using Shouldly;
-    using System;
-    using System.Collections.Generic;
+
     using TestStack.BDDfy;
+
     using Values;
+
     using Xunit;
 
     public class PollingConsulServiceDiscoveryProviderTests
@@ -34,7 +41,7 @@
         [Fact]
         public void should_return_service_from_consul()
         {
-            var service = new Service("", new ServiceHostAndPort("", 0), "", "", new List<string>());
+            var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
 
             this.Given(x => GivenConsulReturns(service))
                 .When(x => WhenIGetTheServices(1))

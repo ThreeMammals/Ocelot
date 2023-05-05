@@ -2,9 +2,12 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
+
+    using Configuration;
+
+    using Responses;
+
+    using ServiceDiscovery;
 
     public class LoadBalancerFactory : ILoadBalancerFactory
     {

@@ -1,10 +1,12 @@
 namespace Ocelot.Headers.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System.Threading.Tasks;
+
+    using Logging;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Ocelot.Middleware;
 
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {

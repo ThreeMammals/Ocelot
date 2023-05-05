@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+
 using Ocelot.Headers;
 using Ocelot.Middleware;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Ocelot.Responder
 {
@@ -53,7 +54,7 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
             }
 
-            using (content)
+            await using (content)
             {
                 if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
                 {
@@ -76,7 +77,7 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
             }
 
-            using (content)
+            await using (content)
             {
                 if (context.Response.ContentLength != 0)
                 {
@@ -85,7 +86,7 @@ namespace Ocelot.Responder
             }
         }
 
-        private void SetStatusCode(HttpContext context, int statusCode)
+        private static void SetStatusCode(HttpContext context, int statusCode)
         {
             if (!context.Response.HasStarted)
             {

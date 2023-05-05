@@ -10,7 +10,7 @@ namespace Ocelot.Infrastructure
     {
         private readonly BlockingCollection<DelayedMessage<T>> _queue;
         private readonly List<Action<T>> _subscriptions;
-        private Thread _processing;
+        private readonly Thread _processing;
 
         public InMemoryBus()
         {

@@ -2,12 +2,17 @@
 
 namespace Ocelot.UnitTests.Infrastructure
 {
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Responses;
-    using Shouldly;
     using System.Collections.Generic;
     using System.Security.Claims;
+
+    using Ocelot.Infrastructure.Claims.Parser;
+
+    using Responses;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ClaimParserTests

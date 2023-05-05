@@ -1,5 +1,4 @@
-﻿using Ocelot.Infrastructure.Extensions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace Ocelot.Configuration.File
@@ -19,7 +18,7 @@ namespace Ocelot.Configuration.File
             var sb = new StringBuilder();
             sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AllowedScopes)}:[");
             sb.AppendJoin(',', AllowedScopes);
-            sb.Append("]");
+            sb.Append(']');
             return sb.ToString();
         }
     }

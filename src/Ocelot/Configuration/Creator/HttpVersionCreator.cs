@@ -6,7 +6,7 @@
     {
         public Version Create(string downstreamHttpVersion)
         {
-            if (!Version.TryParse(downstreamHttpVersion, out Version version))
+            if (!Version.TryParse(downstreamHttpVersion, out var version))
             {
                 version = new Version(1, 1);
             }

@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Middleware
 {
-    using Ocelot.Logging;
+    using Logging;
 
     public abstract class OcelotMiddleware
     {

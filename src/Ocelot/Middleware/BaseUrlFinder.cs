@@ -14,7 +14,7 @@ namespace Ocelot.Middleware
         public string Find()
         {
             //tries to get base url out of file...
-            var baseUrl = _config.GetValue("GlobalConfiguration:BaseUrl", "");
+            var baseUrl = _config.GetValue("GlobalConfiguration:BaseUrl", string.Empty);
 
             //falls back to memory config then finally default..
             return string.IsNullOrEmpty(baseUrl) ? _config.GetValue("BaseUrl", "http://localhost:5000") : baseUrl;
