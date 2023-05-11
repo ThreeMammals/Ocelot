@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Fabric;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OcelotApplicationService
@@ -11,7 +8,7 @@ namespace OcelotApplicationService
     [EventSource(Name = "MyCompany-ServiceOcelotApplication-OcelotService")]
     internal sealed class ServiceEventSource : EventSource
     {
-        public static readonly ServiceEventSource Current = new ServiceEventSource();
+        public static readonly ServiceEventSource Current = new();
 
         static ServiceEventSource()
         {
@@ -46,9 +43,9 @@ namespace OcelotApplicationService
         [NonEvent]
         public void Message(string message, params object[] args)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
-                string finalMessage = string.Format(message, args);
+                var finalMessage = string.Format(message, args);
                 Message(finalMessage);
             }
         }
@@ -57,7 +54,7 @@ namespace OcelotApplicationService
         [Event(MessageEventId, Level = EventLevel.Informational, Message = "{0}")]
         public void Message(string message)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
                 WriteEvent(MessageEventId, message);
             }
@@ -66,10 +63,10 @@ namespace OcelotApplicationService
         [NonEvent]
         public void ServiceMessage(ServiceContext serviceContext, string message, params object[] args)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
 
-                string finalMessage = string.Format(message, args);
+                var finalMessage = string.Format(message, args);
                 ServiceMessage(
                     serviceContext.ServiceName.ToString(),
                     serviceContext.ServiceTypeName,
@@ -157,14 +154,12 @@ namespace OcelotApplicationService
         #region Private methods
         private static long GetReplicaOrInstanceId(ServiceContext context)
         {
-            StatelessServiceContext stateless = context as StatelessServiceContext;
-            if (stateless != null)
+            if (context is StatelessServiceContext stateless)
             {
                 return stateless.InstanceId;
             }
 
-            StatefulServiceContext stateful = context as StatefulServiceContext;
-            if (stateful != null)
+            if (context is StatefulServiceContext stateful)
             {
                 return stateful.ReplicaId;
             }

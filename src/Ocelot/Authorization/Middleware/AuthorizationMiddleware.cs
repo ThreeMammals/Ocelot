@@ -1,12 +1,16 @@
 ﻿namespace Ocelot.Authorization.Middleware
 {
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+
+    using Ocelot.Middleware;
+
+    using Responses;
 
     public class AuthorizationMiddleware : OcelotMiddleware
     {

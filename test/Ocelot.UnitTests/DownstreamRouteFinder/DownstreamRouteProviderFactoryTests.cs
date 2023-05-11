@@ -1,17 +1,23 @@
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System;
+    using System.Collections.Generic;
+
     using Microsoft.Extensions.DependencyInjection;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
+
     using Shouldly;
-    using System.Collections.Generic;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class DownstreamRouteProviderFactoryTests
@@ -19,8 +25,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private readonly DownstreamRouteProviderFactory _factory;
         private IInternalConfiguration _config;
         private IDownstreamRouteProvider _result;
-        private Mock<IOcelotLogger> _logger;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
 
         public DownstreamRouteProviderFactoryTests()
         {
@@ -69,7 +75,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_as_no_service_discovery_given_no_scheme()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("").WithHost("test").WithPort(50).Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme(string.Empty).WithHost("test").WithPort(50).Build();
             var routes = new List<Route>();
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))
@@ -81,7 +87,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_as_no_service_discovery_given_no_host()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("").WithPort(50).Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost(string.Empty).WithPort(50).Build();
             var routes = new List<Route>();
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))
@@ -105,7 +111,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_downstream_route_finder_given_no_service_discovery_type()
         {
-            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(50).WithType("").Build();
+            var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(50).WithType(string.Empty).Build();
             var routes = new List<Route>();
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))
@@ -153,12 +159,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheRoutes(List<Route> routes)
         {
-            _config = new InternalConfiguration(routes, "", null, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(routes, string.Empty, null, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
         }
 
         private void GivenTheRoutes(List<Route> routes, ServiceProviderConfiguration config)
         {
-            _config = new InternalConfiguration(routes, "", config, "", new LoadBalancerOptionsBuilder().Build(), "", new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(routes, string.Empty, config, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
         }
     }
 }

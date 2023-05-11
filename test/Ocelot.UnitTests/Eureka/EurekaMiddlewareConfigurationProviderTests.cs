@@ -1,16 +1,23 @@
 ﻿namespace Ocelot.UnitTests.Eureka
 {
+    using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Repository;
     using Ocelot.Provider.Eureka;
-    using Ocelot.Responses;
+
+    using Responses;
+
     using Shouldly;
+
     using Steeltoe.Discovery;
-    using System.Threading.Tasks;
+
     using Xunit;
 
     public class EurekaMiddlewareConfigurationProviderTests
@@ -22,7 +29,7 @@
             configRepo.Setup(x => x.Get())
                 .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
-            services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
+            services.AddSingleton(configRepo.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
             provider.Status.ShouldBe(TaskStatus.RanToCompletion);
@@ -37,8 +44,8 @@
             configRepo.Setup(x => x.Get())
                 .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null)));
             var services = new ServiceCollection();
-            services.AddSingleton<IInternalConfigurationRepository>(configRepo.Object);
-            services.AddSingleton<IDiscoveryClient>(client.Object);
+            services.AddSingleton(configRepo.Object);
+            services.AddSingleton(client.Object);
             var sp = services.BuildServiceProvider();
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
             provider.Status.ShouldBe(TaskStatus.RanToCompletion);

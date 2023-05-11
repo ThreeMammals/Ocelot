@@ -1,16 +1,19 @@
-﻿using Ocelot.Configuration.File;
-using System;
+﻿using System;
+
 using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.File;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
     public class ConfigurationReloadTests : IDisposable
     {
-        private FileConfiguration _initialConfig;
-        private FileConfiguration _anotherConfig;
-        private Steps _steps;
+        private readonly FileConfiguration _initialConfig;
+        private readonly FileConfiguration _anotherConfig;
+        private readonly Steps _steps;
 
         public ConfigurationReloadTests()
         {
@@ -80,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private const int MillisecondsToWaitForChangeToken = (int) (OcelotConfigurationChangeToken.PollingIntervalSeconds*1000) - 100;
+        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1000) - 100;
 
         public void Dispose()
         {

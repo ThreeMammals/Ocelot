@@ -1,5 +1,6 @@
-using Ocelot.Responses;
 using System.Collections.Generic;
+
+using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 {
@@ -11,12 +12,12 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
             path = $"{path}{query}";
 
-            int counterForPath = 0;
+            var counterForPath = 0;
 
             var delimiter = '/';
             var nextDelimiter = '/';
 
-            for (int counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
+            for (var counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
             {
                 if ((path.Length > counterForPath) && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath]) && ContinueScanningUrl(counterForPath, path.Length))
                 {
@@ -59,7 +60,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                     if (NothingAfterFirstForwardSlash(path))
                     {
-                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, ""));
+                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, string.Empty));
                     }
                     else
                     {
@@ -83,27 +84,27 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
         private static bool NotPassedQueryString(string pathTemplate, int counterForTemplate)
         {
-            return !pathTemplate.Substring(0, counterForTemplate).Contains("?");
+            return !pathTemplate.Substring(0, counterForTemplate).Contains('?');
         }
 
         private static bool PassedQueryString(string pathTemplate, int counterForTemplate)
         {
-            return pathTemplate.Substring(0, counterForTemplate).Contains("?");
+            return pathTemplate.Substring(0, counterForTemplate).Contains('?');
         }
 
-        private bool IsCatchAll(string path, int counterForPath, string pathTemplate)
+        private static bool IsCatchAll(string path, int counterForPath, string pathTemplate)
         {
             return string.IsNullOrEmpty(path) || (path.Length > counterForPath && path[counterForPath] == '/') && pathTemplate.Length > 1
                      && pathTemplate.Substring(0, 2) == "/{"
                      && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
         }
 
-        private bool NothingAfterFirstForwardSlash(string path)
+        private static bool NothingAfterFirstForwardSlash(string path)
         {
             return path.Length == 1 || path.Length == 0;
         }
 
-        private string GetPlaceholderValue(string urlPathTemplate, string query, string variableName, string urlPath, int counterForUrl, char delimiter)
+        private static string GetPlaceholderValue(string urlPathTemplate, string query, string variableName, string urlPath, int counterForUrl, char delimiter)
         {
             var positionOfNextSlash = urlPath.IndexOf(delimiter, counterForUrl);
 
@@ -117,7 +118,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
             return variableValue;
         }
 
-        private string GetPlaceholderName(string urlPathTemplate, int counterForTemplate)
+        private static string GetPlaceholderName(string urlPathTemplate, int counterForTemplate)
         {
             var postitionOfPlaceHolderClosingBracket = urlPathTemplate.IndexOf('}', counterForTemplate) + 1;
 
@@ -126,25 +127,22 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
             return variableName;
         }
 
-        private int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
+        private static int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
         {
             var closingPlaceHolderPositionOnTemplate = urlTemplate.IndexOf(delimiter, counterForTemplate);
             return closingPlaceHolderPositionOnTemplate + 1;
         }
 
-        private bool CharactersDontMatch(char characterOne, char characterTwo)
+        private static bool CharactersDontMatch(char characterOne, char characterTwo)
         {
             return char.ToLower(characterOne) != char.ToLower(characterTwo);
         }
 
-        private bool ContinueScanningUrl(int counterForUrl, int urlLength)
+        private static bool ContinueScanningUrl(int counterForUrl, int urlLength)
         {
             return counterForUrl < urlLength;
         }
 
-        private bool IsPlaceholder(char character)
-        {
-            return character == '{';
-        }
+        private static bool IsPlaceholder(char character) => character == '{';
     }
 }

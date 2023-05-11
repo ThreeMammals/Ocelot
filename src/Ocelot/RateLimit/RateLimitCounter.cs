@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+
+using Newtonsoft.Json;
 
 namespace Ocelot.RateLimit
 {
@@ -15,8 +16,8 @@ namespace Ocelot.RateLimit
             TotalRequests = totalRequests;
         }
 
-        public DateTime Timestamp { get; private set; }
+        public DateTime Timestamp { get; }
 
-        public long TotalRequests { get; private set; }
+        public long TotalRequests { get; }
     }
 }

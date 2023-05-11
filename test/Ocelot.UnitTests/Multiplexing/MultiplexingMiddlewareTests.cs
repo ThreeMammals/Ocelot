@@ -1,18 +1,24 @@
 ﻿namespace Ocelot.UnitTests.Multiplexing
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Http;
+
     using Moq;
+
+    using Multiplexer;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using Ocelot.Multiplexer;
+
     using Shouldly;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class MultiplexingMiddlewareTests
@@ -20,12 +26,12 @@
         private readonly MultiplexingMiddleware _middleware;
         private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
         private int _count;
-        private Mock<IResponseAggregator> _aggregator;
-        private Mock<IResponseAggregatorFactory> _factory;
-        private HttpContext _httpContext;
-        private RequestDelegate _next;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IResponseAggregator> _aggregator;
+        private readonly Mock<IResponseAggregatorFactory> _factory;
+        private readonly HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
 
         public MultiplexingMiddlewareTests()
         {

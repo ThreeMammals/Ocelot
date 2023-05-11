@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Requester.QoS
 {
-    using Ocelot.Errors;
+    using Errors;
 
     public class UnableToFindQoSProviderError : Error
     {

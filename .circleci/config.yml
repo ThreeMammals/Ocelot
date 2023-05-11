@@ -1,16 +1,16 @@
 version: 2.1
 orbs:
-  queue: eddiewebb/queue@1.5.0
+  queue: eddiewebb/queue@2.2.1
 jobs:
   build:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.6
+      - image: mijitt0m/ocelot-build:0.0.9
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: mijitt0m/ocelot-build:0.0.6
+      - image: mijitt0m/ocelot-build:0.0.9
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake --target=Release

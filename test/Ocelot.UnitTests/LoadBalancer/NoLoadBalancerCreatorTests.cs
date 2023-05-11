@@ -1,13 +1,18 @@
 ﻿namespace Ocelot.UnitTests.LoadBalancer
 {
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Responses;
     using Ocelot.ServiceDiscovery.Providers;
+
+    using Responses;
+
     using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class NoLoadBalancerCreatorTests
@@ -23,7 +28,7 @@
             _creator = new NoLoadBalancerCreator();
             _serviceProvider = new Mock<IServiceDiscoveryProvider>();
         }
-        
+
         [Fact]
         public void should_return_instance_of_expected_load_balancer_type()
         {
@@ -35,7 +40,7 @@
                 .Then(x => x.ThenTheLoadBalancerIsReturned<NoLoadBalancer>())
                 .BDDfy();
         }
-                
+
         [Fact]
         public void should_return_expected_name()
         {
@@ -53,7 +58,7 @@
         {
             _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
         }
-        
+
         private void WhenIGetTheLoadBalancerTypeName()
         {
             _typeName = _creator.Type;

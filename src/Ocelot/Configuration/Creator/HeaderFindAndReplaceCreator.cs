@@ -1,9 +1,10 @@
+using System;
+using System.Collections.Generic;
+
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -75,10 +76,10 @@ namespace Ocelot.Configuration.Creator
 
             var replace = findAndReplace[1].TrimStart();
 
-            var startOfPlaceholder = replace.IndexOf("{");
+            var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
             if (startOfPlaceholder > -1)
             {
-                var endOfPlaceholder = replace.IndexOf("}", startOfPlaceholder);
+                var endOfPlaceholder = replace.IndexOf("}", startOfPlaceholder, StringComparison.Ordinal);
 
                 var placeholder = replace.Substring(startOfPlaceholder, startOfPlaceholder + (endOfPlaceholder + 1));
 

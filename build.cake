@@ -1,10 +1,9 @@
 #tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=3.0.0"
-#addin nuget:?package=Cake.Json&version=4.0.0
+#tool "dotnet:?package=coveralls.net&version=4.0.1"
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator"
-#addin Cake.Coveralls&version=0.10.1
+#tool "nuget:?package=ReportGenerator&version=5.1.19"
+#addin Cake.Coveralls&version=1.1.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -178,7 +177,7 @@ Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var testSettings = new DotNetCoreTestSettings
+		var testSettings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
@@ -188,17 +187,15 @@ Task("RunUnitTests")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetCoreTest(unitTestAssemblies, testSettings);
+		DotNetTest(unitTestAssemblies, testSettings);
 
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
-		// todo bring back report generator to get a friendly report
-		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		// https://github.com/danielpalme/ReportGenerator
+		GenerateReport(coverageSummaryFile);
 		
-		if (IsRunningOnCircleCI() && IsMain())
+		if (IsRunningOnCircleCI() && IsMainOrDevelop())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -233,7 +230,7 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetCoreTestSettings
+		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ArgumentCustomization = args => args
@@ -242,14 +239,14 @@ Task("RunAcceptanceTests")
 		};
 
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-		DotNetCoreTest(acceptanceTestAssemblies, settings);
+		DotNetTest(acceptanceTestAssemblies, settings);
 	});
 
 Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetCoreTestSettings
+		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ArgumentCustomization = args => args
@@ -258,7 +255,7 @@ Task("RunIntegrationTests")
 		};
 
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-		DotNetCoreTest(integrationTestAssemblies, settings);
+		DotNetTest(integrationTestAssemblies, settings);
 	});
 
 Task("CreateArtifacts")
@@ -365,6 +362,21 @@ Task("PublishToNuget")
     });
 
 RunTarget(target);
+
+private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
+{
+	var dir = System.IO.Directory.GetCurrentDirectory();
+	Information(dir);
+
+	var reportSettings = new ProcessArgumentBuilder();
+	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
+	reportSettings.Append($"-reports:" + coverageSummaryFile);
+
+	var toolpath = Context.Tools.Resolve("net7.0/ReportGenerator.dll");
+	Information($"Tool Path : {toolpath.ToString()}");
+
+	DotNetExecute(toolpath, reportSettings);
+}
 
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
@@ -543,7 +555,19 @@ private bool IsRunningOnCircleCI()
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
 
-private bool IsMain()
+private bool IsMainOrDevelop()
 {
-    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "main";
+	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
+
+	if(env == "main") 
+	{
+		return true;
+	}
+
+	if(env == "develop") 
+	{
+		return true;
+	}
+
+    return false;
 }

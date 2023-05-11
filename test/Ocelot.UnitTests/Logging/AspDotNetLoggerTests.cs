@@ -1,10 +1,14 @@
 namespace Ocelot.UnitTests.Logging
 {
+    using System;
+
     using Microsoft.Extensions.Logging;
+
     using Moq;
+
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
-    using System;
+
     using Xunit;
 
     public class AspDotNetLoggerTests

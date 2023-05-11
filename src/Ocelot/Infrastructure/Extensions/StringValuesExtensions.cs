@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Primitives;
 using System.Linq;
+
+using Microsoft.Extensions.Primitives;
 
 namespace Ocelot.Infrastructure.Extensions
 {

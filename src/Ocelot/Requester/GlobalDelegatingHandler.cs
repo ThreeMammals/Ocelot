@@ -9,6 +9,6 @@ namespace Ocelot.Requester
             DelegatingHandler = delegatingHandler;
         }
 
-        public DelegatingHandler DelegatingHandler { get; private set; }
+        public DelegatingHandler DelegatingHandler { get; }
     }
 }

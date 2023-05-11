@@ -75,9 +75,9 @@ namespace Ocelot.Request.Middleware
             return ToUri();
         }
 
-        private string RemoveLeadingQuestionMark(string query)
+        private static string RemoveLeadingQuestionMark(string query)
         {
-            if (!string.IsNullOrEmpty(query) && query.StartsWith("?"))
+            if (!string.IsNullOrEmpty(query) && query.StartsWith('?'))
             {
                 return query.Substring(1);
             }

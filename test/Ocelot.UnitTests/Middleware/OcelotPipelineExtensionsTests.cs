@@ -4,6 +4,7 @@ namespace Ocelot.UnitTests.Middleware
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+
     using Ocelot.DependencyInjection;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamUrlCreator.Middleware;
@@ -11,8 +12,11 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.WebSockets.Middleware;
+
     using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class OcelotPipelineExtensionsTests
@@ -50,7 +54,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIExpandBuild()
         {
-            OcelotPipelineConfiguration configuration = new OcelotPipelineConfiguration();
+            var configuration = new OcelotPipelineConfiguration();
             //Func<HttpContext,  bool>, Action<IApplicationBuilder>
             configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
             {

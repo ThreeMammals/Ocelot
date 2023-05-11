@@ -1,12 +1,16 @@
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections.Generic;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
+
     using Shouldly;
-    using System.Collections.Generic;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class RouteOptionsCreatorTests
@@ -29,13 +33,13 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     EnableRateLimiting = true
                 },
-                AuthenticationOptions = new FileAuthenticationOptions()
+                AuthenticationOptions = new FileAuthenticationOptions
                 {
                     AuthenticationProviderKey = "Test"
                 },
-                RouteClaimsRequirement = new Dictionary<string, string>()
+                RouteClaimsRequirement = new Dictionary<string, string>
                 {
-                    {"",""}
+                    {string.Empty,string.Empty}
                 },
                 FileCacheOptions = new FileCacheOptions
                 {

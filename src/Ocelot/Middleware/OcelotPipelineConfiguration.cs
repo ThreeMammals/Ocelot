@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
 
@@ -71,6 +72,6 @@
         /// <placeholder>This is an extension that will branch to different pipes</placeholder>
         /// </value>
         // todo fix this data structure
-        public Dictionary<Func<HttpContext,  bool>, Action<IApplicationBuilder>> MapWhenOcelotPipeline { get; } = new Dictionary<Func<HttpContext, bool>, Action<IApplicationBuilder>>();
+        public Dictionary<Func<HttpContext, bool>, Action<IApplicationBuilder>> MapWhenOcelotPipeline { get; } = new();
     }
 }

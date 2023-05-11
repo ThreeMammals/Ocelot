@@ -1,10 +1,12 @@
 ﻿namespace Ocelot.Infrastructure.Claims.Parser
 {
-    using Microsoft.Extensions.Primitives;
-    using Responses;
     using System.Collections.Generic;
     using System.Linq;
     using System.Security.Claims;
+
+    using Microsoft.Extensions.Primitives;
+
+    using Responses;
 
     public class ClaimsParser : IClaimsParser
     {
@@ -36,14 +38,12 @@
 
         public Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType)
         {
-            List<string> values = new List<string>();
-
-            values.AddRange(claims.Where(x => x.Type == claimType).Select(x => x.Value).ToList());
+            var values = claims.Where(x => x.Type == claimType).Select(x => x.Value).ToList();
 
             return new OkResponse<List<string>>(values);
         }
 
-        private Response<string> GetValue(IEnumerable<Claim> claims, string key)
+        private static Response<string> GetValue(IEnumerable<Claim> claims, string key)
         {
             var claimValues = claims.Where(c => c.Type == key).Select(c => c.Value).ToArray();
 

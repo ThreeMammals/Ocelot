@@ -1,6 +1,6 @@
 namespace Ocelot.Multiplexer
 {
-    using Ocelot.Configuration;
+    using Configuration;
 
     public interface IResponseAggregatorFactory
     {

@@ -1,10 +1,13 @@
 namespace Ocelot.Multiplexer
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Middleware;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Middleware;
 
     public class UserDefinedResponseAggregator : IResponseAggregator
     {

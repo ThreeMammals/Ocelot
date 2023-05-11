@@ -7,4 +7,4 @@ Building
 
 * There is a Makefile to make it easier to call the various targers in `build.cake`. The scripts are called with .sh but can be easily changed to ps1 if you are using Windows.
 
-* Alternatively you can build the project in VS2022 with the latest .NET 6.0 SDK.
+* Alternatively you can build the project in VS2022 with the latest .NET 7.0 SDK.
