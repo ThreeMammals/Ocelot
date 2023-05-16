@@ -11,5 +11,7 @@
         public List<string> IPAllowedList { get; set; }
 
         public List<string> IPBlockedList { get; set; }
+
+        public bool ExcludeAllowedFromBlocked { get; set; }
     }
 }
