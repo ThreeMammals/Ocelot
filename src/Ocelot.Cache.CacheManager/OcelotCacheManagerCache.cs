@@ -1,7 +1,8 @@
 ﻿namespace Ocelot.Cache.CacheManager
 {
-    using global::CacheManager.Core;
     using System;
+
+    using global::CacheManager.Core;
 
     public class OcelotCacheManagerCache<T> : IOcelotCache<T>
     {

@@ -1,10 +1,14 @@
 ﻿namespace Ocelot.UnitTests.Cache
 {
+    using System.Net.Http;
+
     using Ocelot.Cache;
     using Ocelot.Request.Middleware;
+
     using Shouldly;
-    using System.Net.Http;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class CacheKeyGeneratorTests
@@ -28,8 +32,8 @@
 
         private void GivenCacheKeyFromContext(DownstreamRequest downstreamRequest)
         {
-            string generatedCacheKey = _cacheKeyGenerator.GenerateRequestCacheKey(downstreamRequest);
-            string cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+            var generatedCacheKey = _cacheKeyGenerator.GenerateRequestCacheKey(downstreamRequest);
+            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
             generatedCacheKey.ShouldBe(cachekey);
         }
     }

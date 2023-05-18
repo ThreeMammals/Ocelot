@@ -1,15 +1,21 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Configuration;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Requester;
-    using Shouldly;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Net;
+
+    using Configuration;
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Requester;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class HttpClientCachingTests : IDisposable
@@ -33,13 +39,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
@@ -75,13 +81,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -90,13 +96,13 @@ namespace Ocelot.AcceptanceTests
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/two",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -126,7 +132,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void ThenTheCountShouldBe(FakeHttpClientCache cache, int count)
+        private static void ThenTheCountShouldBe(FakeHttpClientCache cache, int count)
         {
             cache.Count.ShouldBe(count);
         }

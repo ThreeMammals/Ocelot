@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
 using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -6,12 +11,13 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
+
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading;
+
 using TestStack.BDDfy;
+
 using Xunit;
+
 using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration
@@ -19,10 +25,10 @@ namespace Ocelot.UnitTests.Configuration
     public class FileConfigurationPollerTests : IDisposable
     {
         private readonly FileConfigurationPoller _poller;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IFileConfigurationRepository> _repo;
         private readonly FileConfiguration _fileConfig;
-        private Mock<IFileConfigurationPollerOptions> _config;
+        private readonly Mock<IFileConfigurationPollerOptions> _config;
         private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo;
         private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator;
         private IInternalConfiguration _internalConfig;
@@ -58,11 +64,11 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "test"
                             }
@@ -84,11 +90,11 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "test"
                             }
@@ -110,11 +116,11 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "test"
                             }

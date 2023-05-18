@@ -1,8 +1,10 @@
 ﻿namespace Ocelot.Tracing.OpenTracing
 {
+    using DependencyInjection;
+
+    using Logging;
+
     using Microsoft.Extensions.DependencyInjection.Extensions;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Logging;
 
     public static class OcelotBuilderExtensions
     {

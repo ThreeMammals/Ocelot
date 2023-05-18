@@ -1,8 +1,10 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Ocelot.Responses;
-    using Ocelot.Configuration;
-    using Ocelot.ServiceDiscovery.Providers;
+    using Configuration;
+
+    using Responses;
+
+    using ServiceDiscovery.Providers;
 
     public interface ILoadBalancerCreator
     {

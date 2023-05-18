@@ -11,7 +11,7 @@ namespace Ocelot.Infrastructure.Extensions
                 return null;
             }
 
-            string s = source;
+            var s = source;
             while (s.StartsWith(trim, stringComparison))
             {
                 s = s.Substring(trim.Length);

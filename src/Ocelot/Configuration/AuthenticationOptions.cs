@@ -10,7 +10,7 @@ namespace Ocelot.Configuration
             AuthenticationProviderKey = authenticationProviderKey;
         }
 
-        public List<string> AllowedScopes { get; private set; }
-        public string AuthenticationProviderKey { get; private set; }
+        public List<string> AllowedScopes { get; }
+        public string AuthenticationProviderKey { get; }
     }
 }

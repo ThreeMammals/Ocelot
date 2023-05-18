@@ -1,13 +1,18 @@
 ﻿namespace Ocelot.UnitTests.LoadBalancer
 {
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.LoadBalancer.LoadBalancers;
     using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Responses;
+
+    using Responses;
+
     using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class CookieStickySessionsCreatorTests
@@ -23,7 +28,7 @@
             _creator = new CookieStickySessionsCreator();
             _serviceProvider = new Mock<IServiceDiscoveryProvider>();
         }
-        
+
         [Fact]
         public void should_return_instance_of_expected_load_balancer_type()
         {
@@ -36,7 +41,7 @@
                 .Then(x => x.ThenTheLoadBalancerIsReturned<CookieStickySessions>())
                 .BDDfy();
         }
-                
+
         [Fact]
         public void should_return_expected_name()
         {
@@ -54,7 +59,7 @@
         {
             _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
         }
-        
+
         private void WhenIGetTheLoadBalancerTypeName()
         {
             _typeName = _creator.Type;

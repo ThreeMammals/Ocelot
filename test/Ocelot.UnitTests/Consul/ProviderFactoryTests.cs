@@ -2,13 +2,19 @@
 
 namespace Ocelot.UnitTests.Consul
 {
+    using System;
+
     using Microsoft.Extensions.DependencyInjection;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Logging;
+
     using Provider.Consul;
+
     using Shouldly;
-    using System;
+
     using Xunit;
 
     public class ProviderFactoryTests
@@ -23,8 +29,8 @@ namespace Ocelot.UnitTests.Consul
             loggerFactory.Setup(x => x.CreateLogger<Consul>()).Returns(logger.Object);
             loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
             var consulFactory = new Mock<IConsulClientFactory>();
-            services.AddSingleton<IConsulClientFactory>(consulFactory.Object);
-            services.AddSingleton<IOcelotLoggerFactory>(loggerFactory.Object);
+            services.AddSingleton(consulFactory.Object);
+            services.AddSingleton(loggerFactory.Object);
             _provider = services.BuildServiceProvider();
         }
 
@@ -32,10 +38,10 @@ namespace Ocelot.UnitTests.Consul
         public void should_return_ConsulServiceDiscoveryProvider()
         {
             var route = new DownstreamRouteBuilder()
-                .WithServiceName("")
+                .WithServiceName(string.Empty)
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", "", 1, "", "", 1), route);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1), route);
             provider.ShouldBeOfType<Consul>();
         }
 
@@ -45,10 +51,10 @@ namespace Ocelot.UnitTests.Consul
             var stopsPollerFromPolling = 10000;
 
             var route = new DownstreamRouteBuilder()
-                .WithServiceName("")
+                .WithServiceName(string.Empty)
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "http", "", 1, "", "", stopsPollerFromPolling), route);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "http", string.Empty, 1, string.Empty, string.Empty, stopsPollerFromPolling), route);
             var pollProvider = provider as PollConsul;
             pollProvider.ShouldNotBeNull();
             pollProvider.Dispose();

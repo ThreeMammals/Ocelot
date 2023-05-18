@@ -1,9 +1,12 @@
 namespace Ocelot.Requester
 {
-    using Logging;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Infrastructure.RequestData;
     using System;
+
+    using Infrastructure.RequestData;
+
+    using Logging;
+
+    using Microsoft.Extensions.DependencyInjection;
 
     public class TracingHandlerFactory : ITracingHandlerFactory
     {

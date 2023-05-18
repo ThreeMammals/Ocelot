@@ -1,13 +1,18 @@
 ﻿namespace Ocelot.Multiplexer
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using DownstreamRouteFinder.UrlMatcher;
+
+    using Logging;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Middleware;
 
     public class MultiplexingMiddleware : OcelotMiddleware
     {
@@ -76,7 +81,7 @@
 
                 if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
                 {
-                    MapNotAggregate(httpContext, new List<HttpContext>() { mainResponse });
+                    MapNotAggregate(httpContext, new List<HttpContext> { mainResponse });
                     return;
                 }
 
@@ -102,14 +107,14 @@
 
                     if (matchAdvancedAgg != null)
                     {
-                        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct().ToList();
+                        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
 
                         foreach (var value in values)
                         {
                             var newHttpContext = Copy(httpContext);
 
-                            var tPNV = httpContext.Items.TemplatePlaceholderNameAndValues();
-                            tPNV.Add(new PlaceholderNameAndValue("{" + matchAdvancedAgg.Parameter + "}", value.ToString()));
+                            var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
+                            tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
 
                             newHttpContext.Items
                                 .Add("RequestId", httpContext.Items["RequestId"]);
@@ -118,7 +123,7 @@
                                 .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
 
                             newHttpContext.Items
-                                .UpsertTemplatePlaceholderNameAndValues(tPNV);
+                                .UpsertTemplatePlaceholderNameAndValues(tPnv);
 
                             newHttpContext.Items
                                 .UpsertDownstreamRoute(downstreamRoute);
@@ -148,7 +153,7 @@
 
                 await Task.WhenAll(tasks);
 
-                var contexts = new List<HttpContext>() { mainResponse };
+                var contexts = new List<HttpContext> { mainResponse };
 
                 foreach (var task in tasks)
                 {
@@ -160,7 +165,7 @@
             }
         }
 
-        private HttpContext Copy(HttpContext source)
+        private static HttpContext Copy(HttpContext source)
         {
             var target = new DefaultHttpContext();
 
@@ -200,7 +205,7 @@
             }
         }
 
-        private void MapNotAggregate(HttpContext httpContext, List<HttpContext> downstreamContexts)
+        private static void MapNotAggregate(HttpContext httpContext, List<HttpContext> downstreamContexts)
         {
             //assume at least one..if this errors then it will be caught by global exception handler
             var finished = downstreamContexts.First();
@@ -212,7 +217,7 @@
             httpContext.Items.UpsertDownstreamResponse(finished.Items.DownstreamResponse());
         }
 
-        private async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)
+        private static async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)
         {
             await next.Invoke(httpContext);
             return httpContext;

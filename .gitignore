@@ -183,7 +183,7 @@ ClientBin/
 *.dbmdl
 *.dbproj.schemaview
 *.pfx
-!idsrv3test.pfx
+!mycert.pfx
 *.publishsettings
 node_modules/
 orleans.codegen.cs

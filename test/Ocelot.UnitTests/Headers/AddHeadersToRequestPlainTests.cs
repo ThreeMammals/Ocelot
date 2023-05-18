@@ -2,16 +2,23 @@
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
+
     using Moq;
+
     using Ocelot.Configuration.Creator;
     using Ocelot.Headers;
     using Ocelot.Infrastructure;
     using Ocelot.Infrastructure.Claims.Parser;
     using Ocelot.Logging;
+
     using Responder;
+
     using Responses;
+
     using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class AddHeadersToRequestPlainTests
@@ -20,7 +27,7 @@
         private HttpContext _context;
         private AddHeader _addedHeader;
         private readonly Mock<IPlaceholders> _placeholders;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
 
         public AddHeadersToRequestPlainTests()
@@ -79,15 +86,7 @@
 
         private void GivenHttpRequestWithoutHeaders()
         {
-            _context = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Headers =
-                    {
-                    }
-                }
-            };
+            _context = new DefaultHttpContext();
         }
 
         private void GivenHttpRequestWithHeader(string headerKey, string headerValue)

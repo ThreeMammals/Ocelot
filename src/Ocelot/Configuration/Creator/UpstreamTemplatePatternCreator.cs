@@ -1,6 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 using Ocelot.Configuration.File;
 using Ocelot.Values;
-using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -38,17 +40,17 @@ namespace Ocelot.Configuration.Creator
 
             var containsQueryString = false;
 
-            if (upstreamTemplate.Contains("?"))
+            if (upstreamTemplate.Contains('?'))
             {
                 containsQueryString = true;
                 upstreamTemplate = upstreamTemplate.Replace("?", "\\?");
             }
 
-            for (int i = 0; i < placeholders.Count; i++)
+            for (var i = 0; i < placeholders.Count; i++)
             {
-                var indexOfPlaceholder = upstreamTemplate.IndexOf(placeholders[i]);
-                var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder);
-                if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf("?") < upstreamTemplate.IndexOf(placeholders[i])))
+                var indexOfPlaceholder = upstreamTemplate.IndexOf(placeholders[i], StringComparison.Ordinal);
+                var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder, StringComparison.Ordinal);
+                if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf('?', StringComparison.Ordinal) < upstreamTemplate.IndexOf(placeholders[i], StringComparison.Ordinal)))
                 {
                     upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverything);
                 }
@@ -75,7 +77,7 @@ namespace Ocelot.Configuration.Creator
             return new UpstreamPathTemplate(template, route.Priority, containsQueryString, route.UpstreamPathTemplate);
         }
 
-        private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
+        private static bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)
         {
             if (upstreamTemplate.Substring(0, 2) == "/{" && placeholders.Count == 1 && upstreamTemplate.Length == postitionOfPlaceHolderClosingBracket + 1)
             {
@@ -85,7 +87,7 @@ namespace Ocelot.Configuration.Creator
             return false;
         }
 
-        private bool IsPlaceHolder(string upstreamTemplate, int i)
+        private static bool IsPlaceHolder(string upstreamTemplate, int i)
         {
             return upstreamTemplate[i] == '{';
         }

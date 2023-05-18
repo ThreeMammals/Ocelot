@@ -1,5 +1,6 @@
-using Ocelot.Errors;
 using System.Collections.Generic;
+
+using Ocelot.Errors;
 
 namespace Ocelot.Responses
 {
@@ -17,6 +18,6 @@ namespace Ocelot.Responses
         {
         }
 
-        public T Data { get; private set; }
+        public T Data { get; }
     }
 }

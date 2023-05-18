@@ -1,19 +1,27 @@
-﻿using KubeClient;
-using KubeClient.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Moq;
-using Newtonsoft.Json;
-using Ocelot.Logging;
-using Ocelot.Provider.Kubernetes;
-using Ocelot.Values;
-using Shouldly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using KubeClient;
+using KubeClient.Models;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Newtonsoft.Json;
+
+using Ocelot.Logging;
+using Ocelot.Provider.Kubernetes;
+using Ocelot.Values;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes
@@ -38,7 +46,7 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _serviceName = "test";
             _namespaces = "dev";
-            _port = 86;
+            _port = 5567;
             _kubeHost = "localhost";
             _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
             _endpointEntries = new EndpointsV1();
@@ -48,14 +56,14 @@ namespace Ocelot.UnitTests.Kubernetes
             {
                 ApiEndPoint = new Uri(_fakekubeServiceDiscoveryUrl),
                 AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG",
-                AuthStrategy = KubeClient.KubeAuthStrategy.BearerToken,
+                AuthStrategy = KubeAuthStrategy.BearerToken,
                 AllowInsecure = true,
             };
 
             _clientFactory = KubeApiClient.Create(option);
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<KubernetesServiceDiscoveryProvider>()).Returns(_logger.Object);
-            var config = new KubeRegistryConfiguration()
+            var config = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = _serviceName,
                 KubeNamespace = _namespaces,
@@ -71,18 +79,18 @@ namespace Ocelot.UnitTests.Kubernetes
             {
                 Kind = "endpoint",
                 ApiVersion = "1.0",
-                Metadata = new ObjectMetaV1()
+                Metadata = new ObjectMetaV1
                 {
                     Namespace = "dev",
                 },
             };
             var endpointSubsetV1 = new EndpointSubsetV1();
-            endpointSubsetV1.Addresses.Add(new EndpointAddressV1()
+            endpointSubsetV1.Addresses.Add(new EndpointAddressV1
             {
                 Ip = "127.0.0.1",
                 Hostname = "localhost",
             });
-            endpointSubsetV1.Ports.Add(new EndpointPortV1()
+            endpointSubsetV1.Ports.Add(new EndpointPortV1
             {
                 Port = 80,
             });

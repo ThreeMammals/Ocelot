@@ -1,15 +1,19 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Configuration.Repository;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Responses;
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Net;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+    using Configuration.Repository;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Responses;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class StartupTests : IDisposable
@@ -33,13 +37,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,

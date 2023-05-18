@@ -1,11 +1,14 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using Logging;
-    using ServiceDiscovery.Providers;
     using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Logging;
+
+    using ServiceDiscovery.Providers;
+
     using Values;
 
     public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable

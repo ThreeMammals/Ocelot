@@ -1,10 +1,17 @@
 ﻿namespace Ocelot.UnitTests.Configuration.Validation
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Text.Encodings.Web;
+    using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+
     using Moq;
+
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Validator;
     using Ocelot.Requester;
@@ -12,13 +19,13 @@
     using Ocelot.ServiceDiscovery;
     using Ocelot.ServiceDiscovery.Providers;
     using Ocelot.Values;
+
     using Requester;
+
     using Shouldly;
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using System.Text.Encodings.Web;
-    using System.Threading.Tasks;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class FileConfigurationFluentValidatorTests
@@ -44,7 +51,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -78,7 +85,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -137,7 +144,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -198,7 +205,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -235,13 +242,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -273,13 +280,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -314,13 +321,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -353,13 +360,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -395,13 +402,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -411,13 +418,13 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51880,
@@ -430,7 +437,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -456,13 +463,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -472,13 +479,13 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51880,
@@ -492,7 +499,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
@@ -519,13 +526,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -535,13 +542,13 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51880,
@@ -555,7 +562,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
@@ -581,13 +588,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -597,13 +604,13 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51880,
@@ -616,7 +623,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
@@ -626,7 +633,7 @@
                                 "Laura"
                             }
                         },
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/tom",
                             UpstreamHost = "localhost",
@@ -653,13 +660,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -672,7 +679,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -699,13 +706,13 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51878,
@@ -715,13 +722,13 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51880,
@@ -735,7 +742,7 @@
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -762,7 +769,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
                         UpstreamPathTemplate = "http://asdf.com"
@@ -789,13 +796,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk"
                             }
@@ -815,7 +822,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "api/products/",
                         UpstreamPathTemplate = "/asdf/"
@@ -835,7 +842,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "api/prod/",
@@ -855,13 +862,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "//api/prod/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                                 Port = 80
@@ -883,13 +890,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "//api/products/",
                         UpstreamPathTemplate = "/api/prod/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                                 Port = 80
@@ -911,13 +918,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -942,7 +949,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
@@ -966,25 +973,25 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bb.co.uk"
                             }
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bb.co.uk"
                             }
@@ -1005,26 +1012,26 @@
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/products/",
                             UpstreamPathTemplate = "/asdf/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "bb.co.uk"
                                 }
                             },
                             UpstreamHost = "host1"
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/www/test/",
                             UpstreamPathTemplate = "/asdf/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "bb.co.uk"
                                 }
@@ -1045,26 +1052,26 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
                         },
                         UpstreamHttpMethod = new List<string> {"Get"}
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1086,27 +1093,27 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Post"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1126,13 +1133,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1140,13 +1147,13 @@
                         UpstreamHttpMethod = new List<string>(),
                         UpstreamHost = "upstreamhost"
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1169,13 +1176,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1183,13 +1190,13 @@
                         UpstreamHttpMethod = new List<string>(),
                         UpstreamHost = "upstreamhost111"
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1211,13 +1218,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1225,13 +1232,13 @@
                         UpstreamHttpMethod = new List<string>(),
                         UpstreamHost = "upstreamhost"
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1244,7 +1251,7 @@
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void configuration_is_invalid_with_invalid_rate_limit_configuration()
         {
@@ -1252,14 +1259,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1285,14 +1292,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             }
@@ -1317,7 +1324,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
@@ -1350,14 +1357,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = downstreamHost,
                             }
@@ -1378,14 +1385,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk"
                             }
@@ -1405,14 +1412,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "test"
                             }
@@ -1432,7 +1439,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
@@ -1456,14 +1463,14 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort()
+                            new()
                         }
                     }
                 }
@@ -1481,13 +1488,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/bar/{everything}",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort> 
-                        { 
-                            new FileHostAndPort() { Host = "a.b.cd" },
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new() { Host = "a.b.cd" },
                         },
                         UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -1534,7 +1541,7 @@
         {
             _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(new List<AuthenticationScheme>
             {
-                new AuthenticationScheme(name, name, typeof(TestHandler))
+                new(name, name, typeof(TestHandler))
             });
         }
 

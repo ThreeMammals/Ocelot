@@ -1,8 +1,10 @@
 ﻿namespace Ocelot.Responder
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Ocelot.Middleware;
 
     public interface IHttpResponder
     {

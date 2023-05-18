@@ -1,18 +1,23 @@
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+
     using Moq;
+
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
     using Ocelot.Configuration.Creator;
-    using Ocelot.DownstreamRouteFinder;
     using Ocelot.DownstreamRouteFinder.Finder;
     using Ocelot.LoadBalancer.LoadBalancers;
+
     using Responses;
+
     using Shouldly;
-    using System.Collections.Generic;
-    using System.Net.Http;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class DownstreamRouteCreatorTests
@@ -26,7 +31,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamUrlPath;
         private string _upstreamHttpMethod;
         private IInternalConfiguration _configuration;
-        private Mock<IQoSOptionsCreator> _qosOptionsCreator;
+        private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
         private string _upstreamQuery;
 
@@ -219,7 +224,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldNotBeNull();
             _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull();
             _result.Data.Route.DownstreamRoute[0].DownstreamScheme.ShouldBe("http");
-            _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(Ocelot.LoadBalancer.LoadBalancers.NoLoadBalancer));
+            _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(NoLoadBalancer));
             _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
             _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldBe(_qoSOptions);
             _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
@@ -249,8 +254,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void ThenTheStickySessionLoadBalancerIsUsed(LoadBalancerOptions expected)
         {
-            _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe($"{nameof(Ocelot.LoadBalancer.LoadBalancers.CookieStickySessions)}:boom");
-            _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(Ocelot.LoadBalancer.LoadBalancers.CookieStickySessions));
+            _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe($"{nameof(CookieStickySessions)}:boom");
+            _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(CookieStickySessions));
             _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.ShouldBe(expected);
         }
 

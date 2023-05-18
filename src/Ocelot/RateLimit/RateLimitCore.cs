@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Configuration;
 
 namespace Ocelot.RateLimit
 {
     public class RateLimitCore
     {
         private readonly IRateLimitCounterHandler _counterHandler;
-        private static readonly object _processLocker = new object();
+        private static readonly object ProcessLocker = new();
 
         public RateLimitCore(IRateLimitCounterHandler counterStore)
         {
@@ -19,13 +21,13 @@ namespace Ocelot.RateLimit
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            RateLimitCounter counter = new RateLimitCounter(DateTime.UtcNow, 1);
+            var counter = new RateLimitCounter(DateTime.UtcNow, 1);
             var rule = option.RateLimitRule;
 
             var counterId = ComputeCounterKey(requestIdentity, option);
 
             // serial reads and writes
-            lock (_processLocker)
+            lock (ProcessLocker)
             {
                 var entry = _counterHandler.Get(counterId);
                 if (entry.HasValue)
@@ -76,7 +78,7 @@ namespace Ocelot.RateLimit
         public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
             var rule = option.RateLimitRule;
-            RateLimitHeaders headers = null;
+            RateLimitHeaders headers;
             var counterId = ComputeCounterKey(requestIdentity, option);
             var entry = _counterHandler.Get(counterId);
             if (entry.HasValue)

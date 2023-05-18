@@ -1,17 +1,19 @@
 ﻿namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Http;
+
+    using Responses;
+
+    using Values;
 
     public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         private int _last;
 

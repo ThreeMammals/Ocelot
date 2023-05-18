@@ -1,8 +1,9 @@
 ﻿namespace Ocelot.Requester
 {
-    using Configuration;
     using System;
     using System.Collections.Concurrent;
+
+    using Configuration;
 
     public class MemoryHttpClientCache : IHttpClientCache
     {

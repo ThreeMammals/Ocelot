@@ -1,7 +1,6 @@
 ﻿namespace Ocelot.Authorization
 {
-    using Ocelot.Errors;
-    using System.Net;
+    using Errors;
 
     public class ClaimValueNotAuthorizedError : Error
     {
