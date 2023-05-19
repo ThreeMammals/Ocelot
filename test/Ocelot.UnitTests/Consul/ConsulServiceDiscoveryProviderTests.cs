@@ -1,20 +1,30 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
-    using global::Consul;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Logging;
-    using Provider.Consul;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+
+    using global::Consul;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+
+    using Moq;
+
+    using Newtonsoft.Json;
+
+    using Ocelot.Logging;
+
+    using Provider.Consul;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Values;
+
     using Xunit;
 
     public class ConsulServiceDiscoveryProviderTests : IDisposable
@@ -53,15 +63,15 @@
         [Fact]
         public void should_return_service_from_consul()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
@@ -79,15 +89,15 @@
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
             _provider = new Consul(config, _factory.Object, _clientFactory);
 
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0],
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -102,27 +112,27 @@
         [Fact]
         public void should_not_return_services_with_invalid_address()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "http://localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "http://localhost",
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
@@ -137,27 +147,27 @@
         [Fact]
         public void should_not_return_services_with_empty_address()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
-                    Address = "",
+                    Address = string.Empty,
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = null,
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
@@ -172,27 +182,27 @@
         [Fact]
         public void should_not_return_services_with_invalid_port()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = -1,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 0,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 

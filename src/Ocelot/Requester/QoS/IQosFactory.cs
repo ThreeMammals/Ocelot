@@ -1,8 +1,10 @@
 namespace Ocelot.Requester.QoS
 {
-    using Configuration;
-    using Responses;
     using System.Net.Http;
+
+    using Configuration;
+
+    using Responses;
 
     public interface IQoSFactory
     {

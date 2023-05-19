@@ -1,14 +1,18 @@
 namespace Ocelot.Responder.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Errors;
-    using Ocelot.Infrastructure.Extensions;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Errors;
+
+    using Infrastructure.Extensions;
+
+    using Logging;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Ocelot.Middleware;
 
     /// <summary>
     /// Completes and returns the request and request body, if any pipeline errors occured then sets the appropriate HTTP status code instead.

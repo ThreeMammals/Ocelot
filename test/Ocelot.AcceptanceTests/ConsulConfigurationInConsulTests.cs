@@ -1,20 +1,27 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Cache;
-    using Configuration.File;
-    using Consul;
-    using Infrastructure;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
     using System.Text;
+
+    using Cache;
+
+    using Configuration.File;
+
+    using Consul;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+
+    using Newtonsoft.Json;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ConsulConfigurationInConsulTests : IDisposable
@@ -34,20 +41,20 @@
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var consulPort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = servicePort,
@@ -57,9 +64,9 @@
                             UpstreamHttpMethod = new List<string> { "Get" },
                         }
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -70,8 +77,8 @@
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "", 200, "Hello from Laura"))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -84,13 +91,13 @@
         public void should_load_configuration_out_of_consul()
         {
             var consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -105,13 +112,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
@@ -121,9 +128,9 @@
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -133,7 +140,7 @@
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -147,13 +154,13 @@
         public void should_load_configuration_out_of_consul_if_it_is_changed()
         {
             var consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -168,13 +175,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
@@ -184,9 +191,9 @@
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -199,13 +206,13 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
@@ -215,9 +222,9 @@
                         UpstreamHttpMethod = new List<string> {"Get"}
                     }
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
@@ -227,7 +234,7 @@
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -242,14 +249,14 @@
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = RandomPortFinder.GetRandomPort();
             const string serviceName = "web";
-            int downstreamServicePort = RandomPortFinder.GetRandomPort();
+            var downstreamServicePort = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = serviceName,
                     Address = "localhost",
@@ -263,10 +270,10 @@
             {
                 DynamicRoutes = new List<FileDynamicRoute>
                 {
-                    new FileDynamicRoute
+                    new()
                     {
                         ServiceName = serviceName,
-                        RateLimitRule = new FileRateLimitRule()
+                        RateLimitRule = new FileRateLimitRule
                         {
                             EnableRateLimiting = true,
                             ClientWhitelist = new List<string>(),
@@ -284,12 +291,12 @@
                         Host = "localhost",
                         Port = consulPort
                     },
-                    RateLimitOptions = new FileRateLimitOptions()
+                    RateLimitOptions = new FileRateLimitOptions
                     {
                         ClientIdHeader = "ClientId",
                         DisableRateLimitHeaders = false,
-                        QuotaExceededMessage = "",
-                        RateLimitCounterPrefix = "",
+                        QuotaExceededMessage = string.Empty,
+                        RateLimitCounterPrefix = string.Empty,
                         HttpStatusCode = 428
                     },
                     DownstreamScheme = "http",
@@ -377,7 +384,7 @@
                                         var base64 = Convert.ToBase64String(bytes);
 
                                         var kvp = new FakeConsulGetResponse(base64);
-                                        json = JsonConvert.SerializeObject(new FakeConsulGetResponse[] { kvp });
+                                        json = JsonConvert.SerializeObject(new[] { kvp });
                                         context.Response.Headers.Add("Content-Type", "application/json");
                                         await context.Response.WriteAsync(json);
                                     }
@@ -428,7 +435,7 @@
             public int LockIndex => 200;
             public string Key => "InternalConfiguration";
             public int Flags => 0;
-            public string Value { get; private set; }
+            public string Value { get; }
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 

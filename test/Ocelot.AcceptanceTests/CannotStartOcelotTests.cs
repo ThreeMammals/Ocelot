@@ -1,9 +1,12 @@
 namespace Ocelot.AcceptanceTests
 {
-    using Ocelot.Configuration.File;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
+
+    using Configuration.File;
+
+    using Shouldly;
+
     using Xunit;
 
     public class CannotStartOcelotTests : IDisposable
@@ -54,7 +57,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -97,13 +100,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -146,13 +149,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 51878,
@@ -188,11 +191,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_throw_exception_if_cannot_start()
         {
-            var invalidConfig = new FileConfiguration()
+            var invalidConfig = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         UpstreamPathTemplate = "api",
                         DownstreamPathTemplate = "test"

@@ -1,8 +1,9 @@
-﻿using Ocelot.Configuration;
-using Ocelot.Responses;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
@@ -55,7 +56,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
             catch (Exception ex)
             {
-                return new ErrorResponse<ILoadBalancer>(new List<Ocelot.Errors.Error>()
+                return new ErrorResponse<ILoadBalancer>(new List<Errors.Error>
                 {
                     new UnableToFindLoadBalancerError($"unabe to find load balancer for {route.LoadBalancerKey} exception is {ex}"),
                 });

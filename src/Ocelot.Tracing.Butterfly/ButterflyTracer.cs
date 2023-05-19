@@ -1,17 +1,20 @@
 ﻿namespace Ocelot.Tracing.Butterfly
 {
-    using global::Butterfly.Client.AspNetCore;
-    using global::Butterfly.Client.Tracing;
-    using global::Butterfly.OpenTracing;
-    using Infrastructure.Extensions;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using global::Butterfly.Client.AspNetCore;
+    using global::Butterfly.Client.Tracing;
+    using global::Butterfly.OpenTracing;
+
+    using Infrastructure.Extensions;
+
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.DependencyInjection;
 
     public class ButterflyTracer : DelegatingHandler, Logging.ITracer
     {

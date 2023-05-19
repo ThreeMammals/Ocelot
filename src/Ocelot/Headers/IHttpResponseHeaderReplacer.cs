@@ -1,9 +1,12 @@
 namespace Ocelot.Headers
 {
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
     using System.Collections.Generic;
+
+    using Configuration;
+
     using Microsoft.AspNetCore.Http;
+
+    using Responses;
 
     public interface IHttpResponseHeaderReplacer
     {

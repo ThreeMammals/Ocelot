@@ -1,10 +1,14 @@
 namespace Ocelot.Configuration.Validator
 {
-    using File;
-    using FluentValidation;
-    using Microsoft.Extensions.DependencyInjection;
-    using Requester;
     using System;
+
+    using File;
+
+    using FluentValidation;
+
+    using Microsoft.Extensions.DependencyInjection;
+
+    using Requester;
 
     public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
     {

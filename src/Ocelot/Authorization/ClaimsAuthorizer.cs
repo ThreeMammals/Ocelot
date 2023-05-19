@@ -1,12 +1,15 @@
 ﻿namespace Ocelot.Authorization
 {
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Responses;
     using System.Collections.Generic;
     using System.Linq;
     using System.Security.Claims;
     using System.Text.RegularExpressions;
+
+    using DownstreamRouteFinder.UrlMatcher;
+
+    using Ocelot.Infrastructure.Claims.Parser;
+
+    using Responses;
 
     public class ClaimsAuthorizer : IClaimsAuthorizer
     {

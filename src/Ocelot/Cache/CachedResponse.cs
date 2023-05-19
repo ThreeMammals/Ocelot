@@ -16,18 +16,18 @@ namespace Ocelot.Cache
             StatusCode = statusCode;
             Headers = headers ?? new Dictionary<string, IEnumerable<string>>();
             ContentHeaders = contentHeaders ?? new Dictionary<string, IEnumerable<string>>();
-            Body = body ?? "";
+            Body = body ?? string.Empty;
             ReasonPhrase = reasonPhrase;
         }
 
-        public HttpStatusCode StatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; }
 
-        public Dictionary<string, IEnumerable<string>> Headers { get; private set; }
+        public Dictionary<string, IEnumerable<string>> Headers { get; }
 
-        public Dictionary<string, IEnumerable<string>> ContentHeaders { get; private set; }
+        public Dictionary<string, IEnumerable<string>> ContentHeaders { get; }
 
-        public string Body { get; private set; }
+        public string Body { get; }
 
-        public string ReasonPhrase { get; private set; }
+        public string ReasonPhrase { get; }
     }
 }

@@ -1,7 +1,8 @@
-﻿using Ocelot.Responses;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+
+using Ocelot.Responses;
 
 namespace Ocelot.Authorization
 {
@@ -10,7 +11,7 @@ namespace Ocelot.Authorization
     public class ScopesAuthorizer : IScopesAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
-        private readonly string _scope = "scope";
+        private const string Scope = "scope";
 
         public ScopesAuthorizer(IClaimsParser claimsParser)
         {
@@ -24,7 +25,7 @@ namespace Ocelot.Authorization
                 return new OkResponse<bool>(true);
             }
 
-            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, _scope);
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
 
             if (values.IsError)
             {
@@ -33,12 +34,12 @@ namespace Ocelot.Authorization
 
             var userScopes = values.Data;
 
-            var matchesScopes = routeAllowedScopes.Intersect(userScopes).ToList();
+            var matchesScopes = routeAllowedScopes.Intersect(userScopes);
 
-            if (matchesScopes.Count == 0)
+            if (!matchesScopes.Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"no one user scope: '{string.Join(",", userScopes)}' match with some allowed scope: '{string.Join(",", routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"no one user scope: '{string.Join(',', userScopes)}' match with some allowed scope: '{string.Join(',', routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);

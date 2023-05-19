@@ -1,12 +1,14 @@
-﻿using KubeClient;
-using KubeClient.Models;
-using Ocelot.Logging;
-using Ocelot.ServiceDiscovery.Providers;
-using Ocelot.Values;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using KubeClient;
+using KubeClient.Models;
+
+using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.KubeApiClientExtensions;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -36,12 +38,12 @@ namespace Ocelot.Provider.Kubernetes
             }
             else
             {
-                _logger.LogWarning($"namespace:{_kubeRegistryConfiguration.KubeNamespace }service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                _logger.LogWarning($"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
             }
             return services;
         }
 
-        private List<Service> BuildServices(EndpointsV1 endpoint)
+        private static List<Service> BuildServices(EndpointsV1 endpoint)
         {
             var services = new List<Service>();
 

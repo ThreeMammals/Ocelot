@@ -2,7 +2,7 @@ Release process
 ===============
 
 * The release process works best with Git Flow branching. 
-* Contributors can do whatever they want on PRs and merges to master will result in packages being released to GitHub and NuGet.
+* Contributors can do whatever they want on PRs and merges to main will result in packages being released to GitHub and NuGet.
 
 Ocelot uses the following process to accept work into the NuGet packages.
 
@@ -25,7 +25,7 @@ In order for a PR to be merged the following must have occured.
 
 5. After the PR is merged to develop the Ocelot NuGet packages will not be updated until a release is created.
 
-6. When enough work has been completed to justify a new release. Develop will be merged into master the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
+6. When enough work has been completed to justify a new release. Develop will be merged into main the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
 
 7. The final step is to go back to GitHub and close any issues that are now fixed. You should see something like this in`GitHub <https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0>`_ and this in `NuGet <https://www.nuget.org/packages/Ocelot/13.0.0>`_.
 
@@ -34,4 +34,4 @@ Notes
 
 All NuGet package builds & releases are done with CircleCI `here <https://circleci.com/gh/ThreeMammals>_` and all releases are done from `here <https://ci.appveyor.com/project/TomPallister/ocelot-ayj4w>_`.
 
-Only TomPallister can merge releases into master at the moment. This is to ensure there is a final quality gate in place. Tom is mainly looking for security issues on the final merge.
+Only TomPallister can merge releases into main at the moment. This is to ensure there is a final quality gate in place. Tom is mainly looking for security issues on the final merge.

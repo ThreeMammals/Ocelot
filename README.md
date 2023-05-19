@@ -1,10 +1,8 @@
-[<img src="https://threemammals.com/images/ocelot_logo.png">](https://threemammals.com/ocelot)
+![Ocelot Logo](/images/ocelot_logo.png)
 
-[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master)
+[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main)
 
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=master)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=master)
-
-[Slack](https://threemammals.slack.com)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
 
 # Ocelot
 
@@ -43,7 +41,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET Core only and it targets `netcoreapp3.1`.
+Ocelot is designed to work with ASP.NET and it targets `net7.0`.
 
 Install Ocelot and it's dependencies using NuGet.
 

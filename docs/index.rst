@@ -12,7 +12,8 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    introduction/gettingstarted
    introduction/contributing
    introduction/notsupported
-   
+   introduction/gotchas
+
 .. toctree::
    :maxdepth: 2
    :hidden:

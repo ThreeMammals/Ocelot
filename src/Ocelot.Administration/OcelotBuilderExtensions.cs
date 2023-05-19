@@ -1,17 +1,20 @@
-﻿using Ocelot.DependencyInjection;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography.X509Certificates;
-using System.Linq;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace Ocelot.Administration
 {
@@ -21,7 +24,7 @@ namespace Ocelot.Administration
         {
             var administrationPath = new AdministrationPath(path);
 
-            builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(IdentityServerMiddlewareConfigurationProvider.Get);
+            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
 
             //add identity server for admin area
             var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
@@ -38,7 +41,7 @@ namespace Ocelot.Administration
         public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, Action<JwtBearerOptions> configureOptions)
         {
             var administrationPath = new AdministrationPath(path);
-            builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(IdentityServerMiddlewareConfigurationProvider.Get);
+            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
 
             if (configureOptions != null)
             {
@@ -58,7 +61,7 @@ namespace Ocelot.Administration
 
         private static void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
         {
-            builder.Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            builder.Services.TryAddSingleton(identityServerConfiguration);
             var identityServerBuilder = builder.Services
                 .AddIdentityServer(o =>
                 {
@@ -108,11 +111,11 @@ namespace Ocelot.Administration
         {
             return new List<ApiResource>
             {
-                new ApiResource(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+                new(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
                 {
                     ApiSecrets = new List<Secret>
                     {
-                        new Secret
+                        new()
                         {
                             Value = identityServerConfiguration.ApiSecret.Sha256(),
                         },
@@ -125,11 +128,11 @@ namespace Ocelot.Administration
         {
             return new List<Client>
             {
-                new Client
+                new()
                 {
                     ClientId = identityServerConfiguration.ApiName,
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
+                    ClientSecrets = new List<Secret> {new(identityServerConfiguration.ApiSecret.Sha256())},
                     AllowedScopes = identityServerConfiguration.AllowedScopes,
                 },
             };

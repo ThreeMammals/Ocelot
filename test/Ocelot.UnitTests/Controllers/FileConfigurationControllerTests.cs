@@ -1,13 +1,19 @@
+using System;
+
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
+
 using Shouldly;
-using System;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Controllers
@@ -34,7 +40,7 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_get_file_configuration()
         {
-            var expected = new Responses.OkResponse<FileConfiguration>(new FileConfiguration());
+            var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
@@ -45,7 +51,7 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_return_error_when_cannot_get_config()
         {
-            var expected = new Responses.ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+            var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                .When(x => x.WhenIGetTheFileConfiguration())
@@ -107,7 +113,7 @@ namespace Ocelot.UnitTests.Controllers
             _result.ShouldBeOfType<T>();
         }
 
-        private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
+        private void GivenTheGetConfigurationReturns(Response<FileConfiguration> fileConfiguration)
         {
             _repo
                 .Setup(x => x.Get())

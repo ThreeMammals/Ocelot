@@ -1,35 +1,42 @@
 ﻿namespace Ocelot.UnitTests.Consul
 {
-    using global::Consul;
-    using Microsoft.Extensions.Options;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Cache;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Logging;
-    using Provider.Consul;
-    using Responses;
-    using Shouldly;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using global::Consul;
+
+    using Microsoft.Extensions.Options;
+
+    using Moq;
+
+    using Newtonsoft.Json;
+
+    using Ocelot.Cache;
+    using Ocelot.Configuration.File;
+    using Ocelot.Logging;
+
+    using Provider.Consul;
+
+    using Responses;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ConsulFileConfigurationRepositoryTests
     {
         private ConsulFileConfigurationRepository _repo;
-        private Mock<IOptions<FileConfiguration>> _options;
-        private Mock<IOcelotCache<FileConfiguration>> _cache;
-        private Mock<IConsulClientFactory> _factory;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IConsulClient> _client;
-        private Mock<IKVEndpoint> _kvEndpoint;
+        private readonly Mock<IOptions<FileConfiguration>> _options;
+        private readonly Mock<IOcelotCache<FileConfiguration>> _cache;
+        private readonly Mock<IConsulClientFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IConsulClient> _client;
+        private readonly Mock<IKVEndpoint> _kvEndpoint;
         private FileConfiguration _fileConfiguration;
         private Response _setResult;
         private Response<FileConfiguration> _getResult;
@@ -161,8 +168,10 @@
 
         private void GivenWritingToConsulSucceeds()
         {
-            var response = new WriteResult<bool>();
-            response.Response = true;
+            var response = new WriteResult<bool>
+            {
+                Response = true
+            };
 
             _kvEndpoint
                 .Setup(x => x.Put(It.IsAny<KVPair>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
@@ -175,7 +184,7 @@
 
         private void GivenFetchFromConsulReturnsNull()
         {
-            QueryResult<KVPair> result = new QueryResult<KVPair>();
+            var result = new QueryResult<KVPair>();
 
             _kvEndpoint
                 .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -188,11 +197,15 @@
 
             var bytes = Encoding.UTF8.GetBytes(json);
 
-            var kvp = new KVPair("OcelotConfiguration");
-            kvp.Value = bytes;
+            var kvp = new KVPair("OcelotConfiguration")
+            {
+                Value = bytes
+            };
 
-            var query = new QueryResult<KVPair>();
-            query.Response = kvp;
+            var query = new QueryResult<KVPair>
+            {
+                Response = kvp
+            };
 
             _kvEndpoint
                 .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -221,15 +234,15 @@
             _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
         }
 
-        private FileConfiguration FakeFileConfiguration()
+        private static FileConfiguration FakeFileConfiguration()
         {
             var routes = new List<FileRoute>
             {
-                new FileRoute
+                new()
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        new FileHostAndPort
+                        new()
                         {
                             Host = "123.12.12.12",
                             Port = 80,

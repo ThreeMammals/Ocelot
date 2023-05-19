@@ -1,10 +1,15 @@
 using FluentValidation.Results;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Requester;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
@@ -12,7 +17,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
     public class FileQoSOptionsFluentValidatorTests
     {
         private FileQoSOptionsFluentValidator _validator;
-        private ServiceCollection _services;
+        private readonly ServiceCollection _services;
         private ValidationResult _result;
         private FileQoSOptions _qosOptions;
 
@@ -80,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 return null;
             };
-            _services.AddSingleton<QosDelegatingHandlerDelegate>(fake);
+            _services.AddSingleton(fake);
             var provider = _services.BuildServiceProvider();
             _validator = new FileQoSOptionsFluentValidator(provider);
         }

@@ -1,48 +1,70 @@
 namespace Ocelot.DependencyInjection
 {
+    using System;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Reflection;
+
+    using Authorization;
+
+    using Cache;
+
+    using Claims;
+
+    using Configuration;
+    using Configuration.ChangeTracking;
+    using Configuration.Creator;
+    using Configuration.File;
+    using Configuration.Parser;
+    using Configuration.Repository;
+    using Configuration.Setter;
+    using Configuration.Validator;
+
+    using DownstreamRouteFinder.Finder;
+    using DownstreamRouteFinder.UrlMatcher;
+
+    using DownstreamUrlCreator.UrlTemplateReplacer;
+
+    using Headers;
+
+    using Infrastructure;
+    using Infrastructure.RequestData;
+
+    using LoadBalancer.LoadBalancers;
+
+    using Logging;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Options;
-    using Ocelot.Authorization;
-    using Ocelot.Cache;
-    using Ocelot.Claims;
-    using Ocelot.Configuration;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Configuration.ChangeTracking;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Parser;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Configuration.Setter;
-    using Ocelot.Configuration.Validator;
-    using Ocelot.DownstreamRouteFinder.Finder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-    using Ocelot.Headers;
-    using Ocelot.Infrastructure;
+
+    using Middleware;
+
+    using Multiplexer;
+
     using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Multiplexer;
-    using Ocelot.PathManipulation;
-    using Ocelot.QueryStrings;
-    using Ocelot.RateLimit;
-    using Ocelot.Request.Creator;
-    using Ocelot.Request.Mapper;
-    using Ocelot.Requester;
-    using Ocelot.Requester.QoS;
-    using Ocelot.Responder;
-    using Ocelot.Security;
-    using Ocelot.Security.IPSecurity;
-    using Ocelot.ServiceDiscovery;
-    using System;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Reflection;
+
+    using PathManipulation;
+
+    using QueryStrings;
+
+    using RateLimit;
+
+    using Request.Creator;
+    using Request.Mapper;
+
+    using Requester;
+    using Requester.QoS;
+
+    using Responder;
+
+    using Security;
+    using Security.IPSecurity;
+
+    using ServiceDiscovery;
+    using ServiceDiscovery.Providers;
 
     public class OcelotBuilder : IOcelotBuilder
     {
@@ -142,12 +164,12 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
 
             //add security
-            this.AddSecurity();
+            AddSecurity();
 
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            //custom mvc core build
+            //use custom mvc core build
             var customMvcCoreBuilderFunc = customMvcCoreBuilder ?? new Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder>((mvcCoreBuilder, assembly) =>
             {
                 return mvcCoreBuilder.AddApplicationPart(assembly)
@@ -157,6 +179,7 @@ namespace Ocelot.DependencyInjection
             });
 
             this.MvcCoreBuilder = customMvcCoreBuilderFunc(Services.AddMvcCore(), assembly);
+
 
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
@@ -231,7 +254,7 @@ namespace Ocelot.DependencyInjection
             if (global)
             {
                 Services.AddTransient(delegateType);
-                Services.AddTransient<GlobalDelegatingHandler>(s =>
+                Services.AddTransient(s =>
                 {
 
                     var service = s.GetService(delegateType) as DelegatingHandler;
@@ -252,7 +275,7 @@ namespace Ocelot.DependencyInjection
             if (global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient<GlobalDelegatingHandler>(s =>
+                Services.AddTransient(s =>
                 {
                     var service = s.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);

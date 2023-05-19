@@ -1,15 +1,18 @@
 namespace Ocelot.DependencyInjection
 {
-    using Ocelot.Configuration.File;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Configuration.Memory;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+
+    using Configuration.File;
+
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Configuration.Memory;
+
+    using Newtonsoft.Json;
 
     public static class ConfigurationBuilderExtensions
     {
@@ -20,7 +23,7 @@ namespace Ocelot.DependencyInjection
             {
                 InitialData = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("BaseUrl", baseUrl)
+                    new("BaseUrl", baseUrl)
                 }
             };
 
@@ -42,20 +45,20 @@ namespace Ocelot.DependencyInjection
 
             const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
 
-            string excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
+            var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
             var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
                 .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
-                .ToList();
+                .ToArray();
 
             var fileConfiguration = new FileConfiguration();
 
             foreach (var file in files)
             {
-                if (files.Count > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
+                if (files.Length > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

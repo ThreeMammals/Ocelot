@@ -1,10 +1,14 @@
 ﻿namespace Ocelot.Security.IPSecurity
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Ocelot.Middleware;
+
+    using Responses;
 
     public class IPSecurityPolicy : ISecurityPolicy
     {
@@ -21,16 +25,16 @@
             {
                 if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($" This request rejects access to {clientIp.ToString()} IP");
+                    var error = new UnauthenticatedError($" This request rejects access to {clientIp} IP");
                     return new ErrorResponse(error);
                 }
             }
 
-            if (securityOptions.IPAllowedList != null && securityOptions.IPAllowedList.Count > 0)
+            if (securityOptions.IPAllowedList?.Count > 0)
             {
                 if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($"{clientIp.ToString()} does not allow access, the request is invalid");
+                    var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
                     return new ErrorResponse(error);
                 }
             }

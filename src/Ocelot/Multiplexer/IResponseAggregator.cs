@@ -1,9 +1,11 @@
 ﻿namespace Ocelot.Multiplexer
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
+    using Configuration;
+
+    using Microsoft.AspNetCore.Http;
 
     public interface IResponseAggregator
     {

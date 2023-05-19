@@ -1,10 +1,12 @@
-﻿using HTTPlease;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+using HTTPlease;
+
 using KubeClient;
 using KubeClient.Models;
 using KubeClient.ResourceClients;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions
 {

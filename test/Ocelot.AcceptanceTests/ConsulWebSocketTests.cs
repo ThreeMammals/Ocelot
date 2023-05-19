@@ -1,17 +1,24 @@
 ﻿namespace Ocelot.AcceptanceTests
 {
-    using Configuration.File;
-    using Consul;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Shouldly;
     using System;
     using System.Collections.Generic;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Configuration.File;
+
+    using Consul;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Newtonsoft.Json;
+
+    using Shouldly;
+
     using TestStack.BDDfy;
+
     using Xunit;
 
     public class ConsulWebSocketTests : IDisposable
@@ -43,26 +50,26 @@
             var serviceName = "websockets";
             var consulPort = RandomPortFinder.GetRandomPort();
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = serviceName,
                     Address = downstreamHost,
                     Port = downstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = serviceName,
                     Address = secondDownstreamHost,
                     Port = secondDownstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>()
                 },
             };
 
@@ -70,7 +77,7 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
@@ -155,8 +162,8 @@
 
             var sending = Task.Run(async () =>
             {
-                string line = "test";
-                for (int i = 0; i < 10; i++)
+                var line = "test";
+                for (var i = 0; i < 10; i++)
                 {
                     var bytes = Encoding.UTF8.GetBytes(line);
 
@@ -165,7 +172,7 @@
                     await Task.Delay(10);
                 }
 
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
             });
 
             var receiving = Task.Run(async () =>
@@ -186,7 +193,7 @@
                         {
                             // Last version, the client state is CloseReceived
                             // Valid states are: Open, CloseReceived, CloseSent
-                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         }
 
                         break;
@@ -207,8 +214,8 @@
 
             var sending = Task.Run(async () =>
             {
-                string line = "test";
-                for (int i = 0; i < 10; i++)
+                var line = "test";
+                for (var i = 0; i < 10; i++)
                 {
                     var bytes = Encoding.UTF8.GetBytes(line);
 
@@ -217,7 +224,7 @@
                     await Task.Delay(10);
                 }
 
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
             });
 
             var receiving = Task.Run(async () =>
@@ -238,7 +245,7 @@
                         {
                             // Last version, the client state is CloseReceived
                             // Valid states are: Open, CloseReceived, CloseSent
-                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         }
 
                         break;
@@ -280,7 +287,7 @@
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await Message(webSocket);
                     }
                     else
@@ -295,7 +302,7 @@
             });
         }
 
-        private async Task Echo(WebSocket webSocket)
+        private static async Task Echo(WebSocket webSocket)
         {
             try
             {
@@ -318,7 +325,7 @@
             }
         }
 
-        private async Task Message(WebSocket webSocket)
+        private static async Task Message(WebSocket webSocket)
         {
             try
             {

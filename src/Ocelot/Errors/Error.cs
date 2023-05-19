@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Ocelot.Errors
 {
     public abstract class Error
@@ -11,9 +9,9 @@ namespace Ocelot.Errors
             Code = code;
         }
 
-        public string Message { get; private set; }
-        public OcelotErrorCode Code { get; private set; }
-        public int HttpStatusCode { get; private set; }
+        public string Message { get; }
+        public OcelotErrorCode Code { get; }
+        public int HttpStatusCode { get; }
 
         public override string ToString()
         {

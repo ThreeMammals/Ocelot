@@ -7,10 +7,10 @@ namespace OcelotApplicationApiGateway
 
 {
     using System;
-    using System.Fabric;
-    using System.Threading;
-    using Microsoft.ServiceFabric.Services.Runtime;
     using System.Diagnostics.Tracing;
+    using System.Threading;
+
+    using Microsoft.ServiceFabric.Services.Runtime;
 
 
     /// <summary>
@@ -25,7 +25,7 @@ namespace OcelotApplicationApiGateway
             {
 
                 //Creating a new event listener to redirect the traces to a file
-                ServiceEventListener listener = new ServiceEventListener("OcelotApplicationApiGateway");
+                var listener = new ServiceEventListener("OcelotApplicationApiGateway");
                 listener.EnableEvents(ServiceEventSource.Current, EventLevel.LogAlways, EventKeywords.All);
 
                 // The ServiceManifest.XML file defines one or more service type names.
@@ -33,7 +33,7 @@ namespace OcelotApplicationApiGateway
                 // When Service Fabric creates an instance of this service type,
                 // an instance of the class is created in this host process.
                 ServiceRuntime
-                    .RegisterServiceAsync("OcelotApplicationApiGatewayType", context => new OcelotServiceWebService (context))
+                    .RegisterServiceAsync("OcelotApplicationApiGatewayType", context => new OcelotServiceWebService(context))
                         .GetAwaiter()
                         .GetResult();
 
@@ -44,7 +44,7 @@ namespace OcelotApplicationApiGateway
             catch (Exception ex)
             {
                 ServiceEventSource.Current.ServiceHostInitializationFailed(ex);
-                throw ex;
+                throw;
             }
         }
     }

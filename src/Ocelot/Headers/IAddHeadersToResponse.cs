@@ -2,8 +2,9 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Headers
 {
-    using Ocelot.Configuration.Creator;
     using System.Collections.Generic;
+
+    using Configuration.Creator;
 
     public interface IAddHeadersToResponse
     {

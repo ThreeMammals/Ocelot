@@ -1,9 +1,12 @@
 ﻿namespace Ocelot.Security
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Responses;
     using System.Threading.Tasks;
-    using Ocelot.Configuration;
+
+    using Configuration;
+
+    using Microsoft.AspNetCore.Http;
+
+    using Responses;
 
     public interface ISecurityPolicy
     {
