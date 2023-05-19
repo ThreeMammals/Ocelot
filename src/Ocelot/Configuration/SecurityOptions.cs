@@ -6,17 +6,16 @@ namespace Ocelot.Configuration
     {
         public SecurityOptions(List<string> allowedList, List<string> blockedList, bool excludeAllowedFromBlocked)
         {
-            this.IPAllowedList = new List<string>();
-            this.IPBlockedList = new List<string>();
-            this.ExcludeAllowedFromBlocked = excludeAllowedFromBlocked;
+            IPAllowedList = new List<string>();
+            IPBlockedList = new List<string>();
+            ExcludeAllowedFromBlocked = excludeAllowedFromBlocked;
 
             foreach (var allowed in allowedList)
             {
                 if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
                 {
                     var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-
-                    this.IPAllowedList.AddRange(allowedIps);
+                    IPAllowedList.AddRange(allowedIps);
                 }
             }
 
@@ -25,21 +24,18 @@ namespace Ocelot.Configuration
                 if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
                 {
                     var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-
-                    this.IPBlockedList.AddRange(blockedIps);
+                    IPBlockedList.AddRange(blockedIps);
                 }
             }
 
-            if (this.ExcludeAllowedFromBlocked)
+            if (ExcludeAllowedFromBlocked)
             {
-                this.IPBlockedList = this.IPBlockedList.Except(this.IPAllowedList).ToList();
+                IPBlockedList = IPBlockedList.Except(IPAllowedList).ToList();
             }
         }
 
         public List<string> IPAllowedList { get; }
-
         public List<string> IPBlockedList { get; }
-
-        public bool ExcludeAllowedFromBlocked { get; private set; }
+        public bool ExcludeAllowedFromBlocked { get; }
     }
 }
