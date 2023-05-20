@@ -1,4 +1,33 @@
-﻿using Ocelot.Configuration.ChangeTracking;
+﻿using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Newtonsoft.Json;
+using Ocelot.AcceptanceTests.Caching;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Configuration;
+using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Multiplexer;
+using Ocelot.Provider.Consul;
+using Ocelot.Provider.Eureka;
+using Ocelot.Provider.Polly;
+using Ocelot.Requester;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Tracing.Butterfly;
+using Ocelot.Tracing.OpenTracing;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,54 +40,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using CacheManager.Core;
-
-using Ocelot.AcceptanceTests.Caching;
-
-using Ocelot.Configuration;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
-
-using Ocelot.DependencyInjection;
-
-using IdentityServer4.AccessTokenValidation;
-
-using Ocelot.LoadBalancer.LoadBalancers;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using Ocelot.Middleware;
-
-using Moq;
-
-using Ocelot.Multiplexer;
-
-using Newtonsoft.Json;
-
-using Ocelot.Cache.CacheManager;
-using Ocelot.Provider.Consul;
-using Ocelot.Provider.Polly;
-using Ocelot.Tracing.Butterfly;
-using Ocelot.Tracing.OpenTracing;
-
-using Ocelot.Provider.Eureka;
-
-using Ocelot.Requester;
-
-using Ocelot.ServiceDiscovery.Providers;
-
-using Shouldly;
-
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
-
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
