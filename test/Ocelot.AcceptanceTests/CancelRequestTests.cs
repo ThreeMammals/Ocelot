@@ -62,7 +62,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.WhenIWaitForNotification(_serviceWorkStartedNotifier))
                 .And(x => _steps.WhenICancelTheRequest())
                 .And(x => x.WhenIWaitForNotification(_serviceWorkStoppedNotifier))
-                .Then(x => x.ThenServiceWorkIsNotFinished())
+                .Then(x => x.ThenOcelotClientRequestIsCanceled())
                 .BDDfy();
         }
 
@@ -102,13 +102,16 @@ namespace Ocelot.AcceptanceTests
 
                 if (waitingTime > MAX_WAITING_TIME)
                 {
-                    throw new TimeoutException(notifier.Name + $" did not sent notification within {MAX_WAITING_TIME / 1000} s.");
+                    throw new TimeoutException(notifier.Name + $" did not sent notification within {MAX_WAITING_TIME / 1000} second(s).");
                 }
             }
         }
 
-        private void ThenServiceWorkIsNotFinished()
+        private void ThenOcelotClientRequestIsCanceled()
         {
+            _serviceWorkStartedNotifier.NotificationSent.ShouldBeTrue();
+            _serviceWorkStoppedNotifier.NotificationSent.ShouldBeTrue();
+
             _cancelExceptionThrown.ShouldBeTrue();
         }
 
