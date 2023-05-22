@@ -242,3 +242,50 @@ Ocelot also allows you to set DynamicRoutes which lets you set rate limiting rul
 This configuration means that if you have a request come into Ocelot on /product/* then dynamic routing will kick in and ocelot will use the rate limiting set against the product service in the DynamicRoutes section.
 
 Please take a look through all of the docs to understand these options.
+
+Custom
+^^^^^^
+
+Ocelot also allows you to create a custom ServiceDiscovery implementation.
+This is done by implementing the IServiceDiscoveryProvider interface like in the following example:
+
+.. code-block:: csharp
+
+    public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
+    {
+        private readonly DownstreamRoute _downstreamRoute;
+        
+        public MyServiceDiscoveryProvider(DownstreamRoute downstreamRoute)
+        {
+            _downstreamRoute = downstreamRoute;
+        }
+       
+        public async Task<List<Service>> Get()
+        {
+            var services = new List<Service>();
+            //...
+            //Add service(s) to the list matching the _downstreamRoute
+            return services;
+        }
+    }
+
+And set its class name as the provider type in ocelot.json:
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Type": "MyServiceDiscoveryProvider"
+    }
+  }
+  
+Finally, in Startup.cs register a ServiceDiscoveryFinderDelegate to initialize and return the provider:
+
+.. code-block:: csharp
+
+    ServiceDiscoveryFinderDelegate serviceDiscoveryFinder = (provider, config, route) =>
+    {
+        return new MyServiceDiscoveryProvider(route);
+    };
+    services.AddOcelot().Services.AddSingleton(serviceDiscoveryFinder);
+    
