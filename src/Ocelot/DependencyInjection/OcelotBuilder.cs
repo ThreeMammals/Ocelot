@@ -52,7 +52,7 @@ namespace Ocelot.DependencyInjection
         public IConfiguration Configuration { get; }
         public IMvcCoreBuilder MvcCoreBuilder { get; }
 
-        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customMvcCoreBuilder = null)
+        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = null)
         {
             Configuration = configurationRoot;
             Services = services;
@@ -149,21 +149,19 @@ namespace Ocelot.DependencyInjection
             //add asp.net services..
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
 
-            //use custom mvc core build
-            var customMvcCoreBuilderFunc = customMvcCoreBuilder ?? new Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder>((mvcCoreBuilder, assembly) =>
-            {
-                return mvcCoreBuilder.AddApplicationPart(assembly)
-                    .AddControllersAsServices()
-                    .AddAuthorization()
-                    .AddNewtonsoftJson();
-            });
+            MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
+                .Invoke(Services.AddMvcCore(), assembly);
 
-            this.MvcCoreBuilder = customMvcCoreBuilderFunc(Services.AddMvcCore(), assembly);
-            
             Services.AddLogging();
             Services.AddMiddlewareAnalysis();
             Services.AddWebEncoders();
         }
+
+        private IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly) => builder
+            .AddApplicationPart(assembly)
+            .AddControllersAsServices()
+            .AddAuthorization()
+            .AddNewtonsoftJson();
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
