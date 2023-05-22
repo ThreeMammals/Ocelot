@@ -4,7 +4,7 @@ namespace Ocelot.Configuration
 {
     public class SecurityOptions
     {
-        public SecurityOptions(List<string> allowedList, List<string> blockedList, bool excludeAllowedFromBlocked)
+        public SecurityOptions(List<string> allowedList, List<string> blockedList, bool excludeAllowedFromBlocked = false)
         {
             IPAllowedList = new List<string>();
             IPBlockedList = new List<string>();
