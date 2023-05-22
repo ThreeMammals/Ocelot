@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Reflection;
 
 namespace Ocelot.DependencyInjection
 {
@@ -19,15 +19,15 @@ namespace Ocelot.DependencyInjection
             return new OcelotBuilder(services, configuration);
         }
 
-        public static IOcelotBuilder AddOcelotWithCustomMvcCoreBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customMvcCoreBuilder)
+        public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
         {
             var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-            return new OcelotBuilder(services, configuration, customMvcCoreBuilder);
+            return new OcelotBuilder(services, configuration, customBuilder);
         }
 
-        public static IOcelotBuilder AddOcelotWithCustomMvcCoreBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customMvcCoreBuilder)
+        public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
         {
-            return new OcelotBuilder(services, configuration, customMvcCoreBuilder);
+            return new OcelotBuilder(services, configuration, customBuilder);
         }
     }
 }
