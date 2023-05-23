@@ -241,7 +241,7 @@ but you must start with the matching parameter. Also Ocelot will swap the {unitI
 Security Options
 ^^^^^^^^^^^^^^^^
 
-Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package.
+Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package with `MPL-2.0 License <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
 
 This feature is designed to allow greater IP management in order to include or exclude a wide IP range via CIDR notation or IP range.
 The current patterns managed are the following:
