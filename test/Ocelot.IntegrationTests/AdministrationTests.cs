@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-
+using System.Reflection;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 
@@ -108,6 +108,29 @@ namespace Ocelot.IntegrationTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_response_200_with_call_re_routes_controller_and_result_have_indented()
+        {
+            var configuration = new FileConfiguration();
+
+            Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = (builder, assembly) =>
+            {
+                return builder.AddApplicationPart(assembly)
+                    .AddControllersAsServices()
+                    .AddAuthorization()
+                    .AddJsonOptions(options => { options.JsonSerializerOptions.WriteIndented = true; });
+            };
+
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotUsingBuilderIsRunning(customBuilder))
+                .And(x => GivenIHaveAnOcelotToken("/administration"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .Then(x => ThenTheResultHaveMultiLine())
+                .BDDfy();
+        }
+        
         [Fact]
         public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
@@ -779,6 +802,40 @@ namespace Ocelot.IntegrationTests
 
             _builder.Start();
         }
+        
+        private void GivenOcelotUsingBuilderIsRunning(Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
+        {
+            _webHostBuilder = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder.UseUrls(_ocelotBaseUrl)
+                        .UseKestrel()
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .ConfigureAppConfiguration((hostingContext, config) =>
+                        {
+                            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                            var env = hostingContext.HostingEnvironment;
+                            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                            config.AddJsonFile("ocelot.json", false, false);
+                            config.AddEnvironmentVariables();
+                        })
+                        .ConfigureServices(x =>
+                        {
+                            x.AddMvc(s => s.EnableEndpointRouting = false);
+                            x.AddOcelotUsingBuilder(customBuilder)
+                                .AddAdministration("/administration", "secret");
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseOcelot().Wait();
+                        });
+                });
+
+            _builder = _webHostBuilder.Build();
+
+            _builder.Start();
+        }
 
         private void GivenOcelotIsRunningWithNoWebHostBuilder(string baseUrl)
         {
@@ -855,6 +912,11 @@ namespace Ocelot.IntegrationTests
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
+        }
+        
+        private void ThenTheResultHaveMultiLine()
+        {
+            _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine).Length.ShouldBeGreaterThan(1);
         }
 
         public void Dispose()
