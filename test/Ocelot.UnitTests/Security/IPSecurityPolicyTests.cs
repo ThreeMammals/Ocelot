@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -308,14 +309,20 @@ namespace Ocelot.UnitTests.Security
                 .BDDfy();
         }
 
+        /// <summary>
+        /// NO
+        /// </summary>
         private void GivenSetAllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>()));
         }
 
+        /// <summary>
+        /// NO
+        /// </summary>
         private void GivenSetBlockedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }, false));
+            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }));
         }
 
         private void GivenSetDownstreamRoute()
@@ -325,57 +332,57 @@ namespace Ocelot.UnitTests.Security
 
         private void GivenCidr24AllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.0/24" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.0/24" }, IPBlockedList = new List<string>() });
         }
 
         private void GivenCidr29AllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.0/29" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.0/29" }, IPBlockedList = new List<string>() });
         }
 
         private void GivenCidr24BlockedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.0/24" }, false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string>(), IPBlockedList = new List<string> { "192.168.1.0/24" } });
         }
 
         private void GivenRangeAllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.0-192.168.1.10" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.0-192.168.1.10" }, IPBlockedList = new List<string>() });
         }
 
         private void GivenRangeBlockedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.0-192.168.1.10" }, false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string>(), IPBlockedList = new List<string> { "192.168.1.0-192.168.1.10" } });
         }
 
         private void GivenShortRangeAllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.0-10" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.0-10" }, IPBlockedList = new List<string>() });
         }
 
         private void GivenShortRangeBlockedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.0-10" }, false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string>(), IPBlockedList = new List<string> { "192.168.1.0-10" } });
         }
 
         private void GivenIpSubnetAllowedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.0/255.255.255.0" }, new List<string>(), false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.0/255.255.255.0" }, IPBlockedList = new List<string>() });
         }
 
         private void GivenIpSubnetBlockedIP()
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.0/255.255.255.0" }, false));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string>(), IPBlockedList = new List<string> { "192.168.1.0/255.255.255.0" } });
         }
 
         private void GivenIpMoreAllowedThanBlocked(bool excludeAllowedInBlocked)
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.0.0/255.255.0.0" }, new List<string> { "192.168.1.100-200" }, excludeAllowedInBlocked));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.0.0/255.255.0.0" }, IPBlockedList = new List<string> { "192.168.1.100-200" }, ExcludeAllowedFromBlocked = excludeAllowedInBlocked });
         }
 
         private void GivenIpMoreBlockedThanAllowed(bool excludeAllowedInBlocked)
         {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.10-20" }, new List<string> { "192.168.1.0/23" }, excludeAllowedInBlocked));
+            _downstreamRouteBuilder.WithSecurityOptionsCreator(new FileSecurityOptions { IPAllowedList = new List<string> { "192.168.1.10-20" }, IPBlockedList = new List<string> { "192.168.1.0/23" }, ExcludeAllowedFromBlocked = excludeAllowedInBlocked });
         }
 
         private void WhenTheSecurityPolicy()
