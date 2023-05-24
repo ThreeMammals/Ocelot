@@ -1,11 +1,12 @@
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Ocelot.Logging;
 
 using Polly;
 using Polly.CircuitBreaker;
+
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Polly
 {
@@ -26,18 +27,17 @@ namespace Ocelot.Provider.Polly
         {
             try
             {
-                IAsyncPolicy policy;
-
-                if (_qoSProvider.CircuitBreaker.Policies.Length == 1)
+                var policies = _qoSProvider.CircuitBreaker.Policies;
+                if (policies.Any())
                 {
-                    policy = _qoSProvider.CircuitBreaker.Policies[0];
-                }
-                else
-                {
-                    policy = Policy.WrapAsync(_qoSProvider.CircuitBreaker.Policies);
+                    IAsyncPolicy policy = policies.Length >= 2
+                        ? Policy.WrapAsync(policies)
+                        : policies[0];
+
+                    return await policy.ExecuteAsync(() => base.SendAsync(request, cancellationToken));
                 }
 
-                return await policy.ExecuteAsync(() => base.SendAsync(request, cancellationToken));
+                return await base.SendAsync(request, cancellationToken);
             }
             catch (BrokenCircuitException ex)
             {
@@ -46,7 +46,7 @@ namespace Ocelot.Provider.Polly
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError("Error in CircuitBreakingDelegatingHandler.SendAync", ex);
+                _logger.LogError($"Error in {nameof(PollyCircuitBreakingDelegatingHandler)}.{nameof(SendAsync)}", ex);
                 throw;
             }
         }
