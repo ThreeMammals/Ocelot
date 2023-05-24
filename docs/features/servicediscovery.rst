@@ -243,11 +243,11 @@ This configuration means that if you have a request come into Ocelot on /product
 
 Please take a look through all of the docs to understand these options.
 
-Custom
-^^^^^^
+Custom providers
+^^^^^^^^^^^^^^^^
 
 Ocelot also allows you to create a custom ServiceDiscovery implementation.
-This is done by implementing the IServiceDiscoveryProvider interface like in the following example:
+This is done by implementing the ``IServiceDiscoveryProvider`` interface like in the following example:
 
 .. code-block:: csharp
 
@@ -269,7 +269,7 @@ This is done by implementing the IServiceDiscoveryProvider interface like in the
         }
     }
 
-And set its class name as the provider type in ocelot.json:
+And set its class name as the provider type in **ocelot.json**:
 
 .. code-block:: json
 
@@ -279,7 +279,7 @@ And set its class name as the provider type in ocelot.json:
     }
   }
   
-Finally, in Startup.cs register a ServiceDiscoveryFinderDelegate to initialize and return the provider:
+Finally, in **Startup.cs** register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
 
 .. code-block:: csharp
 
