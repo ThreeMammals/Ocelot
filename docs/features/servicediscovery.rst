@@ -243,7 +243,7 @@ This configuration means that if you have a request come into Ocelot on /product
 
 Please take a look through all of the docs to understand these options.
 
-Custom providers
+Custom Providers
 ^^^^^^^^^^^^^^^^
 
 Ocelot also allows you to create a custom ServiceDiscovery implementation.
