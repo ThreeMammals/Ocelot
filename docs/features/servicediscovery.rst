@@ -279,7 +279,7 @@ And set its class name as the provider type in **ocelot.json**:
     }
   }
   
-Finally, in **Startup.cs** register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
+Finally, in the application's **ConfigureServices** method register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
 
 .. code-block:: csharp
 
@@ -287,5 +287,6 @@ Finally, in **Startup.cs** register a ``ServiceDiscoveryFinderDelegate`` to init
     {
         return new MyServiceDiscoveryProvider(route);
     };
-    services.AddOcelot().Services.AddSingleton(serviceDiscoveryFinder);
+    services.AddSingleton(serviceDiscoveryFinder);
+    services.AddOcelot();
     
