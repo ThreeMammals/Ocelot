@@ -1,16 +1,20 @@
 ﻿using Moq;
+
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Ocelot.Provider.Polly.Interfaces;
+
 using Polly;
 using Polly.Wrap;
 using Shouldly;
+
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Polly;
