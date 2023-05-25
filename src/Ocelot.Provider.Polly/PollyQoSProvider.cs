@@ -2,20 +2,27 @@ using System;
 using System.Net.Http;
 
 using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Provider.Polly.Interfaces;
 
 using global::Polly;
 using global::Polly.CircuitBreaker;
 using global::Polly.Timeout;
 
-using Ocelot.Logging;
-
 namespace Ocelot.Provider.Polly
 {
-    public class PollyQoSProvider
+    public class PollyQoSProvider : IPollyQoSProvider
     {
         private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
         private readonly AsyncTimeoutPolicy _timeoutPolicy;
         private readonly IOcelotLogger _logger;
+
+        public PollyQoSProvider(AsyncCircuitBreakerPolicy circuitBreakerPolicy, AsyncTimeoutPolicy timeoutPolicy, IOcelotLogger logger)
+        {
+            _circuitBreakerPolicy = circuitBreakerPolicy;
+            _timeoutPolicy = timeoutPolicy;
+            _logger = logger;
+        }
 
         public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
         {

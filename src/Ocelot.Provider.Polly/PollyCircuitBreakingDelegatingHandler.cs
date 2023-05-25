@@ -1,5 +1,5 @@
 using Ocelot.Logging;
-
+using Ocelot.Provider.Polly.Interfaces;
 using Polly;
 using Polly.CircuitBreaker;
 
@@ -12,11 +12,11 @@ namespace Ocelot.Provider.Polly
 {
     public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
     {
-        private readonly PollyQoSProvider _qoSProvider;
+        private readonly IPollyQoSProvider _qoSProvider;
         private readonly IOcelotLogger _logger;
 
         public PollyCircuitBreakingDelegatingHandler(
-            PollyQoSProvider qoSProvider,
+            IPollyQoSProvider qoSProvider,
             IOcelotLoggerFactory loggerFactory)
         {
             _qoSProvider = qoSProvider;
