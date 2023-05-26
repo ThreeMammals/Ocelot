@@ -11,15 +11,15 @@ public class SecurityOptionsCreator : ISecurityOptionsCreator
 {
     public SecurityOptions Create(FileSecurityOptions securityOptions)
     {
-        var IPAllowedList = new List<string>();
-        var IPBlockedList = new List<string>();
+        var ipAllowedList = new List<string>();
+        var ipBlockedList = new List<string>();
 
         foreach (var allowed in securityOptions.IPAllowedList)
         {
             if (IPAddressRange.IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
             {
                 var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-                IPAllowedList.AddRange(allowedIps);
+                ipAllowedList.AddRange(allowedIps);
             }
         }
 
@@ -28,15 +28,15 @@ public class SecurityOptionsCreator : ISecurityOptionsCreator
             if (IPAddressRange.IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
             {
                 var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-                IPBlockedList.AddRange(blockedIps);
+                ipBlockedList.AddRange(blockedIps);
             }
         }
 
         if (securityOptions.ExcludeAllowedFromBlocked)
         {
-            IPBlockedList = IPBlockedList.Except(IPAllowedList).ToList();
+            ipBlockedList = ipBlockedList.Except(ipAllowedList).ToList();
         }
 
-        return new SecurityOptions(IPAllowedList, IPBlockedList);
+        return new SecurityOptions(ipAllowedList, ipBlockedList);
     }
 }
