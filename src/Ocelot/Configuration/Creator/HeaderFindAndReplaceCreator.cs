@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
@@ -7,12 +10,14 @@ namespace Ocelot.Configuration.Creator
 {
     public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
     {
+        private readonly FileGlobalConfiguration _fileGlobalConfiguration;
         private readonly IPlaceholders _placeholders;
         private readonly IOcelotLogger _logger;
 
-        public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory)
+        public HeaderFindAndReplaceCreator(IOptions<FileConfiguration> fileConfiguration, IPlaceholders placeholders, IOcelotLoggerFactory factory)
         {
             _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
+            _fileGlobalConfiguration = fileConfiguration.Value.GlobalConfiguration;
             _placeholders = placeholders;
         }
 
@@ -20,6 +25,7 @@ namespace Ocelot.Configuration.Creator
         {
             var upstream = new List<HeaderFindAndReplace>();
             var addHeadersToUpstream = new List<AddHeader>();
+            var upstreamAdded = new HashSet<string>();
 
             foreach (var input in fileRoute.UpstreamHeaderTransform)
             {
@@ -29,6 +35,34 @@ namespace Ocelot.Configuration.Creator
                     if (!hAndr.IsError)
                     {
                         upstream.Add(hAndr.Data);
+                        upstreamAdded.Add(input.Key);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
+                    }
+                }
+                else
+                {
+                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
+                    upstreamAdded.Add(input.Key);
+                }
+            }
+            
+            foreach (var input in _fileGlobalConfiguration.UpstreamHeaderTransform)
+            {
+                if (upstreamAdded.Contains(input.Key))
+                {
+                    continue;
+                }
+                
+                if (input.Value.Contains(","))
+                {
+                    var hAndr = Map(input);
+                    if (!hAndr.IsError)
+                    {
+                        upstream.Add(hAndr.Data);
+                        
                     }
                     else
                     {
@@ -38,14 +72,43 @@ namespace Ocelot.Configuration.Creator
                 else
                 {
                     addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
+                    
                 }
             }
 
             var downstream = new List<HeaderFindAndReplace>();
             var addHeadersToDownstream = new List<AddHeader>();
-
+            var downstreamAdded = new HashSet<string>();
+            
             foreach (var input in fileRoute.DownstreamHeaderTransform)
             {
+                if (input.Value.Contains(","))
+                {
+                    var hAndr = Map(input);
+                    if (!hAndr.IsError)
+                    {
+                        downstream.Add(hAndr.Data);
+                        downstreamAdded.Add(input.Key);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
+                    }
+                }
+                else
+                {
+                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
+                    downstreamAdded.Add(input.Key);
+                }
+            }
+            
+            foreach (var input in _fileGlobalConfiguration.DownstreamHeaderTransform)
+            {
+                if (downstreamAdded.Contains(input.Key))
+                {
+                    continue;
+                }
+                
                 if (input.Value.Contains(","))
                 {
                     var hAndr = Map(input);

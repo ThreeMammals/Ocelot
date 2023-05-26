@@ -13,6 +13,8 @@ namespace Ocelot.Configuration.File
             HttpHandlerOptions = new FileHttpHandlerOptions();
             CacheOptions = new FileCacheOptions();
             MetadataOptions = new FileMetadataOptions();
+            UpstreamHeaderTransform = new Dictionary<string, string>();
+            DownstreamHeaderTransform = new Dictionary<string, string>();
         }
 
         public string RequestIdKey { get; set; }
@@ -48,5 +50,8 @@ namespace Ocelot.Configuration.File
         public FileCacheOptions CacheOptions { get; set; }
 
         public FileMetadataOptions MetadataOptions { get; set; }
+
+        public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+        public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
     }
 }

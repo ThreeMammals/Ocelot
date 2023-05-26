@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -23,7 +27,19 @@ namespace Ocelot.UnitTests.Configuration
             _factory = new Mock<IOcelotLoggerFactory>();
             _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
             _placeholders = new Mock<IPlaceholders>();
-            _creator = new HeaderFindAndReplaceCreator(_placeholders.Object, _factory.Object);
+            var fileGlobalConfiguration = new FileGlobalConfiguration();
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
+            
+            var options = new Mock<IOptions<FileConfiguration>>();
+            options.Setup(x => x.Value).Returns(new FileConfiguration
+            {
+                GlobalConfiguration = fileGlobalConfiguration,
+            });
+
+            _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
         }
 
         [Fact]
@@ -47,12 +63,16 @@ namespace Ocelot.UnitTests.Configuration
             {
                 new("Test", "Test", "Chicken", 0),
                 new("Moop", "o", "a", 0),
+                new("TestGlobal", "Test", "Chicken", 0),
+                new("MoopGlobal", "o", "a", 0),
             };
 
             var downstream = new List<HeaderFindAndReplace>
             {
                 new("Pop", "West", "East", 0),
                 new("Bop", "e", "r", 0),
+                new("PopGlobal", "West", "East", 0),
+                new("BopGlobal", "e", "r", 0),
             };
 
             this.Given(x => GivenTheRoute(route))
@@ -98,6 +118,8 @@ namespace Ocelot.UnitTests.Configuration
             var downstream = new List<HeaderFindAndReplace>
             {
                 new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
+                new("PopGlobal", "West", "East", 0),
+                new("BopGlobal", "e", "r", 0),
             };
 
             this.Given(x => GivenTheRoute(route))
@@ -122,13 +144,23 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-            var expected = new List<HeaderFindAndReplace>();
+            var expectedDownstream = new List<HeaderFindAndReplace>
+            {
+                new("PopGlobal", "West", "East", 0),
+                new("BopGlobal", "e", "r", 0),
+            };
+            
+            var expectedUpstream = new List<HeaderFindAndReplace>
+            {
+                new("TestGlobal", "Test", "Chicken", 0),
+                new("MoopGlobal", "o", "a", 0),
+            };
 
             this.Given(x => GivenTheRoute(route))
                 .And(x => GivenTheBaseUrlErrors())
                 .When(x => WhenICreate())
-                .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
-                .And(x => ThenTheFollowingUpstreamIsReturned(expected))
+                .Then(x => ThenTheFollowingDownstreamIsReturned(expectedDownstream))
+                .And(x => ThenTheFollowingUpstreamIsReturned(expectedUpstream))
                 .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
                 .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
                 .BDDfy();
@@ -153,6 +185,8 @@ namespace Ocelot.UnitTests.Configuration
             var downstream = new List<HeaderFindAndReplace>
             {
                 new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
+                new("PopGlobal", "West", "East", 0),
+                new("BopGlobal", "e", "r", 0),
             };
 
             this.Given(x => GivenTheRoute(route))
