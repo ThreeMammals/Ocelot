@@ -30,7 +30,7 @@ namespace Ocelot.Provider.Polly
                 var policies = _qoSProvider.CircuitBreaker.Policies;
                 if (policies.Any())
                 {
-                    IAsyncPolicy policy = policies.Length >= 2
+                    IAsyncPolicy policy = policies.Length > 1
                         ? Policy.WrapAsync(policies)
                         : policies[0];
 
