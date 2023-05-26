@@ -11,11 +11,13 @@ namespace Ocelot.Configuration.File
 
         public List<string> IPAllowedList { get; set; }
         public List<string> IPBlockedList { get; set; }
-        
+
         /// <summary>
         /// Provides the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
+        /// </summary>
+        /// <value>
         /// Default value: false.
-        /// </summary>        
+        /// </value>        
         public bool ExcludeAllowedFromBlocked { get; set; }
     }
 }
