@@ -1,9 +1,8 @@
-﻿using Ocelot.Configuration.File;
+﻿using NetTools; // <PackageReference Include="IPAddressRange" Version="5.0.0" />
+using Ocelot.Configuration.File;
 
 using System.Collections.Generic;
 using System.Linq;
-
-using IPAddressRange = NetTools;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -16,7 +15,7 @@ public class SecurityOptionsCreator : ISecurityOptionsCreator
 
         foreach (var allowed in securityOptions.IPAllowedList)
         {
-            if (IPAddressRange.IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
+            if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
             {
                 var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
                 ipAllowedList.AddRange(allowedIps);
@@ -25,7 +24,7 @@ public class SecurityOptionsCreator : ISecurityOptionsCreator
 
         foreach (var blocked in securityOptions.IPBlockedList)
         {
-            if (IPAddressRange.IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
+            if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
             {
                 var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
                 ipBlockedList.AddRange(blockedIps);
