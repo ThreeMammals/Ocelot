@@ -9,15 +9,14 @@ namespace Ocelot.Configuration.File
             ExcludeAllowedFromBlocked = false;
         }
 
-        public List<string> IPAllowedList { get; set; }
-        public List<string> IPBlockedList { get; set; }
+    public List<string> IPAllowedList { get; set; }
+    public List<string> IPBlockedList { get; set; }
 
-        /// <summary>
-        /// Provides the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
-        /// </summary>
-        /// <value>
-        /// Default value: false.
-        /// </value>        
-        public bool ExcludeAllowedFromBlocked { get; set; }
-    }
+    /// <summary>
+    /// Provides the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
+    /// </summary>
+    /// <value>
+    /// Default value: false.
+    /// </value>        
+    public bool ExcludeAllowedFromBlocked { get; set; }
 }
