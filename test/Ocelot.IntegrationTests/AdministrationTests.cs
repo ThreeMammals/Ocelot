@@ -19,6 +19,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -103,7 +104,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_response_200_with_call_re_routes_controller_and_result_have_indented()
+        public void should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
         {
             var configuration = new FileConfiguration();
 
@@ -121,7 +122,7 @@ namespace Ocelot.IntegrationTests
                 .And(x => GivenIHaveAddedATokenToMyRequest())
                 .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .Then(x => ThenTheResultHaveMultiLine())
+                .Then(x => ThenTheResultHaveMultiLineIndentedJson())
                 .BDDfy();
         }
         
@@ -763,7 +764,7 @@ namespace Ocelot.IntegrationTests
             _builder.Start();
         }
 
-        private void GivenOcelotIsRunning()
+        private void OcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -780,55 +781,34 @@ namespace Ocelot.IntegrationTests
                         config.AddJsonFile("ocelot.json", false, false);
                         config.AddEnvironmentVariables();
                     })
-                    .ConfigureServices(x =>
-                    {
-                        x.AddMvc(s => s.EnableEndpointRouting = false);
-                        x.AddOcelot()
-                        .AddAdministration("/administration", "secret");
-                    })
+                    .ConfigureServices(configureServices) // !!!
                     .Configure(app =>
                     {
                         app.UseOcelot().Wait();
                     });
                 });
-
             _builder = _webHostBuilder.Build();
-
             _builder.Start();
         }
-        
+
+        private void GivenOcelotIsRunning()
+        {
+            OcelotIsRunningWithServices(services =>
+            {
+                services.AddMvc(s => s.EnableEndpointRouting = false);
+                services.AddOcelot()
+                    .AddAdministration("/administration", "secret");
+            });
+        }
+
         private void GivenOcelotUsingBuilderIsRunning(Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
         {
-            _webHostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureWebHost(webBuilder =>
-                {
-                    webBuilder.UseUrls(_ocelotBaseUrl)
-                        .UseKestrel()
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .ConfigureAppConfiguration((hostingContext, config) =>
-                        {
-                            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                            var env = hostingContext.HostingEnvironment;
-                            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                            config.AddJsonFile("ocelot.json", false, false);
-                            config.AddEnvironmentVariables();
-                        })
-                        .ConfigureServices(x =>
-                        {
-                            x.AddMvc(s => s.EnableEndpointRouting = false);
-                            x.AddOcelotUsingBuilder(customBuilder)
-                                .AddAdministration("/administration", "secret");
-                        })
-                        .Configure(app =>
-                        {
-                            app.UseOcelot().Wait();
-                        });
-                });
-
-            _builder = _webHostBuilder.Build();
-
-            _builder.Start();
+            OcelotIsRunningWithServices(services =>
+            {
+                services.AddMvc(s => s.EnableEndpointRouting = false);
+                services.AddOcelotUsingBuilder(customBuilder)
+                    .AddAdministration("/administration", "secret");
+            });
         }
 
         private void GivenOcelotIsRunningWithNoWebHostBuilder(string baseUrl)
@@ -908,9 +888,18 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
         
-        private void ThenTheResultHaveMultiLine()
+        private void ThenTheResultHaveMultiLineIndentedJson()
         {
-            _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine).Length.ShouldBeGreaterThan(1);
+            const string indent = "  ";
+            const int total = 45, skip = 1;
+            var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
+            lines.Length.ShouldBe(total);
+            lines.First().ShouldNotStartWith(indent);
+
+            lines.Skip(skip).Take(total - skip - 1).ToList()
+                .ForEach(line => line.ShouldStartWith(indent));
+
+            lines.Last().ShouldNotStartWith(indent);
         }
 
         public void Dispose()
