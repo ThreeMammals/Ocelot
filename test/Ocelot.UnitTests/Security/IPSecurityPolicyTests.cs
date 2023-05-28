@@ -311,12 +311,12 @@ public class IPSecurityPolicyTests
 
     private void GivenSetAllowedIP()
     {
-        _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>()));
+        _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions("192.168.1.1"));
     }
 
     private void GivenSetBlockedIP()
     {
-        _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }));
+        _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(blocked: "192.168.1.1"));
     }
 
     private void GivenSetDownstreamRoute()
@@ -326,125 +326,68 @@ public class IPSecurityPolicyTests
 
     private void GivenCidr24AllowedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.0/24" }, 
-                IPBlockedList = new List<string>()
-            };
-            
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.1.0/24");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenCidr29AllowedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.0/29" },
-                IPBlockedList = new List<string>()
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.1.0/29");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenCidr24BlockedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-                { 
-                    IPAllowedList = new List<string>(),
-                    IPBlockedList = new List<string> { "192.168.1.0/24" }
-                };
-            
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/24");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenRangeAllowedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.0-192.168.1.10" },
-                IPBlockedList = new List<string>()
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(GivenRangeAllowedIP);
+        var options = new FileSecurityOptions("192.168.1.0-192.168.1.10");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenRangeBlockedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string>(),
-                IPBlockedList = new List<string> { "192.168.1.0-192.168.1.10" }
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-192.168.1.10");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenShortRangeAllowedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.0-10" },
-                IPBlockedList = new List<string>()
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.1.0-10");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenShortRangeBlockedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string>(),
-                IPBlockedList = new List<string> { "192.168.1.0-10" }
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-10");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenIpSubnetAllowedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.0/255.255.255.0" },
-                IPBlockedList = new List<string>()
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.1.0/255.255.255.0");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenIpSubnetBlockedIP()
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string>(),
-                IPBlockedList = new List<string> { "192.168.1.0/255.255.255.0" }
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/255.255.255.0");
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenIpMoreAllowedThanBlocked(bool excludeAllowedInBlocked)
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.0.0/255.255.0.0" },
-                IPBlockedList = new List<string> { "192.168.1.100-200" },
-                ExcludeAllowedFromBlocked = excludeAllowedInBlocked
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.0.0/255.255.0.0", "192.168.1.100-200", excludeAllowedInBlocked);
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void GivenIpMoreBlockedThanAllowed(bool excludeAllowedInBlocked)
     {
-            var fileSecurityOptions = new FileSecurityOptions
-            {
-                IPAllowedList = new List<string> { "192.168.1.10-20" },
-                IPBlockedList = new List<string> { "192.168.1.0/23" },
-                ExcludeAllowedFromBlocked = excludeAllowedInBlocked
-            };
-
-            _downstreamRouteBuilder.WithSecurityOptionsCreator(fileSecurityOptions);
+        var options = new FileSecurityOptions("192.168.1.10-20", "192.168.1.0/23", excludeAllowedInBlocked);
+        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
     }
 
     private void WhenTheSecurityPolicy()
