@@ -9,6 +9,30 @@ namespace Ocelot.Configuration.File
             ExcludeAllowedFromBlocked = false;
         }
 
+    public FileSecurityOptions(string allowedIPs = null, string blockedIPs = null, bool? excludeAllowedFromBlocked = null)
+        : this()
+    {
+        if (!string.IsNullOrEmpty(allowedIPs))
+        {
+            IPAllowedList.Add(allowedIPs);
+        }
+
+        if (!string.IsNullOrEmpty(blockedIPs))
+        {
+            IPBlockedList.Add(blockedIPs);
+        }
+
+        ExcludeAllowedFromBlocked = excludeAllowedFromBlocked ?? false;
+    }
+
+    public FileSecurityOptions(IEnumerable<string> allowedIPs = null, IEnumerable<string> blockedIPs = null, bool? excludeAllowedFromBlocked = null)
+        : this()
+    {
+        IPAllowedList.AddRange(allowedIPs ?? Enumerable.Empty<string>());
+        IPBlockedList.AddRange(blockedIPs ?? Enumerable.Empty<string>());
+        ExcludeAllowedFromBlocked = excludeAllowedFromBlocked ?? false;
+    }
+
     public List<string> IPAllowedList { get; set; }
     public List<string> IPBlockedList { get; set; }
 
