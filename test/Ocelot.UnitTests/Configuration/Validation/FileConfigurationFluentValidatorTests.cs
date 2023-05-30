@@ -1,33 +1,26 @@
-﻿namespace Ocelot.UnitTests.Configuration.Validation
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Validator;
+using Ocelot.Requester;
+using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.UnitTests.Requester;
+using Ocelot.Values;
+using Shouldly;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Configuration.Validation
 {
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using System.Text.Encodings.Web;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Authentication;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
-
-    using Moq;
-
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Validator;
-    using Ocelot.Requester;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Values;
-
-    using Requester;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class FileConfigurationFluentValidatorTests
     {
         private IConfigurationValidator _configurationValidator;

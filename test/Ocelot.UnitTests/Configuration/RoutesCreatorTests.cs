@@ -1,25 +1,25 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class RoutesCreatorTests
     {
         private readonly RoutesCreator _creator;

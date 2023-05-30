@@ -17,12 +17,11 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using Ocelot.Infrastructure;
+using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Headers
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
-
     public class AddHeadersToRequestClaimToThingTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;

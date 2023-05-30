@@ -1,17 +1,17 @@
-﻿namespace Ocelot.Cache.CacheManager
+﻿using System;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+
+using Ocelot.DependencyInjection;
+
+using global::CacheManager.Core;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Ocelot.Cache.CacheManager
 {
-    using System;
-
-    using Configuration;
-    using Configuration.File;
-
-    using DependencyInjection;
-
-    using global::CacheManager.Core;
-
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-
     public static class OcelotBuilderExtensions
     {
         public static IOcelotBuilder AddCacheManager(this IOcelotBuilder builder, Action<ConfigurationBuilderCachePart> settings)

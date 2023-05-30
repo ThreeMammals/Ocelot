@@ -1,22 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.IO.Compression;
-    using System.Linq;
-    using System.Net;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class GzipTests : IDisposable
     {
         private readonly Steps _steps;

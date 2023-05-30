@@ -1,28 +1,28 @@
-﻿namespace Ocelot.UnitTests.Cache
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Cache.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Cache
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OutputCacheMiddlewareTests
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;

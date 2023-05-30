@@ -1,19 +1,19 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Ocelot.Infrastructure.RequestData;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Errors.Middleware
 {
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using Infrastructure.RequestData;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500.
     /// </summary>

@@ -1,16 +1,16 @@
-﻿namespace Ocelot.UnitTests.Cache
+﻿using System;
+using System.Threading;
+
+using Microsoft.Extensions.Caching.Memory;
+
+using Ocelot.Cache;
+
+using Shouldly;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Cache
 {
-    using System;
-    using System.Threading;
-
-    using Microsoft.Extensions.Caching.Memory;
-
-    using Ocelot.Cache;
-
-    using Shouldly;
-
-    using Xunit;
-
     public class AspMemoryCacheTests
     {
         private readonly AspMemoryCache<Fake> _cache;

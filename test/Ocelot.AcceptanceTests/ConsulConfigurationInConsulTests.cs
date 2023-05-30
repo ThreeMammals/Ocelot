@@ -1,29 +1,29 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
+
+using Ocelot.Cache;
+
+using Ocelot.Configuration.File;
+
+using Consul;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Text;
-
-    using Cache;
-
-    using Configuration.File;
-
-    using Consul;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-
-    using Newtonsoft.Json;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ConsulConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;

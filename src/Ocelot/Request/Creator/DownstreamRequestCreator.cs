@@ -1,11 +1,11 @@
+using System.Net.Http;
+
+using Ocelot.Infrastructure;
+
+using Ocelot.Request.Middleware;
+
 namespace Ocelot.Request.Creator
 {
-    using System.Net.Http;
-
-    using Infrastructure;
-
-    using Middleware;
-
     public class DownstreamRequestCreator : IDownstreamRequestCreator
     {
         private readonly IFrameworkDescription _framework;

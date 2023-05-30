@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class StickySessionsTests : IDisposable
     {
         private readonly Steps _steps;

@@ -11,17 +11,16 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Logging;
-
     public class HttpHandlerOptionsCreatorTests
     {
         private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;

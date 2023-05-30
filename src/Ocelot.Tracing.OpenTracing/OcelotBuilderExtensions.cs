@@ -1,11 +1,11 @@
-﻿namespace Ocelot.Tracing.OpenTracing
+﻿using Ocelot.DependencyInjection;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Ocelot.Tracing.OpenTracing
 {
-    using DependencyInjection;
-
-    using Logging;
-
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-
     public static class OcelotBuilderExtensions
     {
         public static IOcelotBuilder AddOpenTracing(this IOcelotBuilder builder)

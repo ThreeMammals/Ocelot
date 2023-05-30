@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Configuration.Creator
-{
-    using System;
+﻿using System;
 
+namespace Ocelot.Configuration.Creator
+{
     public class HttpVersionCreator : IVersionCreator
     {
         public Version Create(string downstreamHttpVersion)

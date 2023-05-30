@@ -1,28 +1,28 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Validator;
+using Ocelot.Errors;
+
+using Ocelot.UnitTests.Responder;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Validator;
-    using Ocelot.Errors;
-
-    using Responder;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class FileInternalConfigurationCreatorTests
     {
         private readonly Mock<IConfigurationValidator> _validator;

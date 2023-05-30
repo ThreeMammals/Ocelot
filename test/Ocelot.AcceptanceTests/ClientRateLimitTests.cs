@@ -1,17 +1,17 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ClientRateLimitTests : IDisposable
     {
         private readonly Steps _steps;

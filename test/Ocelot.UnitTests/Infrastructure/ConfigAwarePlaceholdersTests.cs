@@ -1,19 +1,19 @@
+using System;
+
+using Microsoft.Extensions.Configuration;
+
+using Moq;
+
+using Ocelot.Infrastructure;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Infrastructure
 {
-    using System;
-
-    using Microsoft.Extensions.Configuration;
-
-    using Moq;
-
-    using Ocelot.Infrastructure;
-
-    using Responses;
-
-    using Shouldly;
-
-    using Xunit;
-
     public class ConfigAwarePlaceholdersTests
     {
         private readonly IPlaceholders _placeholders;

@@ -1,17 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class RoutingWithQueryStringTests : IDisposable
     {
         private readonly Steps _steps;

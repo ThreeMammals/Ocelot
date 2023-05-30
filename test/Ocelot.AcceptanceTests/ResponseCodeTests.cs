@@ -1,15 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration.File;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ResponseCodeTests : IDisposable
     {
         private readonly Steps _steps;

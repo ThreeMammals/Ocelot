@@ -1,24 +1,24 @@
-﻿namespace Ocelot.UnitTests.DependencyInjection
+﻿using System.Collections.Generic;
+using System.IO;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+
+using Moq;
+
+using Newtonsoft.Json;
+
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System.Collections.Generic;
-    using System.IO;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-
-    using Moq;
-
-    using Newtonsoft.Json;
-
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ConfigurationBuilderExtensionsTests
     {
         private IConfigurationRoot _configuration;

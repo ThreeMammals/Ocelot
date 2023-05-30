@@ -17,13 +17,12 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using System;
+
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
-
-    using Microsoft.AspNetCore.Http;
-
     public class LoadBalancerFactoryTests
     {
         private DownstreamRoute _route;

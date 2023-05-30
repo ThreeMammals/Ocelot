@@ -1,26 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+
+using Microsoft.AspNetCore.Hosting;
+
+using Moq;
+
+using Newtonsoft.Json;
+
+using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Threading;
-
-    using Microsoft.AspNetCore.Hosting;
-
-    using Moq;
-
-    using Newtonsoft.Json;
-
-    using Ocelot.Configuration.ChangeTracking;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Repository;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
         private readonly Mock<IWebHostEnvironment> _hostingEnvironment;

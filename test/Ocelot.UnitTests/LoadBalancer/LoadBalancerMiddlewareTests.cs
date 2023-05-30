@@ -1,34 +1,34 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Errors;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Errors;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class LoadBalancerMiddlewareTests
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;

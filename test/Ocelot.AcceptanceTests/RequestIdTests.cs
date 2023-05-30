@@ -1,16 +1,16 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class RequestIdTests : IDisposable
     {
         private readonly Steps _steps;

@@ -1,26 +1,26 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using Consul;
+
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.WebSockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using Consul;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Newtonsoft.Json;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ConsulWebSocketTests : IDisposable
     {
         private readonly List<string> _secondRecieved;

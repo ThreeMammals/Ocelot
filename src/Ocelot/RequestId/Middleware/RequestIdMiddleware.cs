@@ -1,18 +1,18 @@
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using Ocelot.Infrastructure.RequestData;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
 namespace Ocelot.RequestId.Middleware
 {
-    using System.Linq;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
-
-    using Infrastructure.RequestData;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
     public class RequestIdMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

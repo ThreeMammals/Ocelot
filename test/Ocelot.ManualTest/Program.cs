@@ -1,22 +1,21 @@
 ﻿using Ocelot.Requester;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Ocelot.DependencyInjection;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Ocelot.Middleware;
 
 namespace Ocelot.ManualTest
 {
-    using System;
-    using System.IO;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using DependencyInjection;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-
-    using Middleware;
-
     public class Program
     {
         public static void Main(string[] args)

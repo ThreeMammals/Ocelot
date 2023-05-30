@@ -1,25 +1,25 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+
+using Butterfly.Client.AspNetCore;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+using Xunit.Abstractions;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-
-    using Butterfly.Client.AspNetCore;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-    using Xunit.Abstractions;
-
     public class ButterflyTracingTests : IDisposable
     {
         private IWebHost _serviceOneBuilder;

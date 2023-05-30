@@ -1,31 +1,31 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.PathManipulation;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamPathManipulation.Middleware;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using PathManipulation;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class ClaimsToDownstreamPathMiddlewareTests
     {
         private readonly Mock<IChangeDownstreamPathTemplate> _changePath;

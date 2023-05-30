@@ -1,29 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Requester;
+using Ocelot.Requester.QoS;
+
+using Ocelot.UnitTests.Responder;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Requester
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Requester;
-    using Ocelot.Requester.QoS;
-
-    using Responder;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class DelegatingHandlerHandlerProviderFactoryTests
     {
         private DelegatingHandlerHandlerFactory _factory;

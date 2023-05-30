@@ -1,23 +1,23 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Requester;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration;
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Requester;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class HttpClientCachingTests : IDisposable
     {
         private readonly Steps _steps;

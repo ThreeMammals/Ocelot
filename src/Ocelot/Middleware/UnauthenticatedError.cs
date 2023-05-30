@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Middleware
-{
-    using Errors;
+﻿using Ocelot.Errors;
 
+namespace Ocelot.Middleware
+{
     public class UnauthenticatedError : Error
     {
         public UnauthenticatedError(string message)

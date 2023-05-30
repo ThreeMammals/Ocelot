@@ -1,23 +1,23 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Middleware;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class CustomMiddlewareTests : IDisposable
     {
         private readonly string _configurationPath;

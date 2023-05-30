@@ -1,16 +1,16 @@
-﻿namespace Ocelot.Provider.Eureka
+﻿using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Repository;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Middleware;
+
+using Steeltoe.Discovery.Client;
+
+namespace Ocelot.Provider.Eureka
 {
-    using System.Threading.Tasks;
-
-    using Configuration;
-    using Configuration.Repository;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Middleware;
-
-    using Steeltoe.Discovery.Client;
-
     public class EurekaMiddlewareConfigurationProvider
     {
         public static OcelotMiddlewareConfigurationDelegate Get = builder =>

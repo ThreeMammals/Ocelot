@@ -10,11 +10,10 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using Ocelot.Infrastructure.Claims.Parser;
 
 namespace Ocelot.UnitTests.Authorization
 {
-    using Ocelot.Infrastructure.Claims.Parser;
-
     public class ClaimsAuthorizerTests
     {
         private readonly ClaimsAuthorizer _claimsAuthorizer;

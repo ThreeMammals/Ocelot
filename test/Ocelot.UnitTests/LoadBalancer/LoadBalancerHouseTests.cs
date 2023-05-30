@@ -14,11 +14,10 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using Microsoft.AspNetCore.Http;
-
     public class LoadBalancerHouseTests
     {
         private DownstreamRoute _route;

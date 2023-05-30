@@ -1,9 +1,9 @@
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+
 namespace Ocelot.Request.Middleware
 {
-    using System;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-
     public class DownstreamRequest
     {
         private readonly HttpRequestMessage _request;

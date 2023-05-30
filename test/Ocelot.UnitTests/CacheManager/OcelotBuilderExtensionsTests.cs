@@ -1,30 +1,30 @@
-﻿namespace Ocelot.UnitTests.CacheManager
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using global::CacheManager.Core;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.CacheManager
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using global::CacheManager.Core;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OcelotBuilderExtensionsTests
     {
         private readonly IServiceCollection _services;

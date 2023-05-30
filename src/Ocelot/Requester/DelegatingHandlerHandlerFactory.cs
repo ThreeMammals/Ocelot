@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Requester.QoS;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-
-    using Configuration;
-
-    using Logging;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using QoS;
-
-    using Responses;
-
     public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {
         private readonly ITracingHandlerFactory _tracingFactory;

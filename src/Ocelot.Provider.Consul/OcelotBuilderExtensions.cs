@@ -1,12 +1,12 @@
-﻿namespace Ocelot.Provider.Consul
+﻿using Ocelot.Configuration.Repository;
+
+using Ocelot.DependencyInjection;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Ocelot.Provider.Consul
 {
-    using Configuration.Repository;
-
-    using DependencyInjection;
-
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DependencyInjection.Extensions;
-
     public static class OcelotBuilderExtensions
     {
         public static IOcelotBuilder AddConsul(this IOcelotBuilder builder)

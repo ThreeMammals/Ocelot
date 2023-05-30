@@ -1,23 +1,23 @@
-﻿namespace Ocelot.Headers
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+
+using Ocelot.Infrastructure;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+
+using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Configuration;
-    using Configuration.Creator;
-
-    using Infrastructure;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Primitives;
-
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
     public class AddHeadersToRequest : IAddHeadersToRequest
     {
         private readonly IClaimsParser _claimsParser;

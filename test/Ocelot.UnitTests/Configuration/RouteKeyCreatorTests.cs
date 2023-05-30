@@ -1,18 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.LoadBalancer.LoadBalancers;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class RouteKeyCreatorTests
     {
         private readonly RouteKeyCreator _creator;

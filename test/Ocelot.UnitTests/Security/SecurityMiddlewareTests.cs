@@ -18,11 +18,10 @@ using Ocelot.Security.Middleware;
 using TestStack.BDDfy;
 
 using Xunit;
+using Shouldly;
 
 namespace Ocelot.UnitTests.Security
 {
-    using Shouldly;
-
     public class SecurityMiddlewareTests
     {
         private readonly List<Mock<ISecurityPolicy>> _securityPolicyList;
