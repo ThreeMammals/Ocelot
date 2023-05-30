@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandler",
-                    "FakeDelegatingHandlerTwo"
+                    "FakeDelegatingHandlerTwo",
                 })
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
@@ -101,7 +101,7 @@ namespace Ocelot.UnitTests.Requester
                 {
                     "FakeDelegatingHandlerTwo",
                     "FakeDelegatingHandler",
-                    "FakeDelegatingHandlerFour"
+                    "FakeDelegatingHandlerFour",
                 })
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
@@ -137,7 +137,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandlerTwo",
-                    "FakeDelegatingHandler"
+                    "FakeDelegatingHandler",
                 })
                 .WithLoadBalancerKey(string.Empty)
                 .Build();
@@ -233,7 +233,7 @@ namespace Ocelot.UnitTests.Requester
                 .WithDelegatingHandlers(new List<string>
                 {
                     "FakeDelegatingHandler",
-                    "FakeDelegatingHandlerTwo"
+                    "FakeDelegatingHandlerTwo",
                 })
                 .WithLoadBalancerKey(string.Empty)
                 .Build();

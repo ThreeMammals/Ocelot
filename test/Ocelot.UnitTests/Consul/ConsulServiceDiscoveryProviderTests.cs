@@ -71,7 +71,7 @@
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -120,7 +120,7 @@
                     Address = "http://localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -132,7 +132,7 @@
                     Address = "http://localhost",
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -155,7 +155,7 @@
                     Address = string.Empty,
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -167,7 +167,7 @@
                     Address = null,
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -190,7 +190,7 @@
                     Address = "localhost",
                     Port = -1,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -202,7 +202,7 @@
                     Address = "localhost",
                     Port = 0,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 

@@ -55,7 +55,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -70,7 +70,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -85,7 +85,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "//test"
+                DownstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -104,7 +104,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = downstreamPathTemplate
+                DownstreamPathTemplate = downstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -120,7 +120,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "test"
+                UpstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -136,7 +136,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "//test"
+                UpstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -156,7 +156,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = upstreamPathTemplate
+                UpstreamPathTemplate = upstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -175,8 +175,8 @@
                 UpstreamPathTemplate = "/test",
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    EnableRateLimiting = true
-                }
+                    EnableRateLimiting = true,
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -196,8 +196,8 @@
                 RateLimitOptions = new FileRateLimitRule
                 {
                     EnableRateLimiting = true,
-                    Period = "test"
-                }
+                    Period = "test",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -216,8 +216,8 @@
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "JwtLads"
-                }
+                    AuthenticationProviderKey = "JwtLads",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -250,7 +250,7 @@
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                ServiceName = "Lads"
+                ServiceName = "Lads",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -271,9 +271,9 @@
                     new()
                     {
                         Host = "localhost",
-                        Port = 5000
-                    }
-                }
+                        Port = 5000,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -293,16 +293,16 @@
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = key
+                    AuthenticationProviderKey = key,
                 },
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
                     new()
                     {
                         Host = "localhost",
-                        Port = 5000
-                    }
-                }
+                        Port = 5000,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -381,7 +381,7 @@
         {
             var schemes = new List<AuthenticationScheme>
             {
-                new(key, key, typeof(FakeAutheHandler))
+                new(key, key, typeof(FakeAutheHandler)),
             };
 
             _authProvider

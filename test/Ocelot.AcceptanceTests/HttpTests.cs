@@ -125,7 +125,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "2.0",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };
@@ -167,7 +167,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.1",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };
@@ -209,7 +209,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.1",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };

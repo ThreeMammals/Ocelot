@@ -117,17 +117,17 @@
                         DangerousAcceptAnyServerCertificateValidator = true,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "a","b" }
+                            { "a","b" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "c","d" }
+                            { "c","d" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "e","f" }
+                            { "e","f" },
                         },
-                        UpstreamHttpMethod = new List<string> { "GET", "POST" }
+                        UpstreamHttpMethod = new List<string> { "GET", "POST" },
                     },
                     new()
                     {
@@ -135,19 +135,19 @@
                         DangerousAcceptAnyServerCertificateValidator = false,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "g","h" }
+                            { "g","h" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "i","j" }
+                            { "i","j" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "k","l" }
+                            { "k","l" },
                         },
-                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" }
-                    }
-                }
+                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))

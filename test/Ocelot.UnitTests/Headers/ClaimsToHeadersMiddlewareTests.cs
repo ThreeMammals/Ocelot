@@ -54,7 +54,7 @@
                             .WithDownstreamPathTemplate("any old string")
                             .WithClaimsToHeaders(new List<ClaimToThing>
                             {
-                                new("UserId", "Subject", string.Empty, 0)
+                                new("UserId", "Subject", string.Empty, 0),
                             })
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())

@@ -23,8 +23,8 @@ namespace Ocelot.DependencyInjection
             {
                 InitialData = new List<KeyValuePair<string, string>>
                 {
-                    new("BaseUrl", baseUrl)
-                }
+                    new("BaseUrl", baseUrl),
+                },
             };
 
             builder.Add(memorySource);

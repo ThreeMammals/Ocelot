@@ -64,8 +64,8 @@ namespace Ocelot.Benchmarks
                 Request =
                 {
                     Path = new PathString("/test"),
-                    QueryString = new QueryString("?a=b")
-                }
+                    QueryString = new QueryString("?a=b"),
+                },
             };
             httpContext.Request.Headers.Add("Host", "most");
             httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null));

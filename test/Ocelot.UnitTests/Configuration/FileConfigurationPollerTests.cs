@@ -70,11 +70,11 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -96,11 +96,11 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -122,11 +122,11 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())

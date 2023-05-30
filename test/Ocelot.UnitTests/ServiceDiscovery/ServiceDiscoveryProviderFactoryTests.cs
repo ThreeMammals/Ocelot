@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var downstreamAddresses = new List<DownstreamHostAndPort>
             {
                 new("asdf.com", 80),
-                new("abc.com", 80)
+                new("abc.com", 80),
             };
 
             var route = new DownstreamRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();

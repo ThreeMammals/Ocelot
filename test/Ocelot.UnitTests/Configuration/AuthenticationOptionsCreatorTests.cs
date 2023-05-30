@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     AuthenticationProviderKey = "Test",
                     AllowedScopes = new List<string> { "cheese" },
-                }
+                },
             };
 
             var expected = new AuthenticationOptionsBuilder()

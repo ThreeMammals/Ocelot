@@ -28,7 +28,7 @@
             {
                 {typeof(TaskCanceledException), e => new RequestTimedOutError(e)},
                 {typeof(TimeoutRejectedException), e => new RequestTimedOutError(e)},
-                {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)}
+                {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)},
             };
 
             builder.Services.AddSingleton(errorMapping);

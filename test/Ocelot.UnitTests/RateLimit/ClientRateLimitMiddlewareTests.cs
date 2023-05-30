@@ -103,8 +103,8 @@ namespace Ocelot.UnitTests.RateLimit
                 {
                     Response =
                     {
-                        Body = new FakeStream()
-                    }
+                        Body = new FakeStream(),
+                    },
                 };
                 httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
                 httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
@@ -134,8 +134,8 @@ namespace Ocelot.UnitTests.RateLimit
                 {
                     Response =
                     {
-                        Body = new FakeStream()
-                    }
+                        Body = new FakeStream(),
+                    },
                 };
                 httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
                 httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);

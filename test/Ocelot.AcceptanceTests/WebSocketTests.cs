@@ -50,11 +50,11 @@ namespace Ocelot.AcceptanceTests
                             new()
                             {
                                 Host = downstreamHost,
-                                Port = downstreamPort
-                            }
-                        }
-                    }
-                }
+                                Port = downstreamPort,
+                            },
+                        },
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
@@ -87,17 +87,17 @@ namespace Ocelot.AcceptanceTests
                             new()
                             {
                                 Host = downstreamHost,
-                                Port = downstreamPort
+                                Port = downstreamPort,
                             },
                             new()
                             {
                                 Host = secondDownstreamHost,
-                                Port = secondDownstreamPort
-                            }
+                                Port = secondDownstreamPort,
+                            },
                         },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" }
-                    }
-                }
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))

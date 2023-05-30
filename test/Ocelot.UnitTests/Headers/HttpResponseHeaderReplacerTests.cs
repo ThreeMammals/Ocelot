@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>();
@@ -92,12 +92,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -119,12 +119,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -146,12 +146,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -173,12 +173,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -200,12 +200,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -227,12 +227,12 @@ namespace Ocelot.UnitTests.Headers
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Location", new List<string> {downstreamUrl})
+                    new("Location", new List<string> {downstreamUrl}),
                 }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))

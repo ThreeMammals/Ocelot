@@ -254,14 +254,14 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
             };
         }
 
@@ -277,11 +277,11 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             Host = "localhost",
                             Port = 80,
-                        }
+                        },
                     },
                     DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/test/test/{test}"
-                }
+                    DownstreamPathTemplate = "/test/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration
@@ -290,14 +290,14 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
             };
         }
 

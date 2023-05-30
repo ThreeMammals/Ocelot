@@ -62,20 +62,20 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 6773,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         UpstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            {"X-Forwarded-For", "{RemoteIpAddress}"}
+                            {"X-Forwarded-For", "{RemoteIpAddress}"},
                         },
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            AllowAutoRedirect = false
-                        }
-                    }
-                }
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:6773", 200, "X-Forwarded-For"))

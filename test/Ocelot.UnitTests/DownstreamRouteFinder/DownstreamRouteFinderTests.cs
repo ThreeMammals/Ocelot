@@ -68,7 +68,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
                 .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
@@ -152,7 +152,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -194,7 +194,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -237,7 +237,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -287,7 +287,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Post" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -356,7 +356,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -397,7 +397,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string>())
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -438,7 +438,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .Build())
                         .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                        .Build()
+                        .Build(),
                 }, string.Empty, serviceProviderConfig
                     ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -470,7 +470,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHost("MATCH")
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -513,7 +513,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                                 .Build())
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -565,7 +565,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string>()) // empty list of methods
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHost("MATCH")
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -595,7 +595,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string>())
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHost("MATCH")
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -625,7 +625,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string>())
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHost("MATCH")
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
@@ -665,7 +665,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHost("MATCH")
-                            .Build()
+                            .Build(),
                     }, string.Empty, serviceProviderConfig
                 ))
                 .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))

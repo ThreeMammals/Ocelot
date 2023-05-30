@@ -43,13 +43,13 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = true
-                        }
-                    }
+                            DangerousAcceptAnyServerCertificateValidator = true,
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
@@ -80,13 +80,13 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = false
-                        }
-                    }
+                            DangerousAcceptAnyServerCertificateValidator = false,
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))

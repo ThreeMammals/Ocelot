@@ -57,8 +57,8 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -67,9 +67,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "ServiceFabric",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -91,8 +91,8 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -101,9 +101,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -125,9 +125,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -150,8 +150,8 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -160,9 +160,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -185,9 +185,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -211,8 +211,8 @@
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -221,9 +221,9 @@
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -252,7 +252,7 @@
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -260,10 +260,10 @@
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
-                        }
-                    }
-                }
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -290,21 +290,21 @@
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         Key = "Laura",
-                    }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -331,7 +331,7 @@
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -339,10 +339,10 @@
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
-                        }
-                    }
-                }
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -370,21 +370,21 @@
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         Key = "Laura",
-                    }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -412,11 +412,11 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            Key = "Laura",
                         },
                         new()
                         {
@@ -428,12 +428,12 @@
                                 {
                                     Host = "localhost",
                                     Port = 51880,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom"
-                        }
+                            Key = "Tom",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -444,10 +444,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
-                            }
-                        }
-                    }
+                                "Laura",
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -473,11 +473,11 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            Key = "Laura",
                         },
                         new()
                         {
@@ -489,13 +489,13 @@
                                 {
                                     Host = "localhost",
                                     Port = 51880,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Tom",
-                            UpstreamHost = "localhost"
-                        }
+                            UpstreamHost = "localhost",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -506,10 +506,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
+                                "Laura",
                             },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -536,11 +536,11 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            Key = "Laura",
                         },
                         new()
                         {
@@ -552,13 +552,13 @@
                                 {
                                     Host = "localhost",
                                     Port = 51880,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Post" },
                             Key = "Tom",
-                            UpstreamHost = "localhost"
-                        }
+                            UpstreamHost = "localhost",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -569,10 +569,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
+                                "Laura",
                             },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -598,11 +598,11 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            Key = "Laura",
                         },
                         new()
                         {
@@ -614,12 +614,12 @@
                                 {
                                     Host = "localhost",
                                     Port = 51880,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/lol",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom"
-                        }
+                            Key = "Tom",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -630,8 +630,8 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
-                            }
+                                "Laura",
+                            },
                         },
                         new()
                         {
@@ -640,10 +640,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
-                            }
-                        }
-                    }
+                                "Laura",
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -670,12 +670,12 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
-                        }
+                            Key = "Laura",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -686,10 +686,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
-                            }
-                        }
-                    }
+                                "Laura",
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -716,11 +716,11 @@
                                 {
                                     Host = "localhost",
                                     Port = 51878,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/laura",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura"
+                            Key = "Laura",
                         },
                         new()
                         {
@@ -732,13 +732,13 @@
                                 {
                                     Host = "localhost",
                                     Port = 51880,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/tom",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             RequestIdKey = "should_fail",
-                            Key = "Tom"
-                        }
+                            Key = "Tom",
+                        },
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
@@ -749,10 +749,10 @@
                             RouteKeys = new List<string>
                             {
                                 "Tom",
-                                "Laura"
-                            }
-                        }
-                    }
+                                "Laura",
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenAConfiguration(configuration))
@@ -772,9 +772,9 @@
                     new()
                     {
                         DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
-                        UpstreamPathTemplate = "http://asdf.com"
-                    }
-                }
+                        UpstreamPathTemplate = "http://asdf.com",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -804,11 +804,11 @@
                         {
                             new()
                             {
-                                Host = "bbc.co.uk"
-                            }
+                                Host = "bbc.co.uk",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -825,9 +825,9 @@
                     new()
                     {
                         DownstreamPathTemplate = "api/products/",
-                        UpstreamPathTemplate = "/asdf/"
-                    }
-                }
+                        UpstreamPathTemplate = "/asdf/",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -846,8 +846,8 @@
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "api/prod/",
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -871,11 +871,11 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                                Port = 80
-                            }
+                                Port = 80,
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -899,11 +899,11 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                                Port = 80
-                            }
+                                Port = 80,
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -927,14 +927,14 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
-                            AuthenticationProviderKey = "Test"
-                        }
-                    }
-                }
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
             }))
                 .And(x => x.GivenTheAuthSchemeExists("Test"))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -955,10 +955,10 @@
                         UpstreamPathTemplate = "/asdf/",
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
-                            AuthenticationProviderKey = "Test"
-                        }
-                    }
-                }
+                            AuthenticationProviderKey = "Test",
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -981,8 +981,8 @@
                         {
                             new()
                             {
-                                Host = "bb.co.uk"
-                            }
+                                Host = "bb.co.uk",
+                            },
                         },
                     },
                     new()
@@ -993,11 +993,11 @@
                         {
                             new()
                             {
-                                Host = "bb.co.uk"
-                            }
+                                Host = "bb.co.uk",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1020,10 +1020,10 @@
                             {
                                 new()
                                 {
-                                    Host = "bb.co.uk"
-                                }
+                                    Host = "bb.co.uk",
+                                },
                             },
-                            UpstreamHost = "host1"
+                            UpstreamHost = "host1",
                         },
                         new()
                         {
@@ -1033,12 +1033,12 @@
                             {
                                 new()
                                 {
-                                    Host = "bb.co.uk"
-                                }
+                                    Host = "bb.co.uk",
+                                },
                             },
-                            UpstreamHost = "host2"
-                        }
-                    }
+                            UpstreamHost = "host2",
+                        },
+                    },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1061,9 +1061,9 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
-                        UpstreamHttpMethod = new List<string> {"Get"}
+                        UpstreamHttpMethod = new List<string> {"Get"},
                     },
                     new()
                     {
@@ -1074,11 +1074,11 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
-                }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1103,7 +1103,7 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                     },
                     new()
@@ -1116,10 +1116,10 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1142,10 +1142,10 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
+                        UpstreamHost = "upstreamhost",
                     },
                     new()
                     {
@@ -1156,12 +1156,12 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
-                    }
-                }
+                        UpstreamHost = "upstreamhost",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1185,10 +1185,10 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost111"
+                        UpstreamHost = "upstreamhost111",
                     },
                     new()
                     {
@@ -1199,12 +1199,12 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost222"
-                    }
-                }
+                        UpstreamHost = "upstreamhost222",
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1227,10 +1227,10 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost"
+                        UpstreamHost = "upstreamhost",
                     },
                     new()
                     {
@@ -1241,11 +1241,11 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
-                        UpstreamHttpMethod = new List<string>()
-                    }
-                }
+                        UpstreamHttpMethod = new List<string>(),
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1269,15 +1269,15 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1x",
-                            EnableRateLimiting = true
-                        }
-                    }
-                }
+                            EnableRateLimiting = true,
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1302,15 +1302,15 @@
                             new()
                             {
                                 Host = "bbc.co.uk",
-                            }
+                            },
                         },
                         RateLimitOptions = new FileRateLimitRule
                         {
                             Period = "1d",
-                            EnableRateLimiting = true
-                        }
-                    }
-                }
+                            EnableRateLimiting = true,
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1329,8 +1329,8 @@
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         UpstreamHttpMethod = new List<string> {"Get"},
-                        ServiceName = "Test"
-                    }
+                        ServiceName = "Test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -1339,9 +1339,9 @@
                         Scheme = "https",
                         Type = "servicefabric",
                         Host = "localhost",
-                        Port = 1234
-                    }
-                }
+                        Port = 1234,
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1367,10 +1367,10 @@
                             new()
                             {
                                 Host = downstreamHost,
-                            }
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1394,11 +1394,11 @@
                         {
                             new()
                             {
-                                Host = "bbc.co.uk"
-                            }
+                                Host = "bbc.co.uk",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1421,11 +1421,11 @@
                         {
                             new()
                             {
-                                Host = "test"
-                            }
-                        }
-                    }
-                }
+                                Host = "test",
+                            },
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -1446,9 +1446,9 @@
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1470,10 +1470,10 @@
                         UpstreamHttpMethod = new List<string> {"Get"},
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new()
-                        }
-                    }
-                }
+                            new(),
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -1541,7 +1541,7 @@
         {
             _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(new List<AuthenticationScheme>
             {
-                new(name, name, typeof(TestHandler))
+                new(name, name, typeof(TestHandler)),
             });
         }
 

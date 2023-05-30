@@ -58,20 +58,20 @@
                         ServiceName = "1",
                         RateLimitRule = new FileRateLimitRule
                         {
-                            EnableRateLimiting = false
+                            EnableRateLimiting = false,
                         },
-                        DownstreamHttpVersion = "1.1"
+                        DownstreamHttpVersion = "1.1",
                     },
                     new()
                     {
                         ServiceName = "2",
                         RateLimitRule = new FileRateLimitRule
                         {
-                            EnableRateLimiting = true
+                            EnableRateLimiting = true,
                         },
-                        DownstreamHttpVersion = "2.0"
-                    }
-                }
+                        DownstreamHttpVersion = "2.0",
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))

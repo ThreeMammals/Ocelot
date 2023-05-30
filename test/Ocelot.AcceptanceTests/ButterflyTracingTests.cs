@@ -56,14 +56,14 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port1,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api001/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing = true
-                            }
+                                UseTracing = true,
+                            },
                         },
                         new()
                         {
@@ -75,16 +75,16 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port2,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api002/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing = true
-                            }
-                        }
-                    }
+                                UseTracing = true,
+                            },
+                        },
+                    },
             };
 
             var butterflyPort = RandomPortFinder.GetRandomPort();
@@ -128,21 +128,21 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api001/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing = true
+                                UseTracing = true,
                             },
                             DownstreamHeaderTransform = new Dictionary<string, string>
                             {
                                 {"Trace-Id", "{TraceId}"},
-                                {"Tom", "Laura"}
-                            }
-                        }
-                    }
+                                {"Tom", "Laura"},
+                            },
+                        },
+                    },
             };
 
             var butterflyPort = RandomPortFinder.GetRandomPort();

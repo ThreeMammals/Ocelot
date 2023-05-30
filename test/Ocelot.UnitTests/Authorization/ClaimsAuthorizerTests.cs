@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.Authorization
                 }))))
                 .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
-                    {"UserType", "registered"}
+                    {"UserType", "registered"},
                 }))
                 .When(x => x.WhenICallTheAuthorizer())
                 .Then(x => x.ThenTheUserIsAuthorized())
@@ -53,11 +53,11 @@ namespace Ocelot.UnitTests.Authorization
                 }))))
                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
-                    {"userid", "{userId}"}
+                    {"userid", "{userId}"},
                 }))
                .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
                 {
-                   new("{userId}", "14")
+                   new("{userId}", "14"),
                 }))
                .When(x => x.WhenICallTheAuthorizer())
                .Then(x => x.ThenTheUserIsAuthorized())
@@ -73,11 +73,11 @@ namespace Ocelot.UnitTests.Authorization
                 }))))
                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
-                    {"userid", "{userId}"}
+                    {"userid", "{userId}"},
                 }))
                .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
                 {
-                    new("{userId}", "14")
+                    new("{userId}", "14"),
                 }))
                .When(x => x.WhenICallTheAuthorizer())
                .Then(x => x.ThenTheUserIsntAuthorized())
@@ -94,7 +94,7 @@ namespace Ocelot.UnitTests.Authorization
                 }))))
                 .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
-                    {"UserType", "registered"}
+                    {"UserType", "registered"},
                 }))
                 .When(x => x.WhenICallTheAuthorizer())
                 .Then(x => x.ThenTheUserIsAuthorized())
@@ -107,7 +107,7 @@ namespace Ocelot.UnitTests.Authorization
             this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()))))
             .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
                 {
-                    { "UserType", "registered" }
+                    { "UserType", "registered" },
                 }))
             .When(x => x.WhenICallTheAuthorizer())
             .Then(x => x.ThenTheUserIsntAuthorized())

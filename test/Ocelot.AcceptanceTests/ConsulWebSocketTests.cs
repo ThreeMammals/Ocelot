@@ -58,7 +58,7 @@
                     Address = downstreamHost,
                     Port = downstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
             var serviceEntryTwo = new ServiceEntry
@@ -69,7 +69,7 @@
                     Address = secondDownstreamHost,
                     Port = secondDownstreamPort,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>()
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -84,7 +84,7 @@
                         DownstreamScheme = "ws",
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
                         ServiceName = serviceName,
-                    }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -93,9 +93,9 @@
                         Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
-                        Type = "consul"
-                    }
-                }
+                        Type = "consul",
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))

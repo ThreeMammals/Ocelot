@@ -76,7 +76,7 @@
 
             var kvPair = new KVPair(_configurationKey)
             {
-                Value = bytes
+                Value = bytes,
             };
 
             var result = await _consul.KV.Put(kvPair);

@@ -108,7 +108,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _fileConfig = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration(),
             };
             _routes = new List<Route>();
             _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);

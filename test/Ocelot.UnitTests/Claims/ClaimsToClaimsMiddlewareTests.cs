@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Claims
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToClaims(new List<ClaimToThing>
                         {
-                            new("sub", "UserType", "|", 0)
+                            new("sub", "UserType", "|", 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())

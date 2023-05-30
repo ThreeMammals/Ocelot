@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             var routes = new List<Route>
             {
-                new RouteBuilder().Build()
+                new RouteBuilder().Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes))
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var routes = new List<Route>
             {
-                new RouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
+                new RouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))
@@ -138,7 +138,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var routes = new List<Route>
             {
-                new RouteBuilder().Build()
+                new RouteBuilder().Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))

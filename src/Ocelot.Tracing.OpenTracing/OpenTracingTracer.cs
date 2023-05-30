@@ -67,7 +67,7 @@
                         {
                             { LogFields.Event, Tags.Error.Key },
                             { LogFields.ErrorKind, ex.GetType().Name },
-                            { LogFields.ErrorObject, ex }
+                            { LogFields.ErrorObject, ex },
                         });
                     throw;
                 }

@@ -243,7 +243,7 @@ namespace Ocelot.AcceptanceTests
                            UpstreamHttpMethod = new List<string> { "Post" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
-                               AuthenticationProviderKey = "Test"
+                               AuthenticationProviderKey = "Test",
                            },
                        },
                    },

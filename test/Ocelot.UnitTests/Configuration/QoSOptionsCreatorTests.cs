@@ -31,8 +31,8 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     ExceptionsAllowedBeforeBreaking = 1,
                     DurationOfBreak = 1,
-                    TimeoutValue = 1
-                }
+                    TimeoutValue = 1,
+                },
             };
             var expected = new QoSOptionsBuilder()
                 .WithDurationOfBreak(1)

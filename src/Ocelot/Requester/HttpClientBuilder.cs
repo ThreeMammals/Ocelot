@@ -62,7 +62,7 @@
 
             _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute))
             {
-                Timeout = timeout
+                Timeout = timeout,
             };
 
             _client = new HttpClientWrapper(_httpClient);

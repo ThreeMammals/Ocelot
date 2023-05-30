@@ -26,7 +26,7 @@ namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions
                 _collection.WithTemplateParameters(new
                 {
                     Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
-                    ServiceName = serviceName
+                    ServiceName = serviceName,
                 }),
                 cancellationToken
             );

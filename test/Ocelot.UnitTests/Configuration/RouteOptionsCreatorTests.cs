@@ -31,21 +31,21 @@ namespace Ocelot.UnitTests.Configuration
             {
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    EnableRateLimiting = true
+                    EnableRateLimiting = true,
                 },
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "Test"
+                    AuthenticationProviderKey = "Test",
                 },
                 RouteClaimsRequirement = new Dictionary<string, string>
                 {
-                    {string.Empty,string.Empty}
+                    {string.Empty,string.Empty},
                 },
                 FileCacheOptions = new FileCacheOptions
                 {
-                    TtlSeconds = 1
+                    TtlSeconds = 1,
                 },
-                ServiceName = "west"
+                ServiceName = "west",
             };
 
             var expected = new RouteOptionsBuilder()

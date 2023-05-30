@@ -170,7 +170,7 @@
         {
             var response = new WriteResult<bool>
             {
-                Response = true
+                Response = true,
             };
 
             _kvEndpoint
@@ -199,12 +199,12 @@
 
             var kvp = new KVPair("OcelotConfiguration")
             {
-                Value = bytes
+                Value = bytes,
             };
 
             var query = new QueryResult<KVPair>
             {
-                Response = kvp
+                Response = kvp,
             };
 
             _kvEndpoint
@@ -246,11 +246,11 @@
                         {
                             Host = "123.12.12.12",
                             Port = 80,
-                        }
+                        },
                     },
                     DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}"
-                }
+                    DownstreamPathTemplate = "/asdfs/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration
@@ -259,14 +259,14 @@
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
             };
         }
     }

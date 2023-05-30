@@ -15,7 +15,7 @@ namespace Ocelot.Headers
         /// </summary>
         private readonly string[] _unsupportedRequestHeaders =
         {
-            "Transfer-Encoding"
+            "Transfer-Encoding",
         };
 
         public Response Remove(List<Header> headers)

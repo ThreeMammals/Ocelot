@@ -117,7 +117,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var availableServices = new List<Service>
             {
-                new(serviceName, hostAndPort, string.Empty, string.Empty, Array.Empty<string>())
+                new(serviceName, hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
@@ -136,7 +136,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             {
                 new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
                 new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
-                new(serviceName, new ServiceHostAndPort("127.0.0.3", 80), string.Empty, string.Empty, Array.Empty<string>())
+                new(serviceName, new ServiceHostAndPort("127.0.0.3", 80), string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             _services = availableServices;

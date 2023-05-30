@@ -53,12 +53,12 @@
         {
             var headers = new Dictionary<string, IEnumerable<string>>
             {
-                { "test", new List<string> { "test" } }
+                { "test", new List<string> { "test" } },
             };
 
             var contentHeaders = new Dictionary<string, IEnumerable<string>>
             {
-                { "content-type", new List<string> { "application/json" } }
+                { "content-type", new List<string> { "application/json" } },
             };
 
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
@@ -74,7 +74,7 @@
         {
             var contentHeaders = new Dictionary<string, IEnumerable<string>>
             {
-                { "Expires", new List<string> { "-1" } }
+                { "Expires", new List<string> { "-1" } },
             };
 
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), string.Empty, contentHeaders, "some reason");

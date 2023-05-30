@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 Type = "test",
                 Key = "west",
-                Expiry = 1
+                Expiry = 1,
             };
 
             this.Given(_ => GivenThe(fileLoadBalancerOptions))

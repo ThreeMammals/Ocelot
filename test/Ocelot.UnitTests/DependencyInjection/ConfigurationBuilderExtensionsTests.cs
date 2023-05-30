@@ -101,17 +101,17 @@
                         ClientIdHeader = "ClientIdHeader",
                         DisableRateLimitHeaders = true,
                         QuotaExceededMessage = "QuotaExceededMessage",
-                        RateLimitCounterPrefix = "RateLimitCounterPrefix"
+                        RateLimitCounterPrefix = "RateLimitCounterPrefix",
                     },
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "https",
                         Host = "Host",
                         Port = 80,
-                        Type = "Type"
+                        Type = "Type",
                     },
-                    RequestIdKey = "RequestIdKey"
-                }
+                    RequestIdKey = "RequestIdKey",
+                },
             };
 
             _routeA = new FileConfiguration
@@ -126,18 +126,18 @@
                         UpstreamHost = "UpstreamHost",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethod"
+                            "UpstreamHttpMethod",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new()
                             {
                                 Host = "Host",
-                                Port = 80
-                            }
-                        }
-                    }
-                }
+                                Port = 80,
+                            },
+                        },
+                    },
+                },
             };
 
             _routeB = new FileConfiguration
@@ -152,16 +152,16 @@
                         UpstreamHost = "UpstreamHostB",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethodB"
+                            "UpstreamHttpMethodB",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new()
                             {
                                 Host = "HostB",
-                                Port = 80
-                            }
-                        }
+                                Port = 80,
+                            },
+                        },
                     },
                     new()
                     {
@@ -171,18 +171,18 @@
                         UpstreamHost = "UpstreamHostBB",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethodBB"
+                            "UpstreamHttpMethodBB",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
                             new()
                             {
                                 Host = "HostBB",
-                                Port = 80
-                            }
-                        }
-                    }
-                }
+                                Port = 80,
+                            },
+                        },
+                    },
+                },
             };
 
             _aggregate = new FileConfiguration
@@ -194,7 +194,7 @@
                         RouteKeys = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
                     },
@@ -203,11 +203,11 @@
                         RouteKeys = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
-                    }
-                }
+                    },
+                },
             };
 
             _envSpecific = new FileConfiguration
@@ -222,18 +222,18 @@
                             UpstreamHost = "UpstreamHostSpec",
                             UpstreamHttpMethod = new List<string>
                             {
-                                "UpstreamHttpMethodSpec"
+                                "UpstreamHttpMethodSpec",
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "HostSpec",
-                                    Port = 80
-                                }
-                            }
-                        }
-                    }
+                                    Port = 80,
+                                },
+                            },
+                        },
+                    },
             };
 
             var globalFilename = Path.Combine(folder, "ocelot.global.json");

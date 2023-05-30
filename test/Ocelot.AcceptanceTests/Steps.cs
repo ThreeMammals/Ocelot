@@ -878,7 +878,7 @@ namespace Ocelot.AcceptanceTests
                 new("scope", "api2"),
                 new("username", "test"),
                 new("password", "test"),
-                new("grant_type", "password")
+                new("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 

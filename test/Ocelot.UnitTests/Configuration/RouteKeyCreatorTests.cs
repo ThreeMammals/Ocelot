@@ -32,8 +32,8 @@ namespace Ocelot.UnitTests.Configuration
                 LoadBalancerOptions = new FileLoadBalancerOptions
                 {
                     Key = "testy",
-                    Type = nameof(CookieStickySessions)
-                }
+                    Type = nameof(CookieStickySessions),
+                },
             };
 
             this.Given(_ => GivenThe(route))
@@ -54,14 +54,14 @@ namespace Ocelot.UnitTests.Configuration
                     new()
                     {
                         Host = "localhost",
-                        Port = 123
+                        Port = 123,
                     },
                     new()
                     {
                         Host = "localhost",
-                        Port = 123
-                    }
-                }
+                        Port = 123,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(route))

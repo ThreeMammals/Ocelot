@@ -54,13 +54,13 @@ namespace Ocelot.Benchmarks
                                 {
                                     Host = "localhost",
                                     Port = 51879,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty);

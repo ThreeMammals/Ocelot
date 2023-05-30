@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.QueryStrings
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToQueries(new List<ClaimToThing>
                         {
-                            new("UserId", "Subject", string.Empty, 0)
+                            new("UserId", "Subject", string.Empty, 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())

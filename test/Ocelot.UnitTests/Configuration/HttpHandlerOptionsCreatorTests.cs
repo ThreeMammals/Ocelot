@@ -44,8 +44,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseTracing = true
-                }
+                    UseTracing = true,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -63,8 +63,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseTracing = true
-                }
+                    UseTracing = true,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue);
@@ -97,8 +97,8 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     AllowAutoRedirect = false,
                     UseCookieContainer = false,
-                    UseTracing = false
-                }
+                    UseTracing = false,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var fileRoute = new FileRoute
             {
-                HttpHandlerOptions = new FileHttpHandlerOptions()
+                HttpHandlerOptions = new FileHttpHandlerOptions(),
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -132,8 +132,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseProxy = false
-                }
+                    UseProxy = false,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue);
@@ -151,8 +151,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = 10
-                }
+                    MaxConnectionsPerServer = 10,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10);
@@ -170,8 +170,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = -1
-                }
+                    MaxConnectionsPerServer = -1,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -189,8 +189,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = 0
-                }
+                    MaxConnectionsPerServer = 0,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);

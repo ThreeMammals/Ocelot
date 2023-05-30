@@ -41,7 +41,7 @@ namespace Ocelot.UnitTests.Security
             _securityPolicyList = new List<Mock<ISecurityPolicy>>
             {
                 new(),
-                new()
+                new(),
             };
             _next = context => Task.CompletedTask;
             _middleware = new SecurityMiddleware(_next, _loggerFactory.Object, _securityPolicyList.Select(f => f.Object).ToList());

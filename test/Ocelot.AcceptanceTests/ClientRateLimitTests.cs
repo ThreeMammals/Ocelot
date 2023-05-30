@@ -42,7 +42,7 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/api/ClientRateLimit",
@@ -54,9 +54,9 @@
                                 ClientWhitelist = new List<string>(),
                                 Limit = 3,
                                 Period = "1s",
-                                PeriodTimespan = 1000
-                            }
-                        }
+                                PeriodTimespan = 1000,
+                            },
+                        },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -66,10 +66,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = string.Empty,
                         RateLimitCounterPrefix = string.Empty,
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
@@ -102,7 +102,7 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/api/ClientRateLimit",
@@ -115,9 +115,9 @@
                                 ClientWhitelist = new List<string>(),
                                 Limit = 3,
                                 Period = "1s",
-                                PeriodTimespan = 2
-                            }
-                        }
+                                PeriodTimespan = 2,
+                            },
+                        },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -127,10 +127,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = string.Empty,
                         RateLimitCounterPrefix = string.Empty,
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
@@ -169,7 +169,7 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/api/ClientRateLimit",
@@ -182,9 +182,9 @@
                                 ClientWhitelist = new List<string> { "ocelotclient1"},
                                 Limit = 3,
                                 Period = "1s",
-                                PeriodTimespan = 100
-                            }
-                        }
+                                PeriodTimespan = 100,
+                            },
+                        },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -193,10 +193,10 @@
                         ClientIdHeader = "ClientId",
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = string.Empty,
-                        RateLimitCounterPrefix = string.Empty
+                        RateLimitCounterPrefix = string.Empty,
                     },
-                    RequestIdKey = "oceclientrequest"
-                }
+                    RequestIdKey = "oceclientrequest",
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))

@@ -197,7 +197,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _getLoadBalancerHouseError = new ErrorResponse<ILoadBalancer>(new List<Error>
             {
-                new UnableToFindLoadBalancerError("unabe to find load balancer for bah")
+                new UnableToFindLoadBalancerError("unabe to find load balancer for bah"),
             });
 
             _loadBalancerHouse

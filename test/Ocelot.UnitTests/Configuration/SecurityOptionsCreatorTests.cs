@@ -34,8 +34,8 @@ namespace Ocelot.UnitTests.Configuration
                 SecurityOptions = new FileSecurityOptions
                 {
                     IPAllowedList = ipAllowedList,
-                    IPBlockedList = ipBlockedList
-                }
+                    IPBlockedList = ipBlockedList,
+                },
             };
 
             var expected = new SecurityOptions(ipAllowedList, ipBlockedList);

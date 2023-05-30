@@ -47,14 +47,14 @@ namespace Ocelot.UnitTests.Multiplexing
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 commentsDownstreamRoute,
-                userDetailsDownstreamRoute
+                userDetailsDownstreamRoute,
             };
 
             var route = new RouteBuilder()
                 .WithDownstreamRoutes(downstreamRoutes)
                 .WithAggregateRouteConfig(new List<AggregateRouteConfig>
                 {
-                    new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
+                    new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
                 })
                 .Build();
 
@@ -93,7 +93,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 billDownstreamRoute,
-                georgeDownstreamRoute
+                georgeDownstreamRoute,
             };
 
             var route = new RouteBuilder()
@@ -132,7 +132,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 billDownstreamRoute,
-                georgeDownstreamRoute
+                georgeDownstreamRoute,
             };
 
             var route = new RouteBuilder()

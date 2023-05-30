@@ -48,7 +48,7 @@ namespace Ocelot.Request.Middleware
                 Host = Host,
                 Path = AbsolutePath,
                 Query = RemoveLeadingQuestionMark(Query),
-                Scheme = Scheme
+                Scheme = Scheme,
             };
 
             _request.RequestUri = uriBuilder.Uri;
@@ -64,7 +64,7 @@ namespace Ocelot.Request.Middleware
                 Host = Host,
                 Path = AbsolutePath,
                 Query = RemoveLeadingQuestionMark(Query),
-                Scheme = Scheme
+                Scheme = Scheme,
             };
 
             return uriBuilder.Uri.AbsoluteUri;

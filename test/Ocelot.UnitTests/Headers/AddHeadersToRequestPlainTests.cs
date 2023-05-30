@@ -97,9 +97,9 @@
                 {
                     Headers =
                     {
-                        { headerKey, headerValue }
-                    }
-                }
+                        { headerKey, headerValue },
+                    },
+                },
             };
         }
 

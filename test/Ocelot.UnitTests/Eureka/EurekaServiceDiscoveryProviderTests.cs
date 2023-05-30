@@ -47,7 +47,7 @@
         {
             var instances = new List<IServiceInstance>
             {
-                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>())
+                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
             };
 
             this.Given(_ => GivenThe(instances))
@@ -64,7 +64,7 @@
             var instances = new List<IServiceInstance>
             {
                 new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
-                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>())
+                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
             };
 
             this.Given(_ => GivenThe(instances))

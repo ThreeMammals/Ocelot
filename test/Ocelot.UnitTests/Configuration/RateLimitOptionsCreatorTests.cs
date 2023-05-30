@@ -38,8 +38,8 @@ namespace Ocelot.UnitTests.Configuration
                     Period = "Period",
                     Limit = 1,
                     PeriodTimespan = 1,
-                    EnableRateLimiting = true
-                }
+                    EnableRateLimiting = true,
+                },
             };
             var fileGlobalConfig = new FileGlobalConfiguration
             {
@@ -49,8 +49,8 @@ namespace Ocelot.UnitTests.Configuration
                     DisableRateLimitHeaders = true,
                     QuotaExceededMessage = "QuotaExceededMessage",
                     RateLimitCounterPrefix = "RateLimitCounterPrefix",
-                    HttpStatusCode = 200
-                }
+                    HttpStatusCode = 200,
+                },
             };
             var expected = new RateLimitOptionsBuilder()
                 .WithClientIdHeader("ClientIdHeader")

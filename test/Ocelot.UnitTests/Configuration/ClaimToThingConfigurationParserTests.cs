@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration
                         x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
                             new List<Error>
                             {
-                                new NoInstructionsError(">")
+                                new NoInstructionsError(">"),
                             })))
                 .BDDfy();
         }
@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
                         x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
                             new List<Error>
                             {
-                                new InstructionNotForClaimsError()
+                                new InstructionNotForClaimsError(),
                             })))
                 .BDDfy();
         }
