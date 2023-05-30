@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Consul
                 .Build();
 
             var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1), route);
-            provider.ShouldBeOfType<Consul>();
+            provider.ShouldBeOfType<Provider.Consul.Consul>();
         }
 
         [Fact]
