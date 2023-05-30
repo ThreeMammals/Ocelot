@@ -14,11 +14,11 @@
 
     class OpenTracingTracer : Logging.ITracer
     {
-        private readonly ITracer _tracer;
+        private readonly ITracer tracer;
 
         public OpenTracingTracer(ITracer tracer)
         {
-            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+            this.tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
         }
 
         public void Event(HttpContext httpContext, string @event)
@@ -32,7 +32,7 @@
             CancellationToken,
             Task<HttpResponseMessage>> baseSendAsync)
         {
-            using (var scope = _tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
+            using (var scope = this.tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
             {
                 var span = scope.Span;
 
@@ -44,7 +44,7 @@
 
                 var headers = new Dictionary<string, string>();
 
-                _tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
+                this.tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
 
                 foreach (var item in headers)
                 {
