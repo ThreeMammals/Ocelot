@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-
-using Moq;
-
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -9,13 +6,11 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
-
 using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 using System;
+using System.Collections.Generic;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
@@ -751,6 +746,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)
         {
             _upstreamUrlPath = upstreamUrlPath;
+            _upstreamQuery = string.Empty;
         }
 
         private void WhenICallTheFinder()
