@@ -222,7 +222,6 @@ namespace Ocelot.IntegrationTests
             Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", string.Empty);
             _builder?.Dispose();
             _httpClient?.Dispose();
-            //_identityServerBuilder?.Dispose();
         }
     }
 }

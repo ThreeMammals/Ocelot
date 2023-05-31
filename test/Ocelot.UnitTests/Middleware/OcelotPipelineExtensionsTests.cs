@@ -55,7 +55,6 @@ namespace Ocelot.UnitTests.Middleware
         private void WhenIExpandBuild()
         {
             var configuration = new OcelotPipelineConfiguration();
-            //Func<HttpContext,  bool>, Action<IApplicationBuilder>
             configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
             {
                 app.UseDownstreamRouteFinderMiddleware();

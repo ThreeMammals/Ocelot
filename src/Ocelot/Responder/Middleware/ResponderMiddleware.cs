@@ -40,6 +40,7 @@ namespace Ocelot.Responder.Middleware
             await _next.Invoke(httpContext);
 
             var errors = httpContext.Items.Errors();
+
             // todo check errors is ok
             if (errors.Count > 0)
             {

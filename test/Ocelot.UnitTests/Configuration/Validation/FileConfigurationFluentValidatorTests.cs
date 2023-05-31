@@ -33,6 +33,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
             var provider = new ServiceCollection()
                 .BuildServiceProvider();
+
             // Todo - replace with mocks
             _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }

@@ -34,6 +34,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         public ConfigurationBuilderExtensionsTests()
         {
             _hostingEnvironment = new Mock<IWebHostEnvironment>();
+
             // Clean up config files before each test
             var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
 
