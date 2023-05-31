@@ -10,7 +10,7 @@ using global::OpenTracing.Propagation;
 using global::OpenTracing.Tag;
 using Microsoft.AspNetCore.Http;
 
-class OpenTracingTracer : Logging.ITracer
+internal class OpenTracingTracer : Logging.ITracer
 {
     private readonly ITracer tracer;
 
