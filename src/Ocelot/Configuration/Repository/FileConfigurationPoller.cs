@@ -97,9 +97,9 @@ namespace Ocelot.Configuration.Repository
         }
 
         /// <summary>
-        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!
+        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
         /// </summary>
-        /// <returns>hash of the config</returns>
+        /// <returns>hash of the config.</returns>
         private static string ToJson(FileConfiguration config)
         {
             var currentHash = JsonConvert.SerializeObject(config);

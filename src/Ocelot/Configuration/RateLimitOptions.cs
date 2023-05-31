@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Ocelot.Configuration
 {
     /// <summary>
-    /// RateLimit Options
+    /// RateLimit Options.
     /// </summary>
     public class RateLimitOptions
     {
@@ -63,7 +63,7 @@ namespace Ocelot.Configuration
         /// <value>
         /// A string value with a formatter for the QuotaExceeded response message.
         /// <para>Default will be:
-        /// API calls quota exceeded! maximum admitted {0} per {1}
+        /// API calls quota exceeded! maximum admitted {0} per {1}.
         /// </value>
         public string QuotaExceededMessage { get; }
 

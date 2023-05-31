@@ -13,7 +13,7 @@ namespace Ocelot.Responder
 {
     /// <summary>
     /// Cannot unit test things in this class due to methods not being implemented
-    /// on .net concretes used for testing
+    /// on .net concretes used for testing.
     /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
