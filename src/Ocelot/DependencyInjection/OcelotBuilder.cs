@@ -253,7 +253,6 @@ namespace Ocelot.DependencyInjection
                 Services.AddTransient(delegateType);
                 Services.AddTransient(s =>
                 {
-
                     var service = s.GetService(delegateType) as DelegatingHandler;
                     return new GlobalDelegatingHandler(service);
                 });

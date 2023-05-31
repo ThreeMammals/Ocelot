@@ -196,7 +196,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator
             where T : ILoadBalancer, new()
         {
-
             public FakeLoadBalancerCreator()
             {
                 Type = typeof(T).Name;
