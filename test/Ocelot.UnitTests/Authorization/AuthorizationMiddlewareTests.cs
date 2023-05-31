@@ -82,12 +82,9 @@ namespace Ocelot.UnitTests.Authorization
 
         private void ThenTheAuthServiceIsCalledCorrectly()
         {
-            _authService
-                .Verify(x => x.Authorize(
-                    It.IsAny<ClaimsPrincipal>(),
-                    It.IsAny<Dictionary<string, string>>(),
-                    It.IsAny<List<PlaceholderNameAndValue>>())
-                        , Times.Once);
+            _authService.Verify(
+                x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<List<PlaceholderNameAndValue>>()),
+                Times.Once);
         }
     }
 }
