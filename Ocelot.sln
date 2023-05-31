@@ -64,7 +64,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{4B706988-4817-43A8-ABE1-32A67998C2C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "samples\OcelotKube\ApiGateway\ApiGateway.csproj", "{8500055B-2C51-4CF1-A6EE-F05BB3E9BF16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotKube.ApiGateway", "samples\OcelotKube\ApiGateway\Ocelot.Samples.OcelotKube.ApiGateway.csproj", "{8500055B-2C51-4CF1-A6EE-F05BB3E9BF16}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotKube.DownstreamService", "samples\OcelotKube\DownstreamService\Ocelot.Samples.OcelotKube.DownstreamService.csproj", "{7B319B8C-8155-4779-BD93-5ABD05CA2AB6}"
 EndProject
