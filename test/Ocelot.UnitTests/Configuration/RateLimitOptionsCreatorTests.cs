@@ -65,6 +65,8 @@ namespace Ocelot.UnitTests.Configuration
                        fileRoute.RateLimitOptions.Limit))
                 .Build();
 
+            _enabled = false;
+
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .And(x => x.GivenTheFollowingFileGlobalConfig(fileGlobalConfig))
                 .And(x => x.GivenRateLimitingIsEnabled())
@@ -95,6 +97,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingIsReturned(RateLimitOptions expected)
         {
+            _enabled.ShouldBeTrue();
             _result.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
             _result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
             _result.DisableRateLimitHeaders.ShouldBe(expected.DisableRateLimitHeaders);

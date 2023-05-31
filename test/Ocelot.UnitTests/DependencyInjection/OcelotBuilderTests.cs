@@ -42,7 +42,6 @@ namespace Ocelot.UnitTests.DependencyInjection
         private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
-        private readonly int _maxRetries;
         private Exception _ex;
 
         public OcelotBuilderTests()
@@ -51,7 +50,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             _services = new ServiceCollection();
             _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
-            _maxRetries = 100;
         }
 
         private static IWebHostEnvironment GetHostingEnvironment()
