@@ -62,8 +62,7 @@ namespace Ocelot.Configuration
         /// </summary>
         /// <value>
         /// A string value with a formatter for the QuotaExceeded response message.
-        /// <para>Default will be:
-        /// API calls quota exceeded! maximum admitted {0} per {1}.
+        /// <para>Default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
         /// </value>
         public string QuotaExceededMessage { get; }
 
