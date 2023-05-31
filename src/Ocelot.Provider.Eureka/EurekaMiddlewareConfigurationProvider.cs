@@ -21,7 +21,7 @@ namespace Ocelot.Provider.Eureka
 
             if (UsingEurekaServiceDiscoveryProvider(config.Data))
             {
-                builder.UseDiscoveryClient();
+                //builder.UseDiscoveryClient();
             }
 
             return Task.CompletedTask;
