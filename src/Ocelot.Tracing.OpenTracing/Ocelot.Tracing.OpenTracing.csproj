@@ -6,7 +6,7 @@
     <Authors>Kjell-Åke Gafvelin</Authors>
     <Description>This package provides OpenTracing support to Ocelot.</Description>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIcon>ocelot_logo.png</PackageIcon>
     <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
+    <None Include="..\..\images\ocelot_logo.png" Pack="true" Visible="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
