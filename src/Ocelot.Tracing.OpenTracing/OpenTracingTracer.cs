@@ -25,7 +25,8 @@ namespace Ocelot.Tracing.OpenTracing
         {
         }
 
-        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        public async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
             CancellationToken cancellationToken,
             Action<string> addTraceIdToRepo,
             Func<HttpRequestMessage,
