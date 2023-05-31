@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Eureka
 {
     public class EurekaMiddlewareConfigurationProvider
     {
-        public static OcelotMiddlewareConfigurationDelegate Get = builder =>
+        public static OcelotMiddlewareConfigurationDelegate Get { get; } = builder =>
         {
             var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
 
