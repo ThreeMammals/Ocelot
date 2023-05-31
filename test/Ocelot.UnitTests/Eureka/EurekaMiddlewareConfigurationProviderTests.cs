@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Eureka
     public class EurekaMiddlewareConfigurationProviderTests
     {
         [Fact]
-        public void should_not_build()
+        public void ShouldNotBuild()
         {
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Eureka
         }
 
         [Fact]
-        public void should_build()
+        public void ShouldBuild()
         {
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
             var client = new Mock<IDiscoveryClient>();
