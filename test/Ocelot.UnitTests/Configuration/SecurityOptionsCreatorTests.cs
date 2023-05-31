@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-
 using Shouldly;
-
+using System.Collections.Generic;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
@@ -15,7 +11,6 @@ namespace Ocelot.UnitTests.Configuration
     public class SecurityOptionsCreatorTests
     {
         private FileRoute _fileRoute;
-        private FileGlobalConfiguration _fileGlobalConfig;
         private SecurityOptions _result;
         private readonly ISecurityOptionsCreator _creator;
 

@@ -15,9 +15,6 @@ namespace Ocelot.AcceptanceTests
     public class ReasonPhraseTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _contentType;
-        private long? _contentLength;
-        private bool _contentTypeHeaderExists;
         private readonly ServiceHandler _serviceHandler;
 
         public ReasonPhraseTests()
@@ -34,23 +31,23 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))

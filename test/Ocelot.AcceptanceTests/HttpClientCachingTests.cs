@@ -1,19 +1,13 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+using Ocelot.Requester;
+using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
-
-using Ocelot.Configuration;
-using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Requester;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
@@ -21,7 +15,6 @@ namespace Ocelot.AcceptanceTests
     public class HttpClientCachingTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _downstreamPath;
         private readonly ServiceHandler _serviceHandler;
 
         public HttpClientCachingTests()
@@ -38,23 +31,23 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                },
             };
 
             var cache = new FakeHttpClientCache();

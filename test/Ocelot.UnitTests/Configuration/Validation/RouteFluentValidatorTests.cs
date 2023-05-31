@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using FluentValidation.Results;
-
+﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-
 using Moq;
-
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.Requester;
-
 using Shouldly;
-
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
@@ -25,7 +17,6 @@ namespace Ocelot.UnitTests.Configuration.Validation
     {
         private readonly RouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
-        private QosDelegatingHandlerDelegate _qosDelegatingHandler;
         private Mock<IServiceProvider> _serviceProvider;
         private FileRoute _route;
         private ValidationResult _result;

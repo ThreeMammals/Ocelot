@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Moq;
-
+﻿using Moq;
 using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
@@ -53,7 +47,6 @@ namespace Ocelot.UnitTests.Configuration
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
-        private SecurityOptions _securityOptions;
         private Version _expectedVersion;
 
         public RoutesCreatorTests()
