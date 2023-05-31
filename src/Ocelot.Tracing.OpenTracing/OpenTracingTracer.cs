@@ -14,19 +14,28 @@ using global::OpenTracing.Propagation;
 using global::OpenTracing.Tag;
 using Microsoft.AspNetCore.Http;
 
+/// <summary>
+/// Default tracer implementation for the <see cref="Logging.ITracer"/> interface.
+/// </summary>
 internal class OpenTracingTracer : Logging.ITracer
 {
     private readonly ITracer tracer;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenTracingTracer"/> class.
+    /// </summary>
+    /// <param name="tracer">The tracer.</param>
     public OpenTracingTracer(ITracer tracer)
     {
         this.tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
     }
 
+    /// <inheritdoc/>
     public void Event(HttpContext httpContext, string @event)
     {
     }
 
+    /// <inheritdoc/>
     public async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken,
