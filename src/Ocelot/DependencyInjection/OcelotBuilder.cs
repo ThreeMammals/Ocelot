@@ -243,7 +243,10 @@ namespace Ocelot.DependencyInjection
 
         public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
         {
-            if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType)) throw new ArgumentOutOfRangeException(nameof(delegateType), delegateType.Name, "It is not a delegatin handler");
+            if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(delegateType), delegateType.Name, "It is not a delegatin handler");
+            }
 
             if (global)
             {
