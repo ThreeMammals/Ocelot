@@ -279,6 +279,8 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
+        /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
+        /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
         public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer
         {
