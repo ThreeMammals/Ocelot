@@ -68,7 +68,6 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
                .When(x => x.WhenICallTheMiddleware())
                .Then(x => x.ThenChangeDownstreamPathIsCalledCorrectly())
                .BDDfy();
-
         }
 
         private void WhenICallTheMiddleware()
@@ -103,6 +102,5 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
             _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
-
     }
 }

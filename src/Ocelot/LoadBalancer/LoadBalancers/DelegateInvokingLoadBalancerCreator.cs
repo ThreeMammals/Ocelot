@@ -24,7 +24,6 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             try
             {
                 return new OkResponse<ILoadBalancer>(_creatorFunc(route, serviceProvider));
-
             }
             catch (Exception e)
             {

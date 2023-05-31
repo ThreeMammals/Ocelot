@@ -281,6 +281,5 @@ namespace Ocelot.UnitTests.LoadBalancer
                 throw new NotImplementedException();
             }
         }
-
     }
 }
