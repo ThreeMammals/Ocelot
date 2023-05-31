@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2027
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownstreamService", "./DownstreamService/DownstreamService.csproj", "{2982C147-9446-47FE-862E-E689B64CC7E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "./DownstreamService/DownstreamService.csproj", "{2982C147-9446-47FE-862E-E689B64CC7E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "./ApiGateway/ApiGateway.csproj", "{006CF27E-5400-43E9-B511-C54EC1B9C546}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "./ApiGateway/ApiGateway.csproj", "{006CF27E-5400-43E9-B511-C54EC1B9C546}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
