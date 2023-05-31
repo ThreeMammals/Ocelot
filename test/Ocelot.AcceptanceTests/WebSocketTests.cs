@@ -237,7 +237,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartFakeDownstreamService(string url, string path)
         {
-            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
+            await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
             {
                 if (context.Request.Path == path)
                 {
@@ -260,7 +260,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartSecondFakeDownstreamService(string url, string path)
         {
-            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
+            await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
             {
                 if (context.Request.Path == path)
                 {

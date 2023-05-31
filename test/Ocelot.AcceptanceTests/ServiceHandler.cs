@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        public async Task StartFakeDownstreamService(string url, string path, Func<HttpContext, Func<Task>, Task> middleware)
+        public async Task StartFakeDownstreamService(string url, Func<HttpContext, Func<Task>, Task> middleware)
         {
             _builder = new WebHostBuilder()
                 .ConfigureServices(s => { }).UseKestrel()
