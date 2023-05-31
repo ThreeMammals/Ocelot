@@ -1,22 +1,15 @@
-﻿using System;
+﻿using Consul;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Ocelot.Configuration.File;
+using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
-using Consul;
-
-using Microsoft.AspNetCore.Http;
-
-using Newtonsoft.Json;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
@@ -39,7 +32,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
+        public void ShouldProxyWebsocketInputToDownstreamServiceAndUseServiceDiscoveryAndLoadBalancer()
         {
             var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
