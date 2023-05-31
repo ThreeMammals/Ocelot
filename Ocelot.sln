@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8FA0CBA0-0338-48EB-B37F-83CA5022237C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotBasic", "samples\OcelotBasic\OcelotBasic.csproj", "{ED0B3A09-112B-4BA4-82D6-11569BC7A99B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotBasic.ApiGateway", "samples\OcelotBasic\Ocelot.Samples.OcelotBasic.ApiGateway.csproj", "{ED0B3A09-112B-4BA4-82D6-11569BC7A99B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdministrationApi", "samples\AdministrationApi\AdministrationApi.csproj", "{B180F8AE-2F8F-44F9-9E5D-FE65B84B742E}"
 EndProject
