@@ -1,16 +1,12 @@
+using Ocelot.Configuration.File;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
@@ -31,7 +27,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_proxy_websocket_input_to_downstream_service()
+        public void ShouldProxyWebsocketInputToDownstreamService()
         {
             var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
@@ -66,7 +62,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_proxy_websocket_input_to_downstream_service_and_use_load_balancer()
+        public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
         {
             var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
