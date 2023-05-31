@@ -122,7 +122,7 @@ namespace Ocelot.Benchmarks
             _ocelot.Start();
         }
 
-        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 
