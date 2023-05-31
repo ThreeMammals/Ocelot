@@ -1,4 +1,8 @@
-﻿namespace Ocelot.Tracing.OpenTracing;
+﻿// <copyright file="OpenTracingTracer.cs" company="ThreeMammals">
+// Copyright (c) ThreeMammals. All rights reserved.
+// </copyright>
+
+namespace Ocelot.Tracing.OpenTracing;
 
 using System;
 using System.Collections.Generic;

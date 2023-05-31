@@ -1,4 +1,8 @@
-﻿namespace Ocelot.Tracing.OpenTracing;
+﻿// <copyright file="OcelotBuilderExtensions.cs" company="ThreeMammals">
+// Copyright (c) ThreeMammals. All rights reserved.
+// </copyright>
+
+namespace Ocelot.Tracing.OpenTracing;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
