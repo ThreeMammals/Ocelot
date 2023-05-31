@@ -1,16 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using System.Security.Authentication;
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -158,6 +157,7 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _builder?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
