@@ -40,6 +40,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 _logger.LogWarning($"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
             }
+
             return services;
         }
 
@@ -53,6 +54,7 @@ namespace Ocelot.Provider.Kubernetes
                     new ServiceHostAndPort(address.Ip, subset.Ports.First().Port),
                     endpoint.Metadata.Uid, string.Empty, Enumerable.Empty<string>())));
             }
+
             return services;
         }
     }

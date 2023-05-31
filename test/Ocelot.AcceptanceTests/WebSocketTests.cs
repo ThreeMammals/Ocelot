@@ -333,6 +333,7 @@ namespace Ocelot.AcceptanceTests
         {
             _firstRecieved.Count.ShouldBe(count);
         }
+
         public void Dispose()
         {
             _serviceHandler?.Dispose();

@@ -223,6 +223,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     context.Response.Headers.Add(key, value);
                 }
+
                 context.Response.StatusCode = statusCode;
                 await context.Response.WriteAsync(responseBody);
             });

@@ -34,6 +34,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 return new PollKubernetes(config.PollingInterval, factory, k8sServiceDiscoveryProvider);
             }
+
             return k8sServiceDiscoveryProvider;
         }
     }

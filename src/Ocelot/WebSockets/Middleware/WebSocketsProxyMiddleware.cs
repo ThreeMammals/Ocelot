@@ -57,6 +57,7 @@ namespace Ocelot.WebSockets.Middleware
                         await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
                         return;
                     }
+
                     throw;
                 }
 

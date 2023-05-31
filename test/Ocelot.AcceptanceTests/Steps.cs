@@ -1284,6 +1284,7 @@ namespace Ocelot.AcceptanceTests
                     _logger = new Mock<IOcelotLogger>();
                     _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
                 }
+
                 return _logger.Object;
             }
 

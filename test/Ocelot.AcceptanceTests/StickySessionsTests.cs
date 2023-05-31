@@ -256,6 +256,7 @@ namespace Ocelot.AcceptanceTests
                         _counterOne++;
                         response = _counterOne.ToString();
                     }
+
                     context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync(response);
                 }
