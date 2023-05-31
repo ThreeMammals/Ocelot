@@ -51,45 +51,45 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                        new()
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true,
+                                Host = "localhost",
+                                Port = port1,
                             },
                         },
-                        new()
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api002/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true,
-                            },
+                            UseTracing = true,
                         },
                     },
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port2,
+                            },
+                        },
+                        UpstreamPathTemplate = "/api002/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            UseTracing = true,
+                        },
+                    },
+                },
             };
 
             var tracingPort = RandomPortFinder.GetRandomPort();

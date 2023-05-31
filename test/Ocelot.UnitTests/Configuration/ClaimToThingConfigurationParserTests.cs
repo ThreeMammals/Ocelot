@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration
         public void returns_no_instructions_error()
         {
             this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-                {
+            {
                 {"CustomerId", string.Empty},
             }))
                 .When(x => x.WhenICallTheExtractor())
@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.Configuration
         public void returns_no_instructions_not_for_claims_error()
         {
             this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-                {
+            {
                 {"CustomerId", "Cheese[CustomerId] > value"},
             }))
                 .When(x => x.WhenICallTheExtractor())
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Configuration
         public void can_parse_entry_to_work_out_properties_with_key()
         {
             this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-                {
+            {
                 {"CustomerId", "Claims[CustomerId] > value"},
             }))
                 .When(x => x.WhenICallTheExtractor())
@@ -81,7 +81,7 @@ namespace Ocelot.UnitTests.Configuration
         public void can_parse_entry_to_work_out_properties_with_key_delimiter_and_index()
         {
             this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-                {
+            {
                 {"UserId", "Claims[Subject] > value[0] > |"},
             }))
                 .When(x => x.WhenICallTheExtractor())
