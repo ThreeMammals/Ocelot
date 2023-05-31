@@ -29,7 +29,6 @@ namespace Ocelot.UnitTests.Consul
             _services.AddSingleton(_configRoot);
         }
 
-
         private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();

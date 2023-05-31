@@ -41,7 +41,6 @@ namespace Ocelot.UnitTests.Middleware
             _httpContext = new DefaultHttpContext();
         }
 
-
         private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();

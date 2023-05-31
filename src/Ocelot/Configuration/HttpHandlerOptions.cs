@@ -15,7 +15,6 @@
             MaxConnectionsPerServer = maxConnectionsPerServer;
         }
 
-
         /// <summary>
         /// Specify if auto redirect is enabled
         /// </summary>

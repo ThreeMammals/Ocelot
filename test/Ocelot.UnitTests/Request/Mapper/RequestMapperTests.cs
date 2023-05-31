@@ -259,7 +259,6 @@ namespace Ocelot.UnitTests.Request.Mapper
             _inputRequest.ContentType = null;
         }
 
-
         private void ThenTheContentHeadersAreNotAddedToNonContentHeaders()
         {
             _mappedRequest.Data.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");

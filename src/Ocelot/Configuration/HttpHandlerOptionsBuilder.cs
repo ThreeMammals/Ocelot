@@ -37,7 +37,6 @@
             return this;
         }
 
-
         public HttpHandlerOptions Build()
         {
             return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer);
