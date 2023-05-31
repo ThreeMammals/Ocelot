@@ -1,77 +1,74 @@
-﻿using System;
+﻿namespace Ocelot.Tracing.OpenTracing;
+
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
 using global::OpenTracing;
 using global::OpenTracing.Propagation;
 using global::OpenTracing.Tag;
-
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.Tracing.OpenTracing
+class OpenTracingTracer : Logging.ITracer
 {
-    class OpenTracingTracer : Logging.ITracer
+    private readonly ITracer tracer;
+
+    public OpenTracingTracer(ITracer tracer)
     {
-        private readonly ITracer tracer;
+        this.tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+    }
 
-        public OpenTracingTracer(ITracer tracer)
-        {
-            this.tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-        }
+    public void Event(HttpContext httpContext, string @event)
+    {
+    }
 
-        public void Event(HttpContext httpContext, string @event)
+    public async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken,
+        Action<string> addTraceIdToRepo,
+        Func<HttpRequestMessage,
+        CancellationToken,
+        Task<HttpResponseMessage>> baseSendAsync)
+    {
+        using (var scope = this.tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
         {
-        }
+            var span = scope.Span;
 
-        public async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken,
-            Action<string> addTraceIdToRepo,
-            Func<HttpRequestMessage,
-            CancellationToken,
-            Task<HttpResponseMessage>> baseSendAsync)
-        {
-            using (var scope = this.tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
+            span.SetTag(Tags.SpanKind, Tags.SpanKindClient)
+                .SetTag(Tags.HttpMethod, request.Method.Method)
+                .SetTag(Tags.HttpUrl, request.RequestUri.OriginalString);
+
+            addTraceIdToRepo(span.Context.SpanId);
+
+            var headers = new Dictionary<string, string>();
+
+            this.tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
+
+            foreach (var item in headers)
             {
-                var span = scope.Span;
+                request.Headers.Add(item.Key, item.Value);
+            }
 
-                span.SetTag(Tags.SpanKind, Tags.SpanKindClient)
-                    .SetTag(Tags.HttpMethod, request.Method.Method)
-                    .SetTag(Tags.HttpUrl, request.RequestUri.OriginalString);
+            try
+            {
+                var response = await baseSendAsync(request, cancellationToken);
 
-                addTraceIdToRepo(span.Context.SpanId);
+                span.SetTag(Tags.HttpStatus, (int)response.StatusCode);
 
-                var headers = new Dictionary<string, string>();
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                Tags.Error.Set(scope.Span, true);
 
-                this.tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
-
-                foreach (var item in headers)
-                {
-                    request.Headers.Add(item.Key, item.Value);
-                }
-
-                try
-                {
-                    var response = await baseSendAsync(request, cancellationToken);
-
-                    span.SetTag(Tags.HttpStatus, (int)response.StatusCode);
-
-                    return response;
-                }
-                catch (HttpRequestException ex)
-                {
-                    Tags.Error.Set(scope.Span, true);
-
-                    span.Log(new Dictionary<string, object>(3)
-                        {
-                            { LogFields.Event, Tags.Error.Key },
-                            { LogFields.ErrorKind, ex.GetType().Name },
-                            { LogFields.ErrorObject, ex },
-                        });
-                    throw;
-                }
+                span.Log(new Dictionary<string, object>(3)
+                    {
+                        { LogFields.Event, Tags.Error.Key },
+                        { LogFields.ErrorKind, ex.GetType().Name },
+                        { LogFields.ErrorObject, ex },
+                    });
+                throw;
             }
         }
     }
