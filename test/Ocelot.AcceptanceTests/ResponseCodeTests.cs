@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-
+using System.Threading.Tasks;
 using Ocelot.Configuration.File;
 
 using TestStack.BDDfy;
@@ -58,10 +58,10 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, (context) => Task.Run(() =>
             {
                 context.Response.StatusCode = statusCode;
-            });
+            }));
         }
 
         public void Dispose()
