@@ -33,7 +33,6 @@ namespace DownstreamService
             }
 
             app.UseDiscoveryClient();
-            app.UseMvc();
         }
     }
 }
