@@ -52,6 +52,7 @@ namespace Ocelot.Configuration.File
         public FileMetadataOptions MetadataOptions { get; set; }
 
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+
         public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
     }
 }

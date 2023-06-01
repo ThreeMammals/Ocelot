@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
@@ -27,9 +28,11 @@ namespace Ocelot.Configuration.Creator
             var addHeadersToUpstream = new List<AddHeader>();
             var upstreamAdded = new HashSet<string>();
 
-            foreach (var input in fileRoute.UpstreamHeaderTransform)
+            var upstreamHeaderTransform = Merge(fileRoute.UpstreamHeaderTransform, _fileGlobalConfiguration.UpstreamHeaderTransform);
+
+            foreach (var input in upstreamHeaderTransform)
             {
-                if (input.Value.Contains(","))
+                if (input.Value.Contains(','))
                 {
                     var hAndr = Map(input);
                     if (!hAndr.IsError)
@@ -49,40 +52,15 @@ namespace Ocelot.Configuration.Creator
                 }
             }
             
-            foreach (var input in _fileGlobalConfiguration.UpstreamHeaderTransform)
-            {
-                if (upstreamAdded.Contains(input.Key))
-                {
-                    continue;
-                }
-                
-                if (input.Value.Contains(","))
-                {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        upstream.Add(hAndr.Data);
-                        
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
-                }
-                else
-                {
-                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
-                    
-                }
-            }
-
             var downstream = new List<HeaderFindAndReplace>();
             var addHeadersToDownstream = new List<AddHeader>();
             var downstreamAdded = new HashSet<string>();
-            
-            foreach (var input in fileRoute.DownstreamHeaderTransform)
+
+            var downstreamHeaderTransform = Merge(fileRoute.DownstreamHeaderTransform, _fileGlobalConfiguration.DownstreamHeaderTransform);
+
+            foreach (var input in downstreamHeaderTransform)
             {
-                if (input.Value.Contains(","))
+                if (input.Value.Contains(','))
                 {
                     var hAndr = Map(input);
                     if (!hAndr.IsError)
@@ -102,31 +80,6 @@ namespace Ocelot.Configuration.Creator
                 }
             }
             
-            foreach (var input in _fileGlobalConfiguration.DownstreamHeaderTransform)
-            {
-                if (downstreamAdded.Contains(input.Key))
-                {
-                    continue;
-                }
-                
-                if (input.Value.Contains(","))
-                {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        downstream.Add(hAndr.Data);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
-                }
-                else
-                {
-                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
-                }
-            }
-
             return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
         }
 
@@ -156,6 +109,19 @@ namespace Ocelot.Configuration.Creator
             var hAndr = new HeaderFindAndReplace(input.Key, findAndReplace[0], replace, 0);
 
             return new OkResponse<HeaderFindAndReplace>(hAndr);
+        }
+
+        /// <summary>
+        /// Merge global Up/Downstream settings to the Route local ones.
+        /// </summary>
+        /// <param name="local">The Route local settings.</param>
+        /// <param name="global">Global default settings.</param>
+        /// <returns> An <see cref="IEnumerable{T}"/> collection.</returns>
+        public static IEnumerable<KeyValuePair<string, string>> Merge(Dictionary<string, string> local, Dictionary<string, string> global)
+        {
+            // Winning strategy: The Route local setting wins over global one
+            var toAdd = global.ExceptBy(local.Keys, x => x.Key);
+            return local.Union(toAdd).ToList();
         }
     }
 }
