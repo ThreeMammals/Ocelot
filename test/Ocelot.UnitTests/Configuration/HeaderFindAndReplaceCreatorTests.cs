@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -275,6 +276,36 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => WhenICreate())
                 .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_merge()
+        {
+            // Arrange
+            var local = new Dictionary<string, string>()
+            {
+                { "B", "localB" },
+                { "C", "localC" },
+            };
+            var global = new Dictionary<string, string>()
+            {
+                { "A", "globalA" },
+                { "B", "globalB" },
+            };
+
+            // Act
+            var actual = HeaderFindAndReplaceCreator.Merge(local, global);
+
+            // Assert
+            actual.ShouldNotBeNull();
+            var dictionary = actual.ToDictionary(x => x.Key, x => x.Value);
+            dictionary.Count.ShouldBe(3);
+            dictionary.ContainsKey("A").ShouldBeTrue();
+            dictionary["A"].ShouldBe("globalA");
+            dictionary.ContainsKey("B").ShouldBeTrue();
+            dictionary["B"].ShouldBe("localB"); // local value wins over global one
+            dictionary.ContainsKey("C").ShouldBeTrue();
+            dictionary["C"].ShouldBe("localC");
         }
 
         private void GivenThePlaceholderIs(string placeholderValue)
