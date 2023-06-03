@@ -1,11 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Header = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -24,66 +25,47 @@ namespace Ocelot.Configuration.Creator
 
         public HeaderTransformations Create(FileRoute fileRoute)
         {
-            var upstream = new List<HeaderFindAndReplace>();
-            var addHeadersToUpstream = new List<AddHeader>();
-            var upstreamAdded = new HashSet<string>();
-
             var upstreamHeaderTransform = Merge(fileRoute.UpstreamHeaderTransform, _fileGlobalConfiguration.UpstreamHeaderTransform);
-
-            foreach (var input in upstreamHeaderTransform)
-            {
-                if (input.Value.Contains(','))
-                {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        upstream.Add(hAndr.Data);
-                        upstreamAdded.Add(input.Key);
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
-                }
-                else
-                {
-                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
-                    upstreamAdded.Add(input.Key);
-                }
-            }
-            
-            var downstream = new List<HeaderFindAndReplace>();
-            var addHeadersToDownstream = new List<AddHeader>();
-            var downstreamAdded = new HashSet<string>();
+            var (upstream, addHeadersToUpstream) = ProcessHeaders(upstreamHeaderTransform, nameof(fileRoute.UpstreamHeaderTransform));
 
             var downstreamHeaderTransform = Merge(fileRoute.DownstreamHeaderTransform, _fileGlobalConfiguration.DownstreamHeaderTransform);
-
-            foreach (var input in downstreamHeaderTransform)
-            {
-                if (input.Value.Contains(','))
-                {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        downstream.Add(hAndr.Data);
-                        downstreamAdded.Add(input.Key);
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
-                }
-                else
-                {
-                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
-                    downstreamAdded.Add(input.Key);
-                }
-            }
+            var (downstream, addHeadersToDownstream) = ProcessHeaders(downstreamHeaderTransform, nameof(fileRoute.DownstreamHeaderTransform));
             
             return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
         }
 
-        private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
+        private (List<HeaderFindAndReplace> StreamHeaders, List<AddHeader> AddHeaders) ProcessHeaders(IEnumerable<Header> headerTransform, string propertyName = null)
+        {
+            var headerPairs = headerTransform ?? Enumerable.Empty<Header>();
+
+            var streamHeaders = new List<HeaderFindAndReplace>();
+            var addHeaders = new List<AddHeader>();
+
+            foreach (var input in headerPairs)
+            {
+                if (input.Value.Contains(','))
+                {
+                    var hAndr = Map(input);
+                    if (!hAndr.IsError)
+                    {
+                        streamHeaders.Add(hAndr.Data);
+                    }
+                    else
+                    {
+                        var name = propertyName ?? "Headers Transformation";
+                        _logger.LogWarning($"Unable to add {name} {input.Key}: {input.Value}");
+                    }
+                }
+                else
+                {
+                    addHeaders.Add(new AddHeader(input.Key, input.Value));
+                }
+            }
+
+            return (streamHeaders, addHeaders);
+        }
+
+        private Response<HeaderFindAndReplace> Map(Header input)
         {
             var findAndReplace = input.Value.Split(',');
 
@@ -117,7 +99,7 @@ namespace Ocelot.Configuration.Creator
         /// <param name="local">The Route local settings.</param>
         /// <param name="global">Global default settings.</param>
         /// <returns> An <see cref="IEnumerable{T}"/> collection.</returns>
-        public static IEnumerable<KeyValuePair<string, string>> Merge(Dictionary<string, string> local, Dictionary<string, string> global)
+        public static IEnumerable<Header> Merge(Dictionary<string, string> local, Dictionary<string, string> global)
         {
             // Winning strategy: The Route local setting wins over global one
             var toAdd = global.ExceptBy(local.Keys, x => x.Key);
