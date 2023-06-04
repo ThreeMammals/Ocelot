@@ -1,14 +1,14 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Configuration.File;
-
-    using Shouldly;
-
-    using Xunit;
-
     public class CannotStartOcelotTests : IDisposable
     {
         private readonly Steps _steps;
@@ -30,9 +30,9 @@ namespace Ocelot.AcceptanceTests
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -63,8 +63,8 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test"
-                    }
+                        ServiceName = "test",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -73,9 +73,9 @@ namespace Ocelot.AcceptanceTests
                         Scheme = "https",
                         Host = "localhost",
                         Type = "consul",
-                        Port = 8500
-                    }
-                }
+                        Port = 8500,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -110,21 +110,21 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         Key = "Laura",
-                    }
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     QoSOptions = new FileQoSOptions
                     {
                         TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1
-                    }
-                }
+                        ExceptionsAllowedBeforeBreaking = 1,
+                    },
+                },
             };
 
             Exception exception = null;
@@ -159,7 +159,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = 51878,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/laura",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -167,10 +167,10 @@ namespace Ocelot.AcceptanceTests
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1
-                        }
-                    }
-                }
+                            ExceptionsAllowedBeforeBreaking = 1,
+                        },
+                    },
+                },
             };
 
             Exception exception = null;
@@ -198,9 +198,9 @@ namespace Ocelot.AcceptanceTests
                     new()
                     {
                         UpstreamPathTemplate = "api",
-                        DownstreamPathTemplate = "test"
-                    }
-                }
+                        DownstreamPathTemplate = "test",
+                    },
+                },
             };
 
             Exception exception = null;

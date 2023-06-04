@@ -1,17 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class UpstreamHostTests : IDisposable
     {
         private readonly Steps _steps;
@@ -43,13 +43,13 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            UpstreamHost = "localhost"
-                        }
-                    }
+                            UpstreamHost = "localhost",
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -80,11 +80,11 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost"
+                        UpstreamHost = "localhost",
                     },
                     new()
                     {
@@ -96,13 +96,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = 50000,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "DONTMATCH"
-                    }
-                }
+                        UpstreamHost = "DONTMATCH",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -133,11 +133,11 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = 50000,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "DONTMATCH"
+                        UpstreamHost = "DONTMATCH",
                     },
                     new()
                     {
@@ -149,13 +149,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost"
-                    }
-                }
+                        UpstreamHost = "localhost",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -186,7 +186,7 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = 50000,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -201,13 +201,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost"
-                    }
-                }
+                        UpstreamHost = "localhost",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -238,13 +238,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "127.0.0.20:5000"
-                    }
-                }
+                        UpstreamHost = "127.0.0.20:5000",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))

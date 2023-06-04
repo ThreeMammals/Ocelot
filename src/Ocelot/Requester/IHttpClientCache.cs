@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Requester
+﻿using System;
+
+using Ocelot.Configuration;
+
+namespace Ocelot.Requester
 {
-    using System;
-
-    using Configuration;
-
     public interface IHttpClientCache
     {
         IHttpClient Get(DownstreamRoute key);

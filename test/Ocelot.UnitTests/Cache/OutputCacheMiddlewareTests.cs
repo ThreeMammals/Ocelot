@@ -1,28 +1,28 @@
-﻿namespace Ocelot.UnitTests.Cache
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Cache.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Cache
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OutputCacheMiddlewareTests
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;
@@ -53,12 +53,12 @@
         {
             var headers = new Dictionary<string, IEnumerable<string>>
             {
-                { "test", new List<string> { "test" } }
+                { "test", new List<string> { "test" } },
             };
 
             var contentHeaders = new Dictionary<string, IEnumerable<string>>
             {
-                { "content-type", new List<string> { "application/json" } }
+                { "content-type", new List<string> { "application/json" } },
             };
 
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
@@ -74,7 +74,7 @@
         {
             var contentHeaders = new Dictionary<string, IEnumerable<string>>
             {
-                { "Expires", new List<string> { "-1" } }
+                { "Expires", new List<string> { "-1" } },
             };
 
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), string.Empty, contentHeaders, "some reason");

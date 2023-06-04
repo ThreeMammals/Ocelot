@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Configuration.Builder
-{
-    using Values;
+﻿using Ocelot.Values;
 
+namespace Ocelot.Configuration.Builder
+{
     public class UpstreamPathTemplateBuilder
     {
         private string _template;

@@ -1,31 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+
+using Butterfly.Client.AspNetCore;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using OpenTracing;
+using OpenTracing.Propagation;
+using OpenTracing.Tag;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+using Xunit.Abstractions;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Butterfly.Client.AspNetCore;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-
-    using OpenTracing;
-    using OpenTracing.Propagation;
-    using OpenTracing.Tag;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-    using Xunit.Abstractions;
-
     public class OpenTracingTests : IDisposable
     {
         private IWebHost _serviceOneBuilder;
@@ -51,45 +51,45 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                        new()
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                }
+                                Host = "localhost",
+                                Port = port1,
                             },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true
-                            }
                         },
-                        new()
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            UseTracing = true,
+                        },
+                    },
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                }
+                                Host = "localhost",
+                                Port = port2,
                             },
-                            UpstreamPathTemplate = "/api002/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true
-                            }
-                        }
-                    }
+                        },
+                        UpstreamPathTemplate = "/api002/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            UseTracing = true,
+                        },
+                    },
+                },
             };
 
             var tracingPort = RandomPortFinder.GetRandomPort();
@@ -130,21 +130,21 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api001/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
                             HttpHandlerOptions = new FileHttpHandlerOptions
                             {
-                                UseTracing = true
+                                UseTracing = true,
                             },
                             DownstreamHeaderTransform = new Dictionary<string, string>
                             {
                                 {"Trace-Id", "{TraceId}"},
-                                {"Tom", "Laura"}
-                            }
-                        }
-                    }
+                                {"Tom", "Laura"},
+                            },
+                        },
+                    },
             };
 
             var butterflyPort = RandomPortFinder.GetRandomPort();

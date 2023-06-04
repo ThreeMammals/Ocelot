@@ -1,22 +1,15 @@
-﻿using Ocelot.Configuration.Builder;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Provider.Consul;
+using Shouldly;
+using System;
+using Xunit;
 
 namespace Ocelot.UnitTests.Consul
 {
-    using System;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-
-    using Provider.Consul;
-
-    using Shouldly;
-
-    using Xunit;
-
     public class ProviderFactoryTests
     {
         private readonly IServiceProvider _provider;
@@ -26,7 +19,7 @@ namespace Ocelot.UnitTests.Consul
             var services = new ServiceCollection();
             var loggerFactory = new Mock<IOcelotLoggerFactory>();
             var logger = new Mock<IOcelotLogger>();
-            loggerFactory.Setup(x => x.CreateLogger<Consul>()).Returns(logger.Object);
+            loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(logger.Object);
             loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
             var consulFactory = new Mock<IConsulClientFactory>();
             services.AddSingleton(consulFactory.Object);
@@ -42,7 +35,7 @@ namespace Ocelot.UnitTests.Consul
                 .Build();
 
             var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1), route);
-            provider.ShouldBeOfType<Consul>();
+            provider.ShouldBeOfType<Provider.Consul.Consul>();
         }
 
         [Fact]

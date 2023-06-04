@@ -1,11 +1,11 @@
+using System;
+
+using Microsoft.Extensions.Options;
+
+using Ocelot.Configuration.Repository;
+
 namespace Ocelot.Configuration.ChangeTracking
 {
-    using System;
-
-    using Microsoft.Extensions.Options;
-
-    using Repository;
-
     public class OcelotConfigurationMonitor : IOptionsMonitor<IInternalConfiguration>
     {
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;

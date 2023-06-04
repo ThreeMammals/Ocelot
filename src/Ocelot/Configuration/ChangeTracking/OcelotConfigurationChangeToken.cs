@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+
+using Microsoft.Extensions.Primitives;
+
 namespace Ocelot.Configuration.ChangeTracking
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.Extensions.Primitives;
-
     public class OcelotConfigurationChangeToken : IChangeToken
     {
         public const double PollingIntervalSeconds = 1;

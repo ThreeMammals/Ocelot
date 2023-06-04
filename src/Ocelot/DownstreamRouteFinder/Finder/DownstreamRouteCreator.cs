@@ -1,19 +1,19 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Finder
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Ocelot.Responses;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+namespace Ocelot.DownstreamRouteFinder.Finder
 {
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Configuration;
-    using Configuration.Builder;
-    using Configuration.Creator;
-
-    using LoadBalancer.LoadBalancers;
-
-    using Responses;
-
-    using UrlMatcher;
-
     public class DownstreamRouteCreator : IDownstreamRouteProvider
     {
         private readonly IQoSOptionsCreator _qoSOptionsCreator;

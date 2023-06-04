@@ -1,29 +1,29 @@
-﻿namespace Ocelot.UnitTests.Middleware
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Errors.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Middleware
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.DependencyInjection;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OcelotPiplineBuilderTests
     {
         private readonly IServiceCollection _services;
@@ -40,7 +40,6 @@
             _services.AddOcelot();
             _httpContext = new DefaultHttpContext();
         }
-
 
         private static IWebHostEnvironment GetHostingEnvironment()
         {

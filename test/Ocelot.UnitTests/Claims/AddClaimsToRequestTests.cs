@@ -41,14 +41,14 @@ namespace Ocelot.UnitTests.Claims
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new("test", "data")
-                }))
+                    new("test", "data"),
+                })),
             };
 
             this.Given(
                 x => x.GivenClaimsToThings(new List<ClaimToThing>
                 {
-                    new("claim-key", string.Empty, string.Empty, 0)
+                    new("claim-key", string.Empty, string.Empty, 0),
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -65,14 +65,14 @@ namespace Ocelot.UnitTests.Claims
                 User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
                     new("existing-key", "data"),
-                    new("new-key", "data")
+                    new("new-key", "data"),
                 })),
             };
 
             this.Given(
                 x => x.GivenClaimsToThings(new List<ClaimToThing>
                 {
-                    new("existing-key", "new-key", string.Empty, 0)
+                    new("existing-key", "new-key", string.Empty, 0),
                 }))
                 .Given(x => x.GivenHttpContext(context))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -87,12 +87,12 @@ namespace Ocelot.UnitTests.Claims
             this.Given(
                x => x.GivenClaimsToThings(new List<ClaimToThing>
                {
-                    new(string.Empty, string.Empty, string.Empty, 0)
+                    new(string.Empty, string.Empty, string.Empty, 0),
                }))
                .Given(x => x.GivenHttpContext(new DefaultHttpContext()))
                .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
                {
-                   new AnyError()
+                   new AnyError(),
                })))
                .When(x => x.WhenIAddClaimsToTheRequest())
                .Then(x => x.ThenTheResultIsError())

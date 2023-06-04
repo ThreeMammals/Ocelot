@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.Creator;
+
+using Ocelot.Values;
+
 namespace Ocelot.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Creator;
-
-    using Values;
-
     public class DownstreamRoute
     {
         public DownstreamRoute(

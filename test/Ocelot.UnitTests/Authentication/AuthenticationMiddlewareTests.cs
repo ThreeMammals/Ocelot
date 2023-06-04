@@ -1,31 +1,28 @@
 ﻿using Xunit;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Authentication.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.UnitTests.Authentication
 {
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class AuthenticationMiddlewareTests
     {
         private AuthenticationMiddleware _middleware;

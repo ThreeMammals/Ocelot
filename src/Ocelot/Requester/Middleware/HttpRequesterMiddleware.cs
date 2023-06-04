@@ -1,17 +1,17 @@
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester.Middleware
 {
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
-    using Responses;
-
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

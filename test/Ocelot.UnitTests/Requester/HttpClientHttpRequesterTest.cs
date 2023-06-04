@@ -165,7 +165,7 @@ namespace Ocelot.UnitTests.Requester
         {
             var handlers = new List<Func<DelegatingHandler>>
             {
-                () => new OkDelegatingHandler()
+                () => new OkDelegatingHandler(),
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.Requester
         {
             var handlers = new List<Func<DelegatingHandler>>
             {
-                () => new TimeoutDelegatingHandler()
+                () => new TimeoutDelegatingHandler(),
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));

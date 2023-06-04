@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Describes configuration parameters for http handler,
-    /// that is created to handle a request to service
+    /// that is created to handle a request to service.
     /// </summary>
     public class HttpHandlerOptions
     {
@@ -15,35 +15,34 @@
             MaxConnectionsPerServer = maxConnectionsPerServer;
         }
 
-
         /// <summary>
-        /// Specify if auto redirect is enabled
+        /// Specify if auto redirect is enabled.
         /// </summary>
-        /// <value>AllowAutoRedirect</value>
+        /// <value>AllowAutoRedirect.</value>
         public bool AllowAutoRedirect { get; }
 
         /// <summary>
-        /// Specify is handler has to use a cookie container
+        /// Specify is handler has to use a cookie container.
         /// </summary>
-        /// <value>UseCookieContainer</value>
+        /// <value>UseCookieContainer.</value>
         public bool UseCookieContainer { get; }
 
         /// <summary>
-        /// Specify is handler has to use a opentracing
+        /// Specify is handler has to use a opentracing.
         /// </summary>
-        /// <value>UseTracing</value>
+        /// <value>UseTracing.</value>
         public bool UseTracing { get; }
 
         /// <summary>
-        /// Specify if handler has to use a proxy
+        /// Specify if handler has to use a proxy.
         /// </summary>
-        /// <value>UseProxy</value>
+        /// <value>UseProxy.</value>
         public bool UseProxy { get; }
 
         /// <summary>
-        /// Specify the maximum of concurrent connection to a network endpoint
+        /// Specify the maximum of concurrent connection to a network endpoint.
         /// </summary>
-        /// <value>MaxConnectionsPerServer</value>
+        /// <value>MaxConnectionsPerServer.</value>
         public int MaxConnectionsPerServer { get; }
     }
 }

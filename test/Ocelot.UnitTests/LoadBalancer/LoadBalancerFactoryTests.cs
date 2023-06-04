@@ -17,13 +17,12 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using System;
+
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
-
-    using Microsoft.AspNetCore.Http;
-
     public class LoadBalancerFactoryTests
     {
         private DownstreamRoute _route;
@@ -197,7 +196,6 @@ namespace Ocelot.UnitTests.LoadBalancer
         private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator
             where T : ILoadBalancer, new()
         {
-
             public FakeLoadBalancerCreator()
             {
                 Type = typeof(T).Name;
@@ -283,6 +281,5 @@ namespace Ocelot.UnitTests.LoadBalancer
                 throw new NotImplementedException();
             }
         }
-
     }
 }

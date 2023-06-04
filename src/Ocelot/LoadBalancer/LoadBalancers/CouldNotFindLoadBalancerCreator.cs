@@ -1,7 +1,7 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using Errors;
+﻿using Ocelot.Errors;
 
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class CouldNotFindLoadBalancerCreator : Error
     {
         public CouldNotFindLoadBalancerCreator(string message)

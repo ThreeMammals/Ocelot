@@ -1,21 +1,21 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿using System;
+using System.Collections.Generic;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class DynamicsCreatorTests
     {
         private readonly DynamicsCreator _creator;
@@ -58,20 +58,20 @@
                         ServiceName = "1",
                         RateLimitRule = new FileRateLimitRule
                         {
-                            EnableRateLimiting = false
+                            EnableRateLimiting = false,
                         },
-                        DownstreamHttpVersion = "1.1"
+                        DownstreamHttpVersion = "1.1",
                     },
                     new()
                     {
                         ServiceName = "2",
                         RateLimitRule = new FileRateLimitRule
                         {
-                            EnableRateLimiting = true
+                            EnableRateLimiting = true,
                         },
-                        DownstreamHttpVersion = "2.0"
-                    }
-                }
+                        DownstreamHttpVersion = "2.0",
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))

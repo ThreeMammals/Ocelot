@@ -1,26 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Errors;
+using Ocelot.Errors.Middleware;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Errors
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Errors;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ExceptionHandlerMiddlewareTests
     {
         private bool _shouldThrowAnException;
@@ -117,7 +117,9 @@ namespace Ocelot.UnitTests.Errors
         private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
         {
             _httpContext.Request.Headers.Add(key, value);
-            //_httpContext.Setup(x => x.Request.Headers).Returns(new HeaderDictionary() { { key, value } });
+            /*
+            _httpContext.Setup(x => x.Request.Headers).Returns(new HeaderDictionary() { { key, value } });
+            */
             _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 

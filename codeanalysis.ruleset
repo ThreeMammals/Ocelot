@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Rules for StyleCop.Analyzers" Description="Code analysis rules for StyleCop.Analyzers.csproj." ToolsVersion="15.0">
+<RuleSet Name="Rules for StyleCop.Analyzers" Description="Code analysis rules for StyleCop.Analyzers.csproj." ToolsVersion="17.0">
   <Rules AnalyzerId="AsyncUsageAnalyzers" RuleNamespace="AsyncUsageAnalyzers">
     <Rule Id="AvoidAsyncSuffix" Action="None" />
     <Rule Id="AvoidAsyncVoid" Action="Error" />
@@ -50,12 +50,11 @@
     <Rule Id="SA1209" Action="None" />
     <Rule Id="SA1210" Action="None" />
     <Rule Id="SA1214" Action="None" />
-    <Rule Id="SA1216" Action="None" />	
+    <Rule Id="SA1216" Action="None" />
     <Rule Id="SA1300" Action="None" />
     <Rule Id="SA1302" Action="Error" />
     <Rule Id="SA1303" Action="None" />
     <Rule Id="SA1304" Action="Error" />
-    <Rule Id="SA1305" Action="None" />
     <Rule Id="SA1309" Action="None" />
     <Rule Id="SA1310" Action="None" />
     <Rule Id="SA1311" Action="Error" />
@@ -70,14 +69,14 @@
     <Rule Id="SA1408" Action="None" />
     <Rule Id="SA1410" Action="Error" />
     <Rule Id="SA1411" Action="Error" />
-    <Rule Id="SA1412" Action="None" />
     <Rule Id="SA1500" Action="None" />
     <Rule Id="SA1502" Action="None" />
     <Rule Id="SA1516" Action="None" />
     <Rule Id="SA1600" Action="None" />
+    <Rule Id="SA1602" Action="None" />
     <Rule Id="SA1603" Action="Error" />
     <Rule Id="SA1609" Action="Error" />
-    <Rule Id="SA1611" Action="None" />	
+    <Rule Id="SA1611" Action="None" />
     <Rule Id="SA1623" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1636" Action="Error" />

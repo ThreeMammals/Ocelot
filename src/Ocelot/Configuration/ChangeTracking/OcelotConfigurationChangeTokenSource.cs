@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Primitives;
+
 namespace Ocelot.Configuration.ChangeTracking
 {
-    using Microsoft.Extensions.Primitives;
-
     public class OcelotConfigurationChangeTokenSource : IOcelotConfigurationChangeTokenSource
     {
         private readonly OcelotConfigurationChangeToken _changeToken = new();

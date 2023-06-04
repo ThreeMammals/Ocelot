@@ -1,18 +1,18 @@
-﻿namespace Ocelot.RateLimit.Middleware
+﻿using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+namespace Ocelot.RateLimit.Middleware
 {
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     public class ClientRateLimitMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

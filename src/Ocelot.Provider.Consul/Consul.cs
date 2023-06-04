@@ -1,20 +1,20 @@
-﻿namespace Ocelot.Provider.Consul
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using global::Consul;
+
+using Ocelot.Infrastructure.Extensions;
+
+using Ocelot.Logging;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Values;
+
+namespace Ocelot.Provider.Consul
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using global::Consul;
-
-    using Infrastructure.Extensions;
-
-    using Logging;
-
-    using ServiceDiscovery.Providers;
-
-    using Values;
-
     public class Consul : IServiceDiscoveryProvider
     {
         private readonly ConsulRegistryConfiguration _config;

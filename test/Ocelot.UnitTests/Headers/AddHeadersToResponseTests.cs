@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var addHeaders = new List<AddHeader>
             {
-                new("Laura", "Tom")
+                new("Laura", "Tom"),
             };
 
             this.Given(_ => GivenAResponseMessage())
@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var addHeaders = new List<AddHeader>
             {
-                new("Trace-Id", "{TraceId}")
+                new("Trace-Id", "{TraceId}"),
             };
 
             var traceId = "123";
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.Headers
             var addHeaders = new List<AddHeader>
             {
                 new("Trace-Id", "{TraceId}"),
-                new("Tom", "Laura")
+                new("Tom", "Laura"),
             };
 
             var traceId = "123";
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.Headers
         {
             var addHeaders = new List<AddHeader>
             {
-                new("Trace-Id", "{TraceId}")
+                new("Trace-Id", "{TraceId}"),
             };
 
             this.Given(_ => GivenAResponseMessage())
