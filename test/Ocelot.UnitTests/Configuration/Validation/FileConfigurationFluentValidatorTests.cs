@@ -947,13 +947,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test",
-                        },
-                    },
-                },
+                            AuthenticationProviderKeys = new List<string> { "Test #1", "Test #2" }
+                        }
+                    }
+                }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AuthenticationProviderKeys:[Test #1,Test #2],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 

@@ -1,10 +1,11 @@
 ﻿namespace Ocelot.Configuration.File
 {
-    public class FileAuthenticationOptions
+    public sealed class FileAuthenticationOptions
     {
         public FileAuthenticationOptions()
         {
             AllowedScopes = new List<string>();
+            AuthenticationProviderKeys = new List<string>();
         }
 
         public FileAuthenticationOptions(FileAuthenticationOptions from)
@@ -13,13 +14,20 @@
             AuthenticationProviderKey = from.AuthenticationProviderKey;
         }
 
-        public string AuthenticationProviderKey { get; set; }
         public List<string> AllowedScopes { get; set; }
+
+        public string AuthenticationProviderKey { get; set; }
+
+        public List<string> AuthenticationProviderKeys { get; set; }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AllowedScopes)}:[");
+
+            sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AuthenticationProviderKeys)}:[");
+            sb.AppendJoin(',', AuthenticationProviderKeys);
+            sb.Append("],");
+            sb.Append($"{nameof(AllowedScopes)}:[");
             sb.AppendJoin(',', AllowedScopes);
             sb.Append(']');
             return sb.ToString();

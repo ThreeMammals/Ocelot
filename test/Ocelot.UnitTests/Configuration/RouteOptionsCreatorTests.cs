@@ -8,7 +8,9 @@ namespace Ocelot.UnitTests.Configuration
     public class RouteOptionsCreatorTests
     {
         private readonly RouteOptionsCreator _creator;
+
         private FileRoute _route;
+
         private RouteOptions _result;
 
         public RouteOptionsCreatorTests()
@@ -16,8 +18,10 @@ namespace Ocelot.UnitTests.Configuration
             _creator = new RouteOptionsCreator();
         }
 
-        [Fact]
-        public void should_create_re_route_options()
+        [InlineData(false)]
+        [InlineData(true)]
+        [Theory]
+        public void should_create_re_route_options(bool isAuthenticationProviderKeys)
         {
             var route = new FileRoute
             {
@@ -27,7 +31,8 @@ namespace Ocelot.UnitTests.Configuration
                 },
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "Test",
+                    AuthenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null,
+                    AuthenticationProviderKeys = isAuthenticationProviderKeys ? new List<string> { string.Empty, "Test #1" } : null,
                 },
                 RouteClaimsRequirement = new Dictionary<string, string>
                 {

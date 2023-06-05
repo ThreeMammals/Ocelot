@@ -6,7 +6,11 @@ namespace Ocelot.Configuration.Creator
     {
         public AuthenticationOptions Create(FileRoute route)
         {
-            return new AuthenticationOptions(route.AuthenticationOptions.AllowedScopes, route.AuthenticationOptions.AuthenticationProviderKey);
+            return new AuthenticationOptions(
+                route.AuthenticationOptions.AllowedScopes,
+                route.AuthenticationOptions.AuthenticationProviderKey,
+                route.AuthenticationOptions.AuthenticationProviderKeys
+            );
         }
     }
 }
