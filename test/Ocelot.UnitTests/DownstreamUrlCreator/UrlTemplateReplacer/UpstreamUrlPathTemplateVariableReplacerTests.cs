@@ -114,7 +114,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         {
             var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new("{productId}", "1")
+                new("{productId}", "1"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -135,7 +135,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         {
             var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new("{productId}", "1")
+                new("{productId}", "1"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
             var templateVariables = new List<PlaceholderNameAndValue>
             {
                 new("{productId}", "1"),
-                new("{variantId}", "12")
+                new("{variantId}", "12"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -180,7 +180,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
             {
                 new("{productId}", "1"),
                 new("{variantId}", "12"),
-                new("{categoryId}", "34")
+                new("{categoryId}", "34"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,

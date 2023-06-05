@@ -1,13 +1,13 @@
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Responses;
-
-    using Values;
-
     public interface ILoadBalancer
     {
         Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext);

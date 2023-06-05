@@ -1,15 +1,15 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Responses;
-
-    using Values;
-
     public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;

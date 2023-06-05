@@ -1,27 +1,26 @@
 ﻿using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Claims;
+using Ocelot.Claims.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Xunit;
 
 namespace Ocelot.UnitTests.Claims
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Claims;
-    using Ocelot.Claims.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ClaimsToClaimsMiddlewareTests
     {
         private readonly Mock<IAddClaimsToRequest> _addHeaders;
@@ -51,7 +50,7 @@ namespace Ocelot.UnitTests.Claims
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToClaims(new List<ClaimToThing>
                         {
-                            new("sub", "UserType", "|", 0)
+                            new("sub", "UserType", "|", 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())

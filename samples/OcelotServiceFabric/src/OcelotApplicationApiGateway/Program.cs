@@ -3,16 +3,15 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Diagnostics.Tracing;
+using System.Threading;
+
+using Microsoft.ServiceFabric.Services.Runtime;
+
 namespace OcelotApplicationApiGateway
 
 {
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.Threading;
-
-    using Microsoft.ServiceFabric.Services.Runtime;
-
-
     /// <summary>
     /// The service host is the executable that hosts the Service instances.
     /// </summary>

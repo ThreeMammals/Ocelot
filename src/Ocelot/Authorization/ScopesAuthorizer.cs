@@ -3,11 +3,10 @@ using System.Linq;
 using System.Security.Claims;
 
 using Ocelot.Responses;
+using Ocelot.Infrastructure.Claims.Parser;
 
 namespace Ocelot.Authorization
 {
-    using Infrastructure.Claims.Parser;
-
     public class ScopesAuthorizer : IScopesAuthorizer
     {
         private readonly IClaimsParser _claimsParser;

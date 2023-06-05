@@ -1,24 +1,19 @@
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
     using Ocelot.DownstreamRouteFinder.Finder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
 
     public class DownstreamRouteProviderFactoryTests
     {
@@ -48,7 +43,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             var routes = new List<Route>
             {
-                new RouteBuilder().Build()
+                new RouteBuilder().Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes))
@@ -63,7 +58,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var routes = new List<Route>
             {
-                new RouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build()
+                new RouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))
@@ -138,7 +133,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
             var routes = new List<Route>
             {
-                new RouteBuilder().Build()
+                new RouteBuilder().Build(),
             };
 
             this.Given(_ => GivenTheRoutes(routes, spConfig))

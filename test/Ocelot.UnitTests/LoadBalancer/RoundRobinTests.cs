@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             {
                 new("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, Array.Empty<string>()),
                 new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
-                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>())
+                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             _roundRobin = new RoundRobin(() => Task.FromResult(_services));

@@ -1,21 +1,21 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Consul;
+
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration.File;
-
-    using Consul;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Newtonsoft.Json;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class TwoDownstreamServicesTests : IDisposable
     {
         private readonly Steps _steps;
@@ -55,7 +55,7 @@
                                 {
                                     Host = "localhost",
                                     Port = servicePort1,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api/user/{user}",
                             UpstreamHttpMethod = new List<string> { "Get" },
@@ -70,11 +70,11 @@
                                 {
                                     Host = "localhost",
                                     Port = servicePort2,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/api/product/{product}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -82,9 +82,9 @@
                     {
                         Scheme = "https",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, "/api/user/info", 200, "user"))

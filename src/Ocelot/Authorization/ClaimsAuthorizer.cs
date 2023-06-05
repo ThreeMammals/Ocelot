@@ -1,16 +1,16 @@
-﻿namespace Ocelot.Authorization
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+using Ocelot.Infrastructure.Claims.Parser;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Authorization
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Security.Claims;
-    using System.Text.RegularExpressions;
-
-    using DownstreamRouteFinder.UrlMatcher;
-
-    using Ocelot.Infrastructure.Claims.Parser;
-
-    using Responses;
-
     public class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;

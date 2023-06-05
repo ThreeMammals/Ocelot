@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+
+using Newtonsoft.Json;
+
 namespace Ocelot.DependencyInjection
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Configuration.Memory;
-
-    using Newtonsoft.Json;
-
     public static class ConfigurationBuilderExtensions
     {
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
@@ -23,8 +23,8 @@ namespace Ocelot.DependencyInjection
             {
                 InitialData = new List<KeyValuePair<string, string>>
                 {
-                    new("BaseUrl", baseUrl)
-                }
+                    new("BaseUrl", baseUrl),
+                },
             };
 
             builder.Add(memorySource);

@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var userInput = new Dictionary<string, string>
             {
-                {"CustomerId", "Claims[CustomerId] > value"}
+                {"CustomerId", "Claims[CustomerId] > value"},
             };
 
             var claimsToThing = new OkResponse<ClaimToThing>(new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0));
@@ -61,7 +61,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var userInput = new Dictionary<string, string>
             {
-                {"CustomerId", "Claims[CustomerId] > value"}
+                {"CustomerId", "Claims[CustomerId] > value"},
             };
 
             var claimsToThing = new ErrorResponse<ClaimToThing>(It.IsAny<Error>());

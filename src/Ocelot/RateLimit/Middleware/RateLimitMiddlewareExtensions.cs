@@ -1,7 +1,7 @@
-﻿namespace Ocelot.RateLimit.Middleware
-{
-    using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
+namespace Ocelot.RateLimit.Middleware
+{
     public static class RateLimitMiddlewareExtensions
     {
         public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)

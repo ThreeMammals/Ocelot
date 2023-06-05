@@ -1,33 +1,23 @@
-﻿namespace Ocelot.UnitTests.Consul
+﻿using global::Consul;
+using Microsoft.Extensions.Options;
+using Moq;
+using Newtonsoft.Json;
+using Ocelot.Cache;
+using Ocelot.Configuration.File;
+using Ocelot.Logging;
+using Ocelot.Provider.Consul;
+using Ocelot.Responses;
+using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Consul
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using global::Consul;
-
-    using Microsoft.Extensions.Options;
-
-    using Moq;
-
-    using Newtonsoft.Json;
-
-    using Ocelot.Cache;
-    using Ocelot.Configuration.File;
-    using Ocelot.Logging;
-
-    using Provider.Consul;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ConsulFileConfigurationRepositoryTests
     {
         private ConsulFileConfigurationRepository _repo;
@@ -170,7 +160,7 @@
         {
             var response = new WriteResult<bool>
             {
-                Response = true
+                Response = true,
             };
 
             _kvEndpoint
@@ -199,12 +189,12 @@
 
             var kvp = new KVPair("OcelotConfiguration")
             {
-                Value = bytes
+                Value = bytes,
             };
 
             var query = new QueryResult<KVPair>
             {
-                Response = kvp
+                Response = kvp,
             };
 
             _kvEndpoint
@@ -246,11 +236,11 @@
                         {
                             Host = "123.12.12.12",
                             Port = 80,
-                        }
+                        },
                     },
                     DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}"
-                }
+                    DownstreamPathTemplate = "/asdfs/test/{test}",
+                },
             };
 
             var globalConfiguration = new FileGlobalConfiguration
@@ -259,14 +249,14 @@
                 {
                     Scheme = "https",
                     Port = 198,
-                    Host = "blah"
-                }
+                    Host = "blah",
+                },
             };
 
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                Routes = routes,
             };
         }
     }

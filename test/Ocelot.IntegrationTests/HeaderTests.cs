@@ -1,34 +1,33 @@
 using Xunit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using Ocelot.DependencyInjection;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+
+using Ocelot.Middleware;
+
+using Newtonsoft.Json;
+
+using Shouldly;
+
+using TestStack.BDDfy;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.IntegrationTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using DependencyInjection;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-
-    using Middleware;
-
-    using Newtonsoft.Json;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
     public class HeaderTests : IDisposable
     {
         private readonly HttpClient _httpClient;
@@ -62,20 +61,20 @@ namespace Ocelot.IntegrationTests
                             {
                                 Host = "localhost",
                                 Port = 6773,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         UpstreamHeaderTransform = new Dictionary<string,string>
                         {
-                            {"X-Forwarded-For", "{RemoteIpAddress}"}
+                            {"X-Forwarded-For", "{RemoteIpAddress}"},
                         },
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            AllowAutoRedirect = false
-                        }
-                    }
-                }
+                            AllowAutoRedirect = false,
+                        },
+                    },
+                },
             };
 
             this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:6773", 200, "X-Forwarded-For"))

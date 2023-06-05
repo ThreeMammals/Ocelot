@@ -1,24 +1,17 @@
-﻿namespace Ocelot.UnitTests.Consul
+﻿using Moq;
+using Ocelot.Infrastructure;
+using Ocelot.Logging;
+using Ocelot.Provider.Consul;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Consul
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Moq;
-
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
-    using Ocelot.ServiceDiscovery.Providers;
-
-    using Provider.Consul;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class PollingConsulServiceDiscoveryProviderTests
     {
         private readonly int _delay;

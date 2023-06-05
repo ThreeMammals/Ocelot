@@ -15,11 +15,10 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using Ocelot.Configuration.Repository;
 
 namespace Ocelot.UnitTests.Controllers
 {
-    using Ocelot.Configuration.Repository;
-
     public class FileConfigurationControllerTests
     {
         private readonly FileConfigurationController _controller;

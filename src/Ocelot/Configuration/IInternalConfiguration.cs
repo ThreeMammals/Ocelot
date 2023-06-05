@@ -1,9 +1,8 @@
 using System.Collections.Generic;
+using System;
 
 namespace Ocelot.Configuration
 {
-    using System;
-
     public interface IInternalConfiguration
     {
         List<Route> Routes { get; }

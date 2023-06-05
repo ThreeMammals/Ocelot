@@ -1,71 +1,70 @@
 ﻿using Ocelot.Configuration.ChangeTracking;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+using CacheManager.Core;
+
+using Ocelot.AcceptanceTests.Caching;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+
+using Ocelot.DependencyInjection;
+
+using IdentityServer4.AccessTokenValidation;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Ocelot.Middleware;
+
+using Moq;
+
+using Ocelot.Multiplexer;
+
+using Newtonsoft.Json;
+
+using Ocelot.Cache.CacheManager;
+using Ocelot.Provider.Consul;
+using Ocelot.Provider.Polly;
+using Ocelot.Tracing.Butterfly;
+using Ocelot.Tracing.OpenTracing;
+
+using Ocelot.Provider.Eureka;
+
+using Ocelot.Requester;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Shouldly;
+
+using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
+
+using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
+using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
+using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.IO.Compression;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using CacheManager.Core;
-
-    using Caching;
-
-    using Configuration;
-    using Configuration.Creator;
-    using Configuration.File;
-    using Configuration.Repository;
-
-    using DependencyInjection;
-
-    using IdentityServer4.AccessTokenValidation;
-
-    using LoadBalancer.LoadBalancers;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.TestHost;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-
-    using Middleware;
-
-    using Moq;
-
-    using Multiplexer;
-
-    using Newtonsoft.Json;
-
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Provider.Consul;
-    using Ocelot.Provider.Polly;
-    using Ocelot.Tracing.Butterfly;
-    using Ocelot.Tracing.OpenTracing;
-
-    using Provider.Eureka;
-
-    using Requester;
-
-    using ServiceDiscovery.Providers;
-
-    using Shouldly;
-
-    using static HttpDelegatingHandlersTests;
-
-    using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
-    using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
-    using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
-
     public class Steps : IDisposable
     {
         private TestServer _ocelotServer;
@@ -280,6 +279,8 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
         /// </summary>
+        /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
+        /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
         public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer
         {
@@ -878,7 +879,7 @@ namespace Ocelot.AcceptanceTests
                 new("scope", "api2"),
                 new("username", "test"),
                 new("password", "test"),
-                new("grant_type", "password")
+                new("grant_type", "password"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -1285,6 +1286,7 @@ namespace Ocelot.AcceptanceTests
                     _logger = new Mock<IOcelotLogger>();
                     _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
                 }
+
                 return _logger.Object;
             }
 

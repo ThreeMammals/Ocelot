@@ -1,12 +1,12 @@
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
 namespace Ocelot.Logging
 {
-    using System;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
     public interface ITracer
     {
         void Event(HttpContext httpContext, string @event);

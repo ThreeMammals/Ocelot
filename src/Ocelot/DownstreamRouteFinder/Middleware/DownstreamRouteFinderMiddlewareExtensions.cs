@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Builder;
+
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
-    using Microsoft.AspNetCore.Builder;
-
     public static class DownstreamRouteFinderMiddlewareExtensions
     {
         public static IApplicationBuilder UseDownstreamRouteFinderMiddleware(this IApplicationBuilder builder)

@@ -1,28 +1,22 @@
-﻿namespace Ocelot.UnitTests.Headers
+﻿using Microsoft.AspNetCore.Http;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Headers;
+using Ocelot.Headers.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Headers
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Headers;
-    using Ocelot.Headers.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ClaimsToHeadersMiddlewareTests
     {
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
@@ -54,7 +48,7 @@
                             .WithDownstreamPathTemplate("any old string")
                             .WithClaimsToHeaders(new List<ClaimToThing>
                             {
-                                new("UserId", "Subject", string.Empty, 0)
+                                new("UserId", "Subject", string.Empty, 0),
                             })
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())

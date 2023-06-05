@@ -1,23 +1,23 @@
-﻿namespace Ocelot.Configuration.Validator
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Ocelot.Errors;
+
+using Ocelot.Configuration.File;
+
+using FluentValidation;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery;
+
+namespace Ocelot.Configuration.Validator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-
-    using Errors;
-
-    using File;
-
-    using FluentValidation;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Responses;
-
-    using ServiceDiscovery;
-
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
         private const string Servicefabric = "servicefabric";

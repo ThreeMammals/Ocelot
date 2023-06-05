@@ -3,15 +3,15 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Diagnostics.Tracing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+
 namespace OcelotApplicationApiGateway
 {
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-
     /// <summary>
     /// ServiceEventListener is a class which listens to the eventsources registered and redirects the traces to a file
     /// Note that this class serves as a template to EventListener class and redirects the logs to /tmp/{appnameyyyyMMddHHmmssffff}.

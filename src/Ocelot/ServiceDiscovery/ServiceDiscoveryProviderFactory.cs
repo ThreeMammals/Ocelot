@@ -1,22 +1,22 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.ServiceDiscovery.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Configuration;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
 namespace Ocelot.ServiceDiscovery
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Configuration;
-
-    using Logging;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Ocelot.Configuration;
-
-    using Providers;
-
-    using Responses;
-
-    using Values;
-
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;

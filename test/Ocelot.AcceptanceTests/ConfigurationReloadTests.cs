@@ -23,16 +23,16 @@ namespace Ocelot.AcceptanceTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "initialKey"
-                }
+                    RequestIdKey = "initialKey",
+                },
             };
 
             _anotherConfig = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "someOtherKey"
-                }
+                    RequestIdKey = "someOtherKey",
+                },
             };
         }
 

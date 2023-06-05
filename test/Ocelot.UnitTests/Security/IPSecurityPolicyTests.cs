@@ -1,23 +1,18 @@
-﻿namespace Ocelot.UnitTests.Security
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using Ocelot.Security.IPSecurity;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Security
 {
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Security.IPSecurity;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class IPSecurityPolicyTests
     {
         private readonly DownstreamRouteBuilder _downstreamRouteBuilder;

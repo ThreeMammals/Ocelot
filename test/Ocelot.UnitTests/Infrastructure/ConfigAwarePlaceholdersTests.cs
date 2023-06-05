@@ -1,19 +1,19 @@
+using System;
+
+using Microsoft.Extensions.Configuration;
+
+using Moq;
+
+using Ocelot.Infrastructure;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Infrastructure
 {
-    using System;
-
-    using Microsoft.Extensions.Configuration;
-
-    using Moq;
-
-    using Ocelot.Infrastructure;
-
-    using Responses;
-
-    using Shouldly;
-
-    using Xunit;
-
     public class ConfigAwarePlaceholdersTests
     {
         private readonly IPlaceholders _placeholders;
@@ -44,7 +44,6 @@ namespace Ocelot.UnitTests.Infrastructure
         public void should_return_value_from_config_with_same_name_as_placeholder_if_underlying_placeholder_not_found()
         {
             const string expected = "http://foo-bar.co.uk";
-            var baseUrl = "http://www.bbc.co.uk";
             const string key = "{BaseUrl}";
 
             _basePlaceholders.Setup(x => x.Get(key)).Returns(new ErrorResponse<string>(new FakeError()));

@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Authorization
-{
-    using Errors;
+﻿using Ocelot.Errors;
 
+namespace Ocelot.Authorization
+{
     public class ClaimValueNotAuthorizedError : Error
     {
         public ClaimValueNotAuthorizedError(string message)

@@ -1,13 +1,13 @@
+using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Headers.Middleware
 {
-    using System.Threading.Tasks;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
