@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration
 {
-    public class AuthenticationOptions
+    public sealed class AuthenticationOptions
     {
         public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey)
         {
@@ -10,7 +10,16 @@ namespace Ocelot.Configuration
             AuthenticationProviderKey = authenticationProviderKey;
         }
 
+        public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, List<string> authenticationProviderKeys)
+            : this(allowedScopes, authenticationProviderKey)
+        {
+            AuthenticationProviderKeys = authenticationProviderKeys;
+        }
+
         public List<string> AllowedScopes { get; }
+
         public string AuthenticationProviderKey { get; }
+
+        public List<string> AuthenticationProviderKeys { get; }
     }
 }

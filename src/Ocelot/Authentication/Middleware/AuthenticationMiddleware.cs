@@ -1,22 +1,20 @@
-﻿using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Middleware;
-
-namespace Ocelot.Authentication.Middleware
+﻿namespace Ocelot.Authentication.Middleware
 {
-    public class AuthenticationMiddleware : OcelotMiddleware
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Http;
+    using Ocelot.Configuration;
+    using Ocelot.Logging;
+    using Ocelot.Middleware;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    public sealed class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public AuthenticationMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory)
+        public AuthenticationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
             : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
@@ -30,7 +28,7 @@ namespace Ocelot.Authentication.Middleware
             {
                 Logger.LogInformation($"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
-                var result = await httpContext.AuthenticateAsync(downstreamRoute.AuthenticationOptions.AuthenticationProviderKey);
+                var result = await AuthenticateAsync(httpContext, downstreamRoute);
 
                 httpContext.User = result.Principal;
 
@@ -55,6 +53,38 @@ namespace Ocelot.Authentication.Middleware
 
                 await _next.Invoke(httpContext);
             }
+        }
+
+        private async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
+        {
+            AuthenticateResult result = null;
+
+            if (!string.IsNullOrWhiteSpace(route.AuthenticationOptions.AuthenticationProviderKey))
+            {
+                result = await httpContext.AuthenticateAsync(route.AuthenticationOptions.AuthenticationProviderKey);
+                if (result.Succeeded)
+                {
+                    return result;
+                }
+            }
+
+            IEnumerable<string> authenticationProviderKeys =
+                route
+                .AuthenticationOptions
+                .AuthenticationProviderKeys
+                ?.Where(apk => !string.IsNullOrWhiteSpace(apk))
+                ?? Array.Empty<string>();
+
+            foreach (var authenticationProviderKey in authenticationProviderKeys)
+            {
+                result = await httpContext.AuthenticateAsync(authenticationProviderKey);
+                if (result.Succeeded)
+                {
+                    break;
+                }
+            }
+
+            return result;
         }
 
         private static bool IsAuthenticatedRoute(DownstreamRoute route)

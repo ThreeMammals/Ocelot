@@ -215,7 +215,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(_ => GivenThe(fileRoute))
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:JwtLads,AllowedScopes:[] is unsupported authentication provider"))
+                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:JwtLads,AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 

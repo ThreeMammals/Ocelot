@@ -16,7 +16,9 @@ namespace Ocelot.UnitTests.Configuration
     public class AuthenticationOptionsCreatorTests
     {
         private readonly AuthenticationOptionsCreator _authOptionsCreator;
+
         private FileRoute _fileRoute;
+
         private AuthenticationOptions _result;
 
         public AuthenticationOptionsCreatorTests()
@@ -24,21 +26,27 @@ namespace Ocelot.UnitTests.Configuration
             _authOptionsCreator = new AuthenticationOptionsCreator();
         }
 
-        [Fact]
-        public void should_return_auth_options()
+        [InlineData(false)]
+        [InlineData(true)]
+        [Theory]
+        public void should_return_auth_options(bool isAuthenticationProviderKeys)
         {
-            var fileRoute = new FileRoute
+            string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
+            List<string> authenticationProviderKeys = isAuthenticationProviderKeys ? new List<string> { "Test #1", "Test #2" } : null;
+            var fileRoute = new FileRoute()
             {
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "Test",
                     AllowedScopes = new List<string> { "cheese" },
-                },
+                    AuthenticationProviderKey = authenticationProviderKey,
+                    AuthenticationProviderKeys = authenticationProviderKeys
+                }
             };
 
             var expected = new AuthenticationOptionsBuilder()
                     .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
-                    .WithAuthenticationProviderKey("Test")
+                    .WithAuthenticationProviderKey(authenticationProviderKey)
+                    .WithAuthenticationProviderKeys(authenticationProviderKeys)
                     .Build();
 
             this.Given(x => x.GivenTheFollowing(fileRoute))
@@ -61,6 +69,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.AllowedScopes.ShouldBe(expected.AllowedScopes);
             _result.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
+            _result.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
         }
     }
 }

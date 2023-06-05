@@ -1,9 +1,12 @@
-using Ocelot.Configuration.Builder;
-
-using Ocelot.Configuration.File;
-
 namespace Ocelot.Configuration.Creator
 {
+    using Builder;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Configuration.File;
+    using System.Linq;
+
+    using File;
+
     public class RouteOptionsCreator : IRouteOptionsCreator
     {
         public RouteOptions Create(FileRoute fileRoute)
@@ -27,7 +30,19 @@ namespace Ocelot.Configuration.Creator
 
         private static bool IsEnableRateLimiting(FileRoute fileRoute) => fileRoute.RateLimitOptions?.EnableRateLimiting == true;
 
-        private static bool IsAuthenticated(FileRoute fileRoute) => !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
+        private bool IsAuthenticated(FileRoute fileRoute)
+        {
+            FileAuthenticationOptions authenticationOptions = fileRoute.AuthenticationOptions;
+
+            if (authenticationOptions is null)
+            {
+                return false;
+            }
+
+            return
+                !string.IsNullOrEmpty(authenticationOptions.AuthenticationProviderKey)
+                || authenticationOptions.AuthenticationProviderKeys?.Any(apk => !string.IsNullOrWhiteSpace(apk)) == true;
+        }
 
         private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;
 
