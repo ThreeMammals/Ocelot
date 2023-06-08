@@ -60,7 +60,7 @@ namespace Ocelot.Cache.Middleware
                 return;
             }
 
-            Logger.LogDebug($"No response cached for '{downstreamUrlKey}' key.");
+            Logger.LogDebug($"No response cached for the '{downstreamUrlKey}' key.");
 
             await _next.Invoke(httpContext);
 
