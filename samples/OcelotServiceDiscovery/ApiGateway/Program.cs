@@ -3,12 +3,10 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
-
-using System;
+using Ocelot.ServiceDiscovery.Providers;
 
 namespace ApiGateway;
 
@@ -33,12 +31,24 @@ public class Program
             })
             .ConfigureServices(s =>
             {
-                ServiceDiscoveryFinderDelegate serviceDiscoveryFinder = (serviceProvider, config, downstreamRoute) =>
-                {
-                    return new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute);
-                };
+                // Initialize from app configuration or hardcode/choose the best option.
+                bool easyWay = true;
 
-                s.AddSingleton(serviceDiscoveryFinder);
+                if (easyWay)
+                {
+                    // Option #1. Define custom finder delegate to instantiate custom provider
+                    // by default factory which is ServiceDiscoveryProviderFactory
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
+                        => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
+                }
+                else
+                {
+                    // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
+                    // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
+                    s.AddScoped<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
+                    s.AddScoped<IServiceDiscoveryProvider, MyServiceDiscoveryProvider>();
+                }
+
                 s.AddOcelot();
             })
             .Configure(a =>
