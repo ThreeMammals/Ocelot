@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.32112.339
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -88,7 +88,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotOpenTracing", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service-discovery", "service-discovery", "{25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "samples\OcelotServiceDiscovery\ApiGateway\ApiGateway.csproj", "{D37209EA-C13E-42AE-B851-A8604F1FCD0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.ApiGateway", "samples\OcelotServiceDiscovery\ApiGateway\Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj", "{D37209EA-C13E-42AE-B851-A8604F1FCD0E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "samples\OcelotServiceDiscovery\DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{E2AC741A-4120-4D59-B5E4-16382ED45E8D}"
 EndProject

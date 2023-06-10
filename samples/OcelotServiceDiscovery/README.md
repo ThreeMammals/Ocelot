@@ -22,7 +22,7 @@ This sample constains a simple setup using a custom service discovery provider.
 
     Leave the service running
 
-3. Make a http request to http://localhost:5000/Category you should get the following response
+3. Make a http request to http://localhost:5000/Categories you should get the following response
 
     ```json
     ["category1","category2"]

@@ -1,5 +1,4 @@
-﻿using ApiGateway.ServiceDiscovery;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +7,9 @@ using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace ApiGateway;
+namespace Ocelot.Samples.ServiceDiscovery.ApiGateway;
+
+using ServiceDiscovery;
 
 public class Program
 {

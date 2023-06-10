@@ -1,9 +1,9 @@
 ﻿{
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/Category",
+      "DownstreamPathTemplate": "/api/Categories",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/Category",
+      "UpstreamPathTemplate": "/Categories",
       "ServiceName": "downstream-service",
       "UpstreamHttpMethod": [ "Get" ],
       "FileCacheOptions": { "TtlSeconds": 15 }

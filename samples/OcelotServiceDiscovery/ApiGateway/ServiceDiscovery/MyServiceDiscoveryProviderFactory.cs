@@ -5,7 +5,7 @@ using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using System;
 
-namespace ApiGateway.ServiceDiscovery;
+namespace Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
 
 public class MyServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
 {

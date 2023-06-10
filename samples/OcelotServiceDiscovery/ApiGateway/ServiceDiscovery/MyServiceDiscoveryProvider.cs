@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ApiGateway.ServiceDiscovery;
+namespace Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
 
 public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
