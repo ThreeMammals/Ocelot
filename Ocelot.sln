@@ -90,7 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service-discovery", "servic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "samples\OcelotServiceDiscovery\ApiGateway\ApiGateway.csproj", "{D37209EA-C13E-42AE-B851-A8604F1FCD0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "samples\OcelotServiceDiscovery\DownstreamService\DownstreamService.csproj", "{E2AC741A-4120-4D59-B5E4-16382ED45E8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "samples\OcelotServiceDiscovery\DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{E2AC741A-4120-4D59-B5E4-16382ED45E8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
