@@ -149,17 +149,21 @@ namespace Ocelot.DependencyInjection
 
             MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
                 .Invoke(Services.AddMvcCore(), assembly);
-
-            Services.AddLogging();
-            Services.AddMiddlewareAnalysis();
-            Services.AddWebEncoders();
         }
 
-        private IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly) => builder
-            .AddApplicationPart(assembly)
-            .AddControllersAsServices()
-            .AddAuthorization()
-            .AddNewtonsoftJson();
+        public IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
+        {
+            Services
+                .AddLogging()
+                .AddMiddlewareAnalysis()
+                .AddWebEncoders();
+
+            return builder
+                .AddApplicationPart(assembly)
+                .AddControllersAsServices()
+                .AddAuthorization()
+                .AddNewtonsoftJson();
+        }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
             where T : class, IDefinedAggregator
