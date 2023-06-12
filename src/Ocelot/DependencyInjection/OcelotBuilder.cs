@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-
 using Ocelot.Authorization;
 using Ocelot.Cache;
 using Ocelot.Claims;
@@ -38,7 +37,6 @@ using Ocelot.Security;
 using Ocelot.Security.IPSecurity;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
-
 using System;
 using System.Linq;
 using System.Net.Http;
