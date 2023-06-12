@@ -1,5 +1,5 @@
 Configuration
-============
+=============
 
 An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json>`_. There are two sections to the configuration. An array of Routes and a GlobalConfiguration. The Routes are the objects that tell Ocelot how to treat an upstream request. The Global configuration is a bit hacky and allows overrides of Route specific settings. It's useful if you don't want to manage lots of Route specific settings.
 
@@ -69,7 +69,7 @@ Here is an example Route configuration, You don't need to set all of these thing
 More information on how to use these options is below..
 
 Multiple environments
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 Like any other asp.net core project Ocelot supports configuration file names such as configuration.dev.json, configuration.test.json etc. In order to implement this add the following 
 to you 
@@ -92,7 +92,7 @@ Ocelot will now use the environment specific configuration and fall back to ocel
 You also need to set the corresponding environment variable which is ASPNETCORE_ENVIRONMENT. More info on this can be found in the `asp.net core docs <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
 
 Merging configuration files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 This feature was requested in `Issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_ and allows users to have multiple configuration files to make managing large configurations easier.
 
@@ -132,8 +132,8 @@ You can also give Ocelot a specific path to look in for the configuration files 
 
 Ocelot needs the HostingEnvironment so it knows to exclude anything environment specific from the algorithm. 
 
-Store configuration in consul
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Store configuration in Consul
+-----------------------------
 
 The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
 
@@ -164,12 +164,12 @@ I decided to create this feature after working on the Raft consensus algorithm a
 This feature has a 3 second ttl cache before making a new request to your local consul agent.
 
 Reload JSON config on change
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 Ocelot supports reloading the json configuration file on change. e.g. the following will recreate Ocelots internal configuration when the ocelot.json file is updated
 manually.
 
-.. code-block:: json
+.. code-block:: csharp
 
     config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
@@ -193,7 +193,7 @@ In this example Ocelot will use Oceolot_A as the key for your configuration when
 If you do not set the ConfigurationKey Ocelot will use the string InternalConfiguration as the key.
 
 Follow Redirects / Use CookieContainer 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------
 
 Use HttpHandlerOptions in Route configuration to set up HttpHandler behavior:
 
@@ -201,8 +201,13 @@ Use HttpHandlerOptions in Route configuration to set up HttpHandler behavior:
 
 2. UseCookieContainer is a value that indicates whether the handler uses the CookieContainer property to store server cookies and uses these cookies when sending requests. The default value is false. Please note that if you are using the CookieContainer Ocelot caches the HttpClient for each downstream service. This means that all requests to that DownstreamService will share the same cookies. `Issue 274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared. I tried to think of a nice way to handle this but I think it is impossible. If you don't cache the clients that means each request gets a new client and therefore a new cookie container. If you clear the cookies from the cached client container you get race conditions due to inflight requests. This would also mean that subsequent requests don't use the cookies from the previous response! All in all not a great situation. I would avoid setting UseCookieContainer to true unless you have a really really good reason. Just look at your response headers and forward the cookies back with your next request! 
 
+MaxConnectionsPerServer property
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This controls how many connections the internal HttpClient will open. This can be set at Route or global level.
+
 SSL Errors
-^^^^^^^^^^
+----------
 
 If you want to ignore SSL warnings / errors set the following in your Route config.
 
@@ -212,20 +217,16 @@ If you want to ignore SSL warnings / errors set the following in your Route conf
 
 I don't recommend doing this, I suggest creating your own certificate and then getting it trusted by your local / remote machine if you can.
 
-MaxConnectionsPerServer
-^^^^^^^^^^^^^^^^^^^^^^^
-
-This controls how many connections the internal HttpClient will open. This can be set at Route or global level.
-
 React to Configuration Changes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 Resolve IOcelotConfigurationChangeTokenSource from the DI container if you wish to react to changes to the Ocelot configuration via the Ocelot.Administration API or ocelot.json being reloaded from the disk. You may either poll the change token's HasChanged property, or register a callback with the RegisterChangeCallback method.
 
 Polling the HasChanged property
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: csharp
+
     public class ConfigurationNotifyingService : BackgroundService
     {
         private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
@@ -249,9 +250,10 @@ Polling the HasChanged property
     }
     
 Registering a callback
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: csharp
+
     public class MyDependencyInjectedClass : IDisposable
     {
         private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
