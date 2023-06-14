@@ -60,7 +60,7 @@ The ``OcelotBuilder`` class is the core of Ocelot which does the following:
 - Initializes and stores public properties:
     **Services** (``IServiceCollection`` object), **Configuration** (``IConfiguration`` object) and **MvcCoreBuilder** (``IMvcCoreBuilder`` object)
 - Adds **all application services** during construction phase over the ``Services`` property
-- Adds ASP.NET services by builder using ``Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder>`` object in these 2 user scenarios:
+- Adds ASP.NET services by builder using ``Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder>`` object in these 2 development scenarios:
     - by default builder (``AddDefaultAspNetServices`` method) if there is no ``customBuilder`` parameter provided
     - by custom builder with provided delegate object as ``customBuilder`` parameter
 - Adds (switches on/off) Ocelot features by:
@@ -96,45 +96,83 @@ Current implementation is the folowing:
         }
 
 The method cannot be overridden. It is not virtual, and there is no way to override current behavior by inheritance.
-And, the method is default builder of Ocelot core while calling the  `AddOcelot <#the-addocelot-method>`_ method.
+And, the method is default builder of Ocelot core while calling the `AddOcelot <#the-addocelot-method>`_ method.
 As alternative, to "override" this default builder, you can design and reuse custom builder as a ``Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder>`` delegate object 
 and pass it as parameter to the `AddOcelotUsingBuilder <#the-addocelotusingbuilder-method>`_ extension method.
 It gives you full control on design and buiding of Ocelot core, but be careful while designing your custom Ocelot core as customizable ASP.NET MVC pipeline.
 
 Warning! Most of services from minimal part of the core should be reused, but only a few of services could be removed.
-The next paragraph shows you an example of designing custom Ocelot core by custom builder which removes default 
+
+Warning!! The method above is called after adding required services of ASP.NET MVC pipeline building by 
+`AddMvcCore <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoreservicecollectionextensions.addmvccore?view=aspnetcore-7.0>`_ method 
+over the ``Services`` property in upper calling context. These services are absolute minimum core services for ASP.NET MVC pipeline. They must be added to DI-container always, 
+and they are added implicitly before calling of the method by caller in upper context. So, ``AddMvcCore`` creates an ``IMvcCoreBuilder`` object with its assignment to the ``MvcCoreBuilder`` property.
+Finally, as default builder the method above receives ``IMvcCoreBuilder`` object being ready for further extensions.
+
+The next paragraph shows you an example of designing custom Ocelot core by custom builder.
+
+Custom Builder
+--------------
+**Goal**: Replace ``Newtonsoft.Json`` services by ``System.Text.Json`` services.
+
+The Problem
+^^^^^^^^^^^
+
+The default `AddOcelot <#the-addocelot-method>`_ method adds 
 `Newtonsoft JSON <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.newtonsoftjsonmvccorebuilderextensions.addnewtonsoftjson?view=aspnetcore-7.0>`_ services 
-and adds modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions?view=aspnetcore-7.0>`_ 
-from `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions?view=aspnetcore-7.0>`_.
+by the ``AddNewtonsoftJson`` extension method in default builder (the `AddDefaultAspNetServices <#the-adddefaultaspnetservices-method>`_ method). 
+The ``AddNewtonsoftJson`` method calling was introduced in old .NET and Ocelot releases which was necessary when Microsoft did not launch the ``System.Text.Json`` library, 
+but now it affects normal use, so we have an intention to solve the problem.
 
-Newtonsoft.Json vs System.Text.Json
------------------------------------
+Modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions?view=aspnetcore-7.0>`_ 
+from `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions?view=aspnetcore-7.0>`_
+will help to configure JSON settings by the ``JsonSerializerOptions`` property for JSON formatters during (de)serialization.
 
-The default ``AddOcelot`` method adds ``.AddNewtonsoftJson()``, which was necessary when Microsoft did not launch the ``System.Text.Json`` library, 
-but now it affects normal use, so this PR is mainly to solve the problem problem.
+Solution
+^^^^^^^^
 
-Added the following methods in ``Ocelot.DependencyInjection.ServiceCollectionExtensions``
-- ``AddOcelotWithCustomMvcCoreBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customMvcCoreBuilder)``
-- ``AddOcelotWithCustomMvcCoreBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customMvcCoreBuilder)``
+We have the following methods in ``Ocelot.DependencyInjection.ServiceCollectionExtensions`` class:
 
+- ``IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)``
+- ``IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)``
 
-Proposed Changes
-^^^^^^^^^^^^^^^^
-
-Support custom ``MvcCoreBuilder`` to adapt to more changes in the future, this change is mainly to support ``System.Text.Json``
-This allows users to use their desired JSON library for serialization, such as ``System.Text.Json``.
-
-For example:
+These method with custom builder allows you to use your any desired JSON library for (de)serialization.
+But we are going to create custom ``MvcCoreBuilder`` with support of JSON services, such as ``System.Text.Json``.
+To do that we need to call ``AddJsonOptions`` extension of the ``MvcCoreMvcCoreBuilderExtensions`` class 
+(NuGet package: `Microsoft.AspNetCore.Mvc.Core <https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Core/>`_) in **Startup.cs** file:
 
 .. code-block:: csharp
 
-    service.AddOcelotUsingBuilder((builder, assembly) =>
+    using Microsoft.Extensions.DependencyInjection;
+    using Ocelot.DependencyInjection;
+    using System.Reflection;
+    
+    public class Startup
     {
-        return builder
-            .AddApplicationPart(assembly)
-            .AddControllersAsServices()
-            .AddAuthorization()
-            .AddJsonOptions(); // use System.Text.Json
-    });
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services
+                .AddLogging()
+                .AddMiddlewareAnalysis()
+                .AddWebEncoders()
 
-This is just one of the common usages, users can add more modules they need in the builder.
+                .AddOcelotUsingBuilder(MyCustomBuilder);
+        }
+
+        private static IMvcCoreBuilder MyCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
+        {
+            return builder
+                .AddApplicationPart(assembly)
+                .AddControllersAsServices()
+                .AddAuthorization()
+
+                // Replace AddNewtonsoftJson() by AddJsonOptions()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.WriteIndented = true; // use System.Text.Json
+                });
+        }
+    }
+
+This sample code provides settings to render JSON as indented text rather than zipped plain JSON text.
+And, this is just one of the common usages, you can add more services you need in the builder.
