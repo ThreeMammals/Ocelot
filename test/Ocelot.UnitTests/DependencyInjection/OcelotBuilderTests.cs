@@ -221,11 +221,11 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void should_use_default_mvc_builder()
         {
             this.Given(x => x.WhenISetUpOcelotServicesWithoutConfig())
-                .Then(x => ShouldUseDefaultMvcBuilder())
+                .Then(x => CstorShouldUseDefaultBuilderToInitMvcCoreBuilder())
                 .BDDfy();
         }
 
-        private void ShouldUseDefaultMvcBuilder()
+        private void CstorShouldUseDefaultBuilderToInitMvcCoreBuilder()
         {
             _ocelotBuilder.ShouldNotBeNull();
             _ocelotBuilder.MvcCoreBuilder.ShouldNotBeNull();
@@ -284,7 +284,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void should_use_custom_mvc_builder()
         {
             this.Given(x => x.WhenISetupOcelotServicesWithCustomMvcBuider())
-                .Then(x => ShouldUseCustomMvcBuilder())
+                .Then(x => CstorShouldUseCustomBuilderToInitMvcCoreBuilder())
                 .BDDfy();
         }
 
@@ -314,7 +314,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             }
         }
 
-        private void ShouldUseCustomMvcBuilder()
+        private void CstorShouldUseCustomBuilderToInitMvcCoreBuilder()
         {
             _fakeCustomBuilderCalled.ShouldBeTrue();
 
