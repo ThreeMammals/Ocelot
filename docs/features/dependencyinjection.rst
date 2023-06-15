@@ -125,7 +125,7 @@ The ``AddNewtonsoftJson`` method calling was introduced in old .NET and Ocelot r
 but now it affects normal use, so we have an intention to solve the problem.
 
 Modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions?view=aspnetcore-7.0>`_ 
-from `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions?view=aspnetcore-7.0>`_
+out of `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions?view=aspnetcore-7.0>`_
 will help to configure JSON settings by the ``JsonSerializerOptions`` property for JSON formatters during (de)serialization.
 
 Solution
