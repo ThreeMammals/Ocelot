@@ -1,37 +1,37 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.MiddlewareAnalysis;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using Ocelot.Configuration.Setter;
+using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Multiplexer;
+using Ocelot.Requester;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Requester;
+using Ocelot.Values;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
-using Ocelot.Multiplexer;
-
-using Ocelot.Configuration.Setter;
-using Ocelot.DependencyInjection;
-using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Requester;
-
-using Ocelot.UnitTests.Requester;
-
-using Ocelot.Responses;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
-using Ocelot.Values;
-
 using Xunit;
-
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.DependencyInjection
@@ -215,6 +215,123 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, route, discoveryProvider) => new FakeCustomLoadBalancer()))
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_default_mvc_builder()
+        {
+            this.Given(x => x.WhenISetUpOcelotServicesWithoutConfig())
+                .Then(x => ShouldUseDefaultMvcBuilder())
+                .BDDfy();
+        }
+
+        private void ShouldUseDefaultMvcBuilder()
+        {
+            _ocelotBuilder.ShouldNotBeNull();
+            _ocelotBuilder.MvcCoreBuilder.ShouldNotBeNull();
+            _serviceProvider = _services.BuildServiceProvider();
+
+            // .AddMvcCore()
+            _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
+                .FirstOrDefault(s => s.GetType().Name == "MvcCoreMvcOptionsSetup")
+                .ShouldNotBeNull();
+
+            // .AddLogging()
+            _serviceProvider.GetService<ILoggerFactory>()
+                .ShouldNotBeNull().ShouldBeOfType<LoggerFactory>();
+            _serviceProvider.GetService<IConfigureOptions<LoggerFilterOptions>>()
+                .ShouldNotBeNull();
+
+            // .AddMiddlewareAnalysis()
+            _serviceProvider.GetService<IStartupFilter>()
+                .ShouldNotBeNull().ShouldBeOfType<AnalysisStartupFilter>();
+
+            // .AddWebEncoders()
+            _serviceProvider.GetService<HtmlEncoder>().ShouldNotBeNull();
+            _serviceProvider.GetService<JavaScriptEncoder>().ShouldNotBeNull();
+            _serviceProvider.GetService<UrlEncoder>().ShouldNotBeNull();
+
+            // .AddApplicationPart(assembly)
+            IList<ApplicationPart> list = _ocelotBuilder.MvcCoreBuilder.PartManager.ApplicationParts;
+            list.ShouldNotBeNull().Count.ShouldBe(2);
+            list.ShouldContain(part => part.Name == "Ocelot");
+            list.ShouldContain(part => part.Name == "Ocelot.UnitTests");
+
+            // .AddControllersAsServices()
+            _serviceProvider.GetService<IControllerActivator>()
+                .ShouldNotBeNull().ShouldBeOfType<ServiceBasedControllerActivator>();
+
+            // .AddAuthorization()
+            _serviceProvider.GetService<IAuthenticationService>()
+                .ShouldNotBeNull().ShouldBeOfType<AuthenticationService>();
+            _serviceProvider.GetService<IApplicationModelProvider>()
+                .ShouldNotBeNull()
+                .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
+
+            // .AddNewtonsoftJson()
+            _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
+                .FirstOrDefault(s => s.GetType().Name == "NewtonsoftJsonMvcOptionsSetup")
+                .ShouldNotBeNull();
+            _serviceProvider.GetService<IActionResultExecutor<JsonResult>>()
+                .ShouldNotBeNull()
+                .GetType().Name.ShouldBe("NewtonsoftJsonResultExecutor");
+            _serviceProvider.GetService<IJsonHelper>()
+                .ShouldNotBeNull()
+                .GetType().Name.ShouldBe("NewtonsoftJsonHelper");
+        }
+
+        [Fact]
+        public void should_use_custom_mvc_builder()
+        {
+            this.Given(x => x.WhenISetupOcelotServicesWithCustomMvcBuider())
+                .Then(x => ShouldUseCustomMvcBuilder())
+                .BDDfy();
+        }
+
+        private bool _fakeCustomBuilderCalled;
+
+        private IMvcCoreBuilder FakeCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
+        {
+            _fakeCustomBuilderCalled = true;
+
+            return builder
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.WriteIndented = true;
+                });
+        }
+
+        private void WhenISetupOcelotServicesWithCustomMvcBuider()
+        {
+            _fakeCustomBuilderCalled = false;
+            try
+            {
+                _ocelotBuilder = _services.AddOcelotUsingBuilder(FakeCustomBuilder);
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
+        }
+
+        private void ShouldUseCustomMvcBuilder()
+        {
+            _fakeCustomBuilderCalled.ShouldBeTrue();
+
+            _ocelotBuilder.ShouldNotBeNull();
+            _ocelotBuilder.MvcCoreBuilder.ShouldNotBeNull();
+            _serviceProvider = _services.BuildServiceProvider();
+
+            // .AddMvcCore()
+            _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
+                .FirstOrDefault(s => s.GetType().Name == "MvcCoreMvcOptionsSetup")
+                .ShouldNotBeNull();
+
+            // .AddJsonOptions(options => { })
+            _serviceProvider.GetService<IOptionsMonitorCache<JsonOptions>>()
+                .ShouldNotBeNull().ShouldBeOfType<OptionsCache<JsonOptions>>();
+            _serviceProvider.GetService<IConfigureOptions<JsonOptions>>()
+                .ShouldNotBeNull().ShouldBeOfType<ConfigureNamedOptions<JsonOptions>>();
         }
 
         private void AddSingletonDefinedAggregator<T>()
