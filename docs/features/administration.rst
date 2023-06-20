@@ -126,7 +126,7 @@ This gets the current Ocelot configuration. It is exactly the same JSON we use t
 
 **POST {adminPath}/configuration**
 
-This overrwrites the existing configuration (should probably be a put!). I recommend getting your config from the GET endpoint, making any changes and posting it back... simples.
+This overwrites the existing configuration (should probably be a put!). I recommend getting your config from the GET endpoint, making any changes and posting it back...simples.
 
 The body of the request is JSON and it is the same format as the FileConfiguration.cs that we use to set up Ocelot on a file system. 
 

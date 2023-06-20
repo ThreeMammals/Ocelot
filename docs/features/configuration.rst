@@ -140,9 +140,12 @@ Store configuration in Consul
 
 The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
 
-``Install-Package Ocelot.Provider.Consul``
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Consul
 
 Then you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in Consul KV store.
+In order to register Consul services we must call the ``AddConsul()`` and ``AddConfigStoredInConsul()`` extensions using the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
 
 .. code-block:: csharp
 
@@ -165,12 +168,12 @@ You also need to add the following to your **ocelot.json**. This is how Ocelot f
 I decided to create this feature after working on the Raft consensus algorithm and finding out its super hard. Why not take advantage of the fact Consul already gives you this! 
 I guess it means if you want to use Ocelot to its fullest you take on Consul as a dependency for now.
 
-This feature has a 3 second ttl cache before making a new request to your local Consul agent.
+This feature has a **3** seconds TTL cache before making a new request to your local Consul agent.
 
 Reload JSON config on change
 ----------------------------
 
-Ocelot supports reloading the json configuration file on change. e.g. the following will recreate Ocelot's internal configuration when the **ocelot.json** file is updated manually.
+Ocelot supports reloading the json configuration file on change. For instance, the following will recreate Ocelot's internal configuration when the **ocelot.json** file is updated manually:
 
 .. code-block:: csharp
 
@@ -180,7 +183,7 @@ Configuration Key
 -----------------
 
 If you are using Consul for configuration (or other providers in the future) you might want to key your configurations so you can have multiple configurations :) 
-This feature was requested in `#346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_! In order to specify the key you need to set the ConfigurationKey property in the ServiceDiscoveryProvider section of the configuration json file e.g.
+This feature was requested in `Issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_! In order to specify the key you need to set the ConfigurationKey property in the ServiceDiscoveryProvider section of the configuration json file e.g.
 
 .. code-block:: json
 
@@ -282,3 +285,7 @@ DownstreamHttpVersion
 ---------------------
 
 Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as "1.0", "1.1" or "2.0".
+
+""""
+
+.. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
