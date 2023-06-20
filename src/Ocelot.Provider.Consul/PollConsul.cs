@@ -1,53 +1,73 @@
 ﻿using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;
-using Ocelot.Values;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ocelot.Values;
 
-namespace Ocelot.Provider.Consul;
-
-public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
+namespace Ocelot.Provider.Consul
 {
-    private readonly IOcelotLogger _logger;
-    private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
-    private Timer _timer;
-    private bool _polling;
-    private List<Service> _services;
-
-    public PollConsul(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
+    public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     {
-        _logger = factory.CreateLogger<PollConsul>();
-        _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
-        _services = new List<Service>();
+        private readonly IOcelotLogger _logger;
+        private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
 
-        _timer = new Timer(async x =>
+        private readonly int _pollingInterval;
+        private DateTime _lastUpdateTime;
+
+        private List<Service> _services;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
+
+        public PollConsul(int pollingInterval, string serviceName, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
         {
-            if (_polling)
+            _logger = factory.CreateLogger<PollConsul>();
+            _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
+            _pollingInterval = pollingInterval;
+            ServiceName = serviceName;
+            _services = new List<Service>();
+
+            //initializing with update time = DateTime.MinValue
+            //polling will occur then.
+            _lastUpdateTime = DateTime.MinValue;
+        }
+
+        public string ServiceName { get; }
+
+        /// <summary>
+        /// Getting the services, but, if first call,
+        /// retrieving the services and then starting the timer.
+        /// </summary>
+        /// <returns>the service list.</returns>
+        public async Task<List<Service>> Get()
+        {
+            await _semaphore.WaitAsync();
+            try
             {
-                return;
+                var refreshTime = _lastUpdateTime.AddMilliseconds(_pollingInterval);
+
+                //checking if any services available
+                if (refreshTime >= DateTime.UtcNow && _services.Any())
+                {
+                    return _services;
+                }
+
+                _logger.LogInformation($"Retrieving new client information for service: {ServiceName}");
+                _services = await _consulServiceDiscoveryProvider.Get();
+                _lastUpdateTime = DateTime.UtcNow;
+
+                return _services;
             }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
 
-            _polling = true;
-            await Poll();
-            _polling = false;
-        }, null, pollingInterval, pollingInterval);
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
-        _timer = null;
-    }
-
-    public Task<List<Service>> Get()
-    {
-        return Task.FromResult(_services);
-    }
-
-    private async Task Poll()
-    {
-        _services = await _consulServiceDiscoveryProvider.Get();
+        public void Dispose()
+        {
+            _semaphore.Dispose();
+        }
     }
 }
