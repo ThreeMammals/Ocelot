@@ -42,6 +42,17 @@ namespace Ocelot.UnitTests.Consul
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_return_service_from_consul_without_delay()
+        {
+            var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
+
+            this.Given(x => GivenConsulReturns(service))
+                .When(x => WhenIGetTheServicesWithoutDelay(1))
+                .Then(x => ThenTheCountIs(1))
+                .BDDfy();
+        }
+
         private void GivenConsulReturns(Service service)
         {
             _services.Add(service);
@@ -55,28 +66,38 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServices(int expected)
         {
-            using (var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object))
+            using var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object);
+            var result = Wait.WaitFor(3000).Until(() =>
             {
-                var result = Wait.WaitFor(3000).Until(() =>
+                try
                 {
-                    try
-                    {
-                        _result = provider.Get().GetAwaiter().GetResult();
-                        if (_result.Count == expected)
-                        {
-                            return true;
-                        }
+                    _result = provider.Get().GetAwaiter().GetResult();
+                    return _result.Count == expected;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
 
-                        return false;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                });
+            result.ShouldBeTrue();
+        }
 
-                result.ShouldBeTrue();
+        private void WhenIGetTheServicesWithoutDelay(int expected)
+        {
+            using var provider = new PollConsul(_delay, "test2", _factory.Object, _consulServiceDiscoveryProvider.Object);
+            bool result;
+            try
+            {
+                _result = provider.Get().GetAwaiter().GetResult();
+                result = _result.Count == expected;
             }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            result.ShouldBeTrue();
         }
     }
 }
