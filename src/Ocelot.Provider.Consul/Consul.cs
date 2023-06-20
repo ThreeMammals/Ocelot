@@ -1,16 +1,11 @@
-﻿using System;
+﻿using Consul;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Providers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using global::Consul;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
-using Ocelot.ServiceDiscovery.Providers;
-
 using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul
@@ -71,12 +66,10 @@ namespace Ocelot.Provider.Consul
 
         private static bool IsValid(ServiceEntry serviceEntry)
         {
-            if (string.IsNullOrEmpty(serviceEntry.Service.Address) || serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
-            {
-                return false;
-            }
-
-            return true;
+            return !string.IsNullOrEmpty(serviceEntry.Service.Address)
+                   && !serviceEntry.Service.Address.Contains("http://")
+                   && !serviceEntry.Service.Address.Contains("https://")
+                   && serviceEntry.Service.Port > 0;
         }
 
         private static string GetVersionFromStrings(IEnumerable<string> strings)
