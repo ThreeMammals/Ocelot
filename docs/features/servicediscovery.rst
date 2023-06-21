@@ -346,8 +346,11 @@ Also, the keystone of this custom provider locates in ``ConfigureServices`` meth
                 {
                     // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
                     // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
-                    s.AddScoped<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
-                    s.AddScoped<IServiceDiscoveryProvider, MyServiceDiscoveryProvider>();
+                    s.RemoveAll<IServiceDiscoveryProviderFactory>();
+                    s.AddSingleton<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
+
+                    // Will not be called, but it is required for internal validators, aka life hack
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute) => null);
                 }
 
                 s.AddOcelot();
@@ -355,6 +358,8 @@ Also, the keystone of this custom provider locates in ``ConfigureServices`` meth
 
 Easy way, simple design means you develop provider class only and specify ``ServiceDiscoveryFinderDelegate`` object for default ``ServiceDiscoveryProviderFactory`` in Ocelot core.
 
-More complex design means you develop both, provider and provider's factory classes. After that you need to add both the ``IServiceDiscoveryProvider`` and ``IServiceDiscoveryProviderFactory`` 
-interfaces to DI-container. Please note, in this case default ``ServiceDiscoveryProviderFactory`` in Ocelot core will not be used.
+More complex design means you develop both, provider and provider's factory classes. After that you need to add the ``IServiceDiscoveryProviderFactory`` 
+interface to DI-container with removal of registered default ``ServiceDiscoveryProviderFactory`` class.
+Please note, in this case default ``ServiceDiscoveryProviderFactory`` in Ocelot core will not be used.
 Additionally you don't have to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** options of the GlobalConfiguration settings.
+But you can leave this ``Type`` option for compatibility between both designs.
