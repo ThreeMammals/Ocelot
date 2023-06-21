@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Samples.ServiceDiscovery.ApiGateway;
 
@@ -45,8 +45,12 @@ public class Program
                 {
                     // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
                     // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
-                    s.AddScoped<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
-                    s.AddScoped<IServiceDiscoveryProvider, MyServiceDiscoveryProvider>();
+                    s.RemoveAll<IServiceDiscoveryProviderFactory>();
+                    s.AddSingleton<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
+
+                    // Will not be called, but it is required for internal validators, aka life hack
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
+                        => null); // => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
                 }
 
                 s.AddOcelot();
