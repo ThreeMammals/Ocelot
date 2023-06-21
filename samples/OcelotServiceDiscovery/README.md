@@ -21,7 +21,7 @@ dotnet run
 Leave the gateway running.
 
 ### 3. Make a HTTP request
-To the URL: http://localhost:5000/Categories<br/>
+To the URL: http://localhost:5000/categories<br/>
 You should get the following response:
 ```json
 {
