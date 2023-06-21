@@ -1,7 +1,7 @@
 ﻿{
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/categories",
+      "DownstreamPathTemplate": "/categories",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/categories",
       "ServiceName": "downstream-service",

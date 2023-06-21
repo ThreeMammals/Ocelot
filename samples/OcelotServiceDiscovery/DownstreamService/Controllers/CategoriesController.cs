@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿namespace Ocelot.Samples.ServiceDiscovery.DownstreamService.Controllers;
 
-namespace Ocelot.Samples.ServiceDiscovery.DownstreamService.Controllers;
-
-[Route("api/[controller]")]
-public class CategoriesController : Controller
+[ApiController]
+[Route("[controller]")]
+public class CategoriesController : ControllerBase
 {
-    // GET api/categories
+    // GET /categories
     [HttpGet]
     public IEnumerable<string> Get()
     {
