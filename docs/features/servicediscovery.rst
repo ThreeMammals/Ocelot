@@ -7,11 +7,13 @@ Ocelot allows you to specify a service discovery provider and will use this to f
 GlobalConfiguration section which means the same service discovery provider will be used for all Routes you specify a ServiceName for at Route level. 
 
 Consul
-^^^^^^
+------
 
 The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
 
-``Install-Package Ocelot.Provider.Consul``
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Consul
 
 Then add the following to your ConfigureServices method.
 
@@ -92,7 +94,7 @@ Or
         }
 
 ACL Token
----------
+^^^^^^^^^
 
 If you are using ACL with Consul Ocelot supports adding the X-Consul-Token header. In order so this to work you must add the additional property below.
 
@@ -108,13 +110,15 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
 Ocelot will add this token to the Consul client that it uses to make requests and that is then used for every request.
 
 Eureka
-^^^^^^
+------
 
 This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issues/262>`_ . to add support for Netflix's Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
 
 The first thing you need to do is install the NuGet package that provides Eureka support in Ocelot.
 
-``Install-Package Ocelot.Provider.Eureka``
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Eureka
 
 Then add the following to your ConfigureServices method.
 
@@ -150,7 +154,7 @@ Ocelot will now register all the necessary services when it starts up and if you
 Ocelot will use the scheme (http/https) set in Eureka if these values are not provided in ocelot.json
 
 Dynamic Routing
-^^^^^^^^^^^^^^^
+---------------
 
 This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
 
@@ -244,7 +248,7 @@ This configuration means that if you have a request come into Ocelot on /product
 Please take a look through all of the docs to understand these options.
 
 Custom Providers
-^^^^^^^^^^^^^^^^
+----------------------------------
 
 Ocelot also allows you to create a custom ServiceDiscovery implementation.
 This is done by implementing the ``IServiceDiscoveryProvider`` interface like in the following example:
@@ -289,4 +293,68 @@ Finally, in the application's **ConfigureServices** method register a ``ServiceD
     };
     services.AddSingleton(serviceDiscoveryFinder);
     services.AddOcelot();
-    
+
+Custom provider sample
+^^^^^^^^^^^^^^^^^^^^^^
+
+In order to introduce the basic template of custom Service Discovery provider we've prepared nice Web API sample:
+
+    | **Link**: `samples <../../samples>`_ / `OcelotServiceDiscovery <../../samples/OcelotServiceDiscovery>`_
+    | **Solution**: `Ocelot.Samples.ServiceDiscovery.sln <../../samples/OcelotServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_
+
+This solution contains the following projects:
+
+- `ApiGateway <#apigateway>`_
+- `DownstreamService <#downstreamservice>`_
+
+This solution is ready for any kind of deployment. All services are linked which means all ports and hosts are prepared for immediate usage (running in Visual Studio).
+
+All instructions for running this solution are in `README.md <../../samples/OcelotServiceDiscovery/README.md>`_.
+
+DownstreamService
+"""""""""""""""""
+
+This project is a single downstream service to be reused in `ApiGateway <#apigateway>`_ routes.
+It has multiple **launchSettings.json** profiles for your favorite startup and hosting scenarios: in Visual Studio running sessions, console Kestrel hosting and Docker deployment for sure.
+
+ApiGateway
+""""""""""
+
+This project includes custom Service Discovery provider, and it has a route(s) to `DownstreamService <#downstreamservice>`_ services only in **ocelot.json** file.
+You are welcome to add more routes!
+
+The main source code for the custom provider is in the `ServiceDiscovery <../../samples/OcelotServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
+the ``MyServiceDiscoveryProvider`` and ``MyServiceDiscoveryProviderFactory`` classes. You are welcome to design and develop them!
+
+Also, the keystone of this custom provider locates in ``ConfigureServices`` method where you could choose a design & implementation options: easy or more complex:
+
+.. code-block:: csharp
+
+            builder.ConfigureServices(s =>
+            {
+                // Initialize from app configuration or hardcode/choose the best option.
+                bool easyWay = true;
+
+                if (easyWay)
+                {
+                    // Option #1. Define custom finder delegate to instantiate custom provider
+                    // by default factory which is ServiceDiscoveryProviderFactory
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
+                        => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
+                }
+                else
+                {
+                    // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
+                    // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
+                    s.AddScoped<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
+                    s.AddScoped<IServiceDiscoveryProvider, MyServiceDiscoveryProvider>();
+                }
+
+                s.AddOcelot();
+            });
+
+Easy way, simple design means you develop provider class only and specify ``ServiceDiscoveryFinderDelegate`` object for default ``ServiceDiscoveryProviderFactory`` in Ocelot core.
+
+More complex design means you develop both, provider and provider's factory classes. After that you need to add both the ``IServiceDiscoveryProvider`` and ``IServiceDiscoveryProviderFactory`` 
+interfaces to DI-container. Please note, in this case default ``ServiceDiscoveryProviderFactory`` in Ocelot core will not be used.
+Additionally you don't have to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** options of the GlobalConfiguration settings.
