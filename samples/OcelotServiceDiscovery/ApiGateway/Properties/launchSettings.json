@@ -18,7 +18,7 @@
     "ApiGateway": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Categories",
+      "launchUrl": "categories",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
