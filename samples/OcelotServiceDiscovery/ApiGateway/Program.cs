@@ -50,7 +50,7 @@ public class Program
 
                     // Will not be called, but it is required for internal validators, aka life hack
                     s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
-                        => null); // => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
+                        => null);
                 }
 
                 s.AddOcelot();
