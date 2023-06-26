@@ -12,9 +12,7 @@ public static class ConsulProviderFactory
     private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
     private static readonly object LockObject = new();
 
-#pragma warning disable CA2211 // Non-constant fields should not be visible
     public static ServiceDiscoveryFinderDelegate Get = (provider, config, route) =>
-#pragma warning restore CA2211 // Non-constant fields should not be visible
     {
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
