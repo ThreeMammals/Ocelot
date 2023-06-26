@@ -315,11 +315,11 @@ namespace Ocelot.AcceptanceTests
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>()
                                 {
-                                    new Scope("api"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access"),
+                                    "api",
+                                    "openid",
+                                    "offline_access",
                                 },
                                 ApiSecrets = new List<Secret>()
                                 {
