@@ -48,7 +48,6 @@ public class ProviderFactoryTests
         var provider = DummyPollingConsulServiceFactory(string.Empty);
         var pollProvider = provider as PollConsul;
         pollProvider.ShouldNotBeNull();
-        pollProvider.Dispose();
     }
 
     [Fact]
@@ -66,9 +65,6 @@ public class ProviderFactoryTests
         pollProvider2.ShouldNotBeNull();
 
         pollProvider.ServiceName.ShouldBeEquivalentTo(pollProvider2.ServiceName);
-
-        pollProvider.Dispose();
-        pollProvider2.Dispose();
     }
 
     [Theory]
@@ -103,11 +99,6 @@ public class ProviderFactoryTests
 
             matchingProviders.First().ShouldNotBeNull();
             matchingProviders.First().ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
-        }
-
-        foreach (var convertedProvider in convertedProvidersList)
-        {
-            convertedProvider.Dispose();
         }
     }
 

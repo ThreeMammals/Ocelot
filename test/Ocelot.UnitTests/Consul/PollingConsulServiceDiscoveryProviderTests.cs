@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServices(int expected)
         {
-            using var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object);
+            var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object);
             var result = Wait.WaitFor(3000).Until(() =>
             {
                 try
@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServicesWithoutDelay(int expected)
         {
-            using var provider = new PollConsul(_delay, "test2", _factory.Object, _consulServiceDiscoveryProvider.Object);
+            var provider = new PollConsul(_delay, "test2", _factory.Object, _consulServiceDiscoveryProvider.Object);
             bool result;
             try
             {

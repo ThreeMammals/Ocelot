@@ -3,22 +3,21 @@ using Ocelot.ServiceDiscovery.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul
 {
-    public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
+    public sealed class PollConsul : IServiceDiscoveryProvider
     {
         private readonly IOcelotLogger _logger;
         private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
 
         private readonly int _pollingInterval;
         private DateTime _lastUpdateTime;
+        private readonly object _lockObject = new();
 
         private List<Service> _services;
-        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public PollConsul(int pollingInterval, string serviceName, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
         {
@@ -40,34 +39,24 @@ namespace Ocelot.Provider.Consul
         /// retrieving the services and then starting the timer.
         /// </summary>
         /// <returns>the service list.</returns>
-        public async Task<List<Service>> Get()
+        public Task<List<Service>> Get()
         {
-            await _semaphore.WaitAsync();
-            try
+            lock (_lockObject)
             {
                 var refreshTime = _lastUpdateTime.AddMilliseconds(_pollingInterval);
 
                 //checking if any services available
                 if (refreshTime >= DateTime.UtcNow && _services.Any())
                 {
-                    return _services;
+                    return Task.FromResult(_services);
                 }
 
                 _logger.LogInformation($"Retrieving new client information for service: {ServiceName}");
-                _services = await _consulServiceDiscoveryProvider.Get();
+                _services = _consulServiceDiscoveryProvider.Get().Result;
                 _lastUpdateTime = DateTime.UtcNow;
 
-                return _services;
+                return Task.FromResult(_services);
             }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
-
-        public void Dispose()
-        {
-            _semaphore.Dispose();
         }
     }
 }
