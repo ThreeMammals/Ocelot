@@ -13,9 +13,8 @@ namespace Ocelot.Provider.Kubernetes
 {
     public static class KubernetesProviderFactory
     {
-        public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
         private const string PollKube = "pollkube";
-
+        public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
         private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
