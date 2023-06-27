@@ -27,7 +27,8 @@ namespace Ocelot.ServiceDiscovery
         {
             if (route.UseServiceDiscovery)
             {
-                _logger.LogInformation($"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{route.UpstreamPathTemplate}' is enabled.");
+                var routeName = route.UpstreamPathTemplate?.Template ?? route.ServiceName ?? string.Empty;
+                _logger.LogInformation($"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{routeName}' is enabled.");
                 return GetServiceDiscoveryProvider(serviceConfig, route);
             }
 
