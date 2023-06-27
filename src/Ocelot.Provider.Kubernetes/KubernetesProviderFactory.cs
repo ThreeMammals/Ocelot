@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -15,7 +16,7 @@ namespace Ocelot.Provider.Kubernetes
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
         private const string PollKube = "pollkube";
 
-        private static ServiceDiscovery.Providers.IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
+        private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
         {
             var factory = provider.GetService<IOcelotLoggerFactory>();
             var kubeClient = provider.GetService<IKubeApiClient>();
