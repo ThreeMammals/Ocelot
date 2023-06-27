@@ -3,9 +3,9 @@
 		<VersionPrefix>0.0.0-dev</VersionPrefix>
 		<TargetFramework>net7.0</TargetFramework>
 		<AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
-		<OutputType>Exe</OutputType>
-		<PackageId>Ocelot.AcceptanceTests</PackageId>
-		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <IsPackable>false</IsPackable>
+    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<RuntimeIdentifiers>osx.10.11-x64;osx.10.12-x64;win7-x64;win10-x64</RuntimeIdentifiers>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -35,9 +35,6 @@
 		<ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
 		<ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
 		<ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -70,8 +67,6 @@
 		<PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
 		<PackageReference Include="CacheManager.Serialization.Json" Version="2.0.0-beta-1629" />
 		<PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.3" />
-	</ItemGroup>
-	<ItemGroup>
 		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
 	</ItemGroup>
 </Project>
