@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Ocelot.Errors;
 
 using Ocelot.Configuration.File;
+using Ocelot.Common.Utils;
 
 using FluentValidation;
 
@@ -20,7 +21,6 @@ namespace Ocelot.Configuration.Validator
 {
     public class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        private const string Servicefabric = "servicefabric";
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
         public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
@@ -71,14 +71,14 @@ namespace Ocelot.Configuration.Validator
         private bool HaveServiceDiscoveryProviderRegistered(FileRoute route, FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             return string.IsNullOrEmpty(route.ServiceName) ||
-                   serviceDiscoveryProvider?.Type?.ToLower() == Servicefabric ||
+                   serviceDiscoveryProvider?.Type?.ToLower() == Constants.ServiceFabric.ToLower() ||
                    _serviceDiscoveryFinderDelegates.Any();
         }
 
         private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             return serviceDiscoveryProvider == null ||
-                   serviceDiscoveryProvider?.Type?.ToLower() == Servicefabric ||
+                   serviceDiscoveryProvider?.Type?.ToLower() == Constants.ServiceFabric.ToLower() ||
                    string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
         }
 

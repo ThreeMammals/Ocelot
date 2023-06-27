@@ -6,7 +6,7 @@ using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Logging;
 
 using Microsoft.Extensions.DependencyInjection;
-
+using Ocelot.Common.Utils;
 using Ocelot.Configuration;
 
 using Ocelot.ServiceDiscovery.Providers;
@@ -51,7 +51,7 @@ namespace Ocelot.ServiceDiscovery
 
         private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
         {
-            if (config.Type?.ToLower() == "servicefabric")
+            if (config.Type?.ToLower() == Constants.ServiceFabric.ToLower())
             {
                 var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
                 return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));

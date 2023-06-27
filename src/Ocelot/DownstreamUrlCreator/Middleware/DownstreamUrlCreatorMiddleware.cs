@@ -10,7 +10,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Common.Utils;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 
@@ -150,7 +150,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
         {
-            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
+            return config.ServiceProviderConfiguration.Type?.ToLower() == Constants.ServiceFabric.ToLower() && downstreamRoute.UseServiceDiscovery;
         }
     }
 }

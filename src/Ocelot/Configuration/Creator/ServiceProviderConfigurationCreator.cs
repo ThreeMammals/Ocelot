@@ -1,3 +1,4 @@
+using Ocelot.Common.Utils;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
@@ -12,7 +13,7 @@ namespace Ocelot.Configuration.Creator
             var host = globalConfiguration?.ServiceDiscoveryProvider?.Host ?? "localhost";
             var type = !string.IsNullOrEmpty(globalConfiguration?.ServiceDiscoveryProvider?.Type)
                 ? globalConfiguration?.ServiceDiscoveryProvider?.Type
-                : "consul";
+                : Constants.ConsulServiceDiscoveryProvider;
             var pollingInterval = globalConfiguration?.ServiceDiscoveryProvider?.PollingInterval ?? 0;
             var k8snamespace = globalConfiguration?.ServiceDiscoveryProvider?.Namespace ?? string.Empty;
 
