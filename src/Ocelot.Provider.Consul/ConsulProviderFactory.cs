@@ -11,6 +11,10 @@ namespace Ocelot.Provider.Consul;
 
 public static class ConsulProviderFactory
 {
+    /// <summary>
+    /// String constant used for provider type definition.
+    /// </summary>
+    public const string PollConsul = "PollConsul";
     private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
     private static readonly object LockObject = new();
 
@@ -26,7 +30,7 @@ public static class ConsulProviderFactory
 
         var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
 
-        if ("PollConsul".Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+        if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {
             lock (LockObject)
             {
