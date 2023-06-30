@@ -1,37 +1,37 @@
-﻿namespace Ocelot.UnitTests.Configuration
-{
-    using System;
-    using Moq;
-    using Ocelot.Cache;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Values;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using Moq;
+using Ocelot.Cache;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Values;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Configuration
+{
     public class RoutesCreatorTests
     {
-        private RoutesCreator _creator;
-        private Mock<IClaimsToThingCreator> _cthCreator;
-        private Mock<IAuthenticationOptionsCreator> _aoCreator;
-        private Mock<IUpstreamTemplatePatternCreator> _utpCreator;
-        private Mock<IRequestIdKeyCreator> _ridkCreator;
-        private Mock<IQoSOptionsCreator> _qosoCreator;
-        private Mock<IRouteOptionsCreator> _rroCreator;
-        private Mock<IRateLimitOptionsCreator> _rloCreator;
-        private Mock<IRegionCreator> _rCreator;
-        private Mock<IHttpHandlerOptionsCreator> _hhoCreator;
-        private Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
-        private Mock<IDownstreamAddressesCreator> _daCreator;
-        private Mock<ILoadBalancerOptionsCreator> _lboCreator;
-        private Mock<IRouteKeyCreator> _rrkCreator;
-        private Mock<ISecurityOptionsCreator> _soCreator;
-        private Mock<IVersionCreator> _versionCreator;
+        private readonly RoutesCreator _creator;
+        private readonly Mock<IClaimsToThingCreator> _cthCreator;
+        private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
+        private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
+        private readonly Mock<IQoSOptionsCreator> _qosoCreator;
+        private readonly Mock<IRouteOptionsCreator> _rroCreator;
+        private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
+        private readonly Mock<IRegionCreator> _rCreator;
+        private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
+        private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
+        private readonly Mock<IDownstreamAddressesCreator> _daCreator;
+        private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
+        private readonly Mock<IRouteKeyCreator> _rrkCreator;
+        private readonly Mock<ISecurityOptionsCreator> _soCreator;
+        private readonly Mock<IVersionCreator> _versionCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -47,7 +47,6 @@
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
-        private SecurityOptions _securityOptions;
         private Version _expectedVersion;
 
         public RoutesCreatorTests()
@@ -105,43 +104,43 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         ServiceName = "dave",
                         DangerousAcceptAnyServerCertificateValidator = true,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "a","b" }
+                            { "a","b" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "c","d" }
+                            { "c","d" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "e","f" }
+                            { "e","f" },
                         },
-                        UpstreamHttpMethod = new List<string> { "GET", "POST" }
+                        UpstreamHttpMethod = new List<string> { "GET", "POST" },
                     },
-                    new FileRoute
+                    new()
                     {
                         ServiceName = "wave",
                         DangerousAcceptAnyServerCertificateValidator = false,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "g","h" }
+                            { "g","h" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "i","j" }
+                            { "i","j" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "k","l" }
+                            { "k","l" },
                         },
-                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" }
-                    }
-                }
+                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))

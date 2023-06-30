@@ -1,20 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+
+using Ocelot.Values;
+
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
-    using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Request.Middleware;
-    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using System;
-    using System.Threading.Tasks;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -62,8 +69,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
 
                 //todo check this works again hope there is a test..
-                downstreamRequest.AbsolutePath = pathAndQuery.path;
-                downstreamRequest.Query = pathAndQuery.query;
+                downstreamRequest.AbsolutePath = pathAndQuery.Path;
+                downstreamRequest.Query = pathAndQuery.Query;
             }
             else
             {
@@ -99,7 +106,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
-                var name = nAndV.Name.Replace("{", "").Replace("}", "");
+                var name = nAndV.Name.Replace("{", string.Empty).Replace("}", string.Empty);
 
                 if (downstreamRequest.Query.Contains(name) &&
                     downstreamRequest.Query.Contains(nAndV.Value))
@@ -108,7 +115,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                     downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
 
                     var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
-                    downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, "");
+                    downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, string.Empty);
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
@@ -118,22 +125,22 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
         }
 
-        private string GetPath(DownstreamPath dsPath)
+        private static string GetPath(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(0, dsPath.Value.IndexOf("?", StringComparison.Ordinal));
+            return dsPath.Value.Substring(0, dsPath.Value.IndexOf('?', StringComparison.Ordinal));
         }
 
-        private string GetQueryString(DownstreamPath dsPath)
+        private static string GetQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(dsPath.Value.IndexOf("?", StringComparison.Ordinal));
+            return dsPath.Value.Substring(dsPath.Value.IndexOf('?', StringComparison.Ordinal));
         }
 
-        private bool ContainsQueryString(DownstreamPath dsPath)
+        private static bool ContainsQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Contains("?");
+            return dsPath.Value.Contains('?');
         }
 
-        private (string path, string query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
+        private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
         {
             var query = downstreamRequest.Query;
             var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);

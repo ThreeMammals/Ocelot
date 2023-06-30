@@ -1,10 +1,12 @@
-﻿namespace Ocelot.Configuration
-{
-    using Ocelot.Configuration.File;
-    using Ocelot.Values;
-    using System.Collections.Generic;
-    using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 
+using Ocelot.Configuration.File;
+
+using Ocelot.Values;
+
+namespace Ocelot.Configuration
+{
     public class Route
     {
         public Route(List<DownstreamRoute> downstreamRoute,
@@ -22,11 +24,11 @@
             Aggregator = aggregator;
         }
 
-        public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
-        public List<HttpMethod> UpstreamHttpMethod { get; private set; }
-        public string UpstreamHost { get; private set; }
-        public List<DownstreamRoute> DownstreamRoute { get; private set; }
-        public List<AggregateRouteConfig> DownstreamRouteConfig { get; private set; }
-        public string Aggregator { get; private set; }
+        public UpstreamPathTemplate UpstreamTemplatePattern { get; }
+        public List<HttpMethod> UpstreamHttpMethod { get; }
+        public string UpstreamHost { get; }
+        public List<DownstreamRoute> DownstreamRoute { get; }
+        public List<AggregateRouteConfig> DownstreamRouteConfig { get; }
+        public string Aggregator { get; }
     }
 }

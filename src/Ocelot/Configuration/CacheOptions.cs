@@ -8,8 +8,8 @@
             Region = region;
         }
 
-        public int TtlSeconds { get; private set; }
+        public int TtlSeconds { get; }
 
-        public string Region { get; private set; }
+        public string Region { get; }
     }
 }

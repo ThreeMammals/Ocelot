@@ -1,18 +1,21 @@
-﻿namespace OcelotOpenTracing
-{
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Hosting;
-    using System.IO;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
-    using Microsoft.Extensions.Logging;
-    using Ocelot.Tracing.OpenTracing;
-    using Jaeger;
-    using Microsoft.Extensions.DependencyInjection;
-    using OpenTracing;
-    using OpenTracing.Util;
+﻿using System.IO;
 
+using Jaeger;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Tracing.OpenTracing;
+
+using OpenTracing.Util;
+
+namespace OcelotOpenTracing
+{
     internal static class Program
     {
         private static void Main(string[] args)
@@ -35,10 +38,10 @@
                         })
                         .ConfigureServices((context, services) =>
                         {
-                            services.AddSingleton<ITracer>(sp =>
+                            services.AddSingleton(sp =>
                             {
                                 var loggerFactory = sp.GetService<ILoggerFactory>();
-                                Configuration config = new Configuration(context.HostingEnvironment.ApplicationName, loggerFactory);
+                                var config = new Configuration(context.HostingEnvironment.ApplicationName, loggerFactory);
 
                                 var tracer = config.GetTracer();
                                 GlobalTracer.Register(tracer);

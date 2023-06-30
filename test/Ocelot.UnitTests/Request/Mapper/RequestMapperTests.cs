@@ -1,23 +1,28 @@
-﻿namespace Ocelot.UnitTests.Request.Mapper
-{
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Primitives;
-    using Ocelot.Request.Mapper;
-    using Ocelot.Responses;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Security.Cryptography;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Request.Mapper;
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Request.Mapper
+{
     public class RequestMapperTests
     {
         private readonly HttpContext _httpContext;
@@ -254,7 +259,6 @@
             _inputRequest.ContentType = null;
         }
 
-
         private void ThenTheContentHeadersAreNotAddedToNonContentHeaders()
         {
             _mappedRequest.Data.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");
@@ -396,8 +400,8 @@
         {
             _inputHeaders = new List<KeyValuePair<string, StringValues>>()
             {
-                new KeyValuePair<string, StringValues>("abc", new StringValues(new string[]{"123","456" })),
-                new KeyValuePair<string, StringValues>("def", new StringValues(new string[]{"789","012" })),
+                new("abc", new StringValues(new string[]{"123","456" })),
+                new("def", new StringValues(new string[]{"789","012" })),
             };
 
             foreach (var inputHeader in _inputHeaders)

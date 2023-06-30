@@ -1,10 +1,8 @@
-[<img src="https://threemammals.com/images/ocelot_logo.png">](https://threemammals.com/ocelot)
+![Ocelot Logo](/images/ocelot_logo.png)
 
-[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/master)
+[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main)
 
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=master)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=master)
-
-[Slack](https://threemammals.slack.com)
+[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
 
 # Ocelot
 
@@ -13,7 +11,7 @@ that need a unified point of entry into their system. However it will work with 
 
 In particular I want easy integration with IdentityServer reference and bearer tokens. 
 
-We have been unable to find this in my current workplacewithout having to write our own Javascript middlewares to handle the IdentityServer reference tokens. We would rather use the IdentityServer code that already existsto do this.
+We have been unable to find this in my current workplace without having to write our own Javascript middlewares to handle the IdentityServer reference tokens. We would rather use the IdentityServer code that already exists to do this.
 
 Ocelot is a bunch of middlewares in a specific order.
 
@@ -43,7 +41,7 @@ A quick list of Ocelot's capabilities for more information see the [documentatio
 
 ## How to install
 
-Ocelot is designed to work with ASP.NET Core only and it targets `netcoreapp3.1`.
+Ocelot is designed to work with ASP.NET and it targets `net7.0`.
 
 Install Ocelot and it's dependencies using NuGet.
 

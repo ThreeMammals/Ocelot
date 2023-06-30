@@ -1,17 +1,21 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class RouteKeyCreatorTests
     {
-        private RouteKeyCreator _creator;
+        private readonly RouteKeyCreator _creator;
         private FileRoute _route;
         private string _result;
 
@@ -28,8 +32,8 @@ namespace Ocelot.UnitTests.Configuration
                 LoadBalancerOptions = new FileLoadBalancerOptions
                 {
                     Key = "testy",
-                    Type = nameof(CookieStickySessions)
-                }
+                    Type = nameof(CookieStickySessions),
+                },
             };
 
             this.Given(_ => GivenThe(route))
@@ -47,22 +51,22 @@ namespace Ocelot.UnitTests.Configuration
                 UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
-                        Port = 123
+                        Port = 123,
                     },
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
-                        Port = 123
-                    }
-                }
+                        Port = 123,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(",", route.UpstreamHttpMethod)}|{string.Join(",", route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
+                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(',', route.UpstreamHttpMethod)}|{string.Join(',', route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
                 .BDDfy();
         }
 

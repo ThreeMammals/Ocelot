@@ -1,5 +1,6 @@
-using Ocelot.Errors;
 using System.Collections.Generic;
+
+using Ocelot.Errors;
 
 namespace Ocelot.Responses
 {

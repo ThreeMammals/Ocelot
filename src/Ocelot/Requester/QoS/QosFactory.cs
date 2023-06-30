@@ -1,12 +1,16 @@
+using System;
+using System.Net.Http;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester.QoS
 {
-    using Configuration;
-    using Logging;
-    using Microsoft.Extensions.DependencyInjection;
-    using Responses;
-    using System;
-    using System.Net.Http;
-
     public class QoSFactory : IQoSFactory
     {
         private readonly IServiceProvider _serviceProvider;

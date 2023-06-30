@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using Ocelot.Middleware;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Configuration;
+using Ocelot.Middleware;
 
 namespace Ocelot.Multiplexer
 {
@@ -22,14 +24,14 @@ namespace Ocelot.Multiplexer
         {
             var contentBuilder = new StringBuilder();
 
-            contentBuilder.Append("{");
+            contentBuilder.Append('{');
 
-            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().Key).Distinct().ToList();
+            var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().Key).Distinct().ToArray();
 
-            for (var k = 0; k < responseKeys.Count; k++)
+            for (var k = 0; k < responseKeys.Length; k++)
             {
-                var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == responseKeys[k]).ToList();
-                if (contexts.Count == 1)
+                var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == responseKeys[k]).ToArray();
+                if (contexts.Length == 1)
                 {
                     if (contexts[0].Items.Errors().Count > 0)
                     {
@@ -43,9 +45,9 @@ namespace Ocelot.Multiplexer
                 else
                 {
                     contentBuilder.Append($"\"{responseKeys[k]}\":");
-                    contentBuilder.Append("[");
+                    contentBuilder.Append('[');
 
-                    for (var i = 0; i < contexts.Count; i++)
+                    for (var i = 0; i < contexts.Length; i++)
                     {
                         if (contexts[i].Items.Errors().Count > 0)
                         {
@@ -61,26 +63,26 @@ namespace Ocelot.Multiplexer
 
                         contentBuilder.Append($"{content}");
 
-                        if (i + 1 < contexts.Count)
+                        if (i + 1 < contexts.Length)
                         {
-                            contentBuilder.Append(",");
+                            contentBuilder.Append(',');
                         }
                     }
 
-                    contentBuilder.Append("]");
+                    contentBuilder.Append(']');
                 }
 
-                if (k + 1 < responseKeys.Count)
+                if (k + 1 < responseKeys.Length)
                 {
-                    contentBuilder.Append(",");
+                    contentBuilder.Append(',');
                 }
             }
 
-            contentBuilder.Append("}");
+            contentBuilder.Append('}');
 
             var stringContent = new StringContent(contentBuilder.ToString())
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
             };
 
             originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));

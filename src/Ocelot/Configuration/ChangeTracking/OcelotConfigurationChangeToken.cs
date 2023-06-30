@@ -1,15 +1,16 @@
+using System;
+using System.Collections.Generic;
+
+using Microsoft.Extensions.Primitives;
+
 namespace Ocelot.Configuration.ChangeTracking
 {
-    using System;
-    using System.Collections.Generic;
-    using Microsoft.Extensions.Primitives;
-
     public class OcelotConfigurationChangeToken : IChangeToken
     {
         public const double PollingIntervalSeconds = 1;
 
         private readonly ICollection<CallbackWrapper> _callbacks = new List<CallbackWrapper>();
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private DateTime? _timeChanged;
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)

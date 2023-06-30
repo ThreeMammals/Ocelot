@@ -1,17 +1,24 @@
-﻿namespace Ocelot.UnitTests.DependencyInjection
-{
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.IO;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System.Collections.Generic;
+using System.IO;
 
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+
+using Moq;
+
+using Newtonsoft.Json;
+
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.DependencyInjection
+{
     public class ConfigurationBuilderExtensionsTests
     {
         private IConfigurationRoot _configuration;
@@ -22,11 +29,12 @@
         private FileConfiguration _routeB;
         private FileConfiguration _aggregate;
         private FileConfiguration _envSpecific;
-        private Mock<IWebHostEnvironment> _hostingEnvironment;
+        private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
 
         public ConfigurationBuilderExtensionsTests()
         {
             _hostingEnvironment = new Mock<IWebHostEnvironment>();
+
             // Clean up config files before each test
             var subConfigFiles = new DirectoryInfo(".").GetFiles("ocelot.*.json");
 
@@ -48,7 +56,7 @@
         [Fact]
         public void should_merge_files()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles("", false))
+            this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
                 .And(_ => GivenTheEnvironmentIs(null))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -58,7 +66,7 @@
         [Fact]
         public void should_merge_files_except_env()
         {
-            this.Given(_ => GivenMultipleConfigurationFiles("", true))
+            this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, true))
                 .And(_ => GivenTheEnvironmentIs("Env"))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -69,7 +77,7 @@
         [Fact]
         public void should_merge_files_in_specific_folder()
         {
-            string configFolder = "ConfigFiles";
+            var configFolder = "ConfigFiles";
             this.Given(_ => GivenMultipleConfigurationFiles(configFolder, false))
                 .When(_ => WhenIAddOcelotConfigurationWithSpecificFolder(configFolder))
                 .Then(_ => ThenTheConfigsAreMerged())
@@ -94,24 +102,24 @@
                         ClientIdHeader = "ClientIdHeader",
                         DisableRateLimitHeaders = true,
                         QuotaExceededMessage = "QuotaExceededMessage",
-                        RateLimitCounterPrefix = "RateLimitCounterPrefix"
+                        RateLimitCounterPrefix = "RateLimitCounterPrefix",
                     },
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "https",
                         Host = "Host",
                         Port = 80,
-                        Type = "Type"
+                        Type = "Type",
                     },
-                    RequestIdKey = "RequestIdKey"
-                }
+                    RequestIdKey = "RequestIdKey",
+                },
             };
 
             _routeA = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamScheme",
                         DownstreamPathTemplate = "DownstreamPathTemplate",
@@ -119,25 +127,25 @@
                         UpstreamHost = "UpstreamHost",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethod"
+                            "UpstreamHttpMethod",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "Host",
-                                Port = 80
-                            }
-                        }
-                    }
-                }
+                                Port = 80,
+                            },
+                        },
+                    },
+                },
             };
 
             _routeB = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamSchemeB",
                         DownstreamPathTemplate = "DownstreamPathTemplateB",
@@ -145,18 +153,18 @@
                         UpstreamHost = "UpstreamHostB",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethodB"
+                            "UpstreamHttpMethodB",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "HostB",
-                                Port = 80
-                            }
-                        }
+                                Port = 80,
+                            },
+                        },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamScheme = "DownstreamSchemeBB",
                         DownstreamPathTemplate = "DownstreamPathTemplateBB",
@@ -164,50 +172,50 @@
                         UpstreamHost = "UpstreamHostBB",
                         UpstreamHttpMethod = new List<string>
                         {
-                            "UpstreamHttpMethodBB"
+                            "UpstreamHttpMethodBB",
                         },
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "HostBB",
-                                Port = 80
-                            }
-                        }
-                    }
-                }
+                                Port = 80,
+                            },
+                        },
+                    },
+                },
             };
 
             _aggregate = new FileConfiguration
             {
                 Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
                     },
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>
                         {
                             "KeyB",
-                            "KeyBB"
+                            "KeyBB",
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
-                    }
-                }
+                    },
+                },
             };
 
             _envSpecific = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamScheme = "DownstreamSchemeSpec",
                             DownstreamPathTemplate = "DownstreamPathTemplateSpec",
@@ -215,24 +223,24 @@
                             UpstreamHost = "UpstreamHostSpec",
                             UpstreamHttpMethod = new List<string>
                             {
-                                "UpstreamHttpMethodSpec"
+                                "UpstreamHttpMethodSpec",
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "HostSpec",
-                                    Port = 80
-                                }
-                            }
-                        }
-                    }
+                                    Port = 80,
+                                },
+                            },
+                        },
+                    },
             };
 
-            string globalFilename = Path.Combine(folder, "ocelot.global.json");
-            string routesAFilename = Path.Combine(folder, "ocelot.routesA.json");
-            string routesBFilename = Path.Combine(folder, "ocelot.routesB.json");
-            string aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
+            var globalFilename = Path.Combine(folder, "ocelot.global.json");
+            var routesAFilename = Path.Combine(folder, "ocelot.routesA.json");
+            var routesBFilename = Path.Combine(folder, "ocelot.routesB.json");
+            var aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
 
             File.WriteAllText(globalFilename, JsonConvert.SerializeObject(_globalConfig));
             File.WriteAllText(routesAFilename, JsonConvert.SerializeObject(_routeA));
@@ -241,7 +249,7 @@
 
             if (addEnvSpecificConfig)
             {
-                string envSpecificFilename = Path.Combine(folder, "ocelot.Env.json");
+                var envSpecificFilename = Path.Combine(folder, "ocelot.Env.json");
                 File.WriteAllText(envSpecificFilename, JsonConvert.SerializeObject(_envSpecific));
             }
         }
@@ -323,7 +331,7 @@
 
         private void WhenIGet(string key)
         {
-            _result = _configuration.GetValue(key, "");
+            _result = _configuration.GetValue(key, string.Empty);
         }
 
         private void ThenTheResultIs(string expected)

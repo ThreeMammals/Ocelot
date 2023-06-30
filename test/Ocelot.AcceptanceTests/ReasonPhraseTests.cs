@@ -1,19 +1,20 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Features;
-    using Ocelot.Configuration.File;
-    using System;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class ReasonPhraseTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _contentType;
-        private long? _contentLength;
-        private bool _contentTypeHeaderExists;
         private readonly ServiceHandler _serviceHandler;
 
         public ReasonPhraseTests()
@@ -30,23 +31,23 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new FileRoute
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                Host = "localhost",
+                                Port = port,
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))

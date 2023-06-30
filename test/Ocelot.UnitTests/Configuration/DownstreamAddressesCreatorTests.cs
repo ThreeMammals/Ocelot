@@ -1,13 +1,17 @@
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class DownstreamAddressesCreatorTests
     {
         public DownstreamAddressesCreator _creator;
@@ -22,13 +26,9 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_do_nothing()
         {
-            var route = new FileRoute
-            {
-            };
+            var route = new FileRoute();
 
-            var expected = new List<DownstreamHostAndPort>
-            {
-            };
+            var expected = new List<DownstreamHostAndPort>();
 
             this.Given(x => GivenTheFollowingRoute(route))
                 .When(x => WhenICreate())
@@ -43,17 +43,17 @@ namespace Ocelot.UnitTests.Configuration
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "test",
-                        Port = 80
-                    }
+                        Port = 80,
+                    },
                 },
             };
 
             var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("test", 80),
+                new("test", 80),
             };
 
             this.Given(x => GivenTheFollowingRoute(route))
@@ -69,23 +69,23 @@ namespace Ocelot.UnitTests.Configuration
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "test",
-                        Port = 80
+                        Port = 80,
                     },
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "west",
-                        Port = 443
-                    }
-                }
+                        Port = 443,
+                    },
+                },
             };
 
             var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("test", 80),
-                new DownstreamHostAndPort("west", 443)
+                new("test", 80),
+                new("west", 443),
             };
 
             this.Given(x => GivenTheFollowingRoute(route))
@@ -108,7 +108,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.Count.ShouldBe(expecteds.Count);
 
-            for (int i = 0; i < _result.Count; i++)
+            for (var i = 0; i < _result.Count; i++)
             {
                 var result = _result[i];
                 var expected = expecteds[i];

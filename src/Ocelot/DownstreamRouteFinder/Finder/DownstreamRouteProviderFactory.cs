@@ -1,12 +1,15 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Finder
-{
-    using Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Ocelot.DownstreamRouteFinder.Finder
+{
     public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
     {
         private readonly Dictionary<string, IDownstreamRouteProvider> _providers;
@@ -31,14 +34,9 @@
             return _providers[nameof(DownstreamRouteFinder)];
         }
 
-        private bool IsServiceDiscovery(ServiceProviderConfiguration config)
+        private static bool IsServiceDiscovery(ServiceProviderConfiguration config)
         {
-            if (!string.IsNullOrEmpty(config?.Host) && config?.Port > 0 && !string.IsNullOrEmpty(config.Type))
-            {
-                return true;
-            }
-
-            return false;
+            return !string.IsNullOrEmpty(config?.Host) && config?.Port > 0 && !string.IsNullOrEmpty(config.Type);
         }
     }
 }

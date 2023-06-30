@@ -1,5 +1,7 @@
 using Ocelot.Infrastructure.RequestData;
+
 using Shouldly;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Errors

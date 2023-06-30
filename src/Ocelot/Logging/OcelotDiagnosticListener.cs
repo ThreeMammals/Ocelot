@@ -1,10 +1,11 @@
-﻿namespace Ocelot.Logging
-{
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DiagnosticAdapter;
-    using System;
+﻿using System;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DiagnosticAdapter;
+
+namespace Ocelot.Logging
+{
     public class OcelotDiagnosticListener
     {
         private readonly IOcelotLogger _logger;

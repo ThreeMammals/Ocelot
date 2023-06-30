@@ -1,8 +1,8 @@
-using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
+
+using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace OcelotApplicationService
 {
@@ -23,7 +23,7 @@ namespace OcelotApplicationService
                 ServiceRuntime.RegisterServiceAsync("OcelotApplicationServiceType",
                     context => new ApiGateway(context)).GetAwaiter().GetResult();
 
-                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(ApiGateway).Name);
+                ServiceEventSource.Current.ServiceTypeRegistered(Environment.ProcessId, nameof(ApiGateway));
 
                 // Prevents this host process from terminating so services keeps running. 
                 Thread.Sleep(Timeout.Infinite);

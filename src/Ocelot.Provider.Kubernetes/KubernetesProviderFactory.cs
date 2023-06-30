@@ -1,9 +1,12 @@
-﻿using KubeClient;
+﻿using System;
+
+using KubeClient;
+
 using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
-using System;
-using Ocelot.Configuration;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -19,10 +22,10 @@ namespace Ocelot.Provider.Kubernetes
         {
             var kubeClient = provider.GetService<IKubeApiClient>();
 
-            var k8sRegistryConfiguration = new KubeRegistryConfiguration()
+            var k8sRegistryConfiguration = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = route.ServiceName,
-                KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace
+                KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
             };
 
             var k8sServiceDiscoveryProvider = new KubernetesServiceDiscoveryProvider(k8sRegistryConfiguration, factory, kubeClient);
@@ -31,6 +34,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 return new PollKubernetes(config.PollingInterval, factory, k8sServiceDiscoveryProvider);
             }
+
             return k8sServiceDiscoveryProvider;
         }
     }

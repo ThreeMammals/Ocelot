@@ -1,20 +1,25 @@
-using Moq;
-using Ocelot.Infrastructure;
-using Ocelot.Request.Creator;
-using Ocelot.Request.Middleware;
-using Shouldly;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+
+using Moq;
+
+using Ocelot.Infrastructure;
+using Ocelot.Request.Creator;
+using Ocelot.Request.Middleware;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Request.Creator
 {
     public class DownstreamRequestCreatorTests
     {
-        private Mock<IFrameworkDescription> _framework;
-        private DownstreamRequestCreator _downstreamRequestCreator;
+        private readonly Mock<IFrameworkDescription> _framework;
+        private readonly DownstreamRequestCreator _downstreamRequestCreator;
         private HttpRequestMessage _request;
         private DownstreamRequest _result;
 
@@ -31,7 +36,7 @@ namespace Ocelot.UnitTests.Request.Creator
             var content = new StringContent("test");
             request.Content = content;
 
-            this.Given(_ => GivenTheFrameworkIs(""))
+            this.Given(_ => GivenTheFrameworkIs(string.Empty))
                 .And(_ => GivenTheRequestIs(request))
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheDownstreamRequestHasABody())

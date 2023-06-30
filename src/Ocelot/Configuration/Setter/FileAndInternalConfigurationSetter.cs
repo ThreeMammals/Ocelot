@@ -1,14 +1,15 @@
+using System.Threading.Tasks;
+
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
-using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Setter
 {
     public class FileAndInternalConfigurationSetter : IFileConfigurationSetter
     {
-        private readonly IInternalConfigurationRepository internalConfigRepo;
+        private readonly IInternalConfigurationRepository _internalConfigRepo;
         private readonly IInternalConfigurationCreator _configCreator;
         private readonly IFileConfigurationRepository _repo;
 
@@ -17,7 +18,7 @@ namespace Ocelot.Configuration.Setter
             IInternalConfigurationCreator configCreator,
             IFileConfigurationRepository repo)
         {
-            internalConfigRepo = configRepo;
+            _internalConfigRepo = configRepo;
             _configCreator = configCreator;
             _repo = repo;
         }
@@ -35,7 +36,7 @@ namespace Ocelot.Configuration.Setter
 
             if (!config.IsError)
             {
-                internalConfigRepo.AddOrReplace(config.Data);
+                _internalConfigRepo.AddOrReplace(config.Data);
             }
 
             return new ErrorResponse(config.Errors);

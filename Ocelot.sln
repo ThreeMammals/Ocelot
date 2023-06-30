@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8FA0CBA0-0338-48EB-B37F-83CA5022237C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotBasic", "samples\OcelotBasic\OcelotBasic.csproj", "{ED0B3A09-112B-4BA4-82D6-11569BC7A99B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotBasic.ApiGateway", "samples\OcelotBasic\Ocelot.Samples.OcelotBasic.ApiGateway.csproj", "{ED0B3A09-112B-4BA4-82D6-11569BC7A99B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdministrationApi", "samples\AdministrationApi\AdministrationApi.csproj", "{B180F8AE-2F8F-44F9-9E5D-FE65B84B742E}"
 EndProject
@@ -64,9 +64,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{4B706988-4817-43A8-ABE1-32A67998C2C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "samples\OcelotKube\ApiGateway\ApiGateway.csproj", "{8500055B-2C51-4CF1-A6EE-F05BB3E9BF16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotKube.ApiGateway", "samples\OcelotKube\ApiGateway\Ocelot.Samples.OcelotKube.ApiGateway.csproj", "{8500055B-2C51-4CF1-A6EE-F05BB3E9BF16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownstreamService", "samples\OcelotKube\DownstreamService\DownstreamService.csproj", "{7B319B8C-8155-4779-BD93-5ABD05CA2AB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.OcelotKube.DownstreamService", "samples\OcelotKube\DownstreamService\Ocelot.Samples.OcelotKube.DownstreamService.csproj", "{7B319B8C-8155-4779-BD93-5ABD05CA2AB6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service-fabric", "service-fabric", "{B412628F-C325-47E1-A8D9-873DE04C8AF5}"
 EndProject

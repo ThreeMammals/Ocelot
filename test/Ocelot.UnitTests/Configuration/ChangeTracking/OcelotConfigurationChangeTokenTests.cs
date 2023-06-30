@@ -1,12 +1,14 @@
 using Xunit;
+using System;
+
+using Ocelot.Configuration.ChangeTracking;
+
+using Shouldly;
+
+using TestStack.BDDfy;
 
 namespace Ocelot.UnitTests.Configuration.ChangeTracking
 {
-    using System;
-    using Shouldly;
-    using Ocelot.Configuration.ChangeTracking;
-    using TestStack.BDDfy;
-
     public class OcelotConfigurationChangeTokenTests
     {
         [Fact]
@@ -36,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration.ChangeTracking
         private OcelotConfigurationChangeToken _changeToken;
         private IDisposable _callbackWrapper;
         private int _callbackCounter;
-        private readonly object _callbackInitialState = new object();
+        private readonly object _callbackInitialState = new();
         private object _callbackState;
 
         private void Callback(object state)

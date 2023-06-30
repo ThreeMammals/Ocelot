@@ -7,7 +7,7 @@ namespace Ocelot.Configuration.Creator
     {
         public RateLimitOptions Create(FileRateLimitRule fileRateLimitRule, FileGlobalConfiguration globalConfiguration)
         {
-            if (fileRateLimitRule != null && fileRateLimitRule.EnableRateLimiting)
+            if (fileRateLimitRule?.EnableRateLimiting == true)
             {
                 return new RateLimitOptionsBuilder()
                     .WithClientIdHeader(globalConfiguration.RateLimitOptions.ClientIdHeader)

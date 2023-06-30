@@ -1,14 +1,17 @@
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+
+using Ocelot.Infrastructure;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Values;
-
     public class CookieStickySessions : ILoadBalancer
     {
         private readonly int _keyExpiryInMs;
@@ -16,7 +19,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private readonly ILoadBalancer _loadBalancer;
         private readonly ConcurrentDictionary<string, StickySession> _stored;
         private readonly IBus<StickySession> _bus;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, IBus<StickySession> bus)
         {

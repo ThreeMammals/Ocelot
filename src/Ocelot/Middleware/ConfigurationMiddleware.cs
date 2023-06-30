@@ -1,18 +1,21 @@
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.Repository;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Errors.Middleware;
+
 namespace Ocelot.Middleware
 {
-    using System.Threading.Tasks;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Logging;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class ConfigurationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IInternalConfigurationRepository _configRepo;
 
-        public ConfigurationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory,  IInternalConfigurationRepository configRepo) 
+        public ConfigurationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IInternalConfigurationRepository configRepo)
             : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
             _next = next;
@@ -24,7 +27,7 @@ namespace Ocelot.Middleware
             //todo check the config is actually ok?
             var config = _configRepo.Get();
 
-            if(config.IsError)
+            if (config.IsError)
             {
                 throw new System.Exception("OOOOPS this should not happen raise an issue in GitHub");
             }

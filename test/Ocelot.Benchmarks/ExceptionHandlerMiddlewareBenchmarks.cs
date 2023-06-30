@@ -1,21 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Validators;
+
+using Ocelot.DependencyInjection;
+
+using Ocelot.Infrastructure.RequestData;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Errors.Middleware;
+
 namespace Ocelot.Benchmarks
 {
-    using BenchmarkDotNet.Attributes;
-    using BenchmarkDotNet.Columns;
-    using BenchmarkDotNet.Configs;
-    using BenchmarkDotNet.Diagnosers;
-    using BenchmarkDotNet.Validators;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
     [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
     [Config(typeof(ExceptionHandlerMiddlewareBenchmarks))]
     public class ExceptionHandlerMiddlewareBenchmarks : ManualConfig
@@ -26,9 +32,9 @@ namespace Ocelot.Benchmarks
 
         public ExceptionHandlerMiddlewareBenchmarks()
         {
-            Add(StatisticColumn.AllStatistics);
-            Add(MemoryDiagnoser.Default);
-            Add(BaselineValidator.FailOnError);
+            AddColumn(StatisticColumn.AllStatistics);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddValidator(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]

@@ -1,21 +1,20 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+using Ocelot.Requester;
+using Shouldly;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Net;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Configuration;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Requester;
-    using Shouldly;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Net;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class HttpClientCachingTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _downstreamPath;
         private readonly ServiceHandler _serviceHandler;
 
         public HttpClientCachingTests()
@@ -32,23 +31,23 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new FileRoute
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
+                                Host = "localhost",
+                                Port = port,
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
             };
 
             var cache = new FakeHttpClientCache();
@@ -75,37 +74,37 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/two",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/two",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
             };
 
             var cache = new FakeHttpClientCache();
@@ -126,7 +125,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void ThenTheCountShouldBe(FakeHttpClientCache cache, int count)
+        private static void ThenTheCountShouldBe(FakeHttpClientCache cache, int count)
         {
             cache.Count.ShouldBe(count);
         }

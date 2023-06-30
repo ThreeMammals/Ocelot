@@ -1,30 +1,35 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using IdentityServer4.Test;
-    using Shouldly;
-    using IdentityServer4.AccessTokenValidation;
-    using IdentityServer4.Models;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Primitives;
-    using Ocelot.Configuration.File;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Security.Claims;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Security.Claims;
 
+using Ocelot.Configuration.File;
+
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
+{
     public class ClaimsToQueryStringForwardingTests : IDisposable
     {
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
-        private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl;
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
+        private readonly string _identityServerRootUrl;
         private string _downstreamQueryString;
 
         public ClaimsToQueryStringForwardingTests()
@@ -45,30 +50,30 @@
         [Fact]
         public void should_return_response_200_and_foward_claim_as_query_string()
         {
-            var user = new TestUser()
+            var user = new TestUser
             {
                 Username = "test",
                 Password = "test",
                 SubjectId = "registered|1231231",
                 Claims = new List<Claim>
                 {
-                    new Claim("CustomerId", "123"),
-                    new Claim("LocationId", "1"),
+                    new("CustomerId", "123"),
+                    new("LocationId", "1"),
                 },
             };
 
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -111,30 +116,30 @@
         [Fact]
         public void should_return_response_200_and_foward_claim_as_query_string_and_preserve_original_string()
         {
-            var user = new TestUser()
+            var user = new TestUser
             {
                 Username = "test",
                 Password = "test",
                 SubjectId = "registered|1231231",
                 Claims = new List<Claim>
                 {
-                    new Claim("CustomerId", "123"),
-                    new Claim("LocationId", "1"),
+                    new("CustomerId", "123"),
+                    new("LocationId", "1"),
                 },
             };
 
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -194,17 +199,13 @@
                     {
                         _downstreamQueryString = context.Request.QueryString.Value;
 
-                        StringValues customerId;
-                        context.Request.Query.TryGetValue("CustomerId", out customerId);
+                        context.Request.Query.TryGetValue("CustomerId", out var customerId);
 
-                        StringValues locationId;
-                        context.Request.Query.TryGetValue("LocationId", out locationId);
+                        context.Request.Query.TryGetValue("LocationId", out var locationId);
 
-                        StringValues userType;
-                        context.Request.Query.TryGetValue("UserType", out userType);
+                        context.Request.Query.TryGetValue("UserType", out var userType);
 
-                        StringValues userId;
-                        context.Request.Query.TryGetValue("UserId", out userId);
+                        context.Request.Query.TryGetValue("UserId", out var userId);
 
                         var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
                         context.Response.StatusCode = statusCode;
@@ -231,33 +232,33 @@
                         .AddDeveloperSigningCredential()
                         .AddInMemoryApiScopes(new List<ApiScope>
                         {
-                            new ApiScope(apiName, "test"),
-                            new ApiScope("openid", "test"),
-                            new ApiScope("offline_access", "test"),
-                            new ApiScope("api.readOnly", "test"),
+                            new(apiName, "test"),
+                            new("openid", "test"),
+                            new("offline_access", "test"),
+                            new("api.readOnly", "test"),
                         })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
-                            new ApiResource
+                            new()
                             {
                                 Name = apiName,
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<string>()
+                                Scopes = new List<string>
                                 {
                                     "api",
                                     "openid",
                                     "offline_access",
                                 },
-                                ApiSecrets = new List<Secret>()
+                                ApiSecrets = new List<Secret>
                                 {
-                                    new Secret
+                                    new()
                                     {
                                         Value = "secret".Sha256(),
                                     },
                                 },
-                                UserClaims = new List<string>()
+                                UserClaims = new List<string>
                                 {
                                     "CustomerId", "LocationId", "UserType", "UserId",
                                 },
@@ -265,11 +266,11 @@
                         })
                         .AddInMemoryClients(new List<Client>
                         {
-                            new Client
+                            new()
                             {
                                 ClientId = "client",
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                                ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                                ClientSecrets = new List<Secret> {new("secret".Sha256())},
                                 AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,

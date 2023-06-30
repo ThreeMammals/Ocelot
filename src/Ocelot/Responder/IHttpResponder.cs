@@ -1,9 +1,11 @@
-﻿namespace Ocelot.Responder
-{
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+namespace Ocelot.Responder
+{
     public interface IHttpResponder
     {
         Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response);

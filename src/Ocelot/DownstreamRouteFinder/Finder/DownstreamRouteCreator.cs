@@ -1,15 +1,19 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Finder
-{
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Responses;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Ocelot.Responses;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+namespace Ocelot.DownstreamRouteFinder.Finder
+{
     public class DownstreamRouteCreator : IDownstreamRouteProvider
     {
         private readonly IQoSOptionsCreator _qoSOptionsCreator;
@@ -57,11 +61,8 @@
                 .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
                 .WithUpstreamPathTemplate(upstreamPathTemplate);
 
-            var rateLimitOptions = configuration.Routes != null
-                ? configuration.Routes
-                    .SelectMany(x => x.DownstreamRoute)
-                    .FirstOrDefault(x => x.ServiceName == serviceName)
-                : null;
+            var rateLimitOptions = configuration.Routes?.SelectMany(x => x.DownstreamRoute)
+                .FirstOrDefault(x => x.ServiceName == serviceName);
 
             if (rateLimitOptions != null)
             {
@@ -74,7 +75,7 @@
 
             var route = new RouteBuilder()
                 .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string>() { upstreamHttpMethod })
+                .WithUpstreamHttpMethod(new List<string> { upstreamHttpMethod })
                 .WithUpstreamPathTemplate(upstreamPathTemplate)
                 .Build();
 
@@ -93,7 +94,7 @@
 
         private static bool HasQueryString(string downstreamPath)
         {
-            return downstreamPath.Contains("?");
+            return downstreamPath.Contains('?');
         }
 
         private static string GetDownstreamPath(string upstreamUrlPath)
@@ -120,7 +121,7 @@
                 .TrimEnd('/');
         }
 
-        private string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions loadBalancerOptions)
+        private static string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions loadBalancerOptions)
         {
             if (!string.IsNullOrEmpty(loadBalancerOptions.Type) && !string.IsNullOrEmpty(loadBalancerOptions.Key) && loadBalancerOptions.Type == nameof(CookieStickySessions))
             {
@@ -130,7 +131,7 @@
             return CreateQoSKey(downstreamTemplatePath, httpMethod);
         }
 
-        private string CreateQoSKey(string downstreamTemplatePath, string httpMethod)
+        private static string CreateQoSKey(string downstreamTemplatePath, string httpMethod)
         {
             var loadBalancerKey = $"{downstreamTemplatePath}|{httpMethod}";
             return loadBalancerKey;

@@ -1,27 +1,33 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+
 using Shouldly;
-using System;
+
 using TestStack.BDDfy;
+
 using Xunit;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Logging;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     public class HttpHandlerOptionsCreatorTests
     {
         private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private FileRoute _fileRoute;
         private HttpHandlerOptions _httpHandlerOptions;
         private IServiceProvider _serviceProvider;
-        private IServiceCollection _serviceCollection;
+        private readonly IServiceCollection _serviceCollection;
 
         public HttpHandlerOptionsCreatorTests()
         {
@@ -37,8 +43,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseTracing = true
-                }
+                    UseTracing = true,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -56,8 +62,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseTracing = true
-                }
+                    UseTracing = true,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue);
@@ -90,8 +96,8 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     AllowAutoRedirect = false,
                     UseCookieContainer = false,
-                    UseTracing = false
-                }
+                    UseTracing = false,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -107,7 +113,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var fileRoute = new FileRoute
             {
-                HttpHandlerOptions = new FileHttpHandlerOptions()
+                HttpHandlerOptions = new FileHttpHandlerOptions(),
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -125,8 +131,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    UseProxy = false
-                }
+                    UseProxy = false,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue);
@@ -144,8 +150,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = 10
-                }
+                    MaxConnectionsPerServer = 10,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10);
@@ -163,8 +169,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = -1
-                }
+                    MaxConnectionsPerServer = -1,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);
@@ -182,8 +188,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 HttpHandlerOptions = new FileHttpHandlerOptions
                 {
-                    MaxConnectionsPerServer = 0
-                }
+                    MaxConnectionsPerServer = 0,
+                },
             };
 
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue);

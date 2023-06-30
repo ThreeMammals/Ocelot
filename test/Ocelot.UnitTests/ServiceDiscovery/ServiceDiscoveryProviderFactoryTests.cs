@@ -1,21 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
-
     public class ServiceDiscoveryProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
@@ -56,10 +64,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
 
-            var downstreamAddresses = new List<DownstreamHostAndPort>()
+            var downstreamAddresses = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("asdf.com", 80),
-                new DownstreamHostAndPort("abc.com", 80)
+                new("asdf.com", 80),
+                new("abc.com", 80),
             };
 
             var route = new DownstreamRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
@@ -158,7 +166,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var result = (ConfigurationServiceProvider)_result.Data;
             var services = result.Get().Result;
 
-            for (int i = 0; i < services.Count; i++)
+            for (var i = 0; i < services.Count; i++)
             {
                 var service = services[i];
                 var downstreamAddress = downstreamAddresses[i];

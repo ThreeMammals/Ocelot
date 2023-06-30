@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Ocelot.Headers;
-using Ocelot.Middleware;
-using Ocelot.Responder;
-using Shouldly;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+
+using Ocelot.Headers;
+using Ocelot.Middleware;
+using Ocelot.Responder;
+
+using Shouldly;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Responder
@@ -15,7 +19,7 @@ namespace Ocelot.UnitTests.Responder
     public class HttpContextResponderTests
     {
         private readonly HttpContextResponder _responder;
-        private RemoveOutputHeaders _removeOutputHeaders;
+        private readonly RemoveOutputHeaders _removeOutputHeaders;
 
         public HttpContextResponderTests()
         {
@@ -27,10 +31,10 @@ namespace Ocelot.UnitTests.Responder
         public void should_remove_transfer_encoding_header()
         {
             var httpContext = new DefaultHttpContext();
-            var response = new DownstreamResponse(new StringContent(""), HttpStatusCode.OK,
+            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Transfer-Encoding", new List<string> {"woop"})
+                    new("Transfer-Encoding", new List<string> {"woop"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
@@ -71,10 +75,10 @@ namespace Ocelot.UnitTests.Responder
         public void should_add_header()
         {
             var httpContext = new DefaultHttpContext();
-            var response = new DownstreamResponse(new StringContent(""), HttpStatusCode.OK,
+            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
@@ -86,10 +90,10 @@ namespace Ocelot.UnitTests.Responder
         public void should_add_reason_phrase()
         {
             var httpContext = new DefaultHttpContext();
-            var response = new DownstreamResponse(new StringContent(""), HttpStatusCode.OK,
+            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();

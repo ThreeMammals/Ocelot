@@ -1,24 +1,22 @@
-﻿namespace Ocelot.UnitTests.Configuration.Validation
-{
-    using FluentValidation.Results;
-    using Microsoft.AspNetCore.Authentication;
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Validator;
-    using Ocelot.Requester;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Moq;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Validator;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Configuration.Validation
+{
     public class RouteFluentValidatorTests
     {
         private readonly RouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
-        private QosDelegatingHandlerDelegate _qosDelegatingHandler;
         private Mock<IServiceProvider> _serviceProvider;
         private FileRoute _route;
         private ValidationResult _result;
@@ -27,6 +25,7 @@
         {
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
             _serviceProvider = new Mock<IServiceProvider>();
+
             // Todo - replace with mocks
             _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
         }
@@ -48,7 +47,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -63,7 +62,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "test"
+                DownstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -78,7 +77,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = "//test"
+                DownstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -97,7 +96,7 @@
         {
             var fileRoute = new FileRoute
             {
-                DownstreamPathTemplate = downstreamPathTemplate
+                DownstreamPathTemplate = downstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -113,7 +112,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "test"
+                UpstreamPathTemplate = "test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -129,7 +128,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "//test"
+                UpstreamPathTemplate = "//test",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -149,7 +148,7 @@
             var fileRoute = new FileRoute
             {
                 DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = upstreamPathTemplate
+                UpstreamPathTemplate = upstreamPathTemplate,
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -168,8 +167,8 @@
                 UpstreamPathTemplate = "/test",
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    EnableRateLimiting = true
-                }
+                    EnableRateLimiting = true,
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -189,8 +188,8 @@
                 RateLimitOptions = new FileRateLimitRule
                 {
                     EnableRateLimiting = true,
-                    Period = "test"
-                }
+                    Period = "test",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -209,8 +208,8 @@
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "JwtLads"
-                }
+                    AuthenticationProviderKey = "JwtLads",
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -243,7 +242,7 @@
             {
                 DownstreamPathTemplate = "/test",
                 UpstreamPathTemplate = "/test",
-                ServiceName = "Lads"
+                ServiceName = "Lads",
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -261,12 +260,12 @@
                 UpstreamPathTemplate = "/test",
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
-                        Port = 5000
-                    }
-                }
+                        Port = 5000,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -286,16 +285,16 @@
                 UpstreamPathTemplate = "/test",
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = key
+                    AuthenticationProviderKey = key,
                 },
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
-                        Port = 5000
-                    }
-                }
+                        Port = 5000,
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileRoute))
@@ -324,7 +323,7 @@
                 UpstreamPathTemplate = "/test",
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
                         Port = 5000,
@@ -354,7 +353,7 @@
                 UpstreamPathTemplate = "/test",
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "localhost",
                         Port = 5000,
@@ -374,7 +373,7 @@
         {
             var schemes = new List<AuthenticationScheme>
             {
-                new AuthenticationScheme(key, key, typeof(FakeAutheHandler))
+                new(key, key, typeof(FakeAutheHandler)),
             };
 
             _authProvider
@@ -392,9 +391,9 @@
             _route = route;
         }
 
-        private void WhenIValidate()
+        private async Task WhenIValidate()
         {
-            _result = _validator.Validate(_route);
+            _result = await _validator.ValidateAsync(_route);
         }
 
         private void ThenTheResultIsInvalid()

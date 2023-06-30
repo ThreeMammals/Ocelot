@@ -1,12 +1,14 @@
-﻿namespace Ocelot.Requester
-{
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-    using System;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
+﻿using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+namespace Ocelot.Requester
+{
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
@@ -47,7 +49,8 @@
 
             if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
             {
-                handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => true;
+                handler.ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
                 _logger
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
@@ -59,7 +62,7 @@
 
             _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute))
             {
-                Timeout = timeout
+                Timeout = timeout,
             };
 
             _client = new HttpClientWrapper(_httpClient);
@@ -67,7 +70,7 @@
             return _client;
         }
 
-        private HttpClientHandler CreateHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler CreateHandler(DownstreamRoute downstreamRoute)
         {
             // Dont' create the CookieContainer if UseCookies is not set or the HttpClient will complain
             // under .Net Full Framework
@@ -76,7 +79,7 @@
             return useCookies ? UseCookiesHandler(downstreamRoute) : UseNonCookiesHandler(downstreamRoute);
         }
 
-        private HttpClientHandler UseNonCookiesHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler UseNonCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {
@@ -87,7 +90,7 @@
             };
         }
 
-        private HttpClientHandler UseCookiesHandler(DownstreamRoute downstreamRoute)
+        private static HttpClientHandler UseCookiesHandler(DownstreamRoute downstreamRoute)
         {
             return new HttpClientHandler
             {

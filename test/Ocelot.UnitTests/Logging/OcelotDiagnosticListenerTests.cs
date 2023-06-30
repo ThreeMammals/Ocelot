@@ -1,9 +1,14 @@
+using System;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+
 using Moq;
+
 using Ocelot.Logging;
-using System;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Logging
@@ -11,13 +16,13 @@ namespace Ocelot.UnitTests.Logging
     public class OcelotDiagnosticListenerTests
     {
         private readonly OcelotDiagnosticListener _listener;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
-        private IServiceCollection _serviceCollection;
-        private IServiceProvider _serviceProvider;
+        private readonly IServiceCollection _serviceCollection;
+        private readonly IServiceProvider _serviceProvider;
         private string _name;
         private Exception _exception;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
 
         public OcelotDiagnosticListenerTests()
         {

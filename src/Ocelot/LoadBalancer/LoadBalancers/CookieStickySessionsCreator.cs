@@ -1,11 +1,13 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using System.Threading.Tasks;
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Responses;
+﻿using Ocelot.Configuration;
 
+using Ocelot.Infrastructure;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class CookieStickySessionsCreator : ILoadBalancerCreator
     {
         public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)

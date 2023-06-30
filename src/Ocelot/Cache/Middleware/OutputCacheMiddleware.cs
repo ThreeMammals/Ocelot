@@ -1,15 +1,17 @@
-﻿namespace Ocelot.Cache.Middleware
-{
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+namespace Ocelot.Cache.Middleware
+{
     public class OutputCacheMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -40,7 +42,7 @@
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
             var downstreamUrlKey = $"{downstreamRequest.Method}-{downstreamRequest.OriginalString}";
-            string downStreamRequestCacheKey = _cacheGenerator.GenerateRequestCacheKey(downstreamRequest);
+            var downStreamRequestCacheKey = _cacheGenerator.GenerateRequestCacheKey(downstreamRequest);
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
@@ -78,7 +80,7 @@
             Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
-        private void SetHttpResponseMessageThisRequest(HttpContext context,
+        private static void SetHttpResponseMessageThisRequest(HttpContext context,
                                                        DownstreamResponse response)
         {
             context.Items.UpsertDownstreamResponse(response);

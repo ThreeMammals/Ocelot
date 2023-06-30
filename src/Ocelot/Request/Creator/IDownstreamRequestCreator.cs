@@ -1,8 +1,9 @@
+using System.Net.Http;
+
+using Ocelot.Request.Middleware;
+
 namespace Ocelot.Request.Creator
 {
-    using Ocelot.Request.Middleware;
-    using System.Net.Http;
-
     public interface IDownstreamRequestCreator
     {
         DownstreamRequest Create(HttpRequestMessage request);

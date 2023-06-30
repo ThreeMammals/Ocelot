@@ -3,63 +3,62 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Fabric;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+
 namespace OcelotApplicationApiGateway
 {
-    using System;
-    using System.Fabric;
-    using System.Fabric.Description;
-    using System.Globalization;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.ServiceFabric.Services.Communication.Runtime;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
-
     public class WebCommunicationListener : ICommunicationListener
     {
-        private readonly string appRoot;
-        private readonly ServiceContext serviceInitializationParameters;
-        private string listeningAddress;
-        private string publishAddress;
+        private readonly string _appRoot;
+        private readonly ServiceContext _serviceInitializationParameters;
+        private string _listeningAddress;
+        private string _publishAddress;
 
         // OWIN server handle.
-        private IWebHost webHost;
+        private IWebHost _webHost;
 
         public WebCommunicationListener(string appRoot, ServiceContext serviceInitializationParameters)
         {
-            this.appRoot = appRoot;
-            this.serviceInitializationParameters = serviceInitializationParameters;
+            _appRoot = appRoot;
+            _serviceInitializationParameters = serviceInitializationParameters;
         }
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)
         {
             ServiceEventSource.Current.Message("Initialize");
 
-            EndpointResourceDescription serviceEndpoint = this.serviceInitializationParameters.CodePackageActivationContext.GetEndpoint("WebEndpoint");
-            int port = serviceEndpoint.Port;
+            var serviceEndpoint = _serviceInitializationParameters.CodePackageActivationContext.GetEndpoint("WebEndpoint");
+            var port = serviceEndpoint.Port;
 
-            this.listeningAddress = string.Format(
+            _listeningAddress = string.Format(
                 CultureInfo.InvariantCulture,
                 "http://+:{0}/{1}",
                 port,
-                string.IsNullOrWhiteSpace(this.appRoot)
+                string.IsNullOrWhiteSpace(_appRoot)
                     ? string.Empty
-                    : this.appRoot.TrimEnd('/') + '/');
+                    : _appRoot.TrimEnd('/') + '/');
 
-            this.publishAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
+            _publishAddress = _listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
 
-            ServiceEventSource.Current.Message("Starting web server on {0}", this.listeningAddress);
+            ServiceEventSource.Current.Message("Starting web server on {0}", _listeningAddress);
 
             try
             {
-                this.webHost = new WebHostBuilder()
+                _webHost = new WebHostBuilder()
                .UseKestrel()
-               .UseUrls(this.listeningAddress)
+               .UseUrls(_listeningAddress)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config
@@ -74,33 +73,35 @@ namespace OcelotApplicationApiGateway
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                 })
-                .ConfigureServices(s => {
+                .ConfigureServices(s =>
+                {
                     s.AddOcelot();
                 })
-                .Configure(a => {
-                    a.UseOcelot().Wait();
+                .Configure(a =>
+                {
+                    a.UseOcelot().Wait(cancellationToken);
                 })
                .Build();
 
-                this.webHost.Start();
+                _webHost.Start();
             }
             catch (Exception ex)
             {
                 ServiceEventSource.Current.ServiceWebHostBuilderFailed(ex);
             }
 
-            return Task.FromResult(this.publishAddress);
+            return Task.FromResult(_publishAddress);
         }
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
-            this.StopAll();
+            StopAll();
             return Task.FromResult(true);
         }
 
         public void Abort()
         {
-            this.StopAll();
+            StopAll();
         }
 
         /// <summary>
@@ -110,10 +111,10 @@ namespace OcelotApplicationApiGateway
         {
             try
             {
-                if (this.webHost != null)
+                if (_webHost != null)
                 {
                     ServiceEventSource.Current.Message("Stopping web server.");
-                    this.webHost.Dispose();
+                    _webHost.Dispose();
                 }
             }
             catch (ObjectDisposedException)

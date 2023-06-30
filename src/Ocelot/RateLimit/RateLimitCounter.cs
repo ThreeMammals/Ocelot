@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+
+using Newtonsoft.Json;
 
 namespace Ocelot.RateLimit
 {
     /// <summary>
-    /// Stores the initial access time and the numbers of calls made from that point
+    /// Stores the initial access time and the numbers of calls made from that point.
     /// </summary>
     public struct RateLimitCounter
     {
@@ -15,8 +16,8 @@ namespace Ocelot.RateLimit
             TotalRequests = totalRequests;
         }
 
-        public DateTime Timestamp { get; private set; }
+        public DateTime Timestamp { get; }
 
-        public long TotalRequests { get; private set; }
+        public long TotalRequests { get; }
     }
 }

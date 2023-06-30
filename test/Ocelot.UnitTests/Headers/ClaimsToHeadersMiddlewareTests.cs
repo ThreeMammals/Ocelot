@@ -1,33 +1,31 @@
-﻿namespace Ocelot.UnitTests.Headers
-{
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Headers;
-    using Ocelot.Headers.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using Microsoft.AspNetCore.Http;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Headers;
+using Ocelot.Headers.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Headers
+{
     public class ClaimsToHeadersMiddlewareTests
     {
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _downstreamRoute;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
-        private ClaimsToHeadersMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
+        private readonly ClaimsToHeadersMiddleware _middleware;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public ClaimsToHeadersMiddlewareTests()
         {
@@ -50,7 +48,7 @@
                             .WithDownstreamPathTemplate("any old string")
                             .WithClaimsToHeaders(new List<ClaimToThing>
                             {
-                                new ClaimToThing("UserId", "Subject", "", 0)
+                                new("UserId", "Subject", string.Empty, 0),
                             })
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())
