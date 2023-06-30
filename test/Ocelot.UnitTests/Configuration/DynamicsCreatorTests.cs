@@ -10,17 +10,20 @@ namespace Ocelot.UnitTests.Configuration
         private readonly DynamicsCreator _creator;
         private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
+        private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
         private List<Route> _result;
         private FileConfiguration _fileConfig;
         private RateLimitOptions _rlo1;
         private RateLimitOptions _rlo2;
         private Version _version;
+        private HttpVersionPolicy _versionPolicy;
 
         public DynamicsCreatorTests()
         {
             _versionCreator = new Mock<IVersionCreator>();
+            _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object);
+            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object);
         }
 
         [Fact]
@@ -50,6 +53,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = false,
                         },
                         DownstreamHttpVersion = "1.1",
+                        DownstreamVersionPolicy = "downgradeable",
                     },
                     new()
                     {
@@ -59,6 +63,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = true,
                         },
                         DownstreamHttpVersion = "2.0",
+                        DownstreamVersionPolicy = "upgradeable",
                     },
                 },
             };
@@ -66,6 +71,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(_ => GivenThe(fileConfig))
                 .And(_ => GivenTheRloCreatorReturns())
                 .And(_ => GivenTheVersionCreatorReturns())
+                .And(_ => GivenTheVersionPolicyCreatorReturns())
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheRoutesAreReturned())
                 .And(_ => ThenTheRloCreatorIsCalledCorrectly())
@@ -86,6 +92,9 @@ namespace Ocelot.UnitTests.Configuration
         {
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
+
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamVersionPolicy), Times.Once);
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamVersionPolicy), Times.Once);
         }
 
         private void ThenTheRoutesAreReturned()
@@ -94,11 +103,13 @@ namespace Ocelot.UnitTests.Configuration
             _result[0].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
             _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
             _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
+            _result[0].DownstreamRoute[0].DownstreamVersionPolicy.ShouldBe(_versionPolicy);
             _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
 
             _result[1].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
             _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
             _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
+            _result[1].DownstreamRoute[0].DownstreamVersionPolicy.ShouldBe(_versionPolicy);
             _result[1].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[1].ServiceName);
         }
 
@@ -106,6 +117,12 @@ namespace Ocelot.UnitTests.Configuration
         {
             _version = new Version("1.1");
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_version);
+        }
+
+        private void GivenTheVersionPolicyCreatorReturns()
+        {
+            _versionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_versionPolicy);
         }
 
         private void GivenTheRloCreatorReturns()

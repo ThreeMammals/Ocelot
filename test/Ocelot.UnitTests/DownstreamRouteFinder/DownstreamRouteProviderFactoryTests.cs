@@ -151,12 +151,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheRoutes(List<Route> routes)
         {
-            _config = new InternalConfiguration(routes, string.Empty, null, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(routes, string.Empty, null, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"), System.Net.Http.HttpVersionPolicy.RequestVersionOrLower);
         }
 
         private void GivenTheRoutes(List<Route> routes, ServiceProviderConfiguration config)
         {
-            _config = new InternalConfiguration(routes, string.Empty, config, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(routes, string.Empty, config, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"), System.Net.Http.HttpVersionPolicy.RequestVersionOrLower);
         }
     }
 }
