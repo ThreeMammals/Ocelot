@@ -18,6 +18,7 @@ public class RequestMapper : IRequestMapper
             Method = MapMethod(request, downstreamRoute),
             RequestUri = MapUri(request),
             Version = downstreamRoute.DownstreamHttpVersion,
+            VersionPolicy = downstreamRoute.DownstreamVersionPolicy,
         };
 
         MapHeaders(request, requestMessage);

@@ -22,6 +22,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IRouteKeyCreator _routeKeyCreator;
         private readonly ISecurityOptionsCreator _securityOptionsCreator;
         private readonly IVersionCreator _versionCreator;
+        private readonly IVersionPolicyCreator _versionPolicyCreator;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -39,6 +40,7 @@ namespace Ocelot.Configuration.Creator
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
             IVersionCreator versionCreator,
+            IVersionPolicyCreator versionPolicyCreator,
             IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
         {
             _routeKeyCreator = routeKeyCreator;
@@ -57,6 +59,7 @@ namespace Ocelot.Configuration.Creator
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _securityOptionsCreator = securityOptionsCreator;
             _versionCreator = versionCreator;
+            _versionPolicyCreator = versionPolicyCreator;
             _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
         }
 
@@ -109,6 +112,8 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
+            var downstreamVersionPolicy = _versionPolicyCreator.Create(fileRoute.DownstreamVersionPolicy);
+
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
@@ -144,6 +149,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDangerousAcceptAnyServerCertificateValidator(fileRoute.DangerousAcceptAnyServerCertificateValidator)
                 .WithSecurityOptions(securityOptions)
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
+                .WithDownstreamPolicyBuilder(downstreamVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .Build();
 

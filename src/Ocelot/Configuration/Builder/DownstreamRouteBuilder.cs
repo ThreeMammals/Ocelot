@@ -40,6 +40,7 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private HttpVersionPolicy _downstreamVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
 
     public DownstreamRouteBuilder()
@@ -268,6 +269,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithDownstreamPolicyBuilder(HttpVersionPolicy downstreamVersionPolicy)
+    {
+        _downstreamVersionPolicy = downstreamVersionPolicy;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -305,6 +312,7 @@ public class DownstreamRouteBuilder
             _securityOptions,
             _downstreamHttpMethod,
             _downstreamHttpVersion,
+            _downstreamVersionPolicy,
             _upstreamHeaders);
     }
 }
