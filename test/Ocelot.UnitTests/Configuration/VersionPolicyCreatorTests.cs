@@ -1,4 +1,8 @@
 ﻿using Ocelot.Configuration.Creator;
+using System.Net.Http;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
@@ -32,6 +36,15 @@ namespace Ocelot.UnitTests.Configuration
         public void should_default_to_request_version_or_lower(string versionPolicy)
         {
             this.Given(_ => GivenTheInput(versionPolicy))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_default_to_request_version_or_lower_when_setting_gibberish()
+        {
+            this.Given(_ => GivenTheInput("string is gibberish"))
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
                 .BDDfy();

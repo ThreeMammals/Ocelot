@@ -111,5 +111,13 @@
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
         }
+        public string Key { get; set; }
+        public List<string> DelegatingHandlers { get; set; }
+        public int Priority { get; set; }
+        public int Timeout { get; set; }
+        public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
+        public FileSecurityOptions SecurityOptions { get; set; }
+        public string DownstreamHttpVersion { get; set; }
+        public string DownstreamVersionPolicy { get; set; }
     }
 }
