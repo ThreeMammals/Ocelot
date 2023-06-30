@@ -149,7 +149,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDangerousAcceptAnyServerCertificateValidator(fileRoute.DangerousAcceptAnyServerCertificateValidator)
                 .WithSecurityOptions(securityOptions)
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
-                .WithDownstreamPolicyBuilder(downstreamVersionPolicy)
+                .WithDownstreamPolicyVersion(downstreamVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .Build();
 
