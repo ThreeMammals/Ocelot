@@ -42,6 +42,7 @@
         public string DownstreamHttpVersion { get; set; }
         public string DownstreamPathTemplate { get; set; }
         public string DownstreamScheme { get; set; }
+        public string DownstreamVersionPolicy { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public string Key { get; set; }
@@ -87,6 +88,7 @@
             to.DownstreamHttpVersion = from.DownstreamHttpVersion;
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
+            to.DownstreamVersionPolicy = from.DownstreamVersionPolicy;
             to.FileCacheOptions = new(from.FileCacheOptions);
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;

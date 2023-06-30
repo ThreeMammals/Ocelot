@@ -40,6 +40,7 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private HttpVersionPolicy _downstreamVersionPolicy;
 
     public DownstreamRouteBuilder()
     {
@@ -259,6 +260,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithDownstreamPolicyBuilder(HttpVersionPolicy downstreamVersionPolicy)
+    {
+        _downstreamVersionPolicy = downstreamVersionPolicy;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -295,6 +302,7 @@ public class DownstreamRouteBuilder
             _dangerousAcceptAnyServerCertificateValidator,
             _securityOptions,
             _downstreamHttpMethod,
-            _downstreamHttpVersion);
+            _downstreamHttpVersion,
+            _downstreamVersionPolicy);
     }
 }
