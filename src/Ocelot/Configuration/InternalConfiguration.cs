@@ -11,7 +11,8 @@ namespace Ocelot.Configuration
             string downstreamScheme,
             QoSOptions qoSOptions,
             HttpHandlerOptions httpHandlerOptions,
-            Version downstreamHttpVersion)
+            Version downstreamHttpVersion,
+            HttpVersionPolicy? downstreamVersionPolicy)
         {
             Routes = routes;
             AdministrationPath = administrationPath;
@@ -22,6 +23,7 @@ namespace Ocelot.Configuration
             QoSOptions = qoSOptions;
             HttpHandlerOptions = httpHandlerOptions;
             DownstreamHttpVersion = downstreamHttpVersion;
+            DownstreamVersionPolicy = downstreamVersionPolicy;
         }
 
         public List<Route> Routes { get; }
@@ -34,5 +36,6 @@ namespace Ocelot.Configuration
         public HttpHandlerOptions HttpHandlerOptions { get; }
 
         public Version DownstreamHttpVersion { get; }
+        public HttpVersionPolicy? DownstreamVersionPolicy { get; }
     }
 }

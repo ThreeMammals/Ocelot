@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"), System.Net.Http.HttpVersionPolicy.RequestVersionOrLower);
 
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")

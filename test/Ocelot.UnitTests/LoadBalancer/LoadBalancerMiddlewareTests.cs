@@ -131,7 +131,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
         {
             _config = config;
-            var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null);
+            var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null, null);
             _httpContext.Items.SetIInternalConfiguration(configuration);
         }
 
