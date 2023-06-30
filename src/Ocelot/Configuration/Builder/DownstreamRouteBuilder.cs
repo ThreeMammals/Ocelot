@@ -260,7 +260,7 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithDownstreamPolicyVersion(HttpVersionPolicy downstreamVersionPolicy)
+    public DownstreamRouteBuilder WithDownstreamPolicyBuilder(HttpVersionPolicy downstreamVersionPolicy)
     {
         _downstreamVersionPolicy = downstreamVersionPolicy;
         return this;
