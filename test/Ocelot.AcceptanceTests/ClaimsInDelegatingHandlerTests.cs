@@ -334,6 +334,12 @@ namespace Ocelot.AcceptanceTests
                                 },
                             },
                         })
+                        .AddInMemoryApiScopes(new List<ApiScope>()
+                        {
+                            new ApiScope("api"),
+                            new ApiScope("openid"),
+                            new ApiScope("offline_access"),
+                        })
                         .AddInMemoryClients(new List<Client>
                         {
                             new Client
@@ -372,18 +378,18 @@ namespace Ocelot.AcceptanceTests
 
         private class FakeHandler : DelegatingHandler, IDelegatingHandlerWithHttpContext
         {
-            public static bool ClaimsExist { get; private set; } 
+            public static bool ClaimsExist { get; private set; }
             public static string ClaimSubject { get; private set; }
 
-            public HttpContext HttpContext 
-            { 
-                get; 
-                set; 
+            public HttpContext HttpContext
+            {
+                get;
+                set;
             }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                ClaimsExist = (bool)HttpContext?.User?.Claims.Any(); 
+                ClaimsExist = (bool)HttpContext?.User?.Claims.Any();
                 if (ClaimsExist)
                 {
                     ClaimSubject = HttpContext?.User?.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
