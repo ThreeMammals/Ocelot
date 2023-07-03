@@ -381,11 +381,7 @@ namespace Ocelot.AcceptanceTests
             public static bool ClaimsExist { get; private set; }
             public static string ClaimSubject { get; private set; }
 
-            public HttpContext HttpContext
-            {
-                get;
-                set;
-            }
+            public HttpContext HttpContext { get; set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
