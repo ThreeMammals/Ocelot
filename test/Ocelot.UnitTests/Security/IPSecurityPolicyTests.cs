@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -15,6 +16,7 @@ public class IPSecurityPolicyTests
     private readonly IPSecurityPolicy _ipSecurityPolicy;
     private Response response;
     private readonly HttpContext _httpContext;
+    private readonly SecurityOptionsCreator _securityOptionsCreator;
 
     public IPSecurityPolicyTests()
     {
@@ -23,6 +25,7 @@ public class IPSecurityPolicyTests
         _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
         _downstreamRouteBuilder = new DownstreamRouteBuilder();
         _ipSecurityPolicy = new IPSecurityPolicy();
+        _securityOptionsCreator = new SecurityOptionsCreator();
     }
 
     [Fact]
@@ -326,68 +329,68 @@ public class IPSecurityPolicyTests
 
     private void GivenCidr24AllowedIP()
     {
-        var options = new FileSecurityOptions("192.168.1.0/24");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.0/24"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenCidr29AllowedIP()
     {
-        var options = new FileSecurityOptions("192.168.1.0/29");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.0/29"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenCidr24BlockedIP()
     {
-        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/24");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions(blockedIPs: "192.168.1.0/24"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenRangeAllowedIP()
     {
-        var options = new FileSecurityOptions("192.168.1.0-192.168.1.10");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.0-192.168.1.10"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenRangeBlockedIP()
     {
-        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-192.168.1.10");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions(blockedIPs: "192.168.1.0-192.168.1.10"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenShortRangeAllowedIP()
     {
-        var options = new FileSecurityOptions("192.168.1.0-10");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.0-10"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenShortRangeBlockedIP()
     {
-        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-10");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions(blockedIPs: "192.168.1.0-10"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenIpSubnetAllowedIP()
     {
-        var options = new FileSecurityOptions("192.168.1.0/255.255.255.0");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.0/255.255.255.0"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenIpSubnetBlockedIP()
     {
-        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/255.255.255.0");
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions(blockedIPs: "192.168.1.0/255.255.255.0"));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenIpMoreAllowedThanBlocked(bool excludeAllowedInBlocked)
     {
-        var options = new FileSecurityOptions("192.168.0.0/255.255.0.0", "192.168.1.100-200", excludeAllowedInBlocked);
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.0.0/255.255.0.0", "192.168.1.100-200", excludeAllowedInBlocked));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void GivenIpMoreBlockedThanAllowed(bool excludeAllowedInBlocked)
     {
-        var options = new FileSecurityOptions("192.168.1.10-20", "192.168.1.0/23", excludeAllowedInBlocked);
-        _downstreamRouteBuilder.WithSecurityOptionsCreator(options);
+        var securityOptions = _securityOptionsCreator.Create(new FileSecurityOptions("192.168.1.10-20", "192.168.1.0/23", excludeAllowedInBlocked));
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
     }
 
     private void WhenTheSecurityPolicy()
