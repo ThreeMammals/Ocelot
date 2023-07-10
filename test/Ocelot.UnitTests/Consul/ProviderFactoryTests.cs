@@ -33,7 +33,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_ConsulServiceDiscoveryProvider()
+    public void should_return_consul_provider()
     {
         var serviceProvider = _services.BuildServiceProvider();
 
@@ -51,7 +51,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_PollingConsulServiceDiscoveryProvider()
+    public void should_return_pollconsul_provider()
     {
         var consulClient = new Mock<IConsulClient>();
         _consulClientFactory.Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>())).Returns(consulClient.Object);
