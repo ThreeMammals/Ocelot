@@ -1,21 +1,21 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Steeltoe.Common.Discovery;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Newtonsoft.Json;
-
-    using Steeltoe.Common.Discovery;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class EurekaServiceDiscoveryTests : IDisposable
     {
         private readonly Steps _steps;

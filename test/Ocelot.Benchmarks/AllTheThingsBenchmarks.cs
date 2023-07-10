@@ -33,9 +33,9 @@ namespace Ocelot.Benchmarks
 
         public AllTheThingsBenchmarks()
         {
-            Add(StatisticColumn.AllStatistics);
-            Add(MemoryDiagnoser.Default);
-            Add(BaselineValidator.FailOnError);
+            AddColumn(StatisticColumn.AllStatistics);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddValidator(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]
@@ -54,13 +54,13 @@ namespace Ocelot.Benchmarks
                                 {
                                     Host = "localhost",
                                     Port = 51879,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty);
@@ -122,7 +122,7 @@ namespace Ocelot.Benchmarks
             _ocelot.Start();
         }
 
-        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 

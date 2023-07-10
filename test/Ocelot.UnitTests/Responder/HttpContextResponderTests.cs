@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Responder
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("Transfer-Encoding", new List<string> {"woop"})
+                    new("Transfer-Encoding", new List<string> {"woop"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.Responder
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();
@@ -93,7 +93,7 @@ namespace Ocelot.UnitTests.Responder
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
                 new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new("test", new List<string> {"test"})
+                    new("test", new List<string> {"test"}),
                 }, "some reason");
 
             _responder.SetResponseOnHttpContext(httpContext, response).GetAwaiter().GetResult();

@@ -1,29 +1,29 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
+
+using Ocelot.Cache;
+
+using Ocelot.Configuration.File;
+
+using Consul;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Text;
-
-    using Cache;
-
-    using Configuration.File;
-
-    using Consul;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-
-    using Newtonsoft.Json;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ConsulConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
@@ -58,11 +58,11 @@
                                 {
                                     Host = "localhost",
                                     Port = servicePort,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -70,9 +70,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -101,9 +101,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -122,11 +122,11 @@
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -134,9 +134,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
@@ -164,9 +164,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -185,11 +185,11 @@
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -197,9 +197,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var secondConsulConfig = new FileConfiguration
@@ -216,11 +216,11 @@
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status/awesome",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -228,9 +228,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
@@ -262,7 +262,7 @@
                     Address = "localhost",
                     Port = downstreamServicePort,
                     ID = "web_90_0_2_224_8080",
-                    Tags = new[] { "version-v1" }
+                    Tags = new[] { "version-v1" },
                 },
             };
 
@@ -279,9 +279,9 @@
                             ClientWhitelist = new List<string>(),
                             Limit = 3,
                             Period = "1s",
-                            PeriodTimespan = 1000
-                        }
-                    }
+                            PeriodTimespan = 1000,
+                        },
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -289,7 +289,7 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
+                        Port = consulPort,
                     },
                     RateLimitOptions = new FileRateLimitOptions
                     {
@@ -297,10 +297,10 @@
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = string.Empty,
                         RateLimitCounterPrefix = string.Empty,
-                        HttpStatusCode = 428
+                        HttpStatusCode = 428,
                     },
                     DownstreamScheme = "http",
-                }
+                },
             };
 
             var configuration = new FileConfiguration
@@ -311,9 +311,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))

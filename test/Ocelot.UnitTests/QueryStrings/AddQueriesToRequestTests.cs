@@ -45,13 +45,13 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             var claims = new List<Claim>
             {
-                new("test", "data")
+                new("test", "data"),
             };
 
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new("query-key", string.Empty, string.Empty, 0)
+                    new("query-key", string.Empty, string.Empty, 0),
                 }))
                 .Given(x => x.GivenClaims(claims))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -66,13 +66,13 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             var claims = new List<Claim>
             {
-                new("test", "data")
+                new("test", "data"),
             };
 
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new("query-key", string.Empty, string.Empty, 0)
+                    new("query-key", string.Empty, string.Empty, 0),
                 }))
                 .Given(x => x.GivenClaims(claims))
                 .And(x => GivenTheDownstreamRequestHasQueryString("?test=1&test=2"))
@@ -94,13 +94,13 @@ namespace Ocelot.UnitTests.QueryStrings
         {
             var claims = new List<Claim>
             {
-                new("test", "data")
+                new("test", "data"),
             };
 
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new("query-key", string.Empty, string.Empty, 0)
+                    new("query-key", string.Empty, string.Empty, 0),
                 }))
                 .And(x => x.GivenClaims(claims))
                 .And(x => x.GivenTheDownstreamRequestHasQueryString("query-key", "initial"))
@@ -117,12 +117,12 @@ namespace Ocelot.UnitTests.QueryStrings
             this.Given(
                x => x.GivenAClaimToThing(new List<ClaimToThing>
                {
-                    new(string.Empty, string.Empty, string.Empty, 0)
+                    new(string.Empty, string.Empty, string.Empty, 0),
                }))
                .Given(x => x.GivenClaims(new List<Claim>()))
                .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
                {
-                   new AnyError()
+                   new AnyError(),
                })))
                .When(x => x.WhenIAddQueriesToTheRequest())
                .Then(x => x.ThenTheResultIsError())

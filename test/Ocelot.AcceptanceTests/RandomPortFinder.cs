@@ -1,11 +1,11 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Sockets;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
+namespace Ocelot.AcceptanceTests
+{
     public static class RandomPortFinder
     {
         private const int TrialNumber = 100;

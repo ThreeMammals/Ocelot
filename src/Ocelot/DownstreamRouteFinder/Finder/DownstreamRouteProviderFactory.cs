@@ -1,15 +1,15 @@
-﻿namespace Ocelot.DownstreamRouteFinder.Finder
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Ocelot.DownstreamRouteFinder.Finder
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Configuration;
-
-    using Logging;
-
-    using Microsoft.Extensions.DependencyInjection;
-
     public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
     {
         private readonly Dictionary<string, IDownstreamRouteProvider> _providers;

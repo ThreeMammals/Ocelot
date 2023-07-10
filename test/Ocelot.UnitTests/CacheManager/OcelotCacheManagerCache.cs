@@ -1,19 +1,19 @@
-﻿namespace Ocelot.UnitTests.CacheManager
+﻿using System;
+
+using global::CacheManager.Core;
+
+using Moq;
+
+using Ocelot.Cache.CacheManager;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.CacheManager
 {
-    using System;
-
-    using global::CacheManager.Core;
-
-    using Moq;
-
-    using Ocelot.Cache.CacheManager;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OcelotCacheManagerCache
     {
         private readonly OcelotCacheManagerCache<string> _ocelotOcelotCacheManager;

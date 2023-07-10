@@ -1,23 +1,23 @@
+using System.Collections.Generic;
+using System.Net.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class AggregatesCreatorTests
     {
         private readonly AggregatesCreator _creator;
@@ -43,9 +43,9 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     new()
                     {
-                        RouteKeys = new List<string>{"key1"}
-                    }
-                }
+                        RouteKeys = new List<string>{"key1"},
+                    },
+                },
             };
             var routes = new List<Route>();
 
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true
+                        RouteIsCaseSensitive = true,
                     },
                     new()
                     {
@@ -79,9 +79,9 @@ namespace Ocelot.UnitTests.Configuration
                         UpstreamHost = "hosty",
                         UpstreamPathTemplate = "templatey",
                         Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true
-                    }
-                }
+                        RouteIsCaseSensitive = true,
+                    },
+                },
             };
 
             var routes = new List<Route>
@@ -89,7 +89,7 @@ namespace Ocelot.UnitTests.Configuration
                 new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
                 new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
                 new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build()
+                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
             };
 
             this.Given(_ => GivenThe(fileConfig))

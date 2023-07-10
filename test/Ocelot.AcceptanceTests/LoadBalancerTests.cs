@@ -1,28 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Configuration;
-    using Configuration.File;
-
-    using LoadBalancer.LoadBalancers;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Responses;
-
-    using ServiceDiscovery.Providers;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class LoadBalancerTests : IDisposable
     {
         private readonly Steps _steps;
@@ -62,17 +62,17 @@ namespace Ocelot.AcceptanceTests
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = portOne
+                                    Port = portOne,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = portTwo
-                                }
-                            }
-                        }
+                                    Port = portTwo,
+                                },
+                            },
+                        },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -109,17 +109,17 @@ namespace Ocelot.AcceptanceTests
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
-                        }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
+                        },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))

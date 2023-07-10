@@ -31,12 +31,12 @@
             _useProxy = useProxy;
             return this;
         }
+
         public HttpHandlerOptionsBuilder WithUseMaxConnectionPerServer(int maxConnectionPerServer)
         {
             _maxConnectionPerServer = maxConnectionPerServer;
             return this;
         }
-
 
         public HttpHandlerOptions Build()
         {

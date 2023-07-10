@@ -66,12 +66,12 @@ namespace Ocelot.UnitTests.Middleware
         {
             var source = new MemoryConfigurationSource
             {
-                InitialData = _data
+                InitialData = _data,
             };
             var provider = new MemoryConfigurationProvider(source);
             _config = new ConfigurationRoot(new List<IConfigurationProvider>
             {
-                provider
+                provider,
             });
             _baseUrlFinder = new BaseUrlFinder(_config);
             _result = _baseUrlFinder.Find();

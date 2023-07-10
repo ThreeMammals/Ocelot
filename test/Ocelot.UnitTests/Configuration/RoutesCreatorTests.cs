@@ -1,25 +1,19 @@
-﻿namespace Ocelot.UnitTests.Configuration
+﻿using Moq;
+using Ocelot.Cache;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Values;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class RoutesCreatorTests
     {
         private readonly RoutesCreator _creator;
@@ -53,7 +47,6 @@
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
-        private SecurityOptions _securityOptions;
         private Version _expectedVersion;
 
         public RoutesCreatorTests()
@@ -117,17 +110,17 @@
                         DangerousAcceptAnyServerCertificateValidator = true,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "a","b" }
+                            { "a","b" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "c","d" }
+                            { "c","d" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "e","f" }
+                            { "e","f" },
                         },
-                        UpstreamHttpMethod = new List<string> { "GET", "POST" }
+                        UpstreamHttpMethod = new List<string> { "GET", "POST" },
                     },
                     new()
                     {
@@ -135,19 +128,19 @@
                         DangerousAcceptAnyServerCertificateValidator = false,
                         AddClaimsToRequest = new Dictionary<string, string>
                         {
-                            { "g","h" }
+                            { "g","h" },
                         },
                         AddHeadersToRequest = new Dictionary<string, string>
                         {
-                            { "i","j" }
+                            { "i","j" },
                         },
                         AddQueriesToRequest = new Dictionary<string, string>
                         {
-                            { "k","l" }
+                            { "k","l" },
                         },
-                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" }
-                    }
-                }
+                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    },
+                },
             };
 
             this.Given(_ => GivenThe(fileConfig))

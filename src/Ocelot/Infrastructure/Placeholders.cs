@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Request.Middleware;
+
+using Ocelot.Infrastructure.RequestData;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Infrastructure
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Middleware;
-
-    using Ocelot.Request.Middleware;
-
-    using RequestData;
-
-    using Responses;
-
     public class Placeholders : IPlaceholders
     {
         private readonly Dictionary<string, Func<Response<string>>> _placeholders;

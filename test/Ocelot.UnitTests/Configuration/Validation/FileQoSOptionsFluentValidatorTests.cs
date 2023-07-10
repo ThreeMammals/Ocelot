@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var qosOptions = new FileQoSOptions
             {
                 TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1
+                ExceptionsAllowedBeforeBreaking = 1,
             };
 
             this.Given(_ => GivenThe(qosOptions))
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var qosOptions = new FileQoSOptions
             {
                 TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1
+                ExceptionsAllowedBeforeBreaking = 1,
             };
 
             this.Given(_ => GivenThe(qosOptions))

@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class StickySessionsTests : IDisposable
     {
         private readonly Steps _steps;
@@ -49,23 +49,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -100,21 +100,21 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
                         },
                         new()
                         {
@@ -126,23 +126,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "bestid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
+                                    Port = downstreamPortTwo,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortOne,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -178,21 +178,21 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
                         },
                         new()
                         {
@@ -204,23 +204,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
+                                    Port = downstreamPortTwo,
                                 },
                                 new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortOne,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -256,6 +256,7 @@ namespace Ocelot.AcceptanceTests
                         _counterOne++;
                         response = _counterOne.ToString();
                     }
+
                     context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync(response);
                 }

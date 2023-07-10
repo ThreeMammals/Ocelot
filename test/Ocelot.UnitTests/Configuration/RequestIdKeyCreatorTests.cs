@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute();
             var globalConfig = new FileGlobalConfiguration
             {
-                RequestIdKey = "cheese"
+                RequestIdKey = "cheese",
             };
 
             this.Given(x => x.GivenTheFollowingRoute(route))
@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var route = new FileRoute
             {
-                RequestIdKey = "cheese"
+                RequestIdKey = "cheese",
             };
             var globalConfig = new FileGlobalConfiguration();
 
@@ -58,11 +58,11 @@ namespace Ocelot.UnitTests.Configuration
         {
             var route = new FileRoute
             {
-                RequestIdKey = "cheese"
+                RequestIdKey = "cheese",
             };
             var globalConfig = new FileGlobalConfiguration
             {
-                RequestIdKey = "test"
+                RequestIdKey = "test",
             };
 
             this.Given(x => x.GivenTheFollowingRoute(route))

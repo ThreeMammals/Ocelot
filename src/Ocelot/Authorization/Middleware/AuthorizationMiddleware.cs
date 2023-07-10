@@ -1,17 +1,17 @@
-﻿namespace Ocelot.Authorization.Middleware
+﻿using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Authorization.Middleware
 {
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
-    using Responses;
-
     public class AuthorizationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

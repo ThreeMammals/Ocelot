@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Modified https://github.com/aspnet/Proxy websockets class to use in Ocelot.
 
+using System;
+using System.Linq;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.WebSockets.Middleware
 {
-    using System;
-    using System.Linq;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
@@ -57,6 +57,7 @@ namespace Ocelot.WebSockets.Middleware
                         await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
                         return;
                     }
+
                     throw;
                 }
 

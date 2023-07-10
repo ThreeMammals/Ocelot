@@ -1,11 +1,11 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
+﻿using Ocelot.Configuration;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Configuration;
-
-    using Responses;
-
-    using ServiceDiscovery.Providers;
-
     public class NoLoadBalancerCreator : ILoadBalancerCreator
     {
         public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)

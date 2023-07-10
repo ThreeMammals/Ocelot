@@ -1,26 +1,19 @@
-﻿namespace Ocelot.UnitTests.Headers
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Moq;
+using Ocelot.Configuration.Creator;
+using Ocelot.Headers;
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Logging;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Headers
 {
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Primitives;
-
-    using Moq;
-
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Headers;
-    using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.Logging;
-
-    using Responder;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class AddHeadersToRequestPlainTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
@@ -97,9 +90,9 @@
                 {
                     Headers =
                     {
-                        { headerKey, headerValue }
-                    }
-                }
+                        { headerKey, headerValue },
+                    },
+                },
             };
         }
 

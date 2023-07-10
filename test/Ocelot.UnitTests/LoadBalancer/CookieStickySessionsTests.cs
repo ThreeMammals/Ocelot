@@ -1,29 +1,29 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Infrastructure;
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Ocelot.UnitTests.Responder;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Infrastructure;
-    using Ocelot.LoadBalancer.LoadBalancers;
-
-    using Responder;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class CookieStickySessionsTests
     {
         private readonly CookieStickySessions _stickySessions;

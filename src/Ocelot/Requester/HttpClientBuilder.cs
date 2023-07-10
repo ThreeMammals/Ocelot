@@ -1,14 +1,14 @@
-﻿namespace Ocelot.Requester
+﻿using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+namespace Ocelot.Requester
 {
-    using System;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-
-    using Configuration;
-
-    using Logging;
-
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
@@ -62,7 +62,7 @@
 
             _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute))
             {
-                Timeout = timeout
+                Timeout = timeout,
             };
 
             _client = new HttpClientWrapper(_httpClient);

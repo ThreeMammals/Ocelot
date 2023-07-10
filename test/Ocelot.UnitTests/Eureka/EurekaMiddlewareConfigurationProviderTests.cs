@@ -1,29 +1,22 @@
-﻿namespace Ocelot.UnitTests.Eureka
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Repository;
+using Ocelot.Provider.Eureka;
+using Ocelot.Responses;
+using Shouldly;
+using Steeltoe.Discovery;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Ocelot.UnitTests.Eureka
 {
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Provider.Eureka;
-
-    using Responses;
-
-    using Shouldly;
-
-    using Steeltoe.Discovery;
-
-    using Xunit;
-
     public class EurekaMiddlewareConfigurationProviderTests
     {
         [Fact]
-        public void should_not_build()
+        public void ShouldNotBuild()
         {
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
@@ -36,7 +29,7 @@
         }
 
         [Fact]
-        public void should_build()
+        public void ShouldBuild()
         {
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
             var client = new Mock<IDiscoveryClient>();

@@ -1,11 +1,11 @@
-﻿namespace Ocelot.Provider.Eureka
+﻿using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.ServiceDiscovery;
+
+using Steeltoe.Discovery;
+
+namespace Ocelot.Provider.Eureka
 {
-    using Microsoft.Extensions.DependencyInjection;
-
-    using ServiceDiscovery;
-
-    using Steeltoe.Discovery;
-
     public static class EurekaProviderFactory
     {
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, route) =>

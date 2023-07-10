@@ -1,10 +1,10 @@
-﻿namespace Ocelot.Cache
+﻿using System;
+using System.Collections.Generic;
+
+using Microsoft.Extensions.Caching.Memory;
+
+namespace Ocelot.Cache
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.Extensions.Caching.Memory;
-
     public class AspMemoryCache<T> : IOcelotCache<T>
     {
         private readonly IMemoryCache _memoryCache;

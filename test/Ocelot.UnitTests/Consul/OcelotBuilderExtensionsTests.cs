@@ -1,29 +1,21 @@
-﻿namespace Ocelot.UnitTests.Consul
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.DependencyInjection;
+using Ocelot.Provider.Consul;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.Consul
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.DependencyInjection;
-
-    using Provider.Consul;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OcelotBuilderExtensionsTests
     {
         private readonly IServiceCollection _services;
-        private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private Exception _ex;
@@ -35,7 +27,6 @@
             _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
         }
-
 
         private static IWebHostEnvironment GetHostingEnvironment()
         {

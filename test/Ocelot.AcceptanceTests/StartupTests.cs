@@ -1,21 +1,21 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-    using Configuration.Repository;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class StartupTests : IDisposable
     {
         private readonly Steps _steps;
@@ -47,12 +47,12 @@
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
             };
 
             var fakeRepo = new FakeFileConfigurationRepository();

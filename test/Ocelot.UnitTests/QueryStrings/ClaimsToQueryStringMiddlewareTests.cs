@@ -1,31 +1,30 @@
 ﻿using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.QueryStrings;
+using Ocelot.QueryStrings.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Xunit;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.QueryStrings;
-    using Ocelot.QueryStrings.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class ClaimsToQueryStringMiddlewareTests
     {
         private readonly Mock<IAddQueriesToRequest> _addQueries;
@@ -58,7 +57,7 @@ namespace Ocelot.UnitTests.QueryStrings
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToQueries(new List<ClaimToThing>
                         {
-                            new("UserId", "Subject", string.Empty, 0)
+                            new("UserId", "Subject", string.Empty, 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())

@@ -1,15 +1,15 @@
-﻿namespace Ocelot.Security.IPSecurity
+﻿using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Security.IPSecurity
 {
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
-    using Responses;
-
     public class IPSecurityPolicy : ISecurityPolicy
     {
         public async Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext)

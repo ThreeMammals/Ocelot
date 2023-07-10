@@ -1,27 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+
+using Ocelot.Values;
+
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using DownstreamRouteFinder.UrlMatcher;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
-    using UrlTemplateReplacer;
-
-    using Values;
-
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -69,8 +69,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
 
                 //todo check this works again hope there is a test..
-                downstreamRequest.AbsolutePath = pathAndQuery.path;
-                downstreamRequest.Query = pathAndQuery.query;
+                downstreamRequest.AbsolutePath = pathAndQuery.Path;
+                downstreamRequest.Query = pathAndQuery.Query;
             }
             else
             {
@@ -140,7 +140,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             return dsPath.Value.Contains('?');
         }
 
-        private (string path, string query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
+        private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
         {
             var query = downstreamRequest.Query;
             var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);

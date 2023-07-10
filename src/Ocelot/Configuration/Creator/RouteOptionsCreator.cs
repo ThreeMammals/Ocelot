@@ -1,9 +1,9 @@
+using Ocelot.Configuration.Builder;
+
+using Ocelot.Configuration.File;
+
 namespace Ocelot.Configuration.Creator
 {
-    using Builder;
-
-    using File;
-
     public class RouteOptionsCreator : IRouteOptionsCreator
     {
         public RouteOptions Create(FileRoute fileRoute)

@@ -1,16 +1,16 @@
-﻿namespace Ocelot.LoadBalancer.Middleware
+﻿using System;
+using System.Threading.Tasks;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+namespace Ocelot.LoadBalancer.Middleware
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using LoadBalancers;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     public class LoadBalancingMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

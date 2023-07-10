@@ -6,11 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Setter;
+using Ocelot.Configuration.Repository;
 
 namespace Ocelot.Configuration
 {
-    using Repository;
-
     [Authorize]
     [Route("configuration")]
     public class FileConfigurationController : Controller
