@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Consul;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -6,51 +7,76 @@ using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Shouldly;
 using System;
+using System.Threading;
 using Xunit;
 
-namespace Ocelot.UnitTests.Consul
+namespace Ocelot.UnitTests.Consul;
+
+public class ProviderFactoryTests
 {
-    public class ProviderFactoryTests
+    private readonly ServiceCollection _services;
+    private readonly Mock<IOcelotLogger> _logger;
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IConsulClientFactory> _consulClientFactory;
+
+    public ProviderFactoryTests()
     {
-        private readonly IServiceProvider _provider;
+        _services = new ServiceCollection();
+        _logger = new Mock<IOcelotLogger>();
+        _loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(_logger.Object);
+        _loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
+        _services.AddSingleton(_loggerFactory.Object);
 
-        public ProviderFactoryTests()
-        {
-            var services = new ServiceCollection();
-            var loggerFactory = new Mock<IOcelotLoggerFactory>();
-            var logger = new Mock<IOcelotLogger>();
-            loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(logger.Object);
-            loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
-            var consulFactory = new Mock<IConsulClientFactory>();
-            services.AddSingleton(consulFactory.Object);
-            services.AddSingleton(loggerFactory.Object);
-            _provider = services.BuildServiceProvider();
-        }
+        _consulClientFactory = new Mock<IConsulClientFactory>();
+        _services.AddSingleton(_consulClientFactory.Object);
+    }
 
-        [Fact]
-        public void should_return_ConsulServiceDiscoveryProvider()
-        {
-            var route = new DownstreamRouteBuilder()
-                .WithServiceName(string.Empty)
-                .Build();
+    [Fact]
+    public void should_return_ConsulServiceDiscoveryProvider()
+    {
+        var serviceProvider = _services.BuildServiceProvider();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1), route);
-            provider.ShouldBeOfType<Provider.Consul.Consul>();
-        }
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName(string.Empty)
+            .Build();
 
-        [Fact]
-        public void should_return_PollingConsulServiceDiscoveryProvider()
-        {
-            var stopsPollerFromPolling = 10000;
+        var provider = ConsulProviderFactory.Get(
+            serviceProvider,
+            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1),
+            route);
 
-            var route = new DownstreamRouteBuilder()
-                .WithServiceName(string.Empty)
-                .Build();
+        provider.ShouldNotBeNull()
+            .ShouldBeOfType<Provider.Consul.Consul>();
+    }
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "http", string.Empty, 1, string.Empty, string.Empty, stopsPollerFromPolling), route);
-            var pollProvider = provider as PollConsul;
-            pollProvider.ShouldNotBeNull();
-            pollProvider.Dispose();
-        }
+    [Fact]
+    public void should_return_PollingConsulServiceDiscoveryProvider()
+    {
+        var consulClient = new Mock<IConsulClient>();
+        _consulClientFactory.Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>())).Returns(consulClient.Object);
+
+        var healthEndpoint = new Mock<IHealthEndpoint>();
+        consulClient.SetupGet(x => x.Health).Returns(healthEndpoint.Object);
+
+        healthEndpoint.Setup(x => x.Service(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new QueryResult<ServiceEntry[]> { Response = Array.Empty<ServiceEntry>() });
+
+        var serviceProvider = _services.BuildServiceProvider();
+
+        var stopsPollerFromPolling = 10000;
+
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName(string.Empty)
+            .Build();
+
+        var provider = ConsulProviderFactory.Get(
+            serviceProvider,
+            new ServiceProviderConfiguration("pollconsul", "http", string.Empty, 1, string.Empty, string.Empty, stopsPollerFromPolling),
+            route);
+
+        provider.ShouldNotBeNull()
+            .ShouldBeOfType<PollConsul>()
+            .Dispose();
     }
 }
